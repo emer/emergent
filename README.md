@@ -53,6 +53,10 @@ Specifically, here are the key principles behind our overall design at this poin
 
 * GUIs will be able to generate code to reflect any interactive configuration etc.  Thus, if you do some things to configure a network or a graph in the GUI, you can then generate the corresponding code to do that same thing, and the paste that back into the right place in your code.
 
+* A control panel level of interface will be available to make the model accessible to undergraduates, e.g., for the [Computational Cognitive Neuroscience](https://grey.colorado.edu/CompCogNeuro/index.php/CCNBook/Main) textbook simulations.  Although in theory the old emergent Program GUI made it possible for students to customize models, in practice it was not very easy, and likely having everything in code will actually make it clearer what is going on.
+
+* We are working on coordinating our efforts with [PsyNeuLink](https://princetonuniversity.github.io/PsyNeuLink/) to make Leabra models accessible in that framework, and vice-versa.
+
 * GoGi is based on SVG, and we will definitely have increasingly capable SVG editing going forward, so that you will be able to fully customize graphs etc directly in the software, allowing direct publication-quality and fully customized visualizations to be created.
 
 * Many more details remain to be resolved, but overall we are excited about this reboot and are planning to get working on it very soon!
@@ -72,6 +76,6 @@ Definitely need to think hard about how to make this all as simple as possible, 
 
 The main Leabra implementation would mostly be about layers, which provides the natural organization for most of the computation.
 
-The current `emer` and `leabra` directories in this repository contain stub versions of potential code to get a specific sense of what things might look like.
+The current `emer` and `basic/leabra` directories in this repository contain stub versions of potential code to get a specific sense of what things might look like.  From a naming perspective, it is good to have the package-level directory always be `leabra` so you always write e.g., `leabra.Layer` etc, but which specific version of leabra you're using depends on the import path -- e.g.,`basic/leabra`, `spiking/leabra`, `deep/leabra`, etc.
 
 
