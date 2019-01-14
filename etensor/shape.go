@@ -8,25 +8,81 @@ package etensor
 
 // Shape manages a tensor's shape information, including strides and dimension names
 // and can compute the flat index into an underlying 1D data storage array based on an
-// n-dimensional index (and vice-versa)
+// n-dimensional index (and vice-versa).
+// This is fully compatible with (and largely taken from) apache/arrow tensors.
+// Per C / Go / Python conventions (and unlike emergent) indexes are ordered from
+// outer to inner left-to-right, so the inner-most is right-most.
+// This is called Row-Major order, and is the default.
+// It is also possible to use Column-Major order, which is used in R, Julia, and MATLAB,
+// and emergent, where the inner-most index is first and outer-most last.
+// In principle, you can organize memory independent of the conceptual order of indexes
+// but for efficiency it is best to organize memory in the way that indexes are accessed.
 type Shape struct {
 	shape   []int64
 	strides []int64
 	names   []string
 }
 
+// NewShape returns a new shape object initialized with params.
+// If strides is nil, row-major strides will be inferred.
+// If names is nil, a slice of empty strings will be created.
+func NewShape(shape, strides []int64, names []string) *Shape {
+	sh := &Shape{}
+	sh.SetShape(shape, strides, names)
+	return sh
+}
+
+// SetShape sets the shape parameters.
+// If strides is nil, row-major strides will be inferred.
+// If names is nil, a slice of empty strings will be created.
+func (sh *Shape) SetShape(shape, strides []int64, names []string) {
+	sh.shape = shape
+	if strides == nil {
+		sh.strides = RowMajorStrides(shape)
+	} else {
+		sh.strides = strides
+	}
+	if names == nil {
+		sh.names = make([]string, len(sh.shape))
+	} else {
+		sh.names = names
+	}
+}
+
+// AddShapes returns a new shape by adding two shapes one after the other.
+// uses Row / Col order of the first shape for resulting shape
+func AddShapes(shape1, shape2 *Shape) *Shape {
+	sh1 := shape1.Shape()
+	sh2 := shape2.Shape()
+	nsh := make([]int64, len(sh1)+len(sh2))
+	copy(nsh, sh1)
+	copy(nsh[len(sh1):], sh2)
+	rm := shape1.IsRowMajor()
+	var nstr []int64
+	if rm {
+		nstr = RowMajorStrides(nsh)
+	} else {
+		nstr = ColMajorStrides(nsh)
+	}
+	nms := make([]string, len(sh1)+len(sh2))
+	copy(nms, shape1.DimNames())
+	copy(nms[len(sh1):], shape2.DimNames())
+	return NewShape(nsh, nstr, nms)
+}
+
 // Len returns the total length of elements in the tensor (i.e., the product of
 // the shape sizes)
-func (sh *Shape) Len() int64 {
+func (sh *Shape) Len() int {
 	o := int64(1)
 	for _, v := range sh.shape {
 		o *= v
 	}
-	return o
+	return int(o)
 }
 
 func (sh *Shape) Shape() []int64       { return sh.shape }
 func (sh *Shape) Strides() []int64     { return sh.strides }
+func (sh *Shape) DimNames() []string   { return sh.names }
 func (sh *Shape) NumDims() int         { return len(sh.shape) }
 func (sh *Shape) DimName(i int) string { return sh.names[i] }
 
