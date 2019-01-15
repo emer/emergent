@@ -32,8 +32,8 @@ type LayerStru struct {
 // leabra.Layer has parameters for running a basic layer
 type Layer struct {
 	LayerStru
-	Act         Act         `desc:"Activation parameters and methods for computing activations"`
-	Inhib       Inhib       `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
+	Act Act `desc:"Activation parameters and methods for computing activations"`
+	//	Inhib       Inhib       `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
 	LearnNeuron LearnNeuron `desc:"Learning parameters and methods that operate at the neuron level"`
 	Neurons     []*Neuron   `desc:"slice of neurons for this layer"`
 }

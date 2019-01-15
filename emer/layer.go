@@ -8,6 +8,12 @@ import "github.com/emer/emergent/etensor"
 
 // Layer defines the basic interface into neural network layers, used for visualization, I/O, etc
 type Layer interface {
+	// Name returns the name of this layer
+	Name() string
+
+	// Class is for applying parameter styles, can be space separated multple tags layer
+	Class() string
+
 	// Shape returns the organization of units in the layer, in terms of an array of dimensions.
 	// if 2D, then it is a simple X,Y layer with no sub-structure (unit groups).
 	// If 4D, then it is standard unit group X,Y units X,Y.

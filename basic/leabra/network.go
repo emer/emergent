@@ -55,11 +55,11 @@ func (nt *NetworkStru) ConnectLayers(recv, send string, pat prjn.Pat) (rlay, sla
 	if !has {
 		return
 	}
-	slay, has := nt.LayerByNameErrMsg(send)
+	slay, has = nt.LayerByNameErrMsg(send)
 	if !has {
 		return
 	}
-	prjn := &Prjn{}
+	prjn = &Prjn{}
 	prjn.Recv = rlay
 	prjn.Send = slay
 	prjn.Pat = pat

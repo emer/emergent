@@ -14,6 +14,10 @@ type Full struct {
 	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
 }
 
+func (fp *Full) Name() string {
+	return "Full"
+}
+
 func (fp *Full) Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *tensor.Int32, cons *etensor.Bits) {
 	// todo: exclude self!
 	recvn = tensor.NewInt32(nil, recv.Shape(), recv.Strides(), recv.DimNames())

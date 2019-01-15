@@ -6,6 +6,10 @@ package emer
 
 import "github.com/goki/ki/kit"
 
+type Vec3i struct {
+	X, Y, Z float32
+}
+
 // Rel defines a relationship among layers for example
 type Rel struct {
 	Rel    Relations `desc:"spatial relationship between this layer and the other layer"`

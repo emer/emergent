@@ -14,10 +14,13 @@ import (
 // presence or absence of connection between two items.
 // A receiver-based organization is generally assumed but connectivity can go either way.
 type Pat interface {
+	// Name returns the name of the pattern -- i.e., the "type" name of the actual pattern generatop
+	Name() string
+
 	// Connect connects layers with the given shapes, returning the pattern of connectivity
 	// as a bits tensor with shape = recv + send shapes, using row-major ordering with outer-most
 	// indexes first (i.e., for each recv unit, there is a full inner-level of sender bits).
-	// The number of connections for each recv and each send unit are also return in
+	// The number of connections for each recv and each send unit are also returned in
 	// recvn and send tensors, each the shape of send and recv respectively.
 	// The same flag should be set to true if the send and recv layers are the same (i.e., a self-connection)
 	// often there are some different options for such connections.

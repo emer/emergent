@@ -31,8 +31,8 @@ type Act struct {
 }
 
 func (ac *Act) Defaults() {
-	ac.Gbar.SetAl(1.0, 0.2, 1.0, 1.0)
-	ac.Erev.SetAl(1.0, 0.3, 0.25, 0.1)
+	ac.Gbar.SetAll(1.0, 0.2, 1.0, 1.0)
+	ac.Erev.SetAll(1.0, 0.3, 0.25, 0.1)
 	ac.ClampRange.Max = 0.95
 	ac.VmRange.Max = 2.0
 }
@@ -43,13 +43,18 @@ func (ac *Act) Update() {
 	ac.ThrSubErev.SetFmMinusOther(ac.Act.Thr, ac.Erev)
 }
 
+// InetFmG computes net current from conductances and Vm
+func (ac *Act) InetFmG(vm, ge, gi, gk float32) float32 {
+	return ge*(ac.Erev.E-vm) + ac.Gbar.L*(ac.Erev.L-vm) + gi*(ac.Erev.I-vm) + gk*(ac.Erev.K-vm)
+}
+
 // VmFmG computes membrane potential Vm from conductances Ge and Gi.
 // The Vm value is only used in pure rate-code computation within the sub-threshold regime
 // because firing rate is a direct function of excitatory conductance Ge.
 func (ac *Act) VmFmG(nrn *Neuron, thr int) {
 	ge := nrn.Ge * ac.Gbar.E
 	gi := nrn.Gi * ac.Gbar.I
-	nrn.Inet = Compute_INet_impl(u, nrn.Vm, net_eff, gc_i, gc_k)
+	nrn.Inet = ac.InetFmG(nrn.Vm, ge, gi, 0)
 	nwVm := nrn.Vm + ac.Dt.Integ*ac.Dt.VmDt*nrn.Inet
 
 	if ac.Noise.Type == VmNoise {
@@ -58,7 +63,7 @@ func (ac *Act) VmFmG(nrn *Neuron, thr int) {
 	nrn.Vm = ac.VmRange.ClipVal(nwVm)
 }
 
-func (ac *Act) GeThrFmG(nrn *Neuron, thr int) {
+func (ac *Act) GeThrFmG(nrn *Neuron, thr int) float32 {
 	gcL := ac.Gbar.L
 	return ((ac.Gbar.I*nrn.Gi*ac.ErevSubThr.I + gcL*ac.ErevSubThr.L) / ac.ThrSubErev.E)
 }
@@ -106,11 +111,6 @@ type ActPars struct {
 	SigMultEff  float32 `view:"-" desc:"overall multiplier on sigmoidal component for values below threshold = sig_mult * pow(gain * nvar, sig_mult_pow)"`
 	SigValAt0   float32 `view:"-" desc:"0.5 * sig_mult_eff -- used for interpolation portion"`
 	InterpVal   float32 `view:"-" desc:"function value at interp_range - sig_val_at_0 -- for interpolation"`
-}
-
-// ActFmGe computes activation based on Ge excitatory conductance
-func (ap *ActPars) ActFmGe(ge float32) float32 {
-	// compute the activation function
 }
 
 // XX1 computes the basic x/(x+1) function
