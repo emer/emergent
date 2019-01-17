@@ -12,10 +12,3 @@ package leabra
 
 // todo: styling needs to be able to handle field paths for applying parameter values
 // from ki.Props
-
-// ActFmGe computes the activation from the Ge excitatory conductance for all units
-func (ly *Layer) ActFmGe() {
-	for _, un := range ly.Units {
-		un.Act = ly.Act.ActFmGe(un.Ge)
-	}
-}

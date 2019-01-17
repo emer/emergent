@@ -14,8 +14,8 @@ import (
 ///////////////////////////////////////////////////////////////////////
 //  act.go contains the activation params and functions for leabra
 
-// leabra.Act contains all the activation computation params and functions for basic leabra
-// this is then included in leabra.Layer to drive the computation
+// leabra.Act contains all the activation computation params and functions for basic Leabra.
+// This is included in leabra.Layer to drive the computation.
 type Act struct {
 	Act        ActPars       `desc:"X/X+1 rate code activation parameters"`
 	OptThresh  OptThreshPars `desc:"optimization thresholds for faster processing"`
@@ -78,7 +78,7 @@ func (ac *Act) ActFmG(nrn *Neuron, thr int) {
 		nwAct = ac.Act.NoisyXX1(nrn.Vm - ac.Act.Thr)
 	} else {
 		geThr := ac.GeThrFmG(nrn, thr)
-		nwAct = ac.Act.NoisyX11(nrn.Ge*ac.Gbar.E - geThr)
+		nwAct = ac.Act.NoisyXX1(nrn.Ge*ac.Gbar.E - geThr)
 	}
 	curAct := nrn.Act
 	nwAct = curAct + ac.Dt.Integ*ac.Dt.VmDt*(nwAct-curAct)
@@ -123,7 +123,7 @@ func (ap *ActPars) XX1GainCor(x float32) float32 {
 	if gainCorFact < 0 {
 		return ap.XX1(ap.Gain * x)
 	}
-	newGain := ap.Gain * (1 - ap.GainCor*ap.GainCorFact)
+	newGain := ap.Gain * (1 - ap.GainCor*gainCorFact)
 	return ap.XX1(newGain * x)
 }
 
@@ -145,7 +145,7 @@ func (ap *ActPars) NoisyXX1(x float32) float32 {
 
 // X11GainCorGain computes x/(x+1) with gain correction within GainCorRange
 // to compensate for convolution effects -- using external gain factor
-func (ap *ActPars) XX1GainCorGain(x, gain float32) {
+func (ap *ActPars) XX1GainCorGain(x, gain float32) float32 {
 	gainCorFact := (ap.GainCorRange - (x / ap.NVar)) / ap.GainCorRange
 	if gainCorFact < 0 {
 		return ap.XX1(gain * x)
@@ -159,7 +159,7 @@ func (ap *ActPars) XX1GainCorGain(x, gain float32) {
 // No need for a lookup table -- very reasonable approximation for standard range of parameters
 // (nvar = .01 or less -- higher values of nvar are less accurate with large gains,
 // but ok for lower gains).  Using external gain factor.
-func (ap *ActPars) NoisyXX1Gain(x, gain float32) {
+func (ap *ActPars) NoisyXX1Gain(x, gain float32) float32 {
 	if x < ap.InterpRange {
 		sigMultEffArg := ap.SigMult * math32.Pow(gain*ap.NVar, ap.SigMultPow)
 		sigValAt0Arg := 0.5 * sigMultEffArg
@@ -168,7 +168,7 @@ func (ap *ActPars) NoisyXX1Gain(x, gain float32) {
 			return sigMultEffArg / (1 + math32.Exp(-(x * ap.SigGainNVar)))
 		} else { // else x < interp_range
 			interp := 1 - ((ap.InterpRange - x) / ap.InterpRange)
-			return SigValAt0Arg + interp*ap.InterpVal
+			return sigValAt0Arg + interp*ap.InterpVal
 		}
 	} else {
 		return ap.XX1GainCorGain(x, gain)
@@ -194,7 +194,7 @@ func (ap *ActPars) Defaults() {
 	ap.InterpRange = 0.01
 	ap.GainCorRange = 10.0
 	ap.GainCor = 0.1
-	ap.UpdateParams()
+	ap.Update()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -254,8 +254,7 @@ func (dp *DtPars) Defaults() {
 	dp.VmTau = 3.3
 	dp.NetTau = 1.4
 	dp.AvgTau = 200
-	ap.Update()
-
+	dp.Update()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -276,12 +275,12 @@ func (ch *Chans) SetAll(e, l, i, k float32) {
 
 // SetFmOtherMinus sets all the values from other Chans minus given value
 func (ch *Chans) SetFmOtherMinus(oth Chans, minus float32) {
-	ch.E, ch.L, ch.I, ch.K = oth.E-minus, oth.L-minus, oth.I-minus, oth.k-minus
+	ch.E, ch.L, ch.I, ch.K = oth.E-minus, oth.L-minus, oth.I-minus, oth.K-minus
 }
 
 // SetFmMinusOther sets all the values from given value minus other Chans
 func (ch *Chans) SetFmMinusOther(minus float32, oth Chans) {
-	ch.E, ch.L, ch.I, ch.K = minus-oth.E, minus-oth.L, minus-oth.I, minus-oth.k
+	ch.E, ch.L, ch.I, ch.K = minus-oth.E, minus-oth.L, minus-oth.I, minus-oth.K
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +315,8 @@ const (
 
 	// GeMultNoise means that noise is multiplicative on the Ge excitatory conductance values
 	GeMultNoise
+
+	ActNoiseTypeN
 )
 
 // ActNoisePars contains parameters for activation-level noise

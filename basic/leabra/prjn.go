@@ -17,6 +17,7 @@ import (
 // connections between two layers, and maintaining all the synaptic connection-level data.
 type PrjnStru struct {
 	Off       bool       `desc:"inactivate this projection -- for testing"`
+	Class     string     `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Notes     string     `desc:"can record notes about this projection here"`
 	Recv      emer.Layer `desc:"receiving layer for this projection -- the emer.Layer interface can be converted to the specific Layer type you are using, e.g., rlay := prjn.Recv.(*leabra.Layer)"`
 	Send      emer.Layer `desc:"sending layer for this projection"`
@@ -30,6 +31,13 @@ type PrjnStru struct {
 	SConIdx   []int32    `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
 }
 
+// emer.Prjn interface
+
+func (ps *PrjnStru) PrjnClass() string   { return ps.Class }
+func (ps *PrjnStru) RecvLay() emer.Layer { return ps.Recv }
+func (ps *PrjnStru) SendLay() emer.Layer { return ps.Send }
+func (ps *PrjnStru) Pattern() prjn.Pat   { return ps.Pat }
+
 // Connect sets the connectivity between two layers and the pattern to use in interconnecting them
 func (ps *PrjnStru) Connect(rlay, slay emer.Layer, pat prjn.Pat) {
 	ps.Recv = rlay
@@ -38,8 +46,8 @@ func (ps *PrjnStru) Connect(rlay, slay emer.Layer, pat prjn.Pat) {
 }
 
 // Validate tests for non-nil settings for the projection -- returns error
-// message or nil if no problems (and logs them if log = true)
-func (ps *PrjnStru) Validate(log bool) error {
+// message or nil if no problems (and logs them if logmsg = true)
+func (ps *PrjnStru) Validate(logmsg bool) error {
 	emsg := ""
 	if ps.Pat == nil {
 		emsg += "Pat is nil; "
@@ -52,7 +60,7 @@ func (ps *PrjnStru) Validate(log bool) error {
 	}
 	if emsg != "" {
 		err := errors.New(emsg)
-		if log {
+		if logmsg {
 			log.Println(emsg)
 		}
 		return err
@@ -72,8 +80,8 @@ func (ps *PrjnStru) BuildStru() bool {
 	if err != nil {
 		return false
 	}
-	rsh := ps.Recv.Shape()
-	ssh := ps.Send.Shape()
+	rsh := ps.Recv.LayShape()
+	ssh := ps.Send.LayShape()
 	recvn, sendn, cons := ps.Pat.Connect(rsh, ssh, ps.Recv == ps.Send)
 	rlen := rsh.Len()
 	slen := ssh.Len()
@@ -93,7 +101,7 @@ func (ps *PrjnStru) BuildStru() bool {
 		rbi := ri * slen     // recv bit index
 		rtcn := ps.RConN[ri] // number of cons
 		rst := ps.RConIdxSt[ri]
-		rci := 0
+		rci := int32(0)
 		for si := 0; si < slen; si++ {
 			if !cbits.Index(rbi + si) { // no connection
 				continue
@@ -103,7 +111,7 @@ func (ps *PrjnStru) BuildStru() bool {
 				log.Printf("%v programmer error: recv target total con number: %v exceeded at recv idx: %v, send idx: %v\n", ps.String(), rtcn, ri, si)
 				break
 			}
-			ps.RConIdx[rst+rci] = si
+			ps.RConIdx[rst+rci] = int32(si)
 
 			sci := sconN[si]
 			stcn := ps.SConN[si]
@@ -111,10 +119,11 @@ func (ps *PrjnStru) BuildStru() bool {
 				log.Printf("%v programmer error: send target total con number: %v exceeded at recv idx: %v, send idx: %v\n", ps.String(), stcn, ri, si)
 				break
 			}
-			ps.SConIdx[sst+sci] = ri
+			ps.SConIdx[sst+sci] = int32(ri)
 			(sconN[si])++
 		}
 	}
+	return true
 }
 
 // SetNIdxSt sets the *ConN and *ConIdxSt values given n tensor from Pat.
@@ -140,12 +149,12 @@ func (ps *PrjnStru) String() string {
 	if ps.Recv == nil {
 		str += "recv=nil; "
 	} else {
-		str += ps.Recv.Name() + " <- "
+		str += ps.Recv.LayName() + " <- "
 	}
 	if ps.Send == nil {
 		str += "send=nil"
 	} else {
-		str += ps.Send.Name()
+		str += ps.Send.LayName()
 	}
 	if ps.Pat == nil {
 		str += " Pat=nil"
@@ -172,7 +181,11 @@ func (pj *Prjn) Build() bool {
 		return false
 	}
 	pj.Syns = make([]Synapse, len(pj.SConIdx))
+	return true
 }
+
+///////////////////////////////////////////////////////////////////////
+//  leabra.PrjnList
 
 // PrjnList is a slice of projections
 type PrjnList []*Prjn

@@ -32,13 +32,13 @@ func (ln *LearnNeuron) ActAvgInit(nrn *Neuron) {
 // AvgsFmAct updates the running averages based on current activation.
 // Computed after new activation for current cycle is updated.
 func (ln *LearnNeuron) AvgsFmAct(nrn *Neuron) {
-	aa.ActAvg.AvgsFmAct(nrn.Act, &nrn.AvgSS, &nrn.AvgS, &nrn.AvgM, &nrn.AvgSLrn)
+	ln.ActAvg.AvgsFmAct(nrn.Act, &nrn.AvgSS, &nrn.AvgS, &nrn.AvgM, &nrn.AvgSLrn)
 }
 
 // AvgLFmAct computes long-term average activation value, and learning factor, from given activation.
 // Called at start of new trial.
 func (ln *LearnNeuron) AvgLFmAct(nrn *Neuron) {
-	aa.AvgL.AvgLFmAct(nrn.Act, &nrn.AvgL, &nrn.AvgLLrn)
+	ln.AvgL.AvgLFmAct(nrn.Act, &nrn.AvgL, &nrn.AvgLLrn)
 	// todo: layer-level err mod needs to be added in
 }
 
@@ -765,12 +765,12 @@ type ActAvgPars struct {
 }
 
 // AvgsFmAct computes averages based on current act
-func (aa *ActAvgPars) AvgsFmAct(ruAct float32, avgSS, avgS, avgM, AvgSlrn *float32) {
+func (aa *ActAvgPars) AvgsFmAct(ruAct float32, avgSS, avgS, avgM, avgSLrn *float32) {
 	*avgSS += aa.SSDt * (ruAct - *avgSS)
 	*avgS += aa.SDt * (*avgSS - *avgS)
 	*avgM += aa.MDt * (*avgS - *avgM)
 
-	AvgSLrn = aa.LrnS**avgS + aa.LrnM**avgM
+	*avgSLrn = aa.LrnS**avgS + aa.LrnM**avgM
 }
 
 func (aa *ActAvgPars) Update() {
@@ -812,11 +812,11 @@ type AvgLPars struct {
 
 // AvgLFmAct computes long-term average activation value, and learning factor, from given activation
 func (al *AvgLPars) AvgLFmAct(act float32, avgl, lrn *float32) {
-	avgl += al.Dt * (al.Gain*act - avgl)
-	if avgl < al.Min {
-		avgl = min
+	*avgl += al.Dt * (al.Gain*act - *avgl)
+	if *avgl < al.Min {
+		*avgl = al.Min
 	}
-	lrn = al.LrnFact * (avgl - al.Min)
+	*lrn = al.LrnFact * (*avgl - al.Min)
 }
 
 // ErrModFmLayErr computes AvgLLrn multiplier from layer cosine diff avg statistic
@@ -825,12 +825,13 @@ func (al *AvgLPars) ErrModFmLayErr(layCosDiffAvg float32) float32 {
 	if !al.ErrMod {
 		return mod
 	}
-	mod *= math32.Max(lay, CosDiffAvg, al.ModMin)
+	mod *= math32.Max(layCosDiffAvg, al.ModMin)
+	return mod
 }
 
 func (al *AvgLPars) Update() {
 	al.Dt = 1 / al.Tau
-	al.LrnFact = (lrn_max - lrn_min) / (gain - min)
+	al.LrnFact = (al.LrnMax - al.LrnMin) / (al.Gain - al.Min)
 }
 
 func (al *AvgLPars) Defaults() {
@@ -865,13 +866,13 @@ type XCalPars struct {
 func (xc *XCalPars) XCalDwt(srval, thrP float32) float32 {
 	var dwt float32
 	if srval < xc.DThr {
-		rval = 0
+		dwt = 0
 	} else if srval > thrP*xc.DRev {
-		rval = (srval - thrP)
+		dwt = (srval - thrP)
 	} else {
-		rval = srval * xc.DrevRatio
+		dwt = srval * xc.DRevRatio
 	}
-	return rval
+	return dwt
 }
 
 func (xc *XCalPars) Update() {
@@ -1016,7 +1017,7 @@ func (dn *DWtNormPars) Defaults() {
 	dn.LrComp = 0.15
 	dn.NormMin = 0.001
 	dn.Stats = false
-	UpdtVals()
+	dn.Update()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

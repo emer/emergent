@@ -4,6 +4,8 @@
 
 package leabra
 
+import "reflect"
+
 // leabra.Neuron holds all of the neuron (unit) level variables -- this is the most basic version with
 // rate-code only and no optional features at all
 type Neuron struct {
@@ -31,4 +33,28 @@ type Neuron struct {
 
 	ActSent float32 `desc:"last activation value sent (only send when diff is over threshold)"`
 	GeRaw   float32 `desc:"raw excitatory conductance (net input) received from sending units (send delta's are added to this value)"`
+}
+
+var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "ActSent", "GeRaw"}
+
+var NeuronVarsMap map[string]int
+
+func init() {
+	for i, v := range NeuronVars {
+		NeuronVarsMap[v] = i
+	}
+}
+
+func (nrn *Neuron) VarNames() []string {
+	return NeuronVars
+}
+
+func (nrn *Neuron) VarByName(varNm string) (float32, bool) {
+	i, ok := NeuronVarsMap[varNm]
+	if !ok {
+		return 0, false
+	}
+	// todo: would be ideal to avoid having to use reflect here..
+	v := reflect.ValueOf(*nrn)
+	return v.Field(i).Interface().(float32), true
 }
