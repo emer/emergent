@@ -194,3 +194,10 @@ type PrjnList []*Prjn
 func (pl *PrjnList) Add(p *Prjn) {
 	(*pl) = append(*pl, p)
 }
+
+// Build calls Build on all the prjns in the list
+func (pl *PrjnList) Build() {
+	for _, pj := range *pl {
+		pj.Build()
+	}
+}

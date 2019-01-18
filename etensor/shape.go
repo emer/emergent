@@ -10,6 +10,8 @@ package etensor
 // and can compute the flat index into an underlying 1D data storage array based on an
 // n-dimensional index (and vice-versa).
 // This is fully compatible with (and largely taken from) apache/arrow tensors.
+// except that we use plain int instead of int64, because on all relevant platforms
+// int is *already* 64 and using plain int is much easier.
 // Per C / Go / Python conventions (and unlike emergent) indexes are ordered from
 // outer to inner left-to-right, so the inner-most is right-most.
 // This is called Row-Major order, and is the default.
@@ -18,15 +20,15 @@ package etensor
 // In principle, you can organize memory independent of the conceptual order of indexes
 // but for efficiency it is best to organize memory in the way that indexes are accessed.
 type Shape struct {
-	shape   []int64
-	strides []int64
+	shape   []int
+	strides []int
 	names   []string
 }
 
 // NewShape returns a new shape object initialized with params.
 // If strides is nil, row-major strides will be inferred.
 // If names is nil, a slice of empty strings will be created.
-func NewShape(shape, strides []int64, names []string) *Shape {
+func NewShape(shape, strides []int, names []string) *Shape {
 	sh := &Shape{}
 	sh.SetShape(shape, strides, names)
 	return sh
@@ -35,7 +37,7 @@ func NewShape(shape, strides []int64, names []string) *Shape {
 // SetShape sets the shape parameters.
 // If strides is nil, row-major strides will be inferred.
 // If names is nil, a slice of empty strings will be created.
-func (sh *Shape) SetShape(shape, strides []int64, names []string) {
+func (sh *Shape) SetShape(shape, strides []int, names []string) {
 	sh.shape = shape
 	if strides == nil {
 		sh.strides = RowMajorStrides(shape)
@@ -54,11 +56,11 @@ func (sh *Shape) SetShape(shape, strides []int64, names []string) {
 func AddShapes(shape1, shape2 *Shape) *Shape {
 	sh1 := shape1.Shape()
 	sh2 := shape2.Shape()
-	nsh := make([]int64, len(sh1)+len(sh2))
+	nsh := make([]int, len(sh1)+len(sh2))
 	copy(nsh, sh1)
 	copy(nsh[len(sh1):], sh2)
 	rm := shape1.IsRowMajor()
-	var nstr []int64
+	var nstr []int
 	if rm {
 		nstr = RowMajorStrides(nsh)
 	} else {
@@ -73,15 +75,27 @@ func AddShapes(shape1, shape2 *Shape) *Shape {
 // Len returns the total length of elements in the tensor (i.e., the product of
 // the shape sizes)
 func (sh *Shape) Len() int {
-	o := int64(1)
+	o := int(1)
 	for _, v := range sh.shape {
 		o *= v
 	}
 	return int(o)
 }
 
-func (sh *Shape) Shape() []int64       { return sh.shape }
-func (sh *Shape) Strides() []int64     { return sh.strides }
+// IntTo64 converts an []int slice to an []int64 slice
+func (sh *Shape) IntTo64(isl []int) []int64 {
+	is := make([]int64, len(isl))
+	for i := range isl {
+		is[i] = int64(isl[i])
+	}
+	return is
+}
+
+func (sh *Shape) Shape() []int       { return sh.shape }
+func (sh *Shape) Strides() []int     { return sh.strides }
+func (sh *Shape) Shape64() []int64   { return sh.IntTo64(sh.shape) }
+func (sh *Shape) Strides64() []int64 { return sh.IntTo64(sh.strides) }
+
 func (sh *Shape) DimNames() []string   { return sh.names }
 func (sh *Shape) NumDims() int         { return len(sh.shape) }
 func (sh *Shape) DimName(i int) string { return sh.names[i] }
@@ -92,18 +106,18 @@ func (sh *Shape) IsContiguous() bool {
 
 func (sh *Shape) IsRowMajor() bool {
 	strides := RowMajorStrides(sh.shape)
-	return EqualInt64s(strides, sh.strides)
+	return Equalints(strides, sh.strides)
 }
 
 func (sh *Shape) IsColMajor() bool {
 	strides := ColMajorStrides(sh.shape)
-	return EqualInt64s(strides, sh.strides)
+	return Equalints(strides, sh.strides)
 }
 
 // Offset returns the "flat" 1D array index into an element at the given n-dimensional index
 // No checking is done on the length of the index relative to the shape of the tensor.
-func (sh *Shape) Offset(index []int64) int64 {
-	var offset int64
+func (sh *Shape) Offset(index []int) int {
+	var offset int
 	for i, v := range index {
 		offset += v * sh.strides[i]
 	}
@@ -112,8 +126,8 @@ func (sh *Shape) Offset(index []int64) int64 {
 
 // Index returns the n-dimensional index from a "flat" 1D array index
 // No checking is done on the length of the index relative to the shape of the tensor.
-// func (sh *Shape) Index(offset int64) []int64 {
-// 	index := make([]int64, len(sh.strides))
+// func (sh *Shape) Index(offset int) []int {
+// 	index := make([]int, len(sh.strides))
 // 	for i, v := range sh.strides {
 // 		index[i] = sh.strides[i]
 // 	}
@@ -122,22 +136,22 @@ func (sh *Shape) Offset(index []int64) int64 {
 
 // RowMajorStrides returns strides for shape where the first dimension is outer-most
 // and subsequent dimensions are progressively inner
-func RowMajorStrides(shape []int64) []int64 {
-	rem := int64(1)
+func RowMajorStrides(shape []int) []int {
+	rem := int(1)
 	for _, v := range shape {
 		rem *= v
 	}
 
 	if rem == 0 {
-		strides := make([]int64, len(shape))
-		rem := int64(1)
+		strides := make([]int, len(shape))
+		rem := int(1)
 		for i := range strides {
 			strides[i] = rem
 		}
 		return strides
 	}
 
-	strides := make([]int64, len(shape))
+	strides := make([]int, len(shape))
 	for i, v := range shape {
 		rem /= v
 		strides[i] = rem
@@ -147,11 +161,11 @@ func RowMajorStrides(shape []int64) []int64 {
 
 // ColMajorStrides returns strides for shape where the first dimension is inner-most
 // and subsequent dimensions are progressively outer
-func ColMajorStrides(shape []int64) []int64 {
-	total := int64(1)
+func ColMajorStrides(shape []int) []int {
+	total := int(1)
 	for _, v := range shape {
 		if v == 0 {
-			strides := make([]int64, len(shape))
+			strides := make([]int, len(shape))
 			for i := range strides {
 				strides[i] = total
 			}
@@ -159,7 +173,7 @@ func ColMajorStrides(shape []int64) []int64 {
 		}
 	}
 
-	strides := make([]int64, len(shape))
+	strides := make([]int, len(shape))
 	for i, v := range shape {
 		strides[i] = total
 		total *= v
@@ -167,8 +181,8 @@ func ColMajorStrides(shape []int64) []int64 {
 	return strides
 }
 
-// EqualInt64 compares two int64 slices and returns true if they are equal
-func EqualInt64s(a, b []int64) bool {
+// Equalints compares two int slices and returns true if they are equal
+func Equalints(a, b []int) bool {
 	if len(a) != len(b) {
 		return false
 	}

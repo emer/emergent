@@ -30,7 +30,7 @@ type Layer interface {
 
 	// Unit returns the unit at given index, which must be valid according to shape
 	// otherwise a false is returned
-	Unit(index []int64) (Unit, bool)
+	Unit(index []int) (Unit, bool)
 
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int

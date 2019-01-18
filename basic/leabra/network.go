@@ -65,6 +65,16 @@ func (nt *Network) Layer(idx int) *Layer {
 	return nt.Layers[idx].(*Layer)
 }
 
+// AddLayer adds a new layer with given name and shape to the network
+func (nt *Network) AddLayer(name string, shape []int) *Layer {
+	ly := &Layer{}
+	ly.Name = name
+	ly.SetShape(shape)
+	nt.Layers = append(nt.Layers, ly)
+	nt.MakeLayMap()
+	return ly
+}
+
 // ConnectLayers establishes a projection between two layers, adding to the recv and send
 // projection lists on each side of the connection.  Returns false if not successful.
 // Does not yet actually connect the units within the layers.
@@ -85,4 +95,72 @@ func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pat) (rlay, slay em
 	// rlay.RecvPrjns.Add(prjn)
 	// slay.SendPrjns.Add(prjn)
 	return
+}
+
+// Build constructs the layer and projection state based on the layer shapes and patterns
+// of interconnectivity
+func (nt *Network) Build() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).Build()
+	}
+}
+
+// below are all the computational algorithm methods, which generally just call layer
+// methods..
+
+// todo: use goroutines here!
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Init methods
+
+func (nt *Network) InitWeights() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).InitWeights()
+	}
+}
+
+func (nt *Network) InitActs() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).InitActs()
+	}
+}
+
+func (nt *Network) TrialInit() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).TrialInit()
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Act methods
+
+func (nt *Network) SendGeDelta() {
+	// todo: copy orig
+	for _, ly := range nt.Layers {
+		ly.(*Layer).InitGeRaw()
+	}
+	for _, ly := range nt.Layers {
+		ly.(*Layer).SendGeDelta()
+	}
+	for _, ly := range nt.Layers {
+		ly.(*Layer).GeFmGeRaw()
+	}
+}
+
+func (nt *Network) AvgMaxGe() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).AvgMaxGe()
+	}
+}
+
+func (nt *Network) InhibFm() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).InhibFm()
+	}
+}
+
+func (nt *Network) ActFmG() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).ActFmG()
+	}
 }

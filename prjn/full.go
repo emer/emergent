@@ -20,8 +20,8 @@ func (fp *Full) Name() string {
 
 func (fp *Full) Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *tensor.Int32, cons *etensor.Bits) {
 	// todo: exclude self!
-	recvn = tensor.NewInt32(nil, recv.Shape(), recv.Strides(), recv.DimNames())
-	sendn = tensor.NewInt32(nil, send.Shape(), send.Strides(), send.DimNames())
+	recvn = tensor.NewInt32(nil, recv.Shape64(), recv.Strides64(), recv.DimNames())
+	sendn = tensor.NewInt32(nil, send.Shape64(), send.Strides64(), send.DimNames())
 	csh := etensor.AddShapes(recv, send)
 	cons = etensor.NewBits(csh.Shape(), csh.Strides(), csh.DimNames())
 	cons.Values.SetAll(true)

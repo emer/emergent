@@ -4,6 +4,8 @@
 
 package leabra
 
+import "github.com/emer/emergent/emer"
+
 // leabra.Inhib contains all the inhibition computation params and functions for basic Leabra
 // This is included in leabra.Layer to support computation.
 type Inhib struct {
@@ -12,64 +14,18 @@ type Inhib struct {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-//  AvgMax
-
-/*
-class STATE_CLASS(LeabraAvgMax) : public STATE_CLASS(taOBase) {
-  // ##INLINE ##NO_TOKENS #NO_UPDATE_AFTER ##CAT_Leabra holds average and max statistics
-INHERITED(taOBase)
-public:
-  float         avg;            // #DMEM_AGG_SUM average value
-  float         max;            // #DMEM_AGG_SUM maximum value
-  int           max_i;          // flat_idx index of unit with maximum value -- can look this up directly in flat list of units in network
-  float         sum;            // #DMEM_AGG_SUM sum for computing average
-  int           n;              // #DMEM_AGG_SUM number of items in sum
-
-  INLINE void   InitVals()      { avg = sum = 0.0f; n = 0; max = -FLT_MAX; max_i = -1; }
-  // init for computing update from new data
-
-  INLINE void   UpdtVals(float val, int idx)
-  { sum += val; ++n; if(val > max) { max = val; max_i = idx; } }
-  // update from data as it comes in
-
-  INLINE void   CalcAvg()
-  { if(n > 0) avg = sum / (float)n; else { avg = sum; max = 0.0f; } }
-  // compute the avg after doing UpdtVals on all the data
-
-  INLINE void   UpdtFmAvgMax(const STATE_CLASS(LeabraAvgMax)& oth)
-  { sum += oth.sum; n += oth.n; if(oth.max > max) { max = oth.max; max_i = oth.max_i; } }
-  // update a higher-order guy from a lower-level guy (e.g., layer from unit group)
-
-  INLINE void   CopyFmAvgMax(const STATE_CLASS(LeabraAvgMax)& oth)
-  { avg = oth.avg;  max = oth.max; max_i = oth.max_i; sum = oth.sum; n = oth.n; }
-  // copy from other
-
-  INLINE void   UpdtSepAvgMax(float avg_val, float max_val, int idx)
-  { sum += avg_val; ++n; if(max_val > max) { max = max_val; max_i = idx; } }
-  // update average and max values separately -- e.g., from values that are already separately avg and max values
-
-#ifdef STATE_MAIN
-  LeabraAvgMax& operator =(const LeabraAvgMax_cpp& oth)
-  { avg = oth.avg;  max = oth.max; max_i = oth.max_i; sum = oth.sum; n = oth.n; return *this; }
-#endif
-
-  STATE_DECO_KEY("Layer");
-  STATE_TA_STD_CODE(LeabraAvgMax);
-private:
-  void  Initialize()    { avg = sum = max = 0.0f; n = 0; max_i = -1; }
-};
-*/
-
-//////////////////////////////////////////////////////////////////////////////////////
 //  FFFBInhib
 
-// FFFBInhib contains values for computed FFFB inhibition
+// FFFBInhib contains values for computed FFFB inhibition, including the average / max stats that drive
+// them
 type FFFBInhib struct {
-	FFi    float32 `desc:"computed feedforward inhibition"`
-	FBi    float32 `desc:"computed feedback inhibition (total)"`
-	Gi     float32 `desc:"overall value of the inhibition -- this is what is added into the unit Gi inhibition level (along with any synaptic unit-driven inhibition)"`
-	GiOrig float32 `desc:"original value of the inhibition (before any layer group effects set in)"`
-	LayGi  float32 `desc:"for unit groups, this is the layer-level inhibition that is MAX'd with the unit-group level inhibition to produce the net inhibition, if unit_gp_inhib is on"`
+	FFi    float32     `desc:"computed feedforward inhibition"`
+	FBi    float32     `desc:"computed feedback inhibition (total)"`
+	Gi     float32     `desc:"overall value of the inhibition -- this is what is added into the unit Gi inhibition level (along with any synaptic unit-driven inhibition)"`
+	GiOrig float32     `desc:"original value of the inhibition (before any layer group effects set in)"`
+	LayGi  float32     `desc:"for unit groups, this is the layer-level inhibition that is MAX'd with the unit-group level inhibition to produce the net inhibition, if unit_gp_inhib is on"`
+	Ge     emer.AvgMax `desc:"average and max Ge excitatory conductance values, which drive FF inhibition"`
+	Act    emer.AvgMax `desc:"average and max Act activation values, which drive FB inhibition"`
 }
 
 func (fi *FFFBInhib) Init() {
@@ -78,6 +34,8 @@ func (fi *FFFBInhib) Init() {
 	fi.Gi = 0
 	fi.GiOrig = 0
 	fi.LayGi = 0
+	fi.Ge.Init()
+	fi.Act.Init()
 }
 
 // FFFBPars parameterizes feedforward (FF) and feedback (FB) inhibition (FFFB)
