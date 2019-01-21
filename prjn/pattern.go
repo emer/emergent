@@ -9,11 +9,11 @@ import (
 	"github.com/emer/emergent/etensor"
 )
 
-// Pat defines a pattern of connectivity between two layers.
+// Pattern defines a pattern of connectivity between two layers.
 // The pattern is stored efficiently using a bitslice tensor of binary values indicating
 // presence or absence of connection between two items.
 // A receiver-based organization is generally assumed but connectivity can go either way.
-type Pat interface {
+type Pattern interface {
 	// Name returns the name of the pattern -- i.e., the "type" name of the actual pattern generatop
 	Name() string
 

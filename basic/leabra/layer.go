@@ -82,11 +82,18 @@ func (ls *LayerStru) NUnitGroups() int {
 // leabra.Layer has parameters for running a basic rate-coded Leabra layer
 type Layer struct {
 	LayerStru
-	Act         Act          `desc:"Activation parameters and methods for computing activations"`
-	Inhib       Inhib        `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
-	LearnNeuron LearnNeuron  `desc:"Learning parameters and methods that operate at the neuron level"`
-	Neurons     []*Neuron    `desc:"slice of neurons for this layer -- flat list of len = Shape.Len()"`
-	Inhibs      []*FFFBInhib `desc:"inhibition state variables reflecting inhibition computation -- flat list at least of 1 for layer, but also one for each unit group if shape supports that"`
+	Act     ActParams       `desc:"Activation parameters and methods for computing activations"`
+	Inhib   InhibParams     `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
+	Learn   LearnNeurParams `desc:"Learning parameters and methods that operate at the neuron level"`
+	Neurons []*Neuron       `desc:"slice of neurons for this layer -- flat list of len = Shape.Len()"`
+	Pools   []*Pool         `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each unit group if shape supports that (4D)"`
+}
+
+// UpdateParams updates all params given any changes that might have been made to individual values
+func (ls *Layer) UpdateParams() {
+	ls.Act.Update()
+	ls.Inhib.Update()
+	ls.Learn.Update()
 }
 
 // Unit is emer.Layer interface method -- only possible with Neurons in place
@@ -100,30 +107,46 @@ func (ls *Layer) Unit(idx []int) (emer.Unit, bool) {
 
 // Build constructs the layer state, including calling Build on the projections
 // you MUST have properly configured the Inhib.UnitGroup.On setting by this point
-// to properly allocate Inhibs for the unit groups if necessary.
+// to properly allocate Pools for the unit groups if necessary.
 func (ls *Layer) Build() {
 	nu := ls.Shape.Len()
 	ls.Neurons = make([]*Neuron, nu)
-	ni := 1
+	np := 1
 	if ls.Inhib.UnitGroup.On {
-		ni += ls.NUnitGroups()
+		np += ls.NUnitGroups()
 	}
-	ls.Inhibs = make([]*FFFBInhib, ni)
+	ls.Pools = make([]*Pool, np)
 	ls.RecvPrjns.Build()
 }
 
-// note: all basic computation can be performed on layer-level units
+// note: all basic computation can be performed on layer-level
+// and prjn level
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
 
-func (ly *Layer) InitWeights() {
+func (ly *Layer) InitWts() {
+	for _, pj := range ly.SendPrjns {
+		pj.InitWts()
+	}
+	for _, pl := range ly.Pools {
+		pl.ActAvg.ActMAvg = ly.Inhib.ActAvg.Init
+		pl.ActAvg.ActPAvg = ly.Inhib.ActAvg.Init
+		pl.ActAvg.ActPAvgEff = ly.Inhib.ActAvg.EffInit()
+	}
 }
 
 func (ly *Layer) InitActs() {
 }
 
+// TrialInit handles all initialization at start of new input pattern, including computing
+// netinput scaling from running average activation etc.
 func (ly *Layer) TrialInit() {
+	for _, pl := range ly.Pools {
+		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActMAvg, pl.ActM.Avg)
+		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActPAvg, pl.ActP.Avg)
+		ly.Inhib.ActAvg.EffFmAvg(&pl.ActAvg.ActPAvgEff, pl.ActAvg.ActPAvg)
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

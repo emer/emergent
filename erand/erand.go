@@ -10,9 +10,9 @@ import (
 	"github.com/goki/ki/kit"
 )
 
-// RndPars provides parameterized random number generation according to different distributions
+// RndParams provides parameterized random number generation according to different distributions
 // and variance, mean params
-type RndPars struct {
+type RndParams struct {
 	Dist RndDists `desc:"distribution to generate random numbers from"`
 	Mean float64  `desc:"mean of random distribution -- typically added to generated random variants"`
 	Var  float64  `desc:"variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)"`
@@ -22,7 +22,7 @@ type RndPars struct {
 // Gen generates a random variable according to current parameters.
 // (0 <= thr < 100) specifies thread or dmem proc number for parallel safe random sequences
 // (-1 = taMisc::dmem_proc for auto-safe dmem)
-func (rp *RndPars) Gen(thr int) float64 {
+func (rp *RndParams) Gen(thr int) float64 {
 	switch rp.Dist {
 	case Uniform:
 		return UniformMeanRange(rp.Mean, rp.Var, thr)
@@ -42,7 +42,7 @@ func (rp *RndPars) Gen(thr int) float64 {
 
 // Density returns density of random variable according to current params, at given
 // x value
-func (rp *RndPars) Density(s float64) float64 {
+func (rp *RndParams) Density(s float64) float64 {
 	return 0
 }
 

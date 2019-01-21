@@ -15,31 +15,33 @@ import (
 
 // PrjnStru contains the basic structural information for specifying a projection of synaptic
 // connections between two layers, and maintaining all the synaptic connection-level data.
+// The exact same struct object is added to the Recv and Send layers, and it manages everything
+// about the connectivity, and methods on the Prjn handle all the relevant computation.
 type PrjnStru struct {
-	Off       bool       `desc:"inactivate this projection -- for testing"`
-	Class     string     `desc:"Class is for applying parameter styles, can be space separated multple tags"`
-	Notes     string     `desc:"can record notes about this projection here"`
-	Recv      emer.Layer `desc:"receiving layer for this projection -- the emer.Layer interface can be converted to the specific Layer type you are using, e.g., rlay := prjn.Recv.(*leabra.Layer)"`
-	Send      emer.Layer `desc:"sending layer for this projection"`
-	Pat       prjn.Pat   `desc:"pattern of connectivity"`
-	RConN     []int32    `desc:"number of connections for each neuron in the receiving layer, as a flat list"`
-	RConIdxSt []int32    `desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
-	RConIdx   []int32    `desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
-	RSynIdx   []int32    `desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
-	SConN     []int32    `desc:"number of connections for each neuron in the sending layer, as a flat list"`
-	SConIdxSt []int32    `desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
-	SConIdx   []int32    `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
+	Off       bool         `desc:"inactivate this projection -- for testing"`
+	Class     string       `desc:"Class is for applying parameter styles, can be space separated multple tags"`
+	Notes     string       `desc:"can record notes about this projection here"`
+	Recv      emer.Layer   `desc:"receiving layer for this projection -- the emer.Layer interface can be converted to the specific Layer type you are using, e.g., rlay := prjn.Recv.(*leabra.Layer)"`
+	Send      emer.Layer   `desc:"sending layer for this projection"`
+	Pat       prjn.Pattern `desc:"pattern of connectivity"`
+	RConN     []int32      `desc:"number of connections for each neuron in the receiving layer, as a flat list"`
+	RConIdxSt []int32      `desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
+	RConIdx   []int32      `desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
+	RSynIdx   []int32      `desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
+	SConN     []int32      `desc:"number of connections for each neuron in the sending layer, as a flat list"`
+	SConIdxSt []int32      `desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
+	SConIdx   []int32      `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
 }
 
 // emer.Prjn interface
 
-func (ps *PrjnStru) PrjnClass() string   { return ps.Class }
-func (ps *PrjnStru) RecvLay() emer.Layer { return ps.Recv }
-func (ps *PrjnStru) SendLay() emer.Layer { return ps.Send }
-func (ps *PrjnStru) Pattern() prjn.Pat   { return ps.Pat }
+func (ps *PrjnStru) PrjnClass() string     { return ps.Class }
+func (ps *PrjnStru) RecvLay() emer.Layer   { return ps.Recv }
+func (ps *PrjnStru) SendLay() emer.Layer   { return ps.Send }
+func (ps *PrjnStru) Pattern() prjn.Pattern { return ps.Pat }
 
 // Connect sets the connectivity between two layers and the pattern to use in interconnecting them
-func (ps *PrjnStru) Connect(rlay, slay emer.Layer, pat prjn.Pat) {
+func (ps *PrjnStru) Connect(rlay, slay emer.Layer, pat prjn.Pattern) {
 	ps.Recv = rlay
 	ps.Send = slay
 	ps.Pat = pat
@@ -170,8 +172,13 @@ func (ps *PrjnStru) String() string {
 // leabra.Prjn is a basic Leabra projection with synaptic learning parameters
 type Prjn struct {
 	PrjnStru
-	Learn LearnSyn  `desc:"synaptic-level learning parameters"`
-	Syns  []Synapse `desc:"synaptic state values, ordered by the sending layer units which "owns" them -- one-to-one with SConIdx array"`
+	Learn LearnSynParams `desc:"synaptic-level learning parameters"`
+	Syns  []Synapse      `desc:"synaptic state values, ordered by the sending layer units which "owns" them -- one-to-one with SConIdx array"`
+}
+
+// UpdateParams updates all params given any changes that might have been made to individual values
+func (ls *Prjn) UpdateParams() {
+	ls.Learn.Update()
 }
 
 // Build constructs the full connectivity among the layers as specified in this projection.
@@ -199,5 +206,15 @@ func (pl *PrjnList) Add(p *Prjn) {
 func (pl *PrjnList) Build() {
 	for _, pj := range *pl {
 		pj.Build()
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Init methods
+
+func (pj *Prjn) InitWts() {
+	for si := range pj.Syns {
+		sy := &pj.Syns[si]
+		pj.Learn.InitWts(sy)
 	}
 }

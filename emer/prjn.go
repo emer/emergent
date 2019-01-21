@@ -15,7 +15,7 @@ type Prjn interface {
 	SendLay() Layer
 
 	// Pattern returns the pattern of connectivity for interconnecting the layers
-	Pattern() prjn.Pat
+	Pattern() prjn.Pattern
 
 	// PrjnClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
 	PrjnClass() string

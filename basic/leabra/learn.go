@@ -12,16 +12,26 @@ import (
 ///////////////////////////////////////////////////////////////////////
 //  learn.go contains the learning params and functions for leabra
 
-// leabra.LearnNeuron manages learning-related parameters at the neuron-level.
+// leabra.LearnNeurParams manages learning-related parameters at the neuron-level.
 // This is mainly the running average activations that drive learning
-type LearnNeuron struct {
-	ActAvg ActAvgPars `inline:"+" desc:"parameters for computing running average activations that drive learning"`
-	AvgL   AvgLPars   `inline:"+" desc:"parameters for computing AvgL long-term running average"`
+type LearnNeurParams struct {
+	ActAvg LrnActAvgParams `inline:"+" desc:"parameters for computing running average activations that drive learning"`
+	AvgL   AvgLParams      `inline:"+" desc:"parameters for computing AvgL long-term running average"`
+}
+
+func (ln *LearnNeurParams) Update() {
+	ln.ActAvg.Update()
+	ln.AvgL.Update()
+}
+
+func (ln *LearnNeurParams) Defaults() {
+	ln.ActAvg.Defaults()
+	ln.AvgL.Defaults()
 }
 
 // ActAvgInit initializes average activation values.
 // Called at start of learning.
-func (ln *LearnNeuron) ActAvgInit(nrn *Neuron) {
+func (ln *LearnNeurParams) ActAvgInit(nrn *Neuron) {
 	nrn.AvgSS = ln.ActAvg.Init
 	nrn.AvgS = ln.ActAvg.Init
 	nrn.AvgM = ln.ActAvg.Init
@@ -31,65 +41,86 @@ func (ln *LearnNeuron) ActAvgInit(nrn *Neuron) {
 
 // AvgsFmAct updates the running averages based on current activation.
 // Computed after new activation for current cycle is updated.
-func (ln *LearnNeuron) AvgsFmAct(nrn *Neuron) {
+func (ln *LearnNeurParams) AvgsFmAct(nrn *Neuron) {
 	ln.ActAvg.AvgsFmAct(nrn.Act, &nrn.AvgSS, &nrn.AvgS, &nrn.AvgM, &nrn.AvgSLrn)
 }
 
 // AvgLFmAct computes long-term average activation value, and learning factor, from given activation.
 // Called at start of new trial.
-func (ln *LearnNeuron) AvgLFmAct(nrn *Neuron) {
+func (ln *LearnNeurParams) AvgLFmAct(nrn *Neuron) {
 	ln.AvgL.AvgLFmAct(nrn.Act, &nrn.AvgL, &nrn.AvgLLrn)
 	// todo: layer-level err mod needs to be added in
 }
 
 ///////////////////////////////////////////////////////////////////////
-//  LearnSyn
+//  LearnSynParams
 
-// leabra.LearnSyn manages learning-related parameters at the synapse-level.
-type LearnSyn struct {
-	WtInit   erand.RndPars `inline:"+" desc:"initial random weight distribution"`
-	XCal     XCalPars      `inline:"+" desc:"parameters for the XCal learning rule"`
-	WtSig    WtSigPars     `inline:"+" desc:"parameters for the sigmoidal contrast weight enhancement"`
-	DWtNorm  DWtNormPars   `inline:"+" desc:"parameters for normalizing weight changes by abs max dwt"`
-	Momentum MomentumPars  `inline:"+" desc:"parameters for momentum across weight changes"`
-	WtBal    WtBalPars     `inline:"+" desc:"parameters for balancing strength of weight increases vs. decreases"`
+// leabra.LearnSynParams manages learning-related parameters at the synapse-level.
+type LearnSynParams struct {
+	WtInit   erand.RndParams `inline:"+" desc:"initial random weight distribution"`
+	XCal     XCalParams      `inline:"+" desc:"parameters for the XCal learning rule"`
+	WtSig    WtSigParams     `inline:"+" desc:"parameters for the sigmoidal contrast weight enhancement"`
+	DWtNorm  DWtNormParams   `inline:"+" desc:"parameters for normalizing weight changes by abs max dwt"`
+	Momentum MomentumParams  `inline:"+" desc:"parameters for momentum across weight changes"`
+	WtBal    WtBalParams     `inline:"+" desc:"parameters for balancing strength of weight increases vs. decreases"`
 }
 
-func (ls *LearnSyn) Defaults() {
+func (ls *LearnSynParams) Update() {
+	ls.XCal.Update()
+	ls.WtSig.Update()
+	ls.DWtNorm.Update()
+	ls.Momentum.Update()
+	ls.WtBal.Update()
+}
+
+func (ls *LearnSynParams) Defaults() {
 	ls.WtInit.Mean = 0.5
 	ls.WtInit.Var = 0.25
 	ls.WtInit.Dist = erand.Uniform
+	ls.XCal.Defaults()
+	ls.WtSig.Defaults()
+	ls.DWtNorm.Defaults()
+	ls.Momentum.Defaults()
+	ls.WtBal.Defaults()
 }
 
-func (ls *LearnSyn) InitWts(syn *Synapse) {
-	//    Init_Weights_symflag(net, thr_no);
-	//    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)pcg;
-	//
-	//    cg->err_dwt_max = 0.0f;    cg->bcm_dwt_max = 0.0f; cg->dwt_max = 0.0f;
-	//    cg->wb_inc = 1.0f;         cg->wb_dec = 1.0f;
-	//
-
-	//    float* wts = cg->OwnCnVar(WT);
-	//    float* dwts = cg->OwnCnVar(DWT);
-	//    float* scales = cg->OwnCnVar(SCALE);
-	//    // NOTE: it is ESSENTIAL that Init_Weights ONLY does wt, dwt, and scale -- all other vars
-	//    // MUST be initialized in post -- projections with topo weights ONLY do these specific
-	//    // variables but no others..
-	//
-	//    int eff_thr_no = net->HasNetFlag(NETWORK_STATE::INIT_WTS_1_THREAD) ? 0 : thr_no;
-	//
-	//    const int sz = cg->size;
-	//    for(int i=0; i<sz; i++) {
-	//      scales[i] = 1.0f;         // default -- must be set in prjn spec if different
-	//    }
-	//
-	//    for(int i=0; i<sz; i++) {
-	//      if(rnd.type != STATE_CLASS(Random)::NONE) {
-	//        C_Init_Weight_Rnd(wts[i], eff_thr_no);
-	//      }
-	//      C_Init_dWt(dwts[i]);
-	//    }
+func (ls *LearnSynParams) InitWts(syn *Synapse) {
+	syn.Wt = float32(ls.WtInit.Gen(-1))
+	syn.LWt = ls.WtSig.LinFmSigWt(syn.Wt)
+	syn.DWt = 0
+	syn.DWtNorm = 0
+	syn.Moment = 0
+	syn.WbInc = 1
+	syn.WbDec = 1
 }
+
+//    Init_Weights_symflag(net, thr_no);
+//    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)pcg;
+//
+//    cg->err_dwt_max = 0.0f;    cg->bcm_dwt_max = 0.0f; cg->dwt_max = 0.0f;
+//    cg->wb_inc = 1.0f;         cg->wb_dec = 1.0f;
+//
+
+//    float* wts = cg->OwnCnVar(WT);
+//    float* dwts = cg->OwnCnVar(DWT);
+//    float* scales = cg->OwnCnVar(SCALE);
+//    // NOTE: it is ESSENTIAL that Init_Weights ONLY does wt, dwt, and scale -- all other vars
+//    // MUST be initialized in post -- projections with topo weights ONLY do these specific
+//    // variables but no others..
+//
+//    int eff_thr_no = net->HasNetFlag(NETWORK_STATE::INIT_WTS_1_THREAD) ? 0 : thr_no;
+//
+//    const int sz = cg->size;
+//    for(int i=0; i<sz; i++) {
+//      scales[i] = 1.0f;         // default -- must be set in prjn spec if different
+//    }
+//
+//    for(int i=0; i<sz; i++) {
+//      if(rnd.type != STATE_CLASS(Random)::NONE) {
+//        C_Init_Weight_Rnd(wts[i], eff_thr_no);
+//      }
+//      C_Init_dWt(dwts[i]);
+//    }
 
 /*
   INLINE void Init_Weights_scale(CON_STATE* rcg, NETWORK_STATE* net, int thr_no, float init_wt_val) override {
@@ -749,9 +780,9 @@ func (ls *LearnSyn) InitWts(syn *Synapse) {
 
 */
 
-// ActAvgPars has rate constants for averaging over activations at different time scales,
+// LrnActAvgParams has rate constants for averaging over activations at different time scales,
 // to produce the running average activation values that then drive learning in the XCAL learning rules
-type ActAvgPars struct {
+type LrnActAvgParams struct {
 	SSTau float32 `def:"2;4;7"  min:"1" desc:"time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life), for continuously updating the super-short time-scale avg_ss value -- this is provides a pre-integration step before integrating into the avg_s short time scale -- it is particularly important for spiking -- in general 4 is the largest value without starting to impair learning, but a value of 7 can be combined with m_in_s = 0 with somewhat worse results"`
 	STau  float32 `def:"2" min:"1" desc:"time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life), for continuously updating the short time-scale avg_s value from the super-short avg_ss value (cascade mode) -- avg_s represents the plus phase learning signal that reflects the most recent past information"`
 	MTau  float32 `def:"10" min:"1" desc:"time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life), for continuously updating the medium time-scale avg_m value from the short avg_s value (cascade mode) -- avg_m represents the minus phase learning signal that reflects the expectation representation prior to experiencing the outcome (in addition to the outcome) -- the default value of 10 generally cannot be exceeded without impairing learning"`
@@ -765,7 +796,7 @@ type ActAvgPars struct {
 }
 
 // AvgsFmAct computes averages based on current act
-func (aa *ActAvgPars) AvgsFmAct(ruAct float32, avgSS, avgS, avgM, avgSLrn *float32) {
+func (aa *LrnActAvgParams) AvgsFmAct(ruAct float32, avgSS, avgS, avgM, avgSLrn *float32) {
 	*avgSS += aa.SSDt * (ruAct - *avgSS)
 	*avgS += aa.SDt * (*avgSS - *avgS)
 	*avgM += aa.MDt * (*avgS - *avgM)
@@ -773,14 +804,14 @@ func (aa *ActAvgPars) AvgsFmAct(ruAct float32, avgSS, avgS, avgM, avgSLrn *float
 	*avgSLrn = aa.LrnS**avgS + aa.LrnM**avgM
 }
 
-func (aa *ActAvgPars) Update() {
+func (aa *LrnActAvgParams) Update() {
 	aa.SSDt = 1 / aa.SSTau
 	aa.SDt = 1 / aa.STau
 	aa.MDt = 1 / aa.MTau
 	aa.LrnS = 1 - aa.LrnM
 }
 
-func (aa *ActAvgPars) Defaults() {
+func (aa *LrnActAvgParams) Defaults() {
 	aa.SSTau = 4.0
 	aa.STau = 2.0
 	aa.MTau = 10.0
@@ -790,13 +821,13 @@ func (aa *ActAvgPars) Defaults() {
 
 }
 
-// AvgLPars are parameters for computing the long-term floating average value, AvgL
+// AvgLParams are parameters for computing the long-term floating average value, AvgL
 // which is used for driving BCM-style hebbian learning in XCAL -- this form of learning
 // increases contrast of weights and generally decreases overall activity of neuron,
 // to prevent "hog" units -- it is computed as a running average of the (gain multiplied)
 // medium-time-scale average activation at the end of the trial.
 // Also computes an adaptive amount of BCM learning, AvgLLrn, based on AvgL.
-type AvgLPars struct {
+type AvgLParams struct {
 	Init   float32 `def:"0.4" min:"0" max:"1" desc:"initial AvgL value at start of training"`
 	Gain   float32 `def:"1.5;2;2.5;3;4;5" min:"0" desc:"gain multiplier on activation used in computing the running average AvgL value that is the key floating threshold in the BCM Hebbian learning rule -- when using the DELTA_FF_FB learning rule, it should generally be 2x what it was before with the old XCAL_CHL rule, i.e., default of 5 instead of 2.5 -- it is a good idea to experiment with this parameter a bit -- the default is on the high-side, so typically reducing a bit from initial default is a good direction"`
 	Min    float32 `def:"0.2" min:"0" desc:"miniumum AvgL value -- running average cannot go lower than this value even when it otherwise would due to inactivity -- default value is generally good and typically does not need to be changed"`
@@ -811,7 +842,7 @@ type AvgLPars struct {
 }
 
 // AvgLFmAct computes long-term average activation value, and learning factor, from given activation
-func (al *AvgLPars) AvgLFmAct(act float32, avgl, lrn *float32) {
+func (al *AvgLParams) AvgLFmAct(act float32, avgl, lrn *float32) {
 	*avgl += al.Dt * (al.Gain*act - *avgl)
 	if *avgl < al.Min {
 		*avgl = al.Min
@@ -820,7 +851,7 @@ func (al *AvgLPars) AvgLFmAct(act float32, avgl, lrn *float32) {
 }
 
 // ErrModFmLayErr computes AvgLLrn multiplier from layer cosine diff avg statistic
-func (al *AvgLPars) ErrModFmLayErr(layCosDiffAvg float32) float32 {
+func (al *AvgLParams) ErrModFmLayErr(layCosDiffAvg float32) float32 {
 	mod := float32(1)
 	if !al.ErrMod {
 		return mod
@@ -829,12 +860,12 @@ func (al *AvgLPars) ErrModFmLayErr(layCosDiffAvg float32) float32 {
 	return mod
 }
 
-func (al *AvgLPars) Update() {
+func (al *AvgLParams) Update() {
 	al.Dt = 1 / al.Tau
 	al.LrnFact = (al.LrnMax - al.LrnMin) / (al.Gain - al.Min)
 }
 
-func (al *AvgLPars) Defaults() {
+func (al *AvgLParams) Defaults() {
 	al.Init = 0.4
 	al.Gain = 2.5
 	al.Min = 0.2
@@ -847,11 +878,11 @@ func (al *AvgLPars) Defaults() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-//  XCalPars
+//  XCalParams
 
-// XCalPars are parameters for temporally eXtended Contrastive Attractor Learning function (XCAL)
+// XCalParams are parameters for temporally eXtended Contrastive Attractor Learning function (XCAL)
 // which is the standard learning equation for leabra .
-type XCalPars struct {
+type XCalParams struct {
 	MLrn    float32 `def:"1" min:"0" desc:"multiplier on learning based on the medium-term floating average threshold which produces error-driven learning -- this is typically 1 when error-driven learning is being used, and 0 when pure Hebbian learning is used. The long-term floating average threshold is provided by the receiving unit"`
 	SetLLrn bool    `def:"false" desc:"if true, set a fixed AvgLLrn weighting factor that determines how much of the long-term floating average threshold (i.e., BCM, Hebbian) component of learning is used -- this is useful for setting a fully Hebbian learning connection, e.g., by setting MLrn = 0 and LLrn = 1. If false, then the receiving unit's AvgLLrn factor is used, which dynamically modulates the amount of the long-term component as a function of how active overall it is"`
 	LLrn    float32 `condshow:"SetLLrn=true" desc:"fixed l_lrn weighting factor that determines how much of the long-term floating average threshold (i.e., BCM, Hebbian) component of learning is used -- this is useful for setting a fully Hebbian learning connection, e.g., by setting MLrn = 0 and LLrn = 1."`
@@ -863,7 +894,7 @@ type XCalPars struct {
 }
 
 // XCAL function for weight change -- the "check mark" function -- no DGain, no ThrPMin
-func (xc *XCalPars) XCalDwt(srval, thrP float32) float32 {
+func (xc *XCalParams) XCalDwt(srval, thrP float32) float32 {
 	var dwt float32
 	if srval < xc.DThr {
 		dwt = 0
@@ -875,7 +906,7 @@ func (xc *XCalPars) XCalDwt(srval, thrP float32) float32 {
 	return dwt
 }
 
-func (xc *XCalPars) Update() {
+func (xc *XCalParams) Update() {
 	if xc.DRev > 0 {
 		xc.DRevRatio = -(1 - xc.DRev) / xc.DRev
 	} else {
@@ -883,7 +914,7 @@ func (xc *XCalPars) Update() {
 	}
 }
 
-func (xc *XCalPars) Defaults() {
+func (xc *XCalParams) Defaults() {
 	xc.MLrn = 1
 	xc.SetLLrn = false
 	xc.LLrn = 1
@@ -894,13 +925,22 @@ func (xc *XCalPars) Defaults() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-//  WtSigPars
+//  WtSigParams
 
-// WtSigPars are sigmoidal weight contrast enhancement function parameters
-type WtSigPars struct {
+// WtSigParams are sigmoidal weight contrast enhancement function parameters
+type WtSigParams struct {
 	Gain      float32 `def:"1;6" min:"0" desc:"gain (contrast, sharpness) of the weight contrast function (1 = linear)"`
 	Off       float32 `def:"1" min:"0" desc:"offset of the function (1=centered at .5, >1=higher, <1=lower) -- 1 is standard for XCAL"`
 	SoftBound bool    `def:"true" desc:"apply exponential soft bounding to the weight changes"`
+}
+
+func (ws *WtSigParams) Update() {
+}
+
+func (ws *WtSigParams) Defaults() {
+	ws.Gain = 6
+	ws.Off = 1
+	ws.SoftBound = true
 }
 
 // SigFun is the sigmoid function for value w in 0-1 range, with gain and offset params
@@ -949,7 +989,7 @@ func SigInvFun61(w float32) float32 {
 }
 
 // SigFmLinWt returns sigmoidal contrast-enhanced weight from linear weight
-func (ws *WtSigPars) SigFmLinWt(lw float32) float32 {
+func (ws *WtSigParams) SigFmLinWt(lw float32) float32 {
 	if ws.Gain == 1 && ws.Off == 1 {
 		return lw
 	}
@@ -960,7 +1000,7 @@ func (ws *WtSigPars) SigFmLinWt(lw float32) float32 {
 }
 
 // LinFmSigWt returns linear weight from sigmoidal contrast-enhanced weight
-func (ws *WtSigPars) LinFmSigWt(sw float32) float32 {
+func (ws *WtSigParams) LinFmSigWt(sw float32) float32 {
 	if ws.Gain == 1 && ws.Off == 1 {
 		return sw
 	}
@@ -970,20 +1010,14 @@ func (ws *WtSigPars) LinFmSigWt(sw float32) float32 {
 	return SigInvFun(sw, ws.Gain, ws.Off)
 }
 
-func (ws *WtSigPars) Defaults() {
-	ws.Gain = 6
-	ws.Off = 1
-	ws.SoftBound = true
-}
-
 //////////////////////////////////////////////////////////////////////////////////////
-//  DWtNormPars
+//  DWtNormParams
 
-// DWtNormPars are weight change (dwt) normalization parameters, using MAX(ABS(dwt)) aggregated over
+// DWtNormParams are weight change (dwt) normalization parameters, using MAX(ABS(dwt)) aggregated over
 // Sending connections in a given projection for a given unit.
 // Slowly decays and instantly resets to any current max(abs)
 // Serves as an estimate of the variance in the weight changes, assuming zero net mean overall.
-type DWtNormPars struct {
+type DWtNormParams struct {
 	On       bool    `def:"true" desc:"whether to use dwt normalization, only on error-driven dwt component, based on projection-level max_avg value -- slowly decays and instantly resets to any current max"`
 	DecayTau float32 `condshow:"On=true" min:"1" def:"1000;10000" desc:"time constant for decay of dwnorm factor -- generally should be long-ish, between 1000-10000 -- integration rate factor is 1/tau"`
 	NormMin  float32 `condshow:"On=true" min:"0" def:"0.001" desc:"minimum effective value of the normalization factor -- provides a lower bound to how much normalization can be applied"`
@@ -994,10 +1028,10 @@ type DWtNormPars struct {
 	DecayDtC float32 `inactive:"+" view:"-" desc:"complement rate constant of decay = 1 - (1 / decay_tau)"`
 }
 
-// DWtNormPars updates the dwnorm running max_abs, slowly decaying value
+// DWtNormParams updates the dwnorm running max_abs, slowly decaying value
 // jumps up to max(abs_dwt) and slowly decays
 // returns the effective normalization factor, as a multiplier, including lrate comp
-func (dn *DWtNormPars) NormFmAbsDWt(dwnorm, absDwt float32) float32 {
+func (dn *DWtNormParams) NormFmAbsDWt(dwnorm, absDwt float32) float32 {
 	dwnorm = math32.Max(dn.DecayDtC*dwnorm, absDwt)
 	if dwnorm == 0 {
 		return 1
@@ -1006,12 +1040,12 @@ func (dn *DWtNormPars) NormFmAbsDWt(dwnorm, absDwt float32) float32 {
 	return dn.LrComp / norm
 }
 
-func (dn *DWtNormPars) Update() {
+func (dn *DWtNormParams) Update() {
 	dn.DecayDt = 1 / dn.DecayTau
 	dn.DecayDtC = 1 - dn.DecayDt
 }
 
-func (dn *DWtNormPars) Defaults() {
+func (dn *DWtNormParams) Defaults() {
 	dn.On = true
 	dn.DecayTau = 1000
 	dn.LrComp = 0.15
@@ -1021,11 +1055,11 @@ func (dn *DWtNormPars) Defaults() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-//  MomentumPars
+//  MomentumParams
 
-// MomentumPars implements standard simple momentum -- accentuates consistent directions of weight change and
+// MomentumParams implements standard simple momentum -- accentuates consistent directions of weight change and
 // cancels out dithering -- biologically captures slower timecourse of longer-term plasticity mechanisms.
-type MomentumPars struct {
+type MomentumParams struct {
 	On     bool    `def:"true" desc:"whether to use standard simple momentum"`
 	MTau   float32 `condshow:"On=true" min:"1" def:"10" desc:"time constant factor for integration of momentum -- 1/tau is dt (e.g., .1), and 1-1/tau (e.g., .95 or .9) is traditional momentum time-integration factor"`
 	LrComp float32 `condshow:"On=true" min:"0" def:"0.1" desc:"overall learning rate multiplier to compensate for changes due to JUST momentum without normalization -- allows for a common master learning rate to be used between different conditions -- generally should use .1 to compensate for just momentum itself"`
@@ -1035,17 +1069,17 @@ type MomentumPars struct {
 }
 
 // MomentFmDt compute momentum from weight change value
-func (mp *MomentumPars) MomentFmDWt(moment, dwt float32) float32 {
+func (mp *MomentumParams) MomentFmDWt(moment, dwt float32) float32 {
 	moment = mp.MDtC*moment + dwt
 	return moment
 }
 
-func (mp *MomentumPars) Update() {
+func (mp *MomentumParams) Update() {
 	mp.MDt = 1 / mp.MTau
 	mp.MDtC = 1 - mp.MDt
 }
 
-func (mp *MomentumPars) Defaults() {
+func (mp *MomentumParams) Defaults() {
 	mp.On = true
 	mp.MTau = 10
 	mp.LrComp = 0.1
@@ -1053,13 +1087,13 @@ func (mp *MomentumPars) Defaults() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-//  WtBalPars
+//  WtBalParams
 
-// WtBalPars are weight balance soft renormalization params:
+// WtBalParams are weight balance soft renormalization params:
 // maintains overall weight balance by progressively penalizing weight increases as a function of
 // how strong the weights are overall (subject to thresholding) and long time-averaged activation.
 // Plugs into soft bounding function.
-type WtBalPars struct {
+type WtBalParams struct {
 	On      bool    `desc:"perform weight balance soft normalization?  if so, maintains overall weight balance across units by progressively penalizing weight increases as a function of amount of averaged weight above a high threshold (hi_thr) and long time-average activation above an act_thr -- this is generally very beneficial for larger models where hog units are a problem, but not as much for smaller models where the additional constraints are not beneficial -- uses a sigmoidal function: wb_inc = 1 / (1 + hi_gain*(wb_avg - hi_thr) + act_gain * (act_avg - act_thr)))"`
 	AvgThr  float32 `condshow:"On=true" def:"0.25" desc:"threshold on weight value for inclusion into the weight average that is then subject to the further hi_thr threshold for then driving a change in weight balance -- this avg_thr allows only stronger weights to contribute so that weakening of lower weights does not dilute sensitivity to number and strength of strong weights"`
 	HiThr   float32 `condshow:"On=true" def:"0.4" desc:"high threshold on weight average (subject to avg_thr) before it drives changes in weight increase vs. decrease factors"`
@@ -1071,9 +1105,24 @@ type WtBalPars struct {
 	NoTarg  bool    `condshow:"On=true" def:"true" desc:"exclude receiving projections into TARGET layers where units are clamped and also TRC (Pulvinar) thalamic neurons -- typically for clamped layers you do not want to be applying extra constraints such as this weight balancing dynamic -- the BCM hebbian learning is also automatically turned off for such layers as well"`
 }
 
+func (wb *WtBalParams) Update() {
+}
+
+func (wb *WtBalParams) Defaults() {
+	wb.On = true
+	wb.NoTarg = true
+	wb.AvgThr = 0.25
+	wb.HiThr = 0.4
+	wb.HiGain = 4
+	wb.LoThr = 0.4
+	wb.LoGain = 6
+	wb.ActThr = 0.25
+	wb.ActGain = 0
+}
+
 // WtBal computes weight balance factors for increase and decrease based on extent
 // to which weights and average act exceed thresholds
-func (wb *WtBalPars) WtBal(wbAvg, actAvg float32) (wbFact, wbInc, wbDec float32) {
+func (wb *WtBalParams) WtBal(wbAvg, actAvg float32) (wbFact, wbInc, wbDec float32) {
 	wbInc = 1
 	wbDec = 1
 	if wbAvg < wb.LoThr {
@@ -1092,18 +1141,6 @@ func (wb *WtBalPars) WtBal(wbAvg, actAvg float32) (wbFact, wbInc, wbDec float32)
 		wbDec = 2 - wbInc        // as wb_inc goes down, wb_dec goes up..  sum to 2
 	}
 	return wbFact, wbInc, wbDec
-}
-
-func (wb *WtBalPars) Defaults() {
-	wb.On = true
-	wb.NoTarg = true
-	wb.AvgThr = 0.25
-	wb.HiThr = 0.4
-	wb.HiGain = 4
-	wb.LoThr = 0.4
-	wb.LoGain = 6
-	wb.ActThr = 0.25
-	wb.ActGain = 0
 }
 
 /*

@@ -78,7 +78,7 @@ func (nt *Network) AddLayer(name string, shape []int) *Layer {
 // ConnectLayers establishes a projection between two layers, adding to the recv and send
 // projection lists on each side of the connection.  Returns false if not successful.
 // Does not yet actually connect the units within the layers.
-func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pat) (rlay, slay emer.Layer, prjn *Prjn, ok bool) {
+func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, ok bool) {
 	ok = false
 	rlay, has := nt.LayerByNameErrMsg(recv)
 	if !has {
@@ -88,12 +88,12 @@ func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pat) (rlay, slay em
 	if !has {
 		return
 	}
-	prjn = &Prjn{}
-	prjn.Recv = rlay
-	prjn.Send = slay
-	prjn.Pat = pat
-	// rlay.RecvPrjns.Add(prjn)
-	// slay.SendPrjns.Add(prjn)
+	pj = &Prjn{}
+	pj.Recv = rlay
+	pj.Send = slay
+	pj.Pat = pat
+	rlay.(*Layer).RecvPrjns.Add(pj)
+	slay.(*Layer).SendPrjns.Add(pj)
 	return
 }
 
@@ -113,9 +113,11 @@ func (nt *Network) Build() {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
 
-func (nt *Network) InitWeights() {
+// InitWts initializes synaptic weights and all other associated long-term state variables
+// including running-average state values (e.g., layer running average activations etc)
+func (nt *Network) InitWts() {
 	for _, ly := range nt.Layers {
-		ly.(*Layer).InitWeights()
+		ly.(*Layer).InitWts()
 	}
 }
 
@@ -125,6 +127,8 @@ func (nt *Network) InitActs() {
 	}
 }
 
+// TrialInit handles all initialization at start of new input pattern, including computing
+// netinput scaling from running average activation etc.
 func (nt *Network) TrialInit() {
 	for _, ly := range nt.Layers {
 		ly.(*Layer).TrialInit()
