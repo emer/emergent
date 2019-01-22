@@ -33,9 +33,10 @@ type Neuron struct {
 
 	ActSent float32 `desc:"last activation value sent (only send when diff is over threshold)"`
 	GeRaw   float32 `desc:"raw excitatory conductance (net input) received from sending units (send delta's are added to this value)"`
+	GeInc   float32 `desc:"delta increment in GeRaw sent using SendGeDelta"`
 }
 
-var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "ActSent", "GeRaw"}
+var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "ActSent", "GeRaw", "GeInc"}
 
 var NeuronVarsMap map[string]int
 

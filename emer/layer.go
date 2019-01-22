@@ -20,6 +20,9 @@ type Layer interface {
 	// LayClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
 	LayClass() string
 
+	// IsOff returns true if layer has been turned Off -- for experimentation
+	IsOff() bool
+
 	// Shape returns the organization of units in the layer, in terms of an array of dimensions.
 	// if 2D, then it is a simple X,Y layer with no sub-structure (unit groups).
 	// If 4D, then it is standard unit group X,Y units X,Y.

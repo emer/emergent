@@ -5,7 +5,9 @@
 package leabra
 
 import (
+	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
+	"github.com/emer/emergent/erand"
 	"github.com/emer/emergent/etensor"
 )
 
@@ -14,6 +16,7 @@ import (
 type LayerStru struct {
 	Name      string        `desc:"Name of the layer -- this must be unique within the network, which has a map for quick lookup and layers are typically accessed directly by name"`
 	Class     string        `desc:"Class is for applying parameter styles, can be space separated multple tags"`
+	Off       bool          `desc:"inactivate this layer -- allows for easy experimentation"`
 	Shape     etensor.Shape `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns)"`
 	Rel       emer.Rel      `desc:"Spatial relationship to other layer, determines positioning"`
 	Pos       emer.Vec3i    `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
@@ -25,6 +28,7 @@ type LayerStru struct {
 
 func (ls *LayerStru) LayName() string            { return ls.Name }
 func (ls *LayerStru) LayClass() string           { return ls.Class }
+func (ls *LayerStru) IsOff() bool                { return ls.Off }
 func (ls *LayerStru) LayShape() *etensor.Shape   { return &ls.Shape }
 func (ls *LayerStru) LayPos() emer.Vec3i         { return ls.Pos }
 func (ls *LayerStru) NRecvPrjns() int            { return len(ls.RecvPrjns) }
@@ -85,8 +89,14 @@ type Layer struct {
 	Act     ActParams       `desc:"Activation parameters and methods for computing activations"`
 	Inhib   InhibParams     `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
 	Learn   LearnNeurParams `desc:"Learning parameters and methods that operate at the neuron level"`
-	Neurons []*Neuron       `desc:"slice of neurons for this layer -- flat list of len = Shape.Len()"`
-	Pools   []*Pool         `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each unit group if shape supports that (4D)"`
+	Neurons []Neuron        `desc:"slice of neurons for this layer -- flat list of len = Shape.Len()"`
+	Pools   []Pool          `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each unit group if shape supports that (4D)"`
+}
+
+func (ls *Layer) Defaults() {
+	ls.Act.Defaults()
+	ls.Inhib.Defaults()
+	ls.Learn.Defaults()
 }
 
 // UpdateParams updates all params given any changes that might have been made to individual values
@@ -100,7 +110,7 @@ func (ls *Layer) UpdateParams() {
 func (ls *Layer) Unit(idx []int) (emer.Unit, bool) {
 	fidx := ls.Shape.Offset(idx)
 	if int(fidx) < len(ls.Neurons) {
-		return ls.Neurons[fidx], true
+		return &ls.Neurons[fidx], true
 	}
 	return nil, false
 }
@@ -110,12 +120,12 @@ func (ls *Layer) Unit(idx []int) (emer.Unit, bool) {
 // to properly allocate Pools for the unit groups if necessary.
 func (ls *Layer) Build() {
 	nu := ls.Shape.Len()
-	ls.Neurons = make([]*Neuron, nu)
+	ls.Neurons = make([]Neuron, nu)
 	np := 1
 	if ls.Inhib.UnitGroup.On {
 		np += ls.NUnitGroups()
 	}
-	ls.Pools = make([]*Pool, np)
+	ls.Pools = make([]Pool, np)
 	ls.RecvPrjns.Build()
 }
 
@@ -147,18 +157,96 @@ func (ly *Layer) TrialInit() {
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActPAvg, pl.ActP.Avg)
 		ly.Inhib.ActAvg.EffFmAvg(&pl.ActAvg.ActPAvgEff, pl.ActAvg.ActPAvg)
 	}
+	ly.GeScaleFmAvgAct()
+	if ly.Act.Noise.Type != NoNoise && ly.Act.Noise.TrialFixed && ly.Act.Noise.Dist != erand.None {
+		ly.GenNoise()
+	}
+}
+
+// GeScaleFmAvgAct computes the scaling factor for Ge excitatory conductance input
+// based on sending layer average activation.
+// This attempts to automatically adjust for overall differences in raw activity coming into the units
+// to achieve a general target of around .5 to 1 for the integrated Ge value.
+func (ly *Layer) GeScaleFmAvgAct() {
+	totRel := float32(0)
+	for _, pj := range ly.RecvPrjns {
+		if pj.IsOff() {
+			continue
+		}
+		slay := pj.Send.(*Layer)
+		slpl := slay.Pools[0]
+		savg := slpl.ActAvg.ActPAvgEff // todo: avg_correct
+		snu := len(slay.Neurons)
+		ncon := pj.RConNAvgMax.Avg
+		pj.GeScale = pj.WtScale.FullScale(savg, float32(snu), ncon)
+		totRel += pj.WtScale.Rel
+	}
+
+	for _, pj := range ly.RecvPrjns {
+		if pj.IsOff() {
+			continue
+		}
+		if totRel > 0 {
+			pj.GeScale /= totRel
+		}
+	}
+}
+
+func (ly *Layer) GenNoise() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		nrn.Noise = float32(ly.Act.Noise.Gen(-1))
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Act methods
 
-func (ly *Layer) InitGeRaw() {
+// InitGeInc initializes GeInc Ge increment for netinput computation -- called by network
+// prior to any SendGeDelta.  actually should not be needed..
+func (ly *Layer) InitGeInc() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		nrn.GeInc = 0
+	}
 }
 
+// SendGeDelta sends change in activation since last sent, if above thresholds
 func (ly *Layer) SendGeDelta() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		if nrn.Act > ly.Act.OptThresh.Send {
+			delta := nrn.Act - nrn.ActSent
+			if math32.Abs(delta) > ly.Act.OptThresh.Delta {
+				for si := range ly.SendPrjns {
+					sp := ly.SendPrjns[si]
+					if sp.IsOff() {
+						continue
+					}
+					sp.SendGeDelta(ni, delta)
+				}
+				nrn.ActSent = nrn.Act
+			}
+		} else if nrn.ActSent > ly.Act.OptThresh.Send {
+			delta := -nrn.ActSent // un-send the last above-threshold activation to get back to 0
+			for si := range ly.SendPrjns {
+				sp := ly.SendPrjns[si]
+				if sp.IsOff() {
+					continue
+				}
+				sp.SendGeDelta(ni, delta)
+			}
+			nrn.ActSent = 0
+		}
+	}
 }
 
-func (ly *Layer) GeFmGeRaw() {
+// GeFmGeInc integrates new excitatory conductance from GeInc increments sent during last SendGeDelta
+func (ly *Layer) GeFmGeInc() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		nrn.GeInc = 0
+	}
 }
 
 func (ly *Layer) AvgMaxGe() {
@@ -170,7 +258,8 @@ func (ly *Layer) InhibFm() {
 // todo: decide about thr param!
 
 func (ly *Layer) ActFmG() {
-	for _, nrn := range ly.Neurons {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
 		ly.Act.VmFmG(nrn, 0)
 		ly.Act.ActFmG(nrn, 0)
 	}

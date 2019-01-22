@@ -101,6 +101,9 @@ func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pattern) (rlay, sla
 // of interconnectivity
 func (nt *Network) Build() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).Build()
 	}
 }
@@ -117,12 +120,18 @@ func (nt *Network) Build() {
 // including running-average state values (e.g., layer running average activations etc)
 func (nt *Network) InitWts() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).InitWts()
 	}
 }
 
 func (nt *Network) InitActs() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).InitActs()
 	}
 }
@@ -131,6 +140,9 @@ func (nt *Network) InitActs() {
 // netinput scaling from running average activation etc.
 func (nt *Network) TrialInit() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).TrialInit()
 	}
 }
@@ -139,32 +151,43 @@ func (nt *Network) TrialInit() {
 //  Act methods
 
 func (nt *Network) SendGeDelta() {
-	// todo: copy orig
 	for _, ly := range nt.Layers {
-		ly.(*Layer).InitGeRaw()
-	}
-	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).SendGeDelta()
 	}
 	for _, ly := range nt.Layers {
-		ly.(*Layer).GeFmGeRaw()
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).GeFmGeInc()
 	}
 }
 
 func (nt *Network) AvgMaxGe() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).AvgMaxGe()
 	}
 }
 
 func (nt *Network) InhibFm() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).InhibFm()
 	}
 }
 
 func (nt *Network) ActFmG() {
 	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
 		ly.(*Layer).ActFmG()
 	}
 }

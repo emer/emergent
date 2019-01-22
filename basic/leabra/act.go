@@ -8,13 +8,15 @@ import (
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/erand"
+	"github.com/goki/ki/ints"
 	"github.com/goki/ki/kit"
 )
 
 ///////////////////////////////////////////////////////////////////////
 //  act.go contains the activation params and functions for leabra
 
-// leabra.ActParams contains all the activation computation params and functions for basic Leabra.
+// leabra.ActParams contains all the activation computation params and functions for basic Leabra,
+// at the neuron level.
 // This is included in leabra.Layer to drive the computation.
 type ActParams struct {
 	XX1        XX1Params       `desc:"X/X+1 rate code activation function parameters"`
@@ -52,6 +54,33 @@ func (ac *ActParams) Update() {
 	ac.Init.Update()
 	ac.Dt.Update()
 	ac.Noise.Update()
+}
+
+// GeFmGeInc integrates Ge excitatory conductance from GeInc delta-increment sent
+func (ac *ActParams) GeFmGeInc(nrn *Neuron) {
+	nrn.GeRaw += nrn.GeInc
+	nrn.GeInc = 0
+
+	//   if(u->HasExtFlag(UNIT_STATE::EXT)) {
+	//     if(ls->clamp.avg) {
+	//       net_syn = ls->clamp.ClampAvgNetin(u->ext, net_syn);
+	//     }
+	//     else {
+	//       net_ex += u->ext * ls->clamp.gain;
+	//     }
+	//   }
+	//
+
+	nrn.Ge += ac.Dt.Integ * ac.Dt.GeDt * (nrn.GeRaw - nrn.Ge)
+
+	// first place noise is required -- generate here!
+	if ac.Noise.Type != NoNoise && !ac.Noise.TrialFixed && ac.Noise.Dist != erand.None {
+		nrn.Noise = float32(ac.Noise.Gen(-1))
+	}
+
+	if ac.Noise.Type == GeNoise {
+		nrn.Ge += nrn.Noise
+	}
 }
 
 // InetFmG computes net current from conductances and Vm
@@ -253,24 +282,24 @@ func (ai *ActInitParams) Defaults() {
 type DtParams struct {
 	Integ  float32 `def:"1;0.5" min:"0" desc:"overall rate constant for numerical integration, for all equations at the unit level -- all time constants are specified in millisecond units, with one cycle = 1 msec -- if you instead want to make one cycle = 2 msec, you can do this globaly by setting this integ value to 2 (etc).  However, stability issues will likely arise if you go too high.  For improved numerical stability, you may even need to reduce this value to 0.5 or possibly even lower (typically however this is not necessary).  MUST also coordinate this with network.time_inc variable to ensure that global network.time reflects simulated time accurately"`
 	VmTau  float32 `def:"2.81:10" min:"1" desc:"[3.3 std for rate code, 2.81 for spiking] membrane potential and rate-code activation time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- reflects the capacitance of the neuron in principle -- biological default for AeEx spiking model C = 281 pF = 2.81 normalized -- for rate-code activation, this also determines how fast to integrate computed activation values over time"`
-	NetTau float32 `def:"1.4;3;5" min:"1" desc:"net input time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- this is important for damping oscillations -- generally reflects time constants associated with synaptic channels which are not modeled in the most abstract rate code models (set to 1 for detailed spiking models with more realistic synaptic currents) -- larger values (e.g., 3) can be important for models with higher netinputs that otherwise might be more prone to oscillation, and is default for GPiInvUnitSpec"`
+	GeTau  float32 `def:"1.4;3;5" min:"1" desc:"net input time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- this is important for damping oscillations -- generally reflects time constants associated with synaptic channels which are not modeled in the most abstract rate code models (set to 1 for detailed spiking models with more realistic synaptic currents) -- larger values (e.g., 3) can be important for models with higher netinputs that otherwise might be more prone to oscillation, and is default for GPiInvUnitSpec"`
 	AvgTau float32 `def:"200" desc:"for integrating activation average (ActAvg), time constant in trials (roughly, how long it takes for value to change significantly) -- used mostly for visualization and tracking *hog* units"`
 
 	VmDt  float32 `view:"-" expert:"+" desc:"nominal rate = 1 / tau"`
-	NetDt float32 `view:"-" expert:"+" desc:"rate = 1 / tau"`
+	GeDt  float32 `view:"-" expert:"+" desc:"rate = 1 / tau"`
 	AvgDt float32 `view:"-" expert:"+" desc:"rate = 1 / tau"`
 }
 
 func (dp *DtParams) Update() {
 	dp.VmDt = 1 / dp.VmTau
-	dp.NetDt = 1 / dp.NetTau
+	dp.GeDt = 1 / dp.GeTau
 	dp.AvgDt = 1 / dp.AvgTau
 }
 
 func (dp *DtParams) Defaults() {
 	dp.Integ = 1
 	dp.VmTau = 3.3
-	dp.NetTau = 1.4
+	dp.GeTau = 1.4
 	dp.AvgTau = 200
 	dp.Update()
 }
@@ -349,4 +378,51 @@ func (an *ActNoiseParams) Update() {
 
 func (an *ActNoiseParams) Defaults() {
 	an.TrialFixed = true
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  WtScaleParams
+
+/// WtScaleParams are weight scaling parameters: modulates overall strength of projection,
+// using both absolute and relative factors
+type WtScaleParams struct {
+	Abs float32 `def:"1" min:"0" desc:"absolute scaling, which is not subject to normalization: directly multiplies weight values"`
+	Rel float32 `min:"0" desc:"[Default: 1] relative scaling that shifts balance between different projections -- this is subject to normalization across all other projections into unit"`
+}
+
+func (ws *WtScaleParams) Defaults() {
+	ws.Abs = 1
+	ws.Rel = 1
+}
+
+func (ws *WtScaleParams) Update() {
+}
+
+// SLayActScale computes scaling factor based on sending layer activity level (savg), number of units
+// in sending layer (snu), and number of recv connections (ncon).
+// Uses a fixed sem_extra standard-error-of-the-mean (SEM) extra value of 2
+// to add to the average expected number of active connections to receive,
+// for purposes of computing scaling factors with partial connectivity
+// For 25% layer activity, binomial SEM = sqrt(p(1-p)) = .43, so 3x = 1.3 so 2 is a reasonable default.
+func (ws *WtScaleParams) SLayActScale(savg, snu, ncon float32) float32 {
+	semExtra := 2
+	slayActN := int(savg*snu + .5) // sending layer actual # active
+	slayActN = ints.MaxInt(slayActN, 1)
+	sc := float32(1)
+	if ncon == snu {
+		sc = 1 / float32(slayActN)
+	} else {
+		rMaxActN := int(math32.Min(ncon, float32(slayActN))) // max number we could get
+		rAvgActN := int(savg*ncon + .5)                      // recv average actual # active if uniform
+		rAvgActN = ints.MaxInt(rAvgActN, 1)
+		rExpActN := rAvgActN + semExtra // expected
+		rExpActN = ints.MinInt(rExpActN, rMaxActN)
+		sc = 1 / float32(rExpActN)
+	}
+	return sc
+}
+
+// FullScale returns full scaling factor, which is product of Abs * Rel * SLayActScale
+func (ws *WtScaleParams) FullScale(savg, snu, ncon float32) float32 {
+	return ws.Abs * ws.Rel * ws.SLayActScale(savg, snu, ncon)
 }
