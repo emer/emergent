@@ -17,7 +17,7 @@ type LayerStru struct {
 	Name      string        `desc:"Name of the layer -- this must be unique within the network, which has a map for quick lookup and layers are typically accessed directly by name"`
 	Class     string        `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Off       bool          `desc:"inactivate this layer -- allows for easy experimentation"`
-	Shape     etensor.Shape `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns)"`
+	Shape     etensor.Shape `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns) -- order is outer-to-inner (row major) so Y then X for 2D and for 4D: Y-X unit pools then Y-X units within pools"`
 	Rel       emer.Rel      `desc:"Spatial relationship to other layer, determines positioning"`
 	Pos       emer.Vec3i    `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
 	RecvPrjns PrjnList      `desc:"list of receiving projections into this layer from other layers"`
@@ -65,10 +65,10 @@ func (ls *LayerStru) SendPrjnByRecvName(recv string) (emer.Prjn, bool) {
 	return nil, false
 }
 
-// NUnitGroups returns the number of unit groups according to the shape parameters
-// currently supported for a 4D shape, where the unit groups are the first 2 X,Y dims
-// and then the units within the group are the 2nd 2
-func (ls *LayerStru) NUnitGroups() int {
+// NPools returns the number of unit sub-pools according to the shape parameters.
+// Currently supported for a 4D shape, where the unit pools are the first 2 Y,X dims
+// and then the units within the pools are the 2nd 2 Y,X dims
+func (ls *LayerStru) NPools() int {
 	if ls.Shape.NumDims() != 4 {
 		return 0
 	}
@@ -89,44 +89,77 @@ type Layer struct {
 	Act     ActParams       `desc:"Activation parameters and methods for computing activations"`
 	Inhib   InhibParams     `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
 	Learn   LearnNeurParams `desc:"Learning parameters and methods that operate at the neuron level"`
-	Neurons []Neuron        `desc:"slice of neurons for this layer -- flat list of len = Shape.Len()"`
-	Pools   []Pool          `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each unit group if shape supports that (4D)"`
+	Neurons []Neuron        `desc:"slice of neurons for this layer -- flat list of len = Shape.Len(). You must iterate over index and use pointer to modify values."`
+	Pools   []Pool          `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each unit group if shape supports that (4D).  You must iterate over index and use pointer to modify values."`
+	CosDiff CosDiffStats    `desc:"cosine difference between ActM, ActP stats"`
 }
 
-func (ls *Layer) Defaults() {
-	ls.Act.Defaults()
-	ls.Inhib.Defaults()
-	ls.Learn.Defaults()
+func (ly *Layer) Defaults() {
+	ly.Act.Defaults()
+	ly.Inhib.Defaults()
+	ly.Learn.Defaults()
 }
 
 // UpdateParams updates all params given any changes that might have been made to individual values
-func (ls *Layer) UpdateParams() {
-	ls.Act.Update()
-	ls.Inhib.Update()
-	ls.Learn.Update()
+func (ly *Layer) UpdateParams() {
+	ly.Act.Update()
+	ly.Inhib.Update()
+	ly.Learn.Update()
 }
 
 // Unit is emer.Layer interface method -- only possible with Neurons in place
-func (ls *Layer) Unit(idx []int) (emer.Unit, bool) {
-	fidx := ls.Shape.Offset(idx)
-	if int(fidx) < len(ls.Neurons) {
-		return &ls.Neurons[fidx], true
+func (ly *Layer) Unit(idx []int) (emer.Unit, bool) {
+	fidx := ly.Shape.Offset(idx)
+	if int(fidx) < len(ly.Neurons) {
+		return &ly.Neurons[fidx], true
 	}
 	return nil, false
 }
 
 // Build constructs the layer state, including calling Build on the projections
-// you MUST have properly configured the Inhib.UnitGroup.On setting by this point
+// you MUST have properly configured the Inhib.Pool.On setting by this point
 // to properly allocate Pools for the unit groups if necessary.
-func (ls *Layer) Build() {
-	nu := ls.Shape.Len()
-	ls.Neurons = make([]Neuron, nu)
+func (ly *Layer) Build() {
+	nu := ly.Shape.Len()
+	ly.Neurons = make([]Neuron, nu)
 	np := 1
-	if ls.Inhib.UnitGroup.On {
-		np += ls.NUnitGroups()
+	if ly.Inhib.Pool.On {
+		np += ly.NPools()
 	}
-	ls.Pools = make([]Pool, np)
-	ls.RecvPrjns.Build()
+	ly.Pools = make([]Pool, np)
+	lpl := &ly.Pools[0]
+	lpl.StIdx = 0
+	lpl.EdIdx = nu
+	if np > 1 {
+		ly.BuildPools()
+	}
+	ly.RecvPrjns.Build()
+}
+
+// BuildPools initializes neuron start / end indexes for sub-group pools
+func (ly *Layer) BuildPools() {
+	if ly.Shape.NumDims() != 4 {
+		return
+	}
+	sh := ly.Shape.Shape()
+	spy := sh[0]
+	spx := sh[1]
+	lastOff := 0
+	pi := 0
+	for py := 0; py < spy; py++ {
+		for px := 0; px < spx; px++ {
+			idx := []int{py, px, 0, 0}
+			off := ly.Shape.Offset(idx)
+			if off == 0 {
+				continue
+			}
+			pl := &ly.Pools[pi]
+			pl.StIdx = lastOff
+			pl.EdIdx = off
+			pi++
+			lastOff = off
+		}
+	}
 }
 
 // note: all basic computation can be performed on layer-level
@@ -135,24 +168,44 @@ func (ls *Layer) Build() {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
 
+// InitWts initializes the weight values in the network, i.e., resetting learning
+// Also calls InitActs
 func (ly *Layer) InitWts() {
 	for _, pj := range ly.SendPrjns {
 		pj.InitWts()
 	}
-	for _, pl := range ly.Pools {
+	for pi := range ly.Pools {
+		pl := &ly.Pools[pi]
 		pl.ActAvg.ActMAvg = ly.Inhib.ActAvg.Init
 		pl.ActAvg.ActPAvg = ly.Inhib.ActAvg.Init
 		pl.ActAvg.ActPAvgEff = ly.Inhib.ActAvg.EffInit()
 	}
+	ly.InitActAvg()
+	ly.InitActs()
 }
 
+// InitActAvg initializes the running-average activation values that drive learning.
+func (ly *Layer) InitActAvg() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		ly.Learn.InitActAvg(nrn)
+	}
+}
+
+// InitActs fully initializes activation state -- only called automatically during InitWts
 func (ly *Layer) InitActs() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		ly.Act.InitActs(nrn)
+	}
 }
 
 // TrialInit handles all initialization at start of new input pattern, including computing
 // netinput scaling from running average activation etc.
 func (ly *Layer) TrialInit() {
-	for _, pl := range ly.Pools {
+	ly.AvgLFmAct()
+	for pi := range ly.Pools {
+		pl := &ly.Pools[pi]
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActMAvg, pl.ActM.Avg)
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActPAvg, pl.ActP.Avg)
 		ly.Inhib.ActAvg.EffFmAvg(&pl.ActAvg.ActPAvgEff, pl.ActAvg.ActPAvg)
@@ -160,6 +213,18 @@ func (ly *Layer) TrialInit() {
 	ly.GeScaleFmAvgAct()
 	if ly.Act.Noise.Type != NoNoise && ly.Act.Noise.TrialFixed && ly.Act.Noise.Dist != erand.None {
 		ly.GenNoise()
+	}
+	ly.DecayState(ly.Act.Init.Decay)
+}
+
+// AvgLFmAct updates AvgL long-term running average activation that drives BCM Hebbian learning
+func (ly *Layer) AvgLFmAct() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		ly.Learn.AvgLFmAct(nrn)
+		if ly.Learn.AvgL.ErrMod {
+			nrn.AvgLLrn *= ly.CosDiff.ModAvgLLrn
+		}
 	}
 }
 
@@ -199,11 +264,17 @@ func (ly *Layer) GenNoise() {
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////////////////
-//  Act methods
+func (ly *Layer) DecayState(decay float32) {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		ly.Act.DecayState(nrn, decay)
+	}
+}
 
-// InitGeInc initializes GeInc Ge increment for netinput computation -- called by network
-// prior to any SendGeDelta.  actually should not be needed..
+//////////////////////////////////////////////////////////////////////////////////////
+//  Cycle
+
+// InitGeInc initializes GeInc Ge increment -- optional
 func (ly *Layer) InitGeInc() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
@@ -245,22 +316,139 @@ func (ly *Layer) SendGeDelta() {
 func (ly *Layer) GeFmGeInc() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
-		nrn.GeInc = 0
+		ly.Act.GeFmGeInc(nrn)
 	}
 }
 
+// AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (ly *Layer) AvgMaxGe() {
+	for pi := range ly.Pools {
+		pl := &ly.Pools[pi]
+		pl.Ge.Init()
+		for ni := pl.StIdx; ni < pl.EdIdx; ni++ {
+			nrn := &ly.Neurons[ni]
+			pl.Ge.UpdateVal(nrn.Ge, ni)
+		}
+		pl.Ge.CalcAvg()
+	}
 }
 
-func (ly *Layer) InhibFm() {
+// InhibiFmGeAct computes inhibition Gi from Ge and Act averages within relevant Pools
+func (ly *Layer) InhibFmGeAct() {
+	lpl := &ly.Pools[0]
+	ly.Inhib.Layer.Inhib(lpl.Ge.Avg, lpl.Ge.Max, lpl.Act.Avg, &lpl.Inhib)
+	np := len(ly.Pools)
+	if np > 1 {
+		for pi := 1; pi < np; pi++ {
+			pl := &ly.Pools[pi]
+			ly.Inhib.Pool.Inhib(pl.Ge.Avg, pl.Ge.Max, pl.Act.Avg, &pl.Inhib)
+			pl.Inhib.Gi = math32.Max(pl.Inhib.Gi, lpl.Inhib.Gi)
+			for ni := pl.StIdx; ni < pl.EdIdx; ni++ {
+				nrn := &ly.Neurons[ni]
+				ly.Inhib.Self.Inhib(&nrn.GiSelf, nrn.Act)
+				nrn.Gi = pl.Inhib.Gi + nrn.GiSelf
+			}
+		}
+	} else {
+		for ni := lpl.StIdx; ni < lpl.EdIdx; ni++ {
+			nrn := &ly.Neurons[ni]
+			ly.Inhib.Self.Inhib(&nrn.GiSelf, nrn.Act)
+			nrn.Gi = lpl.Inhib.Gi + nrn.GiSelf
+		}
+	}
 }
 
-// todo: decide about thr param!
-
+// ActFmG computes rate-code activation from Ge, Gi, Gl conductances
+// and updates learning running-average activations from that Act
 func (ly *Layer) ActFmG() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
-		ly.Act.VmFmG(nrn, 0)
-		ly.Act.ActFmG(nrn, 0)
+		ly.Act.VmFmG(nrn)
+		ly.Act.ActFmG(nrn)
+		ly.Learn.AvgsFmAct(nrn)
 	}
+}
+
+// AvgMaxAct computes the average and max Act stats, used in inhibition
+func (ly *Layer) AvgMaxAct() {
+	for pi := range ly.Pools {
+		pl := &ly.Pools[pi]
+		pl.Act.Init()
+		for ni := pl.StIdx; ni < pl.EdIdx; ni++ {
+			nrn := &ly.Neurons[ni]
+			pl.Act.UpdateVal(nrn.Act, ni)
+		}
+		pl.Act.CalcAvg()
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Quarter
+
+// QuarterFinal does updating after end of a quarter
+func (ly *Layer) QuarterFinal(time *Time) {
+	for pi := range ly.Pools {
+		pl := &ly.Pools[pi]
+		if time.Quarter == 2 {
+			pl.ActM = pl.Act
+		} else if time.Quarter == 3 {
+			pl.ActP = pl.Act
+		}
+	}
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		if time.Quarter == 2 {
+			nrn.ActM = nrn.Act
+		} else if time.Quarter == 3 {
+			nrn.ActP = nrn.Act
+			nrn.ActDif = nrn.ActP - nrn.ActM
+			nrn.ActAvg += ly.Act.Dt.AvgDt * (nrn.Act - nrn.ActAvg)
+		}
+	}
+	ly.CosDiffFmActs()
+}
+
+// CosDiffFmActs computes the cosine difference in activation state between minus and plus phases.
+// this is also used for modulating the amount of BCM hebbian learning
+func (ly *Layer) CosDiffFmActs() {
+	lpl := &ly.Pools[0]
+	avgM := lpl.ActM.Avg
+	avgP := lpl.ActM.Avg
+	cosv := float32(0)
+	ssm := float32(0)
+	ssp := float32(0)
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		ap := nrn.ActP - avgP // zero mean
+		am := nrn.ActM - avgM
+		cosv += ap * am
+		ssm += am * am
+		ssp += ap * ap
+	}
+
+	dist := math32.Sqrt(ssm * ssp)
+	if dist != 0 {
+		cosv /= dist
+	}
+	ly.CosDiff.Cos = cosv
+
+	ly.Learn.CosDiff.AvgVarFmCos(&ly.CosDiff.Avg, &ly.CosDiff.Var, ly.CosDiff.Cos)
+	//  lay->lrate_mod = lay_lrate;
+	//   if(cos_diff.lrate_mod && !cos_diff.lrmod_fm_trc) {
+	//     lay->lrate_mod *= cos_diff.CosDiffLrateMod(lay->cos_diff, lay->cos_diff_avg,
+	//                                                lay->cos_diff_var);
+	//     if(cos_diff.set_net_unlrn && lay->lrate_mod == 0.0f) {
+	//       net->unlearnable_trial = true;
+	//     }
+	//   }
+
+	// todo: need layer type!
+	//   if((lay->layer_type != LAYER_STATE::HIDDEN) || us->deep.IsTRC()) {
+	//     lay->cos_diff_avg_lrn = 0.0f; // no bcm for TARGET layers; irrelevant for INPUT
+	//     lay->mod_avg_l_lrn = 0.0f;
+	//   } else {
+	ly.CosDiff.AvgLrn = 1 - ly.CosDiff.Avg
+	ly.CosDiff.ModAvgLLrn = ly.Learn.AvgL.ErrModFmLayErr(ly.CosDiff.AvgLrn)
+
+	//	lay.AvgCosDiff.Increment(ly.CosDiff)
 }

@@ -150,6 +150,22 @@ func (nt *Network) TrialInit() {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Act methods
 
+// Cycle runs one cycle of activation updating:
+// * Sends Ge increments from sending to receiving layers
+// * Average and Max Ge stats
+// * Inhibition based on Ge stats and Act Stats (computed at end of Cycle)
+// * Activation from Ge, Gi, and Gl
+// * Average and Max Act stats
+func (nt *Network) Cycle() {
+	nt.SendGeDelta() // also does integ
+	nt.AvgMaxGe()
+	nt.InhibFmGeAct()
+	nt.ActFmG()
+	nt.AvgMaxAct()
+}
+
+// SendGeDelta sends change in activation since last sent, if above thresholds
+// and integrates sent deltas into GeRaw and time-integrated Ge values
 func (nt *Network) SendGeDelta() {
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
@@ -165,6 +181,7 @@ func (nt *Network) SendGeDelta() {
 	}
 }
 
+// AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxGe() {
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
@@ -174,15 +191,17 @@ func (nt *Network) AvgMaxGe() {
 	}
 }
 
-func (nt *Network) InhibFm() {
+// InhibiFmGeAct computes inhibition Gi from Ge and Act stats within relevant Pools
+func (nt *Network) InhibFmGeAct() {
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).InhibFm()
+		ly.(*Layer).InhibFmGeAct()
 	}
 }
 
+// ActFmG computes rate-code activation from Ge, Gi, Gl conductances
 func (nt *Network) ActFmG() {
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
@@ -191,3 +210,89 @@ func (nt *Network) ActFmG() {
 		ly.(*Layer).ActFmG()
 	}
 }
+
+// AvgMaxGe computes the average and max Ge stats, used in inhibition
+func (nt *Network) AvgMaxAct() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).AvgMaxAct()
+	}
+}
+
+// for reference: full cycle run from C++ leabra
+/*
+void LEABRA_NETWORK_STATE::Cycle_Run_Thr(int thr_no) {
+  int tot_cyc = 1;
+  if(times.cycle_qtr)
+    tot_cyc = times.quarter;
+  for(int cyc = 0; cyc < tot_cyc; cyc++) {
+    Send_Netin_Thr(thr_no);
+    ThreadSyncSpin(thr_no, 0);
+
+    Compute_NetinInteg_Thr(thr_no);
+    ThreadSyncSpin(thr_no, 1);
+
+    StartTimer(NT_NETIN_STATS, thr_no);
+
+    Compute_NetinStats_Thr(thr_no);
+    if(deep.mod_net) {
+      Compute_DeepModStats_Thr(thr_no);
+    }
+    ThreadSyncSpin(thr_no, 2);
+    if(thr_no == 0) {
+      Compute_NetinStats_Post();
+      if(deep.mod_net) {
+        Compute_DeepModStats_Post();
+      }
+    }
+    ThreadSyncSpin(thr_no, 0);
+
+    InitCycleNetinTmp_Thr(thr_no);
+
+    EndTimer(NT_NETIN_STATS, thr_no);
+
+    if(thr_no == 0) {
+      Compute_Inhib();
+    }
+    ThreadSyncSpin(thr_no, 1);
+
+    Compute_Act_Thr(thr_no);
+    ThreadSyncSpin(thr_no, 2);
+
+    if(thr_no == 0) {
+      Compute_CycleStats_Pre(); // prior to act post!
+    }
+    ThreadSyncSpin(thr_no, 0);
+
+    Compute_Act_Post_Thr(thr_no);
+    ThreadSyncSpin(thr_no, 1);
+
+    StartTimer(NT_CYCLE_STATS, thr_no);
+
+    Compute_CycleStats_Thr(thr_no);
+    ThreadSyncSpin(thr_no, 2);
+
+    if(thr_no == 0) {
+      Compute_CycleStats_Post();
+    }
+    ThreadSyncSpin(thr_no, 0);
+
+    if(deep.on && deep.Quarter_DeepRawNow(quarter)) {
+      int qtrcyc = cycle % times.quarter;
+      if(qtrcyc % times.deep_cyc == 0) {
+        Compute_DeepRaw_Thr(thr_no);
+      }
+    }
+    ThreadSyncSpin(thr_no, 1);
+
+    EndTimer(NT_CYCLE_STATS, thr_no);
+
+    if(thr_no == 0) {
+      Cycle_IncrCounters();
+    }
+  }
+}
+
+*/

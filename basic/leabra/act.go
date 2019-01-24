@@ -56,6 +56,50 @@ func (ac *ActParams) Update() {
 	ac.Noise.Update()
 }
 
+///////////////////////////////////////////////////////////////////////
+//  Init
+
+// InitGe initializes the Ge excitatory conductance accumulation state -- called at start of trial always
+func (ac *ActParams) InitGe(nrn *Neuron) {
+	nrn.ActSent = 0
+	nrn.GeRaw = 0
+	nrn.GeInc = 0
+}
+
+// DecayState decays the activation state toward initial values in proportion to given decay parameter
+// Called with ac.Init.Decay by Layer during TrialInit
+func (ac *ActParams) DecayState(nrn *Neuron, decay float32) {
+	if decay > 0 { // no-op for most, but not all..
+		nrn.Act -= decay * (nrn.Act - ac.Init.Act)
+		nrn.Ge -= decay * (nrn.Ge - ac.Init.Ge)
+		nrn.Gi -= decay * nrn.Gi
+		nrn.GiSelf -= decay * nrn.GiSelf
+		nrn.Vm -= decay * (nrn.Vm - ac.Init.Vm)
+	}
+	nrn.ActDel = 0
+	nrn.Inet = 0
+	ac.InitGe(nrn)
+}
+
+// InitActs initializes activation state in neuron -- called during InitWts but otherwise not
+// automatically called (DecayState is used instead)
+func (ac *ActParams) InitActs(nrn *Neuron) {
+	nrn.Act = ac.Init.Act
+	nrn.Ge = ac.Init.Ge
+	nrn.Gi = 0
+	nrn.GiSelf = 0
+	nrn.Inet = 0
+	nrn.Vm = ac.Init.Vm
+	nrn.Targ = 0
+	nrn.Ext = 0
+	nrn.ActDel = 0
+
+	ac.InitGe(nrn)
+}
+
+///////////////////////////////////////////////////////////////////////
+//  Cycle
+
 // GeFmGeInc integrates Ge excitatory conductance from GeInc delta-increment sent
 func (ac *ActParams) GeFmGeInc(nrn *Neuron) {
 	nrn.GeRaw += nrn.GeInc
@@ -91,7 +135,7 @@ func (ac *ActParams) InetFmG(vm, ge, gi, gk float32) float32 {
 // VmFmG computes membrane potential Vm from conductances Ge and Gi.
 // The Vm value is only used in pure rate-code computation within the sub-threshold regime
 // because firing rate is a direct function of excitatory conductance Ge.
-func (ac *ActParams) VmFmG(nrn *Neuron, thr int) {
+func (ac *ActParams) VmFmG(nrn *Neuron) {
 	ge := nrn.Ge * ac.Gbar.E
 	gi := nrn.Gi * ac.Gbar.I
 	nrn.Inet = ac.InetFmG(nrn.Vm, ge, gi, 0)
@@ -103,13 +147,14 @@ func (ac *ActParams) VmFmG(nrn *Neuron, thr int) {
 	nrn.Vm = ac.VmRange.ClipVal(nwVm)
 }
 
-func (ac *ActParams) GeThrFmG(nrn *Neuron, thr int) float32 {
+// GeThrFmG computes the threshold for Ge based on other conductances
+func (ac *ActParams) GeThrFmG(nrn *Neuron) float32 {
 	gcL := ac.Gbar.L
 	return ((ac.Gbar.I*nrn.Gi*ac.ErevSubThr.I + gcL*ac.ErevSubThr.L) / ac.ThrSubErev.E)
 }
 
 // ActFmG computes rate-coded activation Act from conductances Ge and Gi
-func (ac *ActParams) ActFmG(nrn *Neuron, thr int) {
+func (ac *ActParams) ActFmG(nrn *Neuron) {
 	var nwAct float32
 	if nrn.Act < ac.XX1.VmActThr && nrn.Vm <= ac.XX1.Thr {
 		// note: this is quite important -- if you directly use the gelin
@@ -117,7 +162,7 @@ func (ac *ActParams) ActFmG(nrn *Neuron, thr int) {
 		// drive subthreshold activation behavior
 		nwAct = ac.XX1.NoisyXX1(nrn.Vm - ac.XX1.Thr)
 	} else {
-		geThr := ac.GeThrFmG(nrn, thr)
+		geThr := ac.GeThrFmG(nrn)
 		nwAct = ac.XX1.NoisyXX1(nrn.Ge*ac.Gbar.E - geThr)
 	}
 	curAct := nrn.Act
@@ -261,18 +306,20 @@ func (ot *OptThreshParams) Defaults() {
 // ActInitParams are initial values for key network state variables.
 // Initialized at start of trial with Init_Acts or DecayState.
 type ActInitParams struct {
+	Decay float32 `def:"1" max:"1" min:"0" desc:"proportion to decay activation state toward initial values at start of every trial"`
 	Vm    float32 `def:"0.4" desc:"initial membrane potential -- see e_rev.l for the resting potential (typically .3) -- often works better to have a somewhat elevated initial membrane potential relative to that"`
 	Act   float32 `def:"0" desc:"initial activation value -- typically 0"`
-	Netin float32 `def:"0" desc:"baseline level of excitatory net input -- netin is initialized to this value, and it is added in as a constant background level of excitatory input -- captures all the other inputs not represented in the model, and intrinsic excitability, etc"`
+	Ge    float32 `def:"0" desc:"baseline level of excitatory conductance (net input) -- Ge is initialized to this value, and it is added in as a constant background level of excitatory input -- captures all the other inputs not represented in the model, and intrinsic excitability, etc"`
 }
 
 func (ai *ActInitParams) Update() {
 }
 
 func (ai *ActInitParams) Defaults() {
+	ai.Decay = 1
 	ai.Vm = 0.4
 	ai.Act = 0
-	ai.Netin = 0
+	ai.Ge = 0
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

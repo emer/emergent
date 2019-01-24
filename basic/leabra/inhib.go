@@ -9,20 +9,23 @@ package leabra
 // This also includes other misc layer-level params such as running-average activation in the layer
 // which is used for netinput rescaling and potentially for adapting inhibition over time
 type InhibParams struct {
-	Layer     FFFBParams   `desc:"inhibition across the entire layer"`
-	UnitGroup FFFBParams   `desc:"inhibition across groups of units, for layers with 4D shape"`
-	ActAvg    ActAvgParams `desc:"running-average activation computation values -- for overall estimates of layer activation levels, used in netinput scaling"`
+	Layer  FFFBParams      `desc:"inhibition across the entire layer"`
+	Pool   FFFBParams      `desc:"inhibition across sub-pools of units, for layers with 4D shape"`
+	Self   SelfInhibParams `desc:"neuron self-inhibition parameters -- can be beneficial for producing more graded, linear response -- not typically used in cortical networks"`
+	ActAvg ActAvgParams    `desc:"running-average activation computation values -- for overall estimates of layer activation levels, used in netinput scaling"`
 }
 
 func (ip *InhibParams) Update() {
 	ip.Layer.Update()
-	ip.UnitGroup.Update()
+	ip.Pool.Update()
+	ip.Self.Update()
 	ip.ActAvg.Update()
 }
 
 func (ip *InhibParams) Defaults() {
 	ip.Layer.Defaults()
-	ip.UnitGroup.Defaults()
+	ip.Pool.Defaults()
+	ip.Self.Defaults()
 	ip.ActAvg.Defaults()
 }
 
@@ -37,7 +40,21 @@ type FFFBParams struct {
 	MaxVsAvg float32 `condshow:"On=true" def:"0;0.5;1" desc:"what proportion of the maximum vs. average netinput to use in the feedforward inhibition computation -- 0 = all average, 1 = all max, and values in between = proportional mix between average and max (ff_netin = avg + ff_max_vs_avg * (max - avg)) -- including more max can be beneficial especially in situations where the average can vary significantly but the activity should not -- max is more robust in many situations but less flexible and sensitive to the overall distribution -- max is better for cases more closely approximating single or strictly fixed winner-take-all behavior -- 0.5 is a good compromize in many cases and generally requires a reduction of .1 or slightly more (up to .3-.5) from the gi value for 0"`
 	FF0      float32 `condshow:"On=true" def:"0.1" desc:"feedforward zero point for average netinput -- below this level, no FF inhibition is computed based on avg netinput, and this value is subtraced from the ff inhib contribution above this value -- the 0.1 default should be good for most cases (and helps FF_FB produce k-winner-take-all dynamics), but if average netinputs are lower than typical, you may need to lower it"`
 
-	FBDt float32 // #READ_ONLY #EXPERT rate = 1 / tau
+	FBDt float32 `inactive:"+" view:"-" desc:"rate = 1 / tau"`
+}
+
+func (fb *FFFBParams) Update() {
+	fb.FBDt = 1 / fb.FBTau
+}
+
+func (fb *FFFBParams) Defaults() {
+	fb.Gi = 1.8
+	fb.FF = 1
+	fb.FB = 1
+	fb.FBTau = 1.4
+	fb.MaxVsAvg = 0
+	fb.FF0 = 0.1
+	fb.Update()
 }
 
 // FFInhib returns the feedforward inhibition value based on average and max excitatory conductance within
@@ -62,18 +79,53 @@ func (fb *FFFBParams) FBUpdt(fbi *float32, newFbi float32) {
 	*fbi += fb.FBDt * (newFbi - *fbi)
 }
 
-func (fb *FFFBParams) Update() {
-	fb.FBDt = 1 / fb.FBTau
+// Inhib is full inhibition computation for given pool activity levels and inhib state
+func (fb *FFFBParams) Inhib(avgGe, maxGe, avgAct float32, inh *FFFBInhib) {
+	if !fb.On {
+		inh.Init()
+		return
+	}
+
+	ffi := fb.FFInhib(avgGe, maxGe)
+	fbi := fb.FBInhib(avgAct)
+
+	inh.FFi = ffi
+	fb.FBUpdt(&inh.FBi, fbi)
+
+	inh.Gi = fb.Gi * (ffi + inh.FBi)
+	inh.GiOrig = inh.Gi
 }
 
-func (fb *FFFBParams) Defaults() {
-	fb.Gi = 1.8
-	fb.FF = 1
-	fb.FB = 1
-	fb.FBTau = 1.4
-	fb.MaxVsAvg = 0
-	fb.FF0 = 0.1
-	fb.Update()
+///////////////////////////////////////////////////////////////////////
+//  SelfInhibParams
+
+// SelfInhibParams defines parameters for Neuron self-inhibition -- activation of the neuron directly feeds back
+// to produce a proportional additional contribution to Gi
+type SelfInhibParams struct {
+	On  bool    `desc:"enable neuron self-inhibition"`
+	Gi  float32 `condshow:"On=true" def:"0.4" desc:"strength of individual neuron self feedback inhibition -- can produce proportional activation behavior in individual units for specialized cases (e.g., scalar val or BG units), but not so good for typical hidden layers"`
+	Tau float32 `condshow:"On=true" def:"1.4" desc:"time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) for integrating unit self feedback inhibitory values -- prevents oscillations that otherwise occur -- relatively rapid 1.4 typically works, but may need to go longer if oscillations are a problem"`
+	Dt  float32 `inactive:"+" view:"-" desc:"rate = 1 / tau"`
+}
+
+func (si *SelfInhibParams) Update() {
+	si.Dt = 1 / si.Tau
+}
+
+func (si *SelfInhibParams) Defaults() {
+	si.On = false
+	si.Gi = 0.4
+	si.Tau = 1.4
+	si.Update()
+}
+
+// Inhib updates the self inhibition value based on current unit activation
+func (si *SelfInhibParams) Inhib(self *float32, act float32) {
+	if si.On {
+		*self += si.Dt * (si.Gi*act - *self)
+	} else {
+		*self = 0
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////

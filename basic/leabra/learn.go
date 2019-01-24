@@ -15,23 +15,26 @@ import (
 // leabra.LearnNeurParams manages learning-related parameters at the neuron-level.
 // This is mainly the running average activations that drive learning
 type LearnNeurParams struct {
-	ActAvg LrnActAvgParams `inline:"+" desc:"parameters for computing running average activations that drive learning"`
-	AvgL   AvgLParams      `inline:"+" desc:"parameters for computing AvgL long-term running average"`
+	ActAvg  LrnActAvgParams `inline:"+" desc:"parameters for computing running average activations that drive learning"`
+	AvgL    AvgLParams      `inline:"+" desc:"parameters for computing AvgL long-term running average"`
+	CosDiff CosDiffParams   `inline:"+" desc:"parameters for computing cosine diff between minus and plus phase"`
 }
 
 func (ln *LearnNeurParams) Update() {
 	ln.ActAvg.Update()
 	ln.AvgL.Update()
+	ln.CosDiff.Update()
 }
 
 func (ln *LearnNeurParams) Defaults() {
 	ln.ActAvg.Defaults()
 	ln.AvgL.Defaults()
+	ln.CosDiff.Defaults()
 }
 
-// ActAvgInit initializes average activation values.
-// Called at start of learning.
-func (ln *LearnNeurParams) ActAvgInit(nrn *Neuron) {
+// InitActAvg initializes the running-average activation values that drive learning.
+// Called by InitWts (at start of learning).
+func (ln *LearnNeurParams) InitActAvg(nrn *Neuron) {
 	nrn.AvgSS = ln.ActAvg.Init
 	nrn.AvgS = ln.ActAvg.Init
 	nrn.AvgM = ln.ActAvg.Init
@@ -49,7 +52,6 @@ func (ln *LearnNeurParams) AvgsFmAct(nrn *Neuron) {
 // Called at start of new trial.
 func (ln *LearnNeurParams) AvgLFmAct(nrn *Neuron) {
 	ln.AvgL.AvgLFmAct(nrn.Act, &nrn.AvgL, &nrn.AvgLLrn)
-	// todo: layer-level err mod needs to be added in
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -875,6 +877,75 @@ func (al *AvgLParams) Defaults() {
 	al.ErrMod = true
 	al.ModMin = 0.01
 	al.Update()
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  CosDiffParams
+
+// CosDiffParams specify how to integrate cosine of difference between plus and minus phase activations
+// Used to modulate amount of hebbian learning, and overall learning rate.
+type CosDiffParams struct {
+	Tau float32 `def:"100" min:"1" desc:"time constant in trials (roughly how long significant change takes, 1.4 x half-life) for computing running average CosDiff value for the layer, CosDiffAvg = cosine difference between ActM and ActP -- this is an important statistic for how much phase-based difference there is between phases in this layer -- it is used in standard X_COS_DIFF modulation of l_mix in LeabraConSpec, and for modulating learning rate as a function of predictability in the DeepLeabra predictive auto-encoder learning -- running average variance also computed with this: cos_diff_var"`
+	//   bool          lrate_mod; // modulate learning rate in this layer as a function of the cos_diff on this trial relative to running average cos_diff values (see avg_tau) -- lrate_mod = cos_diff_lrate_mult * (cos_diff / cos_diff_avg) -- if this layer is less predictable than previous trials, we don't learn as much
+	//   float         lrmod_z_thr; // #DEF_-1.5 #CONDSHOW_ON_lrate_mod&&!lrmod_fm_trc threshold for setting learning rate modulation to zero, as function of z-normalized cos_diff value on this trial -- normalization computed using incrementally computed average and variance values -- this essentially has the network ignoring trials where the diff was significantly below average -- replaces the manual unlearnable trial mechanism
+	//   bool          set_net_unlrn;  // #CONDSHOW_ON_lrate_mod&&!lrmod_fm_trc set the network-level unlearnable_trial flag based on our learning rate modulation factor -- only makes sense for one layer to do this
+
+	Dt  float32 `inactive:"+" view:"-" desc:"rate constant = 1 / Tau"`
+	DtC float32 `inactive:"+" view:"-" desc:"complement of rate constant = 1 - Dt"`
+}
+
+func (cd *CosDiffParams) Update() {
+	cd.Dt = 1 / cd.Tau
+	cd.DtC = 1 - cd.Dt
+}
+
+func (cd *CosDiffParams) Defaults() {
+	cd.Tau = 100
+	cd.Update()
+}
+
+// AvgVarFmCos updates the average and variance from current cosine diff value
+func (cd *CosDiffParams) AvgVarFmCos(avg, vr *float32, cos float32) {
+	if *avg == 0 { // first time -- set
+		*avg = cos
+		*vr = 0
+	} else {
+		del := cos - *avg
+		incr := cd.Dt * del
+		*avg += incr
+		// following is magic exponentially-weighted incremental variance formula
+		// derived by Finch, 2009: Incremental calculation of weighted mean and variance
+		if *vr == 0 {
+			*vr = 2 * cd.DtC * del * incr
+		} else {
+			*vr = cd.DtC * (*vr + del*incr)
+		}
+	}
+}
+
+// LrateMod computes learning rate modulation based on cos diff vals
+// func (cd *CosDiffParams) LrateMod(cos, avg, vr float32) float32 {
+// 	if vr <= 0 {
+// 		return 1
+// 	}
+// 	zval := (cos - avg) / math32.Sqrt(vr) // stdev = sqrt of var
+// 	// z-normal value is starting point for learning rate factor
+// 	//    if zval < lrmod_z_thr {
+// 	// 	return 0
+// 	// }
+// 	return 1
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  CosDiffStats
+
+// CosDiffStats holds cosine-difference statistics at the layer level
+type CosDiffStats struct {
+	Cos        float32 `desc:"cosine (normalized dot product) activation difference between act_p and act_m on this trial for this layer -- computed by Compute_CosDiff -- must be called after Quarter_Final in plus phase to get act_p values"`
+	Avg        float32 `desc:"running average of cosine (normalized dot product) difference between act_p and act_m -- computed with layerspec cos_diff.avg_tau time constant in Quarter_Final, and used for modulating hebbian learning (see cos_diff_avg_lrn) and overall learning rate"`
+	Var        float32 `desc:"running variance of cosine (normalized dot product) difference between act_p and act_m -- computed with layerspec cos_diff.diff_avg_tau time constant in Quarter_Final, used for modulating overall learning rate"`
+	AvgLrn     float32 `desc:"1 - Avg and 0 for non-HIDDEN layers"`
+	ModAvgLLrn float32 `desc:"1 - AvgLrn and 0 for non-HIDDEN layers -- this is the value of cos_diff_avg used for avg_l.err_mod_l modulation of the avg_l_lrn factor if enabled"`
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

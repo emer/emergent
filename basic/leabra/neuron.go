@@ -9,11 +9,13 @@ import "reflect"
 // leabra.Neuron holds all of the neuron (unit) level variables -- this is the most basic version with
 // rate-code only and no optional features at all
 type Neuron struct {
+	Off  bool    `desc:"disable updating of this neuron -- reversible lesion"`
 	Act  float32 `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
 	Ge   float32 `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
 	Gi   float32 `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`
 	Inet float32 `desc:"net current produced by all channels -- drives update of Vm"`
 	Vm   float32 `desc:"membrane potential -- integrates Inet current over time"`
+
 	Targ float32 `desc:"target value: drives learning to produce this activation value"`
 	Ext  float32 `desc:"external input: drives activation of unit from outside influences (e.g., sensory input)"`
 
@@ -29,14 +31,16 @@ type Neuron struct {
 	ActDif float32 `desc:"ActP - ActM -- difference between plus and minus phase acts -- reflects the individual error gradient for this neuron in standard error-driven learning terms"`
 	ActDel float32 `desc:"delta activation: change in Act from one cycle to next -- can be useful to track where changes are taking place"`
 	ActAvg float32 `desc:"average activation (of final plus phase activation state) over long time intervals (time constant = DtPars.AvgTau -- typically 200) -- useful for finding hog units and seeing overall distribution of activation"`
+
 	Noise  float32 `desc:"noise value added to unit (ActNoisePars determines distribution, and when / where it is added)"`
+	GiSelf float32 `desc:"total amount of self-inhibition -- time-integrated to avoid oscillations"`
 
 	ActSent float32 `desc:"last activation value sent (only send when diff is over threshold)"`
 	GeRaw   float32 `desc:"raw excitatory conductance (net input) received from sending units (send delta's are added to this value)"`
 	GeInc   float32 `desc:"delta increment in GeRaw sent using SendGeDelta"`
 }
 
-var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "ActSent", "GeRaw", "GeInc"}
+var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "GiSelf", "ActSent", "GeRaw", "GeInc"}
 
 var NeuronVarsMap map[string]int
 
