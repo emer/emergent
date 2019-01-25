@@ -127,12 +127,23 @@ func (nt *Network) InitWts() {
 	}
 }
 
+// InitActs fully initializes activation state -- not automatically called
 func (nt *Network) InitActs() {
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
 		ly.(*Layer).InitActs()
+	}
+}
+
+// InitExt initializes external input state -- call prior to applying external inputs to layers
+func (nt *Network) InitExt() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).InitExt()
 	}
 }
 

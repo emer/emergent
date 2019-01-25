@@ -4,12 +4,17 @@
 
 package leabra
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/goki/ki/bitflag"
+	"github.com/goki/ki/kit"
+)
 
 // leabra.Neuron holds all of the neuron (unit) level variables -- this is the most basic version with
-// rate-code only and no optional features at all
+// rate-code only and no optional features at all.
+// All variables accessible via Unit interface must be float32 and start at the top, in contiguous order
 type Neuron struct {
-	Off  bool    `desc:"disable updating of this neuron -- reversible lesion"`
 	Act  float32 `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
 	Ge   float32 `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
 	Gi   float32 `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`
@@ -38,6 +43,10 @@ type Neuron struct {
 	ActSent float32 `desc:"last activation value sent (only send when diff is over threshold)"`
 	GeRaw   float32 `desc:"raw excitatory conductance (net input) received from sending units (send delta's are added to this value)"`
 	GeInc   float32 `desc:"delta increment in GeRaw sent using SendGeDelta"`
+
+	// non-Unit accessible state variables
+
+	Flags NeurFlags `desc:"bit flags for binary state variables"`
 }
 
 var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "GiSelf", "ActSent", "GeRaw", "GeInc"}
@@ -63,3 +72,73 @@ func (nrn *Neuron) VarByName(varNm string) (float32, bool) {
 	v := reflect.ValueOf(*nrn)
 	return v.Field(i).Interface().(float32), true
 }
+
+func (nrn *Neuron) HasFlag(flag NeurFlags) bool {
+	return bitflag.Has32(int32(nrn.Flags), int(flag))
+}
+
+func (nrn *Neuron) SetFlag(flag NeurFlags) {
+	bitflag.Set32((*int32)(&nrn.Flags), int(flag))
+}
+
+func (nrn *Neuron) ClearFlag(flag NeurFlags) {
+	bitflag.Clear32((*int32)(&nrn.Flags), int(flag))
+}
+
+func (nrn *Neuron) SetMask(mask int32) {
+	bitflag.SetMask32((*int32)(&nrn.Flags), mask)
+}
+
+func (nrn *Neuron) ClearMask(mask int32) {
+	bitflag.ClearMask32((*int32)(&nrn.Flags), mask)
+}
+
+// NeurFlags are bit-flags encoding relevant binary state for neurons
+type NeurFlags int32
+
+//go:generate stringer -type=NeurFlags
+
+var KiT_NeurFlags = kit.Enums.AddEnum(NeurFlagsN, true, nil)
+
+func (ev NeurFlags) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
+func (ev *NeurFlags) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+
+// The neuron flags
+const (
+	// NeurOff flag indicates that this neuron has been turned off (i.e., lesioned)
+	NeurOff NeurFlags = iota
+
+	// NeurHasExt means the neuron has external input in its Ext field
+	NeurHasExt
+
+	// NeurHasTarg means the neuron has external target input in its Targ field
+	NeurHasTarg
+
+	// NeurHasCmpr means the neuron has external comparison input in its Targ field -- used for computing
+	// comparison statistics but does not drive neural activity ever
+	NeurHasCmpr
+
+	NeurFlagsN
+)
+
+/*
+more specialized flags in C++ emergent -- only add in specialized cases where needed, although
+there could be conflicts potentially, so may want to just go ahead and add here..
+  enum LeabraUnitFlags {        // #BITS extra flags on top of ext flags for leabra
+    SUPER       = 0x00000100,   // superficial layer neocortical cell -- has deep.on role = SUPER
+    DEEP        = 0x00000200,   // deep layer neocortical cell -- has deep.on role = DEEP
+    TRC         = 0x00000400,   // thalamic relay cell (Pulvinar) cell -- has deep.on role = TRC
+
+    D1R         = 0x00001000,   // has predominantly D1 receptors
+    D2R         = 0x00002000,   // has predominantly D2 receptors
+    ACQUISITION = 0x00004000,   // involved in Acquisition
+    EXTINCTION  = 0x00008000,   // involved in Extinction
+    APPETITIVE  = 0x00010000,   // appetitive (positive valence) coding
+    AVERSIVE    = 0x00020000,   // aversive (negative valence) coding
+    PATCH       = 0x00040000,   // patch-like structure (striosomes)
+    MATRIX      = 0x00080000,   // matrix-like structure
+    DORSAL      = 0x00100000,   // dorsal
+    VENTRAL     = 0x00200000,   // ventral
+  };
+
+*/

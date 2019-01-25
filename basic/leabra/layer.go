@@ -5,10 +5,14 @@
 package leabra
 
 import (
+	"github.com/apache/arrow/go/arrow/tensor"
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/erand"
 	"github.com/emer/emergent/etensor"
+	"github.com/goki/ki/bitflag"
+	"github.com/goki/ki/ints"
+	"github.com/goki/ki/kit"
 )
 
 // leabra.LayerStru manages the structural elements of the layer, which are common
@@ -18,6 +22,7 @@ type LayerStru struct {
 	Class     string        `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Off       bool          `desc:"inactivate this layer -- allows for easy experimentation"`
 	Shape     etensor.Shape `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns) -- order is outer-to-inner (row major) so Y then X for 2D and for 4D: Y-X unit pools then Y-X units within pools"`
+	Type      LayerType     `desc:"type of layer -- Hidden, Input, Target, Compare"`
 	Rel       emer.Rel      `desc:"Spatial relationship to other layer, determines positioning"`
 	Pos       emer.Vec3i    `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
 	RecvPrjns PrjnList      `desc:"list of receiving projections into this layer from other layers"`
@@ -76,12 +81,38 @@ func (ls *LayerStru) NPools() int {
 	return int(sh[0] * sh[1])
 }
 
+// LayerType is the type of the layer: Input, Hidden, Target, Compare
+type LayerType int32
+
+//go:generate stringer -type=LayerType
+
+var KiT_LayerType = kit.Enums.AddEnum(LayerTypeN, false, nil)
+
+func (ev LayerType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
+func (ev *LayerType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+
+// The layer types
+const (
+	// Hidden is an internal representational layer that does not receive direct input / targets
+	Hidden LayerType = iota
+
+	// Input is a layer that receives direct external input in its Ext inputs
+	Input
+
+	// Target is a layer that receives direct external target inputs used for driving plus-phase learning
+	Target
+
+	// Compare is a layer that receives external comparison inputs, which drive statistics but
+	// do NOT drive activation or learning directly
+	Compare
+
+	LayerTypeN
+)
+
 //////////////////////////////////////////////////////////////////////////////////////
 //  Layer
 
-// todo: need AvgMax Ge and Act for inhib
 // todo: need overall good strategy for stats
-// todo: need to pass Time around..
 
 // leabra.Layer has parameters for running a basic rate-coded Leabra layer
 type Layer struct {
@@ -101,10 +132,14 @@ func (ly *Layer) Defaults() {
 }
 
 // UpdateParams updates all params given any changes that might have been made to individual values
+// including those in the receiving projections of this layer
 func (ly *Layer) UpdateParams() {
 	ly.Act.Update()
 	ly.Inhib.Update()
 	ly.Learn.Update()
+	for _, pj := range ly.RecvPrjns {
+		pj.UpdateParams()
+	}
 }
 
 // Unit is emer.Layer interface method -- only possible with Neurons in place
@@ -200,8 +235,52 @@ func (ly *Layer) InitActs() {
 	}
 }
 
+// InitExt initializes external input state -- called prior to apply ext
+func (ly *Layer) InitExt() {
+	msk := bitflag.Mask32(int(NeurHasExt), int(NeurHasTarg), int(NeurHasCmpr))
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		nrn.Ext = 0
+		nrn.Targ = 0
+		nrn.ClearMask(msk)
+	}
+}
+
+// ApplyExt applies external input in the form of an arrow tensor.Float32
+// If the layer is a Target or Compare layer type, then it goes in Targ
+// otherwise it goes in Ext
+func (ly *Layer) ApplyExt(ext *tensor.Float32) {
+	// todo: compare shape?
+	clrmsk := bitflag.Mask32(int(NeurHasExt), int(NeurHasTarg), int(NeurHasCmpr))
+	setmsk := int32(0)
+	toTarg := false
+	if ly.Type == Target {
+		setmsk = bitflag.Mask32(int(NeurHasTarg))
+		toTarg = true
+	} else if ly.Type == Compare {
+		setmsk = bitflag.Mask32(int(NeurHasCmpr))
+		toTarg = true
+	} else {
+		setmsk = bitflag.Mask32(int(NeurHasExt))
+	}
+	ev := ext.Float32Values()
+	mx := ints.MinInt(len(ev), len(ly.Neurons))
+	for i := 0; i < mx; i++ {
+		nrn := &ly.Neurons[i]
+		vl := ev[i]
+		if toTarg {
+			nrn.Targ = vl
+		} else {
+			nrn.Ext = vl
+		}
+		nrn.ClearMask(clrmsk)
+		nrn.SetMask(setmsk)
+	}
+}
+
 // TrialInit handles all initialization at start of new input pattern, including computing
 // netinput scaling from running average activation etc.
+// should already have presented the external input to the network at this point.
 func (ly *Layer) TrialInit() {
 	ly.AvgLFmAct()
 	for pi := range ly.Pools {
@@ -215,6 +294,9 @@ func (ly *Layer) TrialInit() {
 		ly.GenNoise()
 	}
 	ly.DecayState(ly.Act.Init.Decay)
+	if ly.Act.Clamp.Hard && ly.Type == Input {
+		ly.HardClamp()
+	}
 }
 
 // AvgLFmAct updates AvgL long-term running average activation that drives BCM Hebbian learning
@@ -257,6 +339,7 @@ func (ly *Layer) GeScaleFmAvgAct() {
 	}
 }
 
+// GenNoise generates random noise for all neurons
 func (ly *Layer) GenNoise() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
@@ -264,10 +347,19 @@ func (ly *Layer) GenNoise() {
 	}
 }
 
+// DecayState decays activation state by given proportion (default is on ly.Act.Init.Decay)
 func (ly *Layer) DecayState(decay float32) {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		ly.Act.DecayState(nrn, decay)
+	}
+}
+
+// HardClamp hard-clamps the activations in the layer -- called during TrialInit for hard-clamped Input layers
+func (ly *Layer) HardClamp() {
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		ly.Act.HardClamp(nrn)
 	}
 }
 
@@ -397,8 +489,11 @@ func (ly *Layer) QuarterFinal(time *Time) {
 	}
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
-		if time.Quarter == 2 {
+		if time.Quarter == 2 { // end of minus phase
 			nrn.ActM = nrn.Act
+			if nrn.HasFlag(NeurHasTarg) { // will be clamped in plus phase
+				nrn.Ext = nrn.Targ
+			}
 		} else if time.Quarter == 3 {
 			nrn.ActP = nrn.Act
 			nrn.ActDif = nrn.ActP - nrn.ActM
@@ -433,22 +528,12 @@ func (ly *Layer) CosDiffFmActs() {
 	ly.CosDiff.Cos = cosv
 
 	ly.Learn.CosDiff.AvgVarFmCos(&ly.CosDiff.Avg, &ly.CosDiff.Var, ly.CosDiff.Cos)
-	//  lay->lrate_mod = lay_lrate;
-	//   if(cos_diff.lrate_mod && !cos_diff.lrmod_fm_trc) {
-	//     lay->lrate_mod *= cos_diff.CosDiffLrateMod(lay->cos_diff, lay->cos_diff_avg,
-	//                                                lay->cos_diff_var);
-	//     if(cos_diff.set_net_unlrn && lay->lrate_mod == 0.0f) {
-	//       net->unlearnable_trial = true;
-	//     }
-	//   }
 
-	// todo: need layer type!
-	//   if((lay->layer_type != LAYER_STATE::HIDDEN) || us->deep.IsTRC()) {
-	//     lay->cos_diff_avg_lrn = 0.0f; // no bcm for TARGET layers; irrelevant for INPUT
-	//     lay->mod_avg_l_lrn = 0.0f;
-	//   } else {
-	ly.CosDiff.AvgLrn = 1 - ly.CosDiff.Avg
-	ly.CosDiff.ModAvgLLrn = ly.Learn.AvgL.ErrModFmLayErr(ly.CosDiff.AvgLrn)
-
-	//	lay.AvgCosDiff.Increment(ly.CosDiff)
+	if ly.Type != Hidden {
+		ly.CosDiff.AvgLrn = 0 // no BCM for non-hidden layers
+		ly.CosDiff.ModAvgLLrn = 0
+	} else {
+		ly.CosDiff.AvgLrn = 1 - ly.CosDiff.Avg
+		ly.CosDiff.ModAvgLLrn = ly.Learn.AvgL.ErrModFmLayErr(ly.CosDiff.AvgLrn)
+	}
 }

@@ -16,8 +16,8 @@ type Rel struct {
 	Other  string    `desc:"name of the other layer we are in relationship to"`
 	Space  int       `desc:"number of unit-spaces between us"`
 	Offset int       `desc:"for alignment, amount we are offset relative to perfect alignment"`
-	XAlign XAligns   `condshow:"Rel=FrontOf,Behind,Above,Below" horizontal (x-axis) alignment relative to other"`
-	YAlign YAligns   `condshow:"Rel=LeftOf,RightOf,Above,Below" vertical (y-axis) alignment relative to other"`
+	XAlign XAligns   `view:"if Rel=FrontOf,Behind,Above,Below" horizontal (x-axis) alignment relative to other"`
+	YAlign YAligns   `view:"if Rel=LeftOf,RightOf,Above,Below" vertical (y-axis) alignment relative to other"`
 }
 
 // Relations are different spatial relationships (of layers)

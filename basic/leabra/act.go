@@ -25,22 +25,22 @@ type ActParams struct {
 	Dt         DtParams        `desc:"time and rate constants for temporal derivatives / updating of activation state"`
 	Gbar       Chans           `desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
 	Erev       Chans           `desc:"[Defaults: 1, .3, .25, .1] reversal potentials for each channel"`
+	Clamp      ClampParams     `desc:"how external inputs drive neural activations"`
 	Noise      ActNoiseParams  `desc:"how, where, when, and how much noise to add to activations"`
-	ClampRange emer.MinMax     `desc:"range of external input activation values allowed -- Max is .95 by default due to saturating nature of rate code activation function"`
 	VmRange    emer.MinMax     `desc:"range for Vm membrane potential -- [0, 2.0] by default"`
 	ErevSubThr Chans           `inactive:"+" view:"-" desc:"Erev - Act.Thr for each channel -- used in computing GeThrFmG among others"`
 	ThrSubErev Chans           `inactive:"+" view:"-" desc:"Act.Thr - Erev for each channel -- used in computing GeThrFmG among others"`
 }
 
 func (ac *ActParams) Defaults() {
-	ac.Gbar.SetAll(1.0, 0.2, 1.0, 1.0)
-	ac.Erev.SetAll(1.0, 0.3, 0.25, 0.1)
-	ac.ClampRange.Max = 0.95
-	ac.VmRange.Max = 2.0
 	ac.XX1.Defaults()
 	ac.OptThresh.Defaults()
 	ac.Init.Defaults()
 	ac.Dt.Defaults()
+	ac.Gbar.SetAll(1.0, 0.2, 1.0, 1.0)
+	ac.Erev.SetAll(1.0, 0.3, 0.25, 0.1)
+	ac.Clamp.Defaults()
+	ac.VmRange.Max = 2.0
 	ac.Noise.Defaults()
 	ac.Update()
 }
@@ -49,10 +49,12 @@ func (ac *ActParams) Defaults() {
 func (ac *ActParams) Update() {
 	ac.ErevSubThr.SetFmOtherMinus(ac.Erev, ac.XX1.Thr)
 	ac.ThrSubErev.SetFmMinusOther(ac.XX1.Thr, ac.Erev)
+
 	ac.XX1.Update()
 	ac.OptThresh.Update()
 	ac.Init.Update()
 	ac.Dt.Update()
+	ac.Clamp.Update()
 	ac.Noise.Update()
 }
 
@@ -105,15 +107,14 @@ func (ac *ActParams) GeFmGeInc(nrn *Neuron) {
 	nrn.GeRaw += nrn.GeInc
 	nrn.GeInc = 0
 
-	//   if(u->HasExtFlag(UNIT_STATE::EXT)) {
-	//     if(ls->clamp.avg) {
-	//       net_syn = ls->clamp.ClampAvgNetin(u->ext, net_syn);
-	//     }
-	//     else {
-	//       net_ex += u->ext * ls->clamp.gain;
-	//     }
-	//   }
-	//
+	geEff := nrn.GeRaw
+	if !ac.Clamp.Hard && nrn.HasFlag(NeurHasExt) {
+		if ac.Clamp.Avg {
+			geEff = ac.Clamp.AvgGe(nrn.Ext, geEff)
+		} else {
+			geEff += nrn.Ext * ac.Clamp.Gain
+		}
+	}
 
 	nrn.Ge += ac.Dt.Integ * ac.Dt.GeDt * (nrn.GeRaw - nrn.Ge)
 
@@ -155,6 +156,10 @@ func (ac *ActParams) GeThrFmG(nrn *Neuron) float32 {
 
 // ActFmG computes rate-coded activation Act from conductances Ge and Gi
 func (ac *ActParams) ActFmG(nrn *Neuron) {
+	if ac.HasHardClamp(nrn) {
+		ac.HardClamp(nrn)
+		return
+	}
 	var nwAct float32
 	if nrn.Act < ac.XX1.VmActThr && nrn.Vm <= ac.XX1.Thr {
 		// note: this is quite important -- if you directly use the gelin
@@ -173,6 +178,20 @@ func (ac *ActParams) ActFmG(nrn *Neuron) {
 		nwAct += nrn.Noise
 	}
 	nrn.Act = nwAct
+}
+
+// HasHardClamp returns true if this neuron has external input that should be hard clamped
+func (ac *ActParams) HasHardClamp(nrn *Neuron) bool {
+	return ac.Clamp.Hard && nrn.HasFlag(NeurHasExt)
+}
+
+// HardClamp clamps activation from external input -- just does it -- use HasHardClamp to check
+func (ac *ActParams) HardClamp(nrn *Neuron) {
+	clmp := ac.Clamp.Range.ClipVal(nrn.Ext)
+	nrn.Act = clmp
+	nrn.Vm = ac.XX1.Thr + nrn.Act/ac.XX1.Gain
+	nrn.ActDel = 0
+	nrn.Inet = 0
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -472,4 +491,32 @@ func (ws *WtScaleParams) SLayActScale(savg, snu, ncon float32) float32 {
 // FullScale returns full scaling factor, which is product of Abs * Rel * SLayActScale
 func (ws *WtScaleParams) FullScale(savg, snu, ncon float32) float32 {
 	return ws.Abs * ws.Rel * ws.SLayActScale(savg, snu, ncon)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  ClampParams
+
+// ClampParams are for specifying how external inputs are clamped onto network activation values
+type ClampParams struct {
+	Hard    bool        `def:"true" desc:"whether to hard clamp inputs where activation is directly set to external input value (Act = Ext) or do soft clamping where Ext is added into Ge excitatory current (Ge += Gain * Ext)"`
+	Range   emer.MinMax `view:"if Hard" desc:"range of external input activation values allowed -- Max is .95 by default due to saturating nature of rate code activation function"`
+	Gain    float32     `view:"if !Hard" def:"0.02:0.5" desc:"soft clamp gain factor (Ge += Gain * Ext)"`
+	Avg     bool        `view:"if !Hard" desc:"compute soft clamp as the average of current and target netins, not the sum -- prevents some of the main effect problems associated with adding external inputs"`
+	AvgGain float32     `view:"if !Hard && Avg" def:"0.2" desc:"gain factor for averaging the Ge -- clamp value Ext contributes with AvgGain and current Ge as (1-AvgGain)"`
+}
+
+func (cp *ClampParams) Update() {
+}
+
+func (cp *ClampParams) Defaults() {
+	cp.Hard = true
+	cp.Range.Max = 0.95
+	cp.Gain = 0.2
+	cp.Avg = false
+	cp.AvgGain = 0.2
+}
+
+// AvgGe computes Avg-based Ge clamping value if using that option
+func (cp *ClampParams) AvgGe(ext, ge float32) float32 {
+	return cp.AvgGain*cp.Gain*ext + (1-cp.AvgGain)*ge
 }

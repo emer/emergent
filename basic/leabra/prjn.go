@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/apache/arrow/go/arrow/tensor"
+	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/prjn"
 )
@@ -230,6 +231,7 @@ func (pl *PrjnList) Build() {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
 
+// InitWts initializes weight values according to Learn.WtInit params
 func (pj *Prjn) InitWts() {
 	for si := range pj.Syns {
 		sy := &pj.Syns[si]
@@ -252,5 +254,42 @@ func (pj *Prjn) SendGeDelta(si int, delta float32) {
 		ri := pj.SConIdx[st+ci]
 		rn := &rlay.Neurons[ri]
 		rn.GeInc += scdel * sy.Wt // todo: will need atomic for thread-safety
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Learn methods
+
+func (pj *Prjn) DWt() {
+	slay := pj.Recv.(*Layer)
+	rlay := pj.Recv.(*Layer)
+	ns := len(slay.Neurons)
+	for si := 0; si < ns; si++ {
+		sn := &slay.Neurons[si]
+		if sn.AvgS < pj.Learn.XCal.LrnThr && sn.AvgM < pj.Learn.XCal.LrnThr {
+			continue
+		}
+		nc := int(pj.SConN[si])
+		st := int(pj.SConIdxSt[si])
+		for ci := 0; ci < nc; ci++ {
+			sy := &pj.Syns[st+ci]
+			ri := pj.SConIdx[st+ci]
+			rn := &rlay.Neurons[ri]
+			err, bcm := pj.Learn.CHLdWt(sn.AvgSLrn, sn.AvgM, rn.AvgSLrn, rn.AvgM, rn.AvgL)
+
+			bcm *= pj.Learn.XCal.LongLrate(rn.AvgLLrn)
+			err *= pj.Learn.XCal.MLrn
+			dwt := bcm + err
+			norm := float32(1)
+			if pj.Learn.Norm.On {
+				norm = pj.Learn.Norm.NormFmAbsDWt(sy.DWtNorm, math32.Abs(dwt))
+			}
+			if pj.Learn.Momentum.On {
+				dwt = norm * pj.Learn.Momentum.MomentFmDWt(sy.Moment, dwt)
+			} else {
+				dwt *= norm
+			}
+			sy.DWt += pj.Learn.Lrate * dwt
+		}
 	}
 }

@@ -16,7 +16,7 @@ type RndParams struct {
 	Dist RndDists `desc:"distribution to generate random numbers from"`
 	Mean float64  `desc:"mean of random distribution -- typically added to generated random variants"`
 	Var  float64  `desc:"variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)"`
-	Par  float64  `condshow:"Dist=Gamma,Binomial,Beta" desc:"extra parameter for distribution (depends on each one)"`
+	Par  float64  `view:"if Dist=Gamma,Binomial,Beta" desc:"extra parameter for distribution (depends on each one)"`
 }
 
 // Gen generates a random variable according to current parameters.
