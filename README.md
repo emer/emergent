@@ -1,5 +1,8 @@
 # emergent reboot in Go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/emer/emergent)](https://goreportcard.com/report/github.com/emer/emergent)
+[![GoDoc](https://godoc.org/github.com/emer/emergent?status.svg)](https://godoc.org/github.com/emer/emergent)
+
 This is the new home of the *emergent* neural network simulation software, developed primarily by the CCN lab at the University of Colorado Boulder.  We have decided to completely reboot the entire enterprise from the ground up, with a much more open, general-purpose design and approach.
 
 See the [Wiki History](https://github.com/emer/emergent/wiki/History) page for the history of emergent (and its predecessors) and more detailed rationale about the decision to make an entirely fresh start, after over 20 years with the same C++ codebase that started with PDP++ and evolved into emergent.
@@ -66,14 +69,14 @@ Specifically, here are the key principles behind our overall design at this poin
 
 In Go, the `interface` replaces the virtual type hierarchy of C++.  Interfaces are mix-and-match and implicitly satisfied.  The goal is to create small componential elements of functionality that you compose together to achieve whatever you want.  Only the most essential abstractions should be in the interface -- everything else goes into the explicit `struct` type.  These interfaces would only be used for "generic" code that supports visualization, I/O, etc, and everything else would be directly coded in the specific structs.
 
-One important question is how connectivity will be specified -- the ProjectionSpec in emergent plays an important role, but also is a great source of mystery and confusion... But we wouldn't want to have to re-write this connection code every time.  Thus, it probably makes sense to make these interfaces sufficiently rich as to support all the connection creation logic.  In the current emergent, this involves multiple passes -- a first pass to compute everything that is needed, and then a potentially centralized allocation of all the necessary memory in highly efficient contiguous arrays, followed by a final pass to connect up all that memory.
+See the [![GoDoc](https://godoc.org/github.com/emer/emergent?status.svg)](https://godoc.org/github.com/emer/emergent) for full details -- this is very high-level here.
 
-Definitely need to think hard about how to make this all as simple as possible, while still supporting this kind of optimized memory allocation..
+
 
 ### Specific Layer impl
 
 The main Leabra implementation would mostly be about layers, which provides the natural organization for most of the computation.
 
-The current `emer` and `basic/leabra` directories in this repository contain stub versions of potential code to get a specific sense of what things might look like.  From a naming perspective, it is good to have the package-level directory always be `leabra` so you always write e.g., `leabra.Layer` etc, but which specific version of leabra you're using depends on the import path -- e.g.,`basic/leabra`, `spiking/leabra`, `deep/leabra`, etc.
+The current `emer` and `basic/leabra` directories in this repository contain stub versions of potential code to get a specific sense of what things might look like.  From a naming perspective, it is good to have the package-level directory always be `leabra` so you always write e.g., `leabra.Layer` etc, but which specific version of leabra you're using depends on the import path -- e.g.,`basic/leabra`, `spiking/leabra`, `deep/leabra`, etc.  This is only true if we don't mix-and-match.
 
 

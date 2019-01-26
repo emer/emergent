@@ -66,7 +66,7 @@ func (nt *Network) Layer(idx int) *Layer {
 }
 
 // AddLayer adds a new layer with given name and shape to the network
-func (nt *Network) AddLayer(name string, shape []int) *Layer {
+func (nt *Network) AddLayer(name string, shape []int, typ LayerType) *Layer {
 	ly := &Layer{}
 	ly.Name = name
 	ly.SetShape(shape)
@@ -75,10 +75,11 @@ func (nt *Network) AddLayer(name string, shape []int) *Layer {
 	return ly
 }
 
-// ConnectLayers establishes a projection between two layers, adding to the recv and send
-// projection lists on each side of the connection.  Returns false if not successful.
-// Does not yet actually connect the units within the layers.
-func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, ok bool) {
+// ConnectLayerNames establishes a projection between two layers, referenced by name
+// adding to the recv and send projection lists on each side of the connection.
+// Returns false if not successful. Does not yet actually connect the units within the layers -- that
+// requires Build.
+func (nt *Network) ConnectLayersNames(recv, send string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, ok bool) {
 	ok = false
 	rlay, has := nt.LayerByNameErrMsg(recv)
 	if !has {
@@ -88,13 +89,22 @@ func (nt *Network) ConnectLayers(recv, send string, pat prjn.Pattern) (rlay, sla
 	if !has {
 		return
 	}
-	pj = &Prjn{}
-	pj.Recv = rlay
-	pj.Send = slay
-	pj.Pat = pat
-	rlay.(*Layer).RecvPrjns.Add(pj)
-	slay.(*Layer).SendPrjns.Add(pj)
+	pj = nt.ConnectLayers(rlay.(*Layer), slay.(*Layer), pat)
 	return
+}
+
+// ConnectLayers establishes a projection between two layers, referenced by name
+// adding to the recv and send projection lists on each side of the connection.
+// Returns false if not successful. Does not yet actually connect the units within the layers -- that
+// requires Build.
+func (nt *Network) ConnectLayers(recv, send *Layer, pat prjn.Pattern) *Prjn {
+	pj := &Prjn{}
+	pj.Recv = recv
+	pj.Send = send
+	pj.Pat = pat
+	recv.RecvPrjns.Add(pj)
+	send.SendPrjns.Add(pj)
+	return pj
 }
 
 // Build constructs the layer and projection state based on the layer shapes and patterns

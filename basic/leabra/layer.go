@@ -537,3 +537,17 @@ func (ly *Layer) CosDiffFmActs() {
 		ly.CosDiff.ModAvgLLrn = ly.Learn.AvgL.ErrModFmLayErr(ly.CosDiff.AvgLrn)
 	}
 }
+
+// DWt computes the weight change (learning) -- calls DWt method on sending projections
+func (ly *Layer) DWt() {
+	for _, pj := range ly.SendPrjns {
+		pj.DWt()
+	}
+}
+
+// WtFmDWt updates the weights from delta-weight changes -- on the sending projections
+func (ly *Layer) WtFmDWt() {
+	for _, pj := range ly.SendPrjns {
+		pj.WtFmDWt()
+	}
+}

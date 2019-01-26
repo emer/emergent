@@ -110,6 +110,39 @@ func (ls *LearnSynParams) CHLdWt(suAvgSLrn, suAvgM, ruAvgSLrn, ruAvgM, ruAvgL fl
 	return
 }
 
+// WtFmDWt updates the synaptic weights from accumulated weight changes
+// wb_inc and _dec are the weight balance factors, wt is the sigmoidal contrast-enhanced
+// weight and lwt is the linear weight value
+func (ls *LearnSynParams) WtFmDWt(dwt, wb_inc, wb_dec float32, wt, lwt *float32) {
+	if dwt == 0 {
+		return
+	}
+	if ls.WtSig.SoftBound {
+		if dwt > 0 {
+			dwt *= wb_inc * (1 - *lwt)
+		} else {
+			dwt *= wb_dec * *lwt
+		}
+	} else {
+		if dwt > 0 {
+			dwt *= wb_inc
+		} else {
+			dwt *= wb_dec
+		}
+	}
+	*lwt += dwt
+	if *lwt < 0 {
+		*lwt = 0
+	} else if *lwt > 1 {
+		*lwt = 1
+	}
+	*wt = ls.WtSig.SigFmLinWt(*lwt) // todo: scale *
+	dwt = 0
+	//    if(adapt_scale.on) {
+	//      adapt_scale.AdaptWtScale(scale, wt);
+	//    }
+}
+
 //    Init_Weights_symflag(net, thr_no);
 //    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)pcg;
 //
@@ -747,114 +780,6 @@ private:
   //   dwt += clrate * xcal.dWtFun(srs, eff_thr);
   // }
   // also: fminf(ru_avg_l,1.0f) for threshold as an option..
-
-
-  INLINE void   Compute_dWt(CON_STATE* scg, NETWORK_STATE* rnet, int thr_no) override  {
-    LEABRA_NETWORK_STATE* net = (LEABRA_NETWORK_STATE*)rnet;
-    if(!learn || (use_unlearnable && net->unlearnable_trial)) return;
-    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)scg;
-    LEABRA_UNIT_STATE* su = cg->ThrOwnUnState(net, thr_no);
-    if(su->avg_s < xcal.lrn_thr && su->avg_m < xcal.lrn_thr) return;
-    // no need to learn!
-
-    float clrate, bg_lrate, fg_lrate;
-    bool deep_on;
-    GetLrates(cg, net, thr_no, clrate, deep_on, bg_lrate, fg_lrate);
-
-    const float su_su_avg_s_lrn = su->su_avg_s_lrn;
-    const float su_ru_avg_s_lrn = su->ru_avg_s_lrn;
-    const float su_avg_s = su->avg_s;
-    const float su_avg_m = su->avg_m;
-    const int sz = cg->size;
-
-    LEABRA_PRJN_STATE* prjn = cg->GetPrjnState(net);
-    if(momentum.on) {
-      clrate *= momentum.lr_comp;
-    }
-
-    float err_dwt_max = 0.0f;
-    float bcm_dwt_max = 0.0f;
-    float dwt_max = 0.0f;
-    float err_dwt_avg = 0.0f;
-    float bcm_dwt_avg = 0.0f;
-    float dwt_avg = 0.0f;
-
-    float* dwts = cg->OwnCnVar(DWT);
-    float* fwts = cg->OwnCnVar(FWT);
-    float* dwnorms = cg->OwnCnVar(DWNORM);
-    float* moments = cg->OwnCnVar(MOMENT);
-
-    for(int i=0; i<sz; i++) {
-      LEABRA_UNIT_STATE* ru = cg->UnState(i, net);
-      if(ru->lesioned()) continue;
-      float lrate_eff = clrate;
-      if(deep_on) {
-        lrate_eff *= (bg_lrate + fg_lrate * ru->deep_lrn);
-      }
-      if(margin.lrate_mod) {
-        lrate_eff *= margin.MarginLrate(ru->margin);
-      }
-      float l_lrn_eff = xcal.LongLrate(ru->avg_l_lrn);
-      float err, bcm;
-      C_Compute_dWt_CtLeabraXCAL
-        (err, bcm, ru->ru_avg_s_lrn, ru->su_avg_s_lrn, ru->avg_m,
-         su_su_avg_s_lrn, su_ru_avg_s_lrn, su_avg_m, ru->avg_l, fwts[i]);
-
-      if(margin.sign_dwt) {
-        bcm += C_Compute_dWt_CtLeabraXCAL_MarginSign(ru->margin, su_su_avg_s_lrn);
-      }
-
-      bcm *= l_lrn_eff;
-      err *= xcal.m_lrn;
-
-      float abserr = fabsf(err);
-      if(dwt_norm.stats) {
-        float absbcm = fabsf(bcm);
-        err_dwt_max = fmaxf(abserr, err_dwt_max);
-        bcm_dwt_max = fmaxf(absbcm, bcm_dwt_max);
-        err_dwt_avg += abserr;
-        bcm_dwt_avg += absbcm;
-      }
-
-      float new_dwt = bcm + err;
-      float norm = 1.0f;
-      if(dwt_norm.on) {
-        norm = dwt_norm.ComputeNorm(dwnorms[i], fabsf(new_dwt)); // always update
-      }
-
-      if(momentum.on) {
-        // apparently quite important for norm to be applied to post-momentum dwt
-        new_dwt = norm * momentum.ComputeMoment(moments[i], new_dwt);
-      }
-      else {
-        new_dwt *= norm;
-      }
-      dwts[i] += lrate_eff * new_dwt;
-
-      if(dwt_norm.stats) {
-        float absdwt = fabsf(new_dwt);
-        dwt_max = fmaxf(absdwt, dwt_max);
-        dwt_avg += absdwt;
-      }
-    }
-
-    if(dwt_norm.stats) {
-      cg->err_dwt_max = err_dwt_max;
-      cg->bcm_dwt_max = bcm_dwt_max;
-      cg->dwt_max = dwt_max;
-
-      if(sz > 0) {
-        float nrm = 1.0f / (float)sz;
-        cg->err_dwt_avg = err_dwt_avg * nrm;
-        cg->bcm_dwt_avg = bcm_dwt_avg * nrm;
-        cg->dwt_avg = dwt_avg * nrm;
-      }
-    }
-
-    if(dwt_norm.SendConsAgg()) {
-      DwtNorm_SendCons(cg, net, thr_no);
-    }
-  }
 
 
   INLINE void   C_Compute_Weights_CtLeabraXCAL

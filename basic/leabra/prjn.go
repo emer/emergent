@@ -260,6 +260,7 @@ func (pj *Prjn) SendGeDelta(si int, delta float32) {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Learn methods
 
+// DWt computes the weight change (learning) -- on sending projections
 func (pj *Prjn) DWt() {
 	slay := pj.Recv.(*Layer)
 	rlay := pj.Recv.(*Layer)
@@ -291,5 +292,13 @@ func (pj *Prjn) DWt() {
 			}
 			sy.DWt += pj.Learn.Lrate * dwt
 		}
+	}
+}
+
+// WtFmDWt updates the synaptic weight values from delta-weight changes -- on sending projections
+func (pj *Prjn) WtFmDWt() {
+	for si := range pj.Syns {
+		sy := &pj.Syns[si]
+		pj.Learn.WtFmDWt(sy.DWt, 1, 1, &sy.Wt, &sy.LWt)
 	}
 }

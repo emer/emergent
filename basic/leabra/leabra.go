@@ -9,6 +9,3 @@ package leabra
 // * XFmY = general form of computation function??
 
 // etc -- all the standard things from unit and layer specs..
-
-// todo: styling needs to be able to handle field paths for applying parameter values
-// from ki.Props
