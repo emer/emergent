@@ -68,6 +68,31 @@ func (tsr *{{.Name}}) ToArrow() *tensor.{{.Name}} {
 	vec := bld.New{{.Name}}Array()
 	return tensor.New{{.Name}}(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
 }
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *{{.Name}}) FromArrow(arw *tensor.{{.Name}}, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.{{.Name}}Values()
+		tsr.Values = make([]{{or .Type}}, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.{{.Name}}Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
+}
 
 
 {{- end}}

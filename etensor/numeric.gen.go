@@ -70,6 +70,32 @@ func (tsr *Int64) ToArrow() *tensor.Int64 {
 	return tensor.NewInt64(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
 }
 
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Int64) FromArrow(arw *tensor.Int64, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Int64Values()
+		tsr.Values = make([]int64, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Int64Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
+}
+
 // Uint64 is an n-dim array of uint64s.
 type Uint64 struct {
 	Shape
@@ -125,6 +151,32 @@ func (tsr *Uint64) ToArrow() *tensor.Uint64 {
 	}
 	vec := bld.NewUint64Array()
 	return tensor.NewUint64(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
+}
+
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Uint64) FromArrow(arw *tensor.Uint64, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Uint64Values()
+		tsr.Values = make([]uint64, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Uint64Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
 }
 
 // Float64 is an n-dim array of float64s.
@@ -184,6 +236,32 @@ func (tsr *Float64) ToArrow() *tensor.Float64 {
 	return tensor.NewFloat64(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
 }
 
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Float64) FromArrow(arw *tensor.Float64, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Float64Values()
+		tsr.Values = make([]float64, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Float64Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
+}
+
 // Int32 is an n-dim array of int32s.
 type Int32 struct {
 	Shape
@@ -239,6 +317,32 @@ func (tsr *Int32) ToArrow() *tensor.Int32 {
 	}
 	vec := bld.NewInt32Array()
 	return tensor.NewInt32(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
+}
+
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Int32) FromArrow(arw *tensor.Int32, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Int32Values()
+		tsr.Values = make([]int32, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Int32Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
 }
 
 // Uint32 is an n-dim array of uint32s.
@@ -298,6 +402,32 @@ func (tsr *Uint32) ToArrow() *tensor.Uint32 {
 	return tensor.NewUint32(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
 }
 
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Uint32) FromArrow(arw *tensor.Uint32, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Uint32Values()
+		tsr.Values = make([]uint32, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Uint32Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
+}
+
 // Float32 is an n-dim array of float32s.
 type Float32 struct {
 	Shape
@@ -353,6 +483,32 @@ func (tsr *Float32) ToArrow() *tensor.Float32 {
 	}
 	vec := bld.NewFloat32Array()
 	return tensor.NewFloat32(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
+}
+
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Float32) FromArrow(arw *tensor.Float32, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Float32Values()
+		tsr.Values = make([]float32, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Float32Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
 }
 
 // Int16 is an n-dim array of int16s.
@@ -412,6 +568,32 @@ func (tsr *Int16) ToArrow() *tensor.Int16 {
 	return tensor.NewInt16(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
 }
 
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Int16) FromArrow(arw *tensor.Int16, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Int16Values()
+		tsr.Values = make([]int16, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Int16Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
+}
+
 // Uint16 is an n-dim array of uint16s.
 type Uint16 struct {
 	Shape
@@ -467,6 +649,32 @@ func (tsr *Uint16) ToArrow() *tensor.Uint16 {
 	}
 	vec := bld.NewUint16Array()
 	return tensor.NewUint16(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
+}
+
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Uint16) FromArrow(arw *tensor.Uint16, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Uint16Values()
+		tsr.Values = make([]uint16, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Uint16Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
 }
 
 // Int8 is an n-dim array of int8s.
@@ -526,6 +734,32 @@ func (tsr *Int8) ToArrow() *tensor.Int8 {
 	return tensor.NewInt8(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
 }
 
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Int8) FromArrow(arw *tensor.Int8, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Int8Values()
+		tsr.Values = make([]int8, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Int8Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
+}
+
 // Uint8 is an n-dim array of uint8s.
 type Uint8 struct {
 	Shape
@@ -581,4 +815,30 @@ func (tsr *Uint8) ToArrow() *tensor.Uint8 {
 	}
 	vec := bld.NewUint8Array()
 	return tensor.NewUint8(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
+}
+
+// FromArrow intializes this tensor from an arrow tensor of same type
+// cpy = true means make a copy of the arrow data, otherwise it directly
+// refers to its values slice -- we do not Retain() on that data so it is up
+// to the go GC and / or your own memory management policies to ensure the data
+// remains intact!
+func (tsr *Uint8) FromArrow(arw *tensor.Uint8, cpy bool) {
+	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	for i := range nms {
+		nms[i] = arw.DimName(i)
+	}
+	tsr.SetShape64(arw.Shape(), arw.Strides(), nms)
+	if cpy {
+		vls := arw.Uint8Values()
+		tsr.Values = make([]uint8, tsr.Len())
+		copy(tsr.Values, vls)
+	} else {
+		tsr.Values = arw.Uint8Values()
+	}
+	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// clear we can copy the null values -- nor does it seem that the tensor class
+	// exposes it either!  https://github.com/apache/arrow/issues/3496
+	// nln := arw.Data().NullN()
+	// if nln > 0 {
+	// }
 }

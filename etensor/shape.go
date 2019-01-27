@@ -49,6 +49,23 @@ func (sh *Shape) SetShape(shape, strides []int, names []string) {
 	}
 }
 
+// SetShape64 sets the shape parameters from int64 slices (e.g., arrow/tensor).
+// If strides is nil, row-major strides will be inferred.
+// If names is nil, a slice of empty strings will be created.
+func (sh *Shape) SetShape64(shape, strides []int64, names []string) {
+	sh.shape = CopyInts64(shape)
+	if strides == nil {
+		sh.strides = RowMajorStrides(sh.shape)
+	} else {
+		sh.strides = CopyInts64(strides)
+	}
+	if names == nil {
+		sh.names = make([]string, len(sh.shape))
+	} else {
+		sh.names = CopyStrings(names)
+	}
+}
+
 // CopyShape copies the shape parameters from another Shape struct.
 // copies the data so it is not accidentally subject to updates.
 func (sh *Shape) CopyShape(cp *Shape) {
@@ -204,6 +221,16 @@ func EqualInts(a, b []int) bool {
 func CopyInts(a []int) []int {
 	ns := make([]int, len(a))
 	copy(ns, a)
+	return ns
+}
+
+// CopyInts64 makes a copy of an int64 slice to an int slice
+func CopyInts64(a []int64) []int {
+	ln := len(a)
+	ns := make([]int, ln)
+	for i := 0; i < ln; i++ {
+		ns[i] = int(a[i])
+	}
 	return ns
 }
 

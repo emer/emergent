@@ -15,7 +15,10 @@ test:
 	$(GOTEST) -v ./...
 clean: 
 	$(GOCLEAN)
-	
+
+# tmpl is from github.com/apache/arrow/go/arrow/_tools/tmpl
+# go install there to get it on your path -- not needed for
+# regular builds, just if you are changing the template..
 generate:
 	tmpl -i -data=numeric.tmpldata numeric.gen.go.tmpl
 
