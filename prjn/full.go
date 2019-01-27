@@ -5,7 +5,6 @@
 package prjn
 
 import (
-	"github.com/apache/arrow/go/arrow/tensor"
 	"github.com/emer/emergent/etensor"
 )
 
@@ -22,20 +21,17 @@ func (fp *Full) Name() string {
 	return "Full"
 }
 
-func (fp *Full) Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *tensor.Int32, cons *etensor.Bits) {
+func (fp *Full) Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *etensor.Int32, cons *etensor.Bits) {
 	// todo: exclude self!
-	recvn = tensor.NewInt32(nil, recv.Shape64(), recv.Strides64(), recv.DimNames())
-	sendn = tensor.NewInt32(nil, send.Shape64(), send.Strides64(), send.DimNames())
-	csh := etensor.AddShapes(recv, send)
-	cons = etensor.NewBits(csh.Shape(), csh.Strides(), csh.DimNames())
+	recvn, sendn, cons = NewTensors(recv, send)
 	cons.Values.SetAll(true)
 	nsend := send.Len()
 	nrecv := recv.Len()
-	rnv := recvn.Int32Values()
+	rnv := recvn.Values
 	for i := 0; i < nrecv; i++ {
 		rnv[i] = int32(nsend)
 	}
-	snv := sendn.Int32Values()
+	snv := sendn.Values
 	for i := 0; i < nsend; i++ {
 		snv[i] = int32(nrecv)
 	}
@@ -46,6 +42,6 @@ func (fp *Full) HasWeights() bool {
 	return false
 }
 
-func (fp *Full) Weights(recvn, sendn *tensor.Int32, cons *etensor.Bits) []float32 {
+func (fp *Full) Weights(recvn, sendn *etensor.Int32, cons *etensor.Bits) []float32 {
 	return nil
 }

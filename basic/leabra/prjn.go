@@ -8,9 +8,9 @@ import (
 	"errors"
 	"log"
 
-	"github.com/apache/arrow/go/arrow/tensor"
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
+	"github.com/emer/emergent/etensor"
 	"github.com/emer/emergent/prjn"
 )
 
@@ -137,9 +137,9 @@ func (ps *PrjnStru) BuildStru() bool {
 
 // SetNIdxSt sets the *ConN and *ConIdxSt values given n tensor from Pat.
 // Returns total number of connections for this direction.
-func (ps *PrjnStru) SetNIdxSt(n *[]int32, avgmax *emer.AvgMax, idxst *[]int32, tn *tensor.Int32) int32 {
+func (ps *PrjnStru) SetNIdxSt(n *[]int32, avgmax *emer.AvgMax, idxst *[]int32, tn *etensor.Int32) int32 {
 	ln := tn.Len()
-	tnv := tn.Int32Values()
+	tnv := tn.Values
 	*n = make([]int32, ln)
 	*idxst = make([]int32, ln)
 	idx := int32(0)

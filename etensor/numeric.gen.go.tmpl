@@ -1,0 +1,75 @@
+// Copyright (c) 2019, The Emergent Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package etensor
+
+import (
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/apache/arrow/go/arrow/tensor"
+	"github.com/emer/emergent/bitslice"
+)
+
+{{range .In}}
+
+// {{.Name}} is an n-dim array of {{.Type}}s.
+type {{.Name}} struct {
+	Shape
+	Values []{{.Type}}
+	Nulls bitslice.Slice
+}
+
+// New{{.Name}} returns a new n-dimensional array of {{.Type}}s.
+// If strides is nil, row-major strides will be inferred.
+// If names is nil, a slice of empty strings will be created.
+// Nulls are initialized to nil.
+func New{{.Name}}(shape, strides []int, names []string) *{{.Name}} {
+	tsr := &{{.Name}}{}
+	tsr.SetShape(shape, strides, names)
+	tsr.Values = make([]{{or .Type}}, tsr.Len())
+	return tsr
+}
+
+// New{{.Name}}Shape returns a new n-dimensional array of {{.Type}}s.
+// Using shape structure instead of separate data.
+// Nulls are initialized to nil.
+func New{{.Name}}Shape(shape *Shape) *{{.Name}} {
+	tsr := &{{.Name}}{}
+	tsr.CopyShape(shape)
+	tsr.Values = make([]{{or .Type}}, tsr.Len())
+	return tsr
+}
+
+func (tsr *{{.Name}}) Value(i []int)  {{or .Type}} { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *{{.Name}}) Set(i []int, val {{or .Type}})  { j := tsr.Offset(i); tsr.Values[j] = val }
+func (tsr *{{.Name}}) IsNull(i []int) bool {
+	if tsr.Nulls == nil {
+		return false
+	}
+	j := tsr.Offset(i)
+	return tsr.Nulls.Index(j)
+}
+func (tsr *{{.Name}}) SetNull(i []int, nul bool)  {
+	if tsr.Nulls == nil {
+		tsr.Nulls = bitslice.Make(tsr.Len(), 0)
+	}
+	j := tsr.Offset(i)
+	tsr.Nulls.Set(j, nul)
+}
+// ToArrow returns the apache arrow equivalent of the tensor
+func (tsr *{{.Name}}) ToArrow() *tensor.{{.Name}} {
+	bld := array.New{{.Name}}Builder(memory.DefaultAllocator)
+	if tsr.Nulls != nil {
+		bld.AppendValues(tsr.Values, tsr.Nulls.ToBools())
+	} else {
+		bld.AppendValues(tsr.Values, nil)
+	}
+	vec := bld.New{{.Name}}Array()
+	return tensor.New{{.Name}}(vec.Data(), tsr.Shape64(), tsr.Strides64(), tsr.DimNames())
+}
+
+
+{{- end}}
+
+

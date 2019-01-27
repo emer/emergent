@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package etensor provides tensor Shape management.
-// Based on code from apache/arrow/go/tensor, which is all hidden.
 package etensor
 
 // Shape manages a tensor's shape information, including strides and dimension names
@@ -38,17 +36,25 @@ func NewShape(shape, strides []int, names []string) *Shape {
 // If strides is nil, row-major strides will be inferred.
 // If names is nil, a slice of empty strings will be created.
 func (sh *Shape) SetShape(shape, strides []int, names []string) {
-	sh.shape = shape
+	sh.shape = CopyInts(shape)
 	if strides == nil {
 		sh.strides = RowMajorStrides(shape)
 	} else {
-		sh.strides = strides
+		sh.strides = CopyInts(strides)
 	}
 	if names == nil {
 		sh.names = make([]string, len(sh.shape))
 	} else {
-		sh.names = names
+		sh.names = CopyStrings(names)
 	}
+}
+
+// CopyShape copies the shape parameters from another Shape struct.
+// copies the data so it is not accidentally subject to updates.
+func (sh *Shape) CopyShape(cp *Shape) {
+	sh.shape = CopyInts(cp.shape)
+	sh.strides = CopyInts(cp.strides)
+	sh.names = CopyStrings(cp.names)
 }
 
 // AddShapes returns a new shape by adding two shapes one after the other.
@@ -106,12 +112,12 @@ func (sh *Shape) IsContiguous() bool {
 
 func (sh *Shape) IsRowMajor() bool {
 	strides := RowMajorStrides(sh.shape)
-	return Equalints(strides, sh.strides)
+	return EqualInts(strides, sh.strides)
 }
 
 func (sh *Shape) IsColMajor() bool {
 	strides := ColMajorStrides(sh.shape)
-	return Equalints(strides, sh.strides)
+	return EqualInts(strides, sh.strides)
 }
 
 // Offset returns the "flat" 1D array index into an element at the given n-dimensional index
@@ -181,8 +187,8 @@ func ColMajorStrides(shape []int) []int {
 	return strides
 }
 
-// Equalints compares two int slices and returns true if they are equal
-func Equalints(a, b []int) bool {
+// EqualInts compares two int slices and returns true if they are equal
+func EqualInts(a, b []int) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -192,4 +198,18 @@ func Equalints(a, b []int) bool {
 		}
 	}
 	return true
+}
+
+// CopyInts makes a copy of an int slice
+func CopyInts(a []int) []int {
+	ns := make([]int, len(a))
+	copy(ns, a)
+	return ns
+}
+
+// CopyStrings makes a copy of a string slice
+func CopyStrings(a []string) []string {
+	ns := make([]string, len(a))
+	copy(ns, a)
+	return ns
 }

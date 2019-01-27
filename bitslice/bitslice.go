@@ -106,6 +106,16 @@ func (bs *Slice) SetAll(val bool) {
 	}
 }
 
+// ToBools converts to a []bool slice
+func (bs *Slice) ToBools() []bool {
+	ln := len(*bs)
+	bb := make([]bool, ln)
+	for i := 0; i < ln; i++ {
+		bb[i] = bs.Index(i)
+	}
+	return bb
+}
+
 // todo: insert, delete, sub-slice, copy..
 
 // String satisfies the fmt.Stringer interface

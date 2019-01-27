@@ -24,6 +24,17 @@ func NewBits(shape, strides []int, names []string) *Bits {
 	return bt
 }
 
+// NewBits returns a new n-dimensional array of bits
+// If strides is nil, row-major strides will be inferred.
+// If names is nil, a slice of empty strings will be created.
+func NewBitsShape(shape *Shape) *Bits {
+	bt := &Bits{}
+	bt.CopyShape(shape)
+	ln := bt.Len()
+	bt.Values = bitslice.Make(ln, 0)
+	return bt
+}
+
 // Value returns value at given tensor index
 func (tsr *Bits) Value(i []int) bool {
 	j := int(tsr.Offset(i))
