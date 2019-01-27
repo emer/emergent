@@ -218,6 +218,28 @@ type XX1Params struct {
 	InterpVal   float32 `view:"-" desc:"function value at interp_range - sig_val_at_0 -- for interpolation"`
 }
 
+func (xp *XX1Params) Update() {
+	xp.SigGainNVar = xp.SigGain / xp.NVar
+	xp.SigMultEff = xp.SigMult * math32.Pow(xp.Gain*xp.NVar, xp.SigMultPow)
+	xp.SigValAt0 = 0.5 * xp.SigMultEff
+	xp.InterpVal = xp.XX1GainCor(xp.InterpRange) - xp.SigValAt0
+}
+
+func (xp *XX1Params) Defaults() {
+	xp.Thr = 0.5
+	xp.Gain = 100
+	xp.NVar = 0.005
+	xp.VmActThr = 0.01
+	xp.AvgCorrect = 1.0
+	xp.SigMult = 0.33
+	xp.SigMultPow = 0.8
+	xp.SigGain = 3.0
+	xp.InterpRange = 0.01
+	xp.GainCorRange = 10.0
+	xp.GainCor = 0.1
+	xp.Update()
+}
+
 // XX1 computes the basic x/(x+1) function
 func (xp *XX1Params) XX1(x float32) float32 { return x / (x + 1) }
 
@@ -278,28 +300,6 @@ func (xp *XX1Params) NoisyXX1Gain(x, gain float32) float32 {
 	} else {
 		return xp.XX1GainCorGain(x, gain)
 	}
-}
-
-func (xp *XX1Params) Update() {
-	xp.SigGainNVar = xp.SigGain / xp.NVar
-	xp.SigMultEff = xp.SigMult * math32.Pow(xp.Gain*xp.NVar, xp.SigMultPow)
-	xp.SigValAt0 = 0.5 * xp.SigMultEff
-	xp.InterpVal = xp.XX1GainCor(xp.InterpRange) - xp.SigValAt0
-}
-
-func (xp *XX1Params) Defaults() {
-	xp.Thr = 0.5
-	xp.Gain = 100
-	xp.NVar = 0.005
-	xp.VmActThr = 0.01
-	xp.AvgCorrect = 1.0
-	xp.SigMult = 0.33
-	xp.SigMultPow = 0.8
-	xp.SigGain = 3.0
-	xp.InterpRange = 0.01
-	xp.GainCorRange = 10.0
-	xp.GainCor = 0.1
-	xp.Update()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

@@ -54,6 +54,7 @@ var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS
 var NeuronVarsMap map[string]int
 
 func init() {
+	NeuronVarsMap = make(map[string]int, len(NeuronVars))
 	for i, v := range NeuronVars {
 		NeuronVarsMap[v] = i
 	}

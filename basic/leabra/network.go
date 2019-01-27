@@ -60,6 +60,21 @@ type Network struct {
 	NetworkStru
 }
 
+// Defaults sets all the default parameters for all layers and projections
+func (nt *Network) Defaults() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).Defaults()
+	}
+}
+
+// UpdateParams updates all the derived parameters if any have changed, for all layers
+// and projections
+func (nt *Network) UpdateParams() {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).UpdateParams()
+	}
+}
+
 // Layer returns the leabra.Layer version of the layer
 func (nt *Network) Layer(idx int) *Layer {
 	return nt.Layers[idx].(*Layer)
