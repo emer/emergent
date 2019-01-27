@@ -17,6 +17,9 @@ type Network interface {
 	// do extra bounds checking
 	LayerIndex(idx int) Layer
 
-	// LayerByName returns layer of given name, false if not found
-	LayerByName(name string) (Layer, bool)
+	// LayerByName returns layer of given name, nil if not found
+	LayerByName(name string) Layer
+
+	// LayerByNameErrMsg returns layer of given name, emits a log error message and returns false if not found
+	LayerByNameErrMsg(name string) (Layer, bool)
 }

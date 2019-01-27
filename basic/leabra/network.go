@@ -23,25 +23,26 @@ func (nt *NetworkStru) NetName() string               { return nt.Name }
 func (nt *NetworkStru) NLayers() int                  { return len(nt.Layers) }
 func (nt *NetworkStru) LayerIndex(idx int) emer.Layer { return nt.Layers[idx] }
 
-// LayerByName returns a layer by looking it up by name in the layer map
-// will create the layer map if it is nil or a different size than layers slice
+// LayerByName returns a layer by looking it up by name in the layer map (nil if not found).
+// Will create the layer map if it is nil or a different size than layers slice,
 // but otherwise needs to be updated manually.
-func (nt *NetworkStru) LayerByName(name string) (emer.Layer, bool) {
+func (nt *NetworkStru) LayerByName(name string) emer.Layer {
 	if nt.LayMap == nil || len(nt.LayMap) != len(nt.Layers) {
 		nt.MakeLayMap()
 	}
-	ly, has := nt.LayMap[name]
-	return ly, has
+	ly := nt.LayMap[name]
+	return ly
 }
 
 // LayerByNameErrMsg returns a layer by looking it up by name -- emits a log error message
 // if layer is not found
 func (nt *NetworkStru) LayerByNameErrMsg(name string) (emer.Layer, bool) {
-	ly, has := nt.LayerByName(name)
-	if !has {
+	ly := nt.LayerByName(name)
+	if ly == nil {
 		log.Printf("Layer named: %v not found in Network: %v\n", name, nt.Name)
+		return ly, false
 	}
-	return ly, has
+	return ly, true
 }
 
 // MakeLayMap updates layer map based on current layers
@@ -254,6 +255,39 @@ func (nt *Network) AvgMaxAct() {
 			continue
 		}
 		ly.(*Layer).AvgMaxAct()
+	}
+}
+
+// QuarterFinal does updating after end of a quarter
+func (nt *Network) QuarterFinal(time *Time) {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).QuarterFinal(time)
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Learn methods
+
+// DWt computes the weight change (learning) based on current running-average activation values
+func (nt *Network) DWt() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).DWt()
+	}
+}
+
+// WtFmDWt updates the weights from delta-weight changes
+func (nt *Network) WtFmDWt() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).WtFmDWt()
 	}
 }
 

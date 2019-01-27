@@ -105,23 +105,15 @@ func (sh *Shape) Len() int {
 	return int(o)
 }
 
-// IntTo64 converts an []int slice to an []int64 slice
-func (sh *Shape) IntTo64(isl []int) []int64 {
-	is := make([]int64, len(isl))
-	for i := range isl {
-		is[i] = int64(isl[i])
-	}
-	return is
-}
-
 func (sh *Shape) Shape() []int       { return sh.shape }
 func (sh *Shape) Strides() []int     { return sh.strides }
-func (sh *Shape) Shape64() []int64   { return sh.IntTo64(sh.shape) }
-func (sh *Shape) Strides64() []int64 { return sh.IntTo64(sh.strides) }
+func (sh *Shape) Shape64() []int64   { return IntTo64(sh.shape) }
+func (sh *Shape) Strides64() []int64 { return IntTo64(sh.strides) }
 
 func (sh *Shape) DimNames() []string   { return sh.names }
 func (sh *Shape) NumDims() int         { return len(sh.shape) }
 func (sh *Shape) DimName(i int) string { return sh.names[i] }
+func (sh *Shape) Dim(i int) int        { return sh.shape[i] }
 
 func (sh *Shape) IsContiguous() bool {
 	return sh.IsRowMajor() || sh.IsColMajor()
@@ -138,7 +130,7 @@ func (sh *Shape) IsColMajor() bool {
 }
 
 // Offset returns the "flat" 1D array index into an element at the given n-dimensional index
-// No checking is done on the length of the index relative to the shape of the tensor.
+// No checking is done on the length or size of the index values relative to the shape of the tensor.
 func (sh *Shape) Offset(index []int) int {
 	var offset int
 	for i, v := range index {
@@ -232,6 +224,15 @@ func CopyInts64(a []int64) []int {
 		ns[i] = int(a[i])
 	}
 	return ns
+}
+
+// IntTo64 converts an []int slice to an []int64 slice
+func IntTo64(isl []int) []int64 {
+	is := make([]int64, len(isl))
+	for i := range isl {
+		is[i] = int64(isl[i])
+	}
+	return is
 }
 
 // CopyStrings makes a copy of a string slice

@@ -32,8 +32,11 @@ type Layer interface {
 	LayPos() Vec3i
 
 	// Unit returns the unit at given index, which must be valid according to shape
-	// otherwise a false is returned
-	Unit(index []int) (Unit, bool)
+	// otherwise a nil is returned
+	Unit(index []int) Unit
+
+	// UnitVals returns values of given variable name on unit for each unit in the layer, as a float32 slice
+	UnitVals(varnm string) []float32
 
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int

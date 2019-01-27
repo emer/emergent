@@ -7,6 +7,8 @@
 package etensor
 
 import (
+	"errors"
+
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/apache/arrow/go/arrow/tensor"
@@ -56,6 +58,53 @@ func (tsr *Int64) SetNull(i []int, nul bool) {
 	}
 	j := tsr.Offset(i)
 	tsr.Nulls.Set(j, nul)
+}
+
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Int64) Clone() *Int64 {
+	csr := NewInt64Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Int64{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Int64{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -141,6 +190,53 @@ func (tsr *Uint64) SetNull(i []int, nul bool) {
 	tsr.Nulls.Set(j, nul)
 }
 
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Uint64) Clone() *Uint64 {
+	csr := NewUint64Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Uint64{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Uint64{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
 // ToArrow returns the apache arrow equivalent of the tensor
 func (tsr *Uint64) ToArrow() *tensor.Uint64 {
 	bld := array.NewUint64Builder(memory.DefaultAllocator)
@@ -222,6 +318,53 @@ func (tsr *Float64) SetNull(i []int, nul bool) {
 	}
 	j := tsr.Offset(i)
 	tsr.Nulls.Set(j, nul)
+}
+
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Float64) Clone() *Float64 {
+	csr := NewFloat64Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Float64{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Float64{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -307,6 +450,53 @@ func (tsr *Int32) SetNull(i []int, nul bool) {
 	tsr.Nulls.Set(j, nul)
 }
 
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Int32) Clone() *Int32 {
+	csr := NewInt32Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Int32{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Int32{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
 // ToArrow returns the apache arrow equivalent of the tensor
 func (tsr *Int32) ToArrow() *tensor.Int32 {
 	bld := array.NewInt32Builder(memory.DefaultAllocator)
@@ -388,6 +578,53 @@ func (tsr *Uint32) SetNull(i []int, nul bool) {
 	}
 	j := tsr.Offset(i)
 	tsr.Nulls.Set(j, nul)
+}
+
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Uint32) Clone() *Uint32 {
+	csr := NewUint32Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Uint32{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Uint32{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -473,6 +710,53 @@ func (tsr *Float32) SetNull(i []int, nul bool) {
 	tsr.Nulls.Set(j, nul)
 }
 
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Float32) Clone() *Float32 {
+	csr := NewFloat32Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Float32{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Float32{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
 // ToArrow returns the apache arrow equivalent of the tensor
 func (tsr *Float32) ToArrow() *tensor.Float32 {
 	bld := array.NewFloat32Builder(memory.DefaultAllocator)
@@ -554,6 +838,53 @@ func (tsr *Int16) SetNull(i []int, nul bool) {
 	}
 	j := tsr.Offset(i)
 	tsr.Nulls.Set(j, nul)
+}
+
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Int16) Clone() *Int16 {
+	csr := NewInt16Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Int16{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Int16{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -639,6 +970,53 @@ func (tsr *Uint16) SetNull(i []int, nul bool) {
 	tsr.Nulls.Set(j, nul)
 }
 
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Uint16) Clone() *Uint16 {
+	csr := NewUint16Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Uint16{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Uint16{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
 // ToArrow returns the apache arrow equivalent of the tensor
 func (tsr *Uint16) ToArrow() *tensor.Uint16 {
 	bld := array.NewUint16Builder(memory.DefaultAllocator)
@@ -722,6 +1100,53 @@ func (tsr *Int8) SetNull(i []int, nul bool) {
 	tsr.Nulls.Set(j, nul)
 }
 
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Int8) Clone() *Int8 {
+	csr := NewInt8Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Int8{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Int8{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
 // ToArrow returns the apache arrow equivalent of the tensor
 func (tsr *Int8) ToArrow() *tensor.Int8 {
 	bld := array.NewInt8Builder(memory.DefaultAllocator)
@@ -803,6 +1228,53 @@ func (tsr *Uint8) SetNull(i []int, nul bool) {
 	}
 	j := tsr.Offset(i)
 	tsr.Nulls.Set(j, nul)
+}
+
+// Clone creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *Uint8) Clone() *Uint8 {
+	csr := NewUint8Shape(&tsr.Shape)
+	copy(csr.Values, tsr.Values)
+	if tsr.Nulls != nil {
+		csr.Nulls = tsr.Nulls.Clone()
+	}
+	return csr
+}
+
+// SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
+// of dimensions (0 < subdim < NumDims of this tensor).  Only valid for row or column major layouts.
+// subdim are the inner, contiguous dimensions (i.e., the final dims in RowMajor and the first ones in ColMajor).
+// offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
+// The new tensor points to the values of the this tensor (i.e., modifications will affect both).
+// Use Clone() method to separate the two.
+// todo: not getting nulls yet.
+func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
+	nd := tsr.NumDims()
+	od := nd - subdim
+	if od <= 0 {
+		return nil, errors.New("SubSlice number of sub dimensions was >= NumDims -- must be less")
+	}
+	if tsr.IsRowMajor() {
+		stsr := &Uint8{}
+		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		sti := make([]int, nd)
+		copy(sti, offs)
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	} else if tsr.IsColMajor() {
+		stsr := &Uint8{}
+		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
+		stsr.strides = ColMajorStrides(stsr.shape)
+		sti := make([]int, nd)
+		for i := subdim; i < nd; i++ {
+			sti[i] = offs[i-subdim]
+		}
+		stoff := tsr.Offset(sti)
+		stsr.Values = tsr.Values[stoff:]
+		return stsr, nil
+	}
+	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor

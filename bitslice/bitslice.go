@@ -116,6 +116,13 @@ func (bs *Slice) ToBools() []bool {
 	return bb
 }
 
+// Clone creates a new copy of this bitslice with separate memory
+func (bs *Slice) Clone() Slice {
+	cp := make([]byte, len(*bs))
+	copy(cp, *bs)
+	return cp
+}
+
 // todo: insert, delete, sub-slice, copy..
 
 // String satisfies the fmt.Stringer interface

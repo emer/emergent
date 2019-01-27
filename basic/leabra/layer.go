@@ -5,7 +5,6 @@
 package leabra
 
 import (
-	"github.com/apache/arrow/go/arrow/tensor"
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/erand"
@@ -142,13 +141,25 @@ func (ly *Layer) UpdateParams() {
 	}
 }
 
-// Unit is emer.Layer interface method -- only possible with Neurons in place
-func (ly *Layer) Unit(idx []int) (emer.Unit, bool) {
+// Unit is emer.Layer interface method to get given Unit
+// only possible with Neurons in place
+func (ly *Layer) Unit(idx []int) emer.Unit {
 	fidx := ly.Shape.Offset(idx)
 	if int(fidx) < len(ly.Neurons) {
-		return &ly.Neurons[fidx], true
+		return &ly.Neurons[fidx]
 	}
-	return nil, false
+	return nil
+}
+
+// UnitVals is emer.Layer interface method to return values of given variable
+func (ly *Layer) UnitVals(varNm string) []float32 {
+	vs := make([]float32, len(ly.Neurons))
+	for i := range ly.Neurons {
+		nrn := &ly.Neurons[i]
+		vl, _ := nrn.VarByName(varNm)
+		vs[i] = vl
+	}
+	return vs
 }
 
 // Build constructs the layer state, including calling Build on the projections
@@ -249,7 +260,7 @@ func (ly *Layer) InitExt() {
 // ApplyExt applies external input in the form of an arrow tensor.Float32
 // If the layer is a Target or Compare layer type, then it goes in Targ
 // otherwise it goes in Ext
-func (ly *Layer) ApplyExt(ext *tensor.Float32) {
+func (ly *Layer) ApplyExt(ext *etensor.Float32) {
 	// todo: compare shape?
 	clrmsk := bitflag.Mask32(int(NeurHasExt), int(NeurHasTarg), int(NeurHasCmpr))
 	setmsk := int32(0)
@@ -263,7 +274,7 @@ func (ly *Layer) ApplyExt(ext *tensor.Float32) {
 	} else {
 		setmsk = bitflag.Mask32(int(NeurHasExt))
 	}
-	ev := ext.Float32Values()
+	ev := ext.Values
 	mx := ints.MinInt(len(ev), len(ly.Neurons))
 	for i := 0; i < mx; i++ {
 		nrn := &ly.Neurons[i]
