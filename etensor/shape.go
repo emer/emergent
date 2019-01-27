@@ -106,6 +106,7 @@ func (sh *Shape) Len() int {
 }
 
 func (sh *Shape) Shape() []int       { return sh.shape }
+func (sh *Shape) Shapes() []int      { return sh.shape }
 func (sh *Shape) Strides() []int     { return sh.strides }
 func (sh *Shape) Shape64() []int64   { return IntTo64(sh.shape) }
 func (sh *Shape) Strides64() []int64 { return IntTo64(sh.strides) }

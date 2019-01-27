@@ -5,11 +5,15 @@
 package leabra
 
 import (
+	"fmt"
+	"io"
+
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/erand"
 	"github.com/emer/emergent/etensor"
 	"github.com/goki/ki/bitflag"
+	"github.com/goki/ki/indent"
 	"github.com/goki/ki/ints"
 	"github.com/goki/ki/kit"
 )
@@ -128,6 +132,9 @@ func (ly *Layer) Defaults() {
 	ly.Act.Defaults()
 	ly.Inhib.Defaults()
 	ly.Learn.Defaults()
+	for _, pj := range ly.RecvPrjns {
+		pj.Defaults()
+	}
 }
 
 // UpdateParams updates all params given any changes that might have been made to individual values
@@ -138,6 +145,45 @@ func (ly *Layer) UpdateParams() {
 	ly.Learn.Update()
 	for _, pj := range ly.RecvPrjns {
 		pj.UpdateParams()
+	}
+}
+
+// SetParams sets given parameters to this layer, if the target type is Layer
+// calls UpdateParams to ensure derived parameters are all updated
+func (ly *Layer) SetParams(pars emer.Params) bool {
+	trg := pars.Target()
+	if trg != "Layer" {
+		return false
+	}
+	pars.Set(ly)
+	ly.UpdateParams()
+	return true
+}
+
+// StyleParam applies a given style to either this layer or the receiving projections in this layer
+// depending on the style specification (.Class, #Name, Type) and target value of params.
+// returns true if applied successfully.
+func (ly *Layer) StyleParam(sty string, pars emer.Params) bool {
+	if emer.StyleMatch(sty, ly.Name, ly.Class, "Layer") {
+		if ly.SetParams(pars) {
+			return true // done -- otherwise, might be for prjns
+		}
+	}
+	set := false
+	for _, pj := range ly.RecvPrjns {
+		did := pj.StyleParam(sty, pars)
+		if did {
+			set = true
+		}
+	}
+	return set
+}
+
+// StyleParams applies a given styles to either this layer or the receiving projections in this layer
+// depending on the style specification (.Class, #Name, Type) and target value of params
+func (ly *Layer) StyleParams(psty emer.ParamStyle) {
+	for sty, pars := range psty {
+		ly.StyleParam(sty, pars)
 	}
 }
 
@@ -180,6 +226,30 @@ func (ly *Layer) Build() {
 		ly.BuildPools()
 	}
 	ly.RecvPrjns.Build()
+}
+
+// WriteWtsJSON writes the weights from this layer from the receiver-side perspective
+// in a JSON text format.  We build in the indentation logic to make it much faster and
+// more efficient.
+func (ly *Layer) WriteWtsJSON(w io.Writer, depth int) {
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("{\n"))
+	depth++
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", ly.Name)))
+	depth++
+	for _, pj := range ly.RecvPrjns {
+		if pj.IsOff() {
+			continue
+		}
+		pj.WriteWtsJSON(w, depth)
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("],\n"))
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("},\n"))
 }
 
 // BuildPools initializes neuron start / end indexes for sub-group pools

@@ -5,9 +5,12 @@
 package leabra
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"testing"
 
+	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etensor"
 	"github.com/emer/emergent/prjn"
 )
@@ -15,17 +18,43 @@ import (
 var TestNet Network
 var InPats *etensor.Float32
 
+var Pars = emer.ParamStyle{
+	"Prjn": {
+		"Prjn.Learn.WtInit.Var": 0, // for reproducibility, identical weights
+	},
+	".TopDown": {
+		"Prjn.WtScale.Rel": 0.2,
+	},
+}
+
 func TestMakeNet(t *testing.T) {
+	TestNet.Name = "TestNet"
 	inLay := TestNet.AddLayer("Input", []int{4, 1}, Input)
 	hidLay := TestNet.AddLayer("Hidden", []int{4, 1}, Hidden)
 	outLay := TestNet.AddLayer("Output", []int{4, 1}, Target)
 
 	TestNet.ConnectLayers(hidLay, inLay, prjn.NewOneToOne())
 	TestNet.ConnectLayers(outLay, hidLay, prjn.NewOneToOne())
-	TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne())
+	outHid := TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne())
+	outHid.Class = "TopDown"
 
 	TestNet.Defaults()
+	TestNet.StyleParams(Pars)
 	TestNet.Build()
+	TestNet.InitWts()
+	TestNet.TrialInit() // get GeScale
+
+	var buf bytes.Buffer
+	TestNet.WriteWtsJSON(&buf)
+	wb := buf.Bytes()
+	fmt.Printf("TestNet Weights:\n\n%v\n", string(wb))
+
+	fp, err := os.Create("testdata/testnet.wts")
+	defer fp.Close()
+	if err != nil {
+		t.Error(err)
+	}
+	fp.Write(wb)
 }
 
 func TestInPats(t *testing.T) {
@@ -68,7 +97,12 @@ func TestNetAct(t *testing.T) {
 			hidGes := hidLay.UnitVals("Ge")
 			outActs := outLay.UnitVals("Act")
 			outGes := outLay.UnitVals("Ge")
-			fmt.Printf("pat: %v qtr: %v in acts: %v hid acts: %v ges: %v out acts: %v ges: %v\n", pi, qtr, inActs, hidActs, hidGes, outActs, outGes)
+			fmt.Printf("pat: %v qtr: %v\nin acts: %v\nhid acts: %v ges: %v\nout acts: %v ges: %v\n", pi, qtr, inActs, hidActs, hidGes, outActs, outGes)
+
+			// C++ emergent:
+			// q0: in act: .95
+			// hid act: 0.943078, net: 0.475499
+			// out act: 0.961023, net: 0.471143
 		}
 	}
 }

@@ -5,10 +5,13 @@
 package leabra
 
 import (
+	"fmt"
+	"io"
 	"log"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/prjn"
+	"github.com/goki/ki/indent"
 )
 
 // leabra.NetworkStru holds the basic structural components of a network (layers)
@@ -76,6 +79,14 @@ func (nt *Network) UpdateParams() {
 	}
 }
 
+// StyleParams applies a given styles to either this layer or the receiving projections in this layer
+// depending on the style specification (.Class, #Name, Type) and target value of params
+func (nt *Network) StyleParams(psty emer.ParamStyle) {
+	for _, ly := range nt.Layers {
+		ly.(*Layer).StyleParams(psty)
+	}
+}
+
 // Layer returns the leabra.Layer version of the layer
 func (nt *Network) Layer(idx int) *Layer {
 	return nt.Layers[idx].(*Layer)
@@ -86,6 +97,7 @@ func (nt *Network) AddLayer(name string, shape []int, typ LayerType) *Layer {
 	ly := &Layer{}
 	ly.Name = name
 	ly.SetShape(shape)
+	ly.Type = typ
 	nt.Layers = append(nt.Layers, ly)
 	nt.MakeLayMap()
 	return ly
@@ -132,6 +144,31 @@ func (nt *Network) Build() {
 		}
 		ly.(*Layer).Build()
 	}
+}
+
+// WriteWtsJSON writes the weights from this layer from the receiver-side perspective
+// in a JSON text format.  We build in the indentation logic to make it much faster and
+// more efficient.
+func (nt *Network) WriteWtsJSON(w io.Writer) {
+	depth := 0
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("{\n"))
+	depth++
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", nt.Name)))
+	depth++
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).WriteWtsJSON(w, depth)
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("]\n"))
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}\n"))
 }
 
 // below are all the computational algorithm methods, which generally just call layer

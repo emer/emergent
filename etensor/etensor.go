@@ -4,13 +4,13 @@
 
 package etensor
 
-// etensor.Interface is the general interface for n-dimensional tensors
-type Interface interface {
+// Tensor is the general interface for n-dimensional tensors
+type Tensor interface {
 	// Len returns the number of elements in the tensor.
 	Len() int
 
-	// Shape returns the size in each dimension of the tensor.
-	Shape() []int
+	// Shapes returns the size in each dimension of the tensor. (Shape is the full Shape struct)
+	Shapes() []int
 
 	// Strides returns the number of elements to step in each dimension when traversing the tensor.
 	Strides() []int
@@ -38,3 +38,6 @@ type Interface interface {
 	// No checking is done on the length or size of the index values relative to the shape of the tensor.
 	Offset(i []int) int
 }
+
+// Check impl
+var _ Tensor = (*Float32)(nil)

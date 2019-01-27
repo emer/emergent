@@ -6,12 +6,15 @@ package leabra
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"log"
 
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etensor"
 	"github.com/emer/emergent/prjn"
+	"github.com/goki/ki/indent"
 )
 
 // PrjnStru contains the basic structural information for specifying a projection of synaptic
@@ -38,7 +41,10 @@ type PrjnStru struct {
 
 // emer.Prjn interface
 
-func (ps *PrjnStru) PrjnClass() string     { return ps.Class }
+func (ps *PrjnStru) PrjnClass() string { return ps.Class }
+func (ps *PrjnStru) PrjnName() string {
+	return ps.Recv.LayName() + "Fm" + ps.Send.LayName()
+}
 func (ps *PrjnStru) RecvLay() emer.Layer   { return ps.Recv }
 func (ps *PrjnStru) SendLay() emer.Layer   { return ps.Send }
 func (ps *PrjnStru) Pattern() prjn.Pattern { return ps.Pat }
@@ -130,6 +136,7 @@ func (ps *PrjnStru) BuildStru() bool {
 			}
 			ps.SConIdx[sst+sci] = int32(ri)
 			(sconN[si])++
+			rci++
 		}
 	}
 	return true
@@ -200,6 +207,35 @@ func (pj *Prjn) UpdateParams() {
 	pj.Learn.Update()
 }
 
+// SetParams sets given parameters to this prjn, if the target type is Prjn
+// calls UpdateParams to ensure derived parameters are all updated
+func (pj *Prjn) SetParams(pars emer.Params) bool {
+	trg := pars.Target()
+	if trg != "Prjn" {
+		return false
+	}
+	pars.Set(pj)
+	pj.UpdateParams()
+	return true
+}
+
+// StyleParam applies a given style to this projection
+// depending on the style specification (.Class, #Name, Type) and target value of params
+func (pj *Prjn) StyleParam(sty string, pars emer.Params) bool {
+	if emer.StyleMatch(sty, pj.PrjnName(), pj.Class, "Prjn") {
+		return pj.SetParams(pars)
+	}
+	return false
+}
+
+// StyleParams applies a given styles to either this prjn
+// depending on the style specification (.Class, #Name, Type) and target value of params
+func (pj *Prjn) StyleParams(psty emer.ParamStyle) {
+	for sty, pars := range psty {
+		pj.StyleParam(sty, pars)
+	}
+}
+
 // Build constructs the full connectivity among the layers as specified in this projection.
 // Calls PrjnStru.BuildStru and then allocates the synaptic values in Syns accordingly.
 func (pj *Prjn) Build() bool {
@@ -208,6 +244,60 @@ func (pj *Prjn) Build() bool {
 	}
 	pj.Syns = make([]Synapse, len(pj.SConIdx))
 	return true
+}
+
+// WriteWtsJSON writes the weights from this projection from the receiver-side perspective
+// in a JSON text format.  We build in the indentation logic to make it much faster and
+// more efficient.
+func (pj *Prjn) WriteWtsJSON(w io.Writer, depth int) {
+	slay := pj.Send.(*Layer)
+	rlay := pj.Recv.(*Layer)
+	nr := len(rlay.Neurons)
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("{\n"))
+	depth++
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte(fmt.Sprintf("\"GeScale\": %v\n", pj.GeScale)))
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", slay.Name)))
+	depth++
+	for ri := 0; ri < nr; ri++ {
+		nc := int(pj.RConN[ri])
+		st := int(pj.RConIdxSt[ri])
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("\"%v\": {\n", ri)))
+		depth++
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("\"n\": %v,\n", nc)))
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte("\"Si\": ["))
+		for ci := 0; ci < nc; ci++ {
+			si := pj.RConIdx[st+ci]
+			w.Write([]byte(fmt.Sprintf("%v ", si)))
+		}
+		w.Write([]byte("]\n"))
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte("\"Wt\": ["))
+		for ci := 0; ci < nc; ci++ {
+			rsi := pj.RSynIdx[st+ci]
+			sy := &pj.Syns[rsi]
+			w.Write([]byte(fmt.Sprintf("%v ", sy.Wt)))
+		}
+		w.Write([]byte("]\n"))
+		depth--
+		w.Write(indent.TabBytes(depth))
+		if ri == nr-1 {
+			w.Write([]byte("}\n"))
+		} else {
+			w.Write([]byte("},\n"))
+		}
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("]\n"))
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}\n"))
 }
 
 ///////////////////////////////////////////////////////////////////////
