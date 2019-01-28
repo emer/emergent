@@ -188,17 +188,17 @@ func TestNetLearn(t *testing.T) {
 	time := NewTime()
 
 	printCycs := false
-	printQtrs := true
+	printQtrs := false
 
-	qtr0HidAvgS := []float32{0.94223607, 6.034972e-08, 6.034972e-08, 6.034972e-08}
-	qtr0HidAvgM := []float32{0.8156768, 0.013628835, 0.013628835, 0.013628835}
-	qtr0OutAvgS := []float32{0.9397443, 6.034972e-08, 6.034972e-08, 6.034972e-08}
-	qtr0OutAvgM := []float32{0.7438164, 0.013628835, 0.013628835, 0.013628835}
+	qtr0HidAvgS := []float32{0.9422413, 6.034972e-08, 6.034972e-08, 6.034972e-08}
+	qtr0HidAvgM := []float32{0.8162388, 0.013628835, 0.013628835, 0.013628835}
+	qtr0OutAvgS := []float32{0.93967456, 6.034972e-08, 6.034972e-08, 6.034972e-08}
+	qtr0OutAvgM := []float32{0.7438192, 0.013628835, 0.013628835, 0.013628835}
 
-	qtr3HidAvgS := []float32{0.9431544, 4e-45, 4e-45, 4e-45}
-	qtr3HidAvgM := []float32{0.47499993, 0, 0, 0}
-	qtr3OutAvgS := []float32{0.95, 0, 0, 0}
-	qtr3OutAvgM := []float32{0.47114015, 0, 0, 0}
+	qtr3HidAvgS := []float32{0.94315434, 6.0347804e-30, 6.0347804e-30, 6.0347804e-30}
+	qtr3HidAvgM := []float32{0.94308215, 5.042516e-06, 5.042516e-06, 5.042516e-06}
+	qtr3OutAvgS := []float32{0.9499999, 6.0347804e-30, 6.0347804e-30, 6.0347804e-30}
+	qtr3OutAvgM := []float32{0.9492211, 5.042516e-06, 5.042516e-06, 5.042516e-06}
 
 	for pi := 0; pi < 4; pi++ {
 		inpat, err := InPats.SubSlice(2, []int{pi})
