@@ -270,7 +270,7 @@ func (aa *LrnActAvgParams) Update() {
 }
 
 func (aa *LrnActAvgParams) Defaults() {
-	aa.SSTau = 4.0
+	aa.SSTau = 2.0
 	aa.STau = 2.0
 	aa.MTau = 10.0
 	aa.LrnM = 0.1

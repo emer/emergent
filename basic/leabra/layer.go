@@ -435,6 +435,14 @@ func (ly *Layer) DecayState(decay float32) {
 		nrn := &ly.Neurons[ni]
 		ly.Act.DecayState(nrn, decay)
 	}
+	for pi := range ly.Pools { // decaying average act is essential for inhib
+		pl := &ly.Pools[pi]
+		pl.Act.Max -= decay * pl.Act.Max
+		pl.Act.Avg -= decay * pl.Act.Avg
+		pl.Inhib.FFi -= decay * pl.Inhib.FFi
+		pl.Inhib.FBi -= decay * pl.Inhib.FBi
+		pl.Inhib.Gi -= decay * pl.Inhib.Gi
+	}
 }
 
 // HardClamp hard-clamps the activations in the layer -- called during TrialInit for hard-clamped Input layers

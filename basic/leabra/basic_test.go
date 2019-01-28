@@ -176,3 +176,89 @@ func TestNetAct(t *testing.T) {
 		}
 	}
 }
+
+func TestNetLearn(t *testing.T) {
+	TestNet.InitWts()
+	TestNet.InitExt()
+
+	inLay := TestNet.LayerByName("Input").(*Layer)
+	hidLay := TestNet.LayerByName("Hidden").(*Layer)
+	outLay := TestNet.LayerByName("Output").(*Layer)
+
+	time := NewTime()
+
+	printCycs := false
+	printQtrs := true
+
+	qtr0HidAvgS := []float32{0.94223607, 6.034972e-08, 6.034972e-08, 6.034972e-08}
+	qtr0HidAvgM := []float32{0.8156768, 0.013628835, 0.013628835, 0.013628835}
+	qtr0OutAvgS := []float32{0.9397443, 6.034972e-08, 6.034972e-08, 6.034972e-08}
+	qtr0OutAvgM := []float32{0.7438164, 0.013628835, 0.013628835, 0.013628835}
+
+	qtr3HidAvgS := []float32{0.9431544, 4e-45, 4e-45, 4e-45}
+	qtr3HidAvgM := []float32{0.47499993, 0, 0, 0}
+	qtr3OutAvgS := []float32{0.95, 0, 0, 0}
+	qtr3OutAvgM := []float32{0.47114015, 0, 0, 0}
+
+	for pi := 0; pi < 4; pi++ {
+		inpat, err := InPats.SubSlice(2, []int{pi})
+		if err != nil {
+			t.Error(err)
+		}
+		inLay.ApplyExt(inpat)
+		outLay.ApplyExt(inpat)
+
+		TestNet.TrialInit()
+		time.TrialStart()
+		for qtr := 0; qtr < 4; qtr++ {
+			for cyc := 0; cyc < time.CycPerQtr; cyc++ {
+				TestNet.Cycle()
+				time.CycleInc()
+
+				hidAct := hidLay.UnitVals("Act")
+				hidGes := hidLay.UnitVals("Ge")
+				hidGis := hidLay.UnitVals("Gi")
+				hidAvgSS := hidLay.UnitVals("AvgSS")
+				hidAvgS := hidLay.UnitVals("AvgS")
+				hidAvgM := hidLay.UnitVals("AvgM")
+
+				outAvgS := outLay.UnitVals("AvgS")
+				outAvgM := outLay.UnitVals("AvgM")
+
+				if printCycs {
+					fmt.Printf("pat: %v qtr: %v cyc: %v\nhid act: %v ges: %v gis: %v\nhid avgss: %v avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAct, hidGes, hidGis, hidAvgSS, hidAvgS, hidAvgM, outAvgS, outAvgM)
+				}
+
+			}
+			TestNet.QuarterFinal(time)
+			time.QuarterInc()
+
+			hidAvgS := hidLay.UnitVals("AvgS")
+			hidAvgM := hidLay.UnitVals("AvgM")
+
+			outAvgS := outLay.UnitVals("AvgS")
+			outAvgM := outLay.UnitVals("AvgM")
+
+			if printQtrs {
+				fmt.Printf("pat: %v qtr: %v cyc: %v\nhid avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAvgS, hidAvgM, outAvgS, outAvgM)
+			}
+
+			if pi == 0 && qtr == 0 {
+				CmprFloats(hidAvgS, qtr0HidAvgS, "qtr 0 hidAvgS", t)
+				CmprFloats(hidAvgM, qtr0HidAvgM, "qtr 0 hidAvgM", t)
+				CmprFloats(outAvgS, qtr0OutAvgS, "qtr 0 outAvgS", t)
+				CmprFloats(outAvgM, qtr0OutAvgM, "qtr 0 outAvgM", t)
+			}
+			if pi == 0 && qtr == 3 {
+				CmprFloats(hidAvgS, qtr3HidAvgS, "qtr 3 hidAvgS", t)
+				CmprFloats(hidAvgM, qtr3HidAvgM, "qtr 3 hidAvgM", t)
+				CmprFloats(outAvgS, qtr3OutAvgS, "qtr 3 outAvgS", t)
+				CmprFloats(outAvgM, qtr3OutAvgM, "qtr 3 outAvgM", t)
+			}
+		}
+
+		if printQtrs {
+			fmt.Printf("=============================\n")
+		}
+	}
+}
