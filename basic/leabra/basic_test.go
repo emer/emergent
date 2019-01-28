@@ -10,10 +10,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etensor"
 	"github.com/emer/emergent/prjn"
 )
+
+// Note: this test project exactly reproduces the configuration and behavior of
+// C++ emergent/demo/leabra/basic_leabra_test.proj  in version 8.5.6 svn 11492
 
 var TestNet Network
 var InPats *etensor.Float32
@@ -47,7 +51,7 @@ func TestMakeNet(t *testing.T) {
 	var buf bytes.Buffer
 	TestNet.WriteWtsJSON(&buf)
 	wb := buf.Bytes()
-	fmt.Printf("TestNet Weights:\n\n%v\n", string(wb))
+	// fmt.Printf("TestNet Weights:\n\n%v\n", string(wb))
 
 	fp, err := os.Create("testdata/testnet.wts")
 	defer fp.Close()
@@ -64,6 +68,15 @@ func TestInPats(t *testing.T) {
 	}
 }
 
+func CmprFloats(out, cor []float32, msg string, t *testing.T) {
+	for i := range out {
+		dif := math32.Abs(out[i] - cor[i])
+		if dif > difTol { // allow for small numerical diffs
+			t.Errorf("%v err: out: %v, cor: %v, dif: %v\n", msg, out[i], cor[i], dif)
+		}
+	}
+}
+
 func TestNetAct(t *testing.T) {
 	TestNet.InitWts()
 	TestNet.InitExt()
@@ -73,6 +86,23 @@ func TestNetAct(t *testing.T) {
 	outLay := TestNet.LayerByName("Output").(*Layer)
 
 	time := NewTime()
+
+	printCycs := false
+	printQtrs := false
+
+	qtr0HidActs := []float32{0.9427379, 2.4012093e-33, 2.4012093e-33, 2.4012093e-33}
+	qtr0HidGes := []float32{0.47417355, 0, 0, 0}
+	qtr0HidGis := []float32{0.45752862, 0.45752862, 0.45752862, 0.45752862}
+	qtr0OutActs := []float32{0.94144684, 2.4021936e-33, 2.4021936e-33, 2.4021936e-33}
+	qtr0OutGes := []float32{0.47107852, 0, 0, 0}
+	qtr0OutGis := []float32{0.45534685, 0.45534685, 0.45534685, 0.45534685}
+
+	qtr3HidActs := []float32{0.9431544, 4e-45, 4e-45, 4e-45}
+	qtr3HidGes := []float32{0.47499993, 0, 0, 0}
+	qtr3HidGis := []float32{0.45816946, 0.45816946, 0.45816946, 0.45816946}
+	qtr3OutActs := []float32{0.95, 0, 0, 0}
+	qtr3OutGes := []float32{0.47114015, 0, 0, 0}
+	qtr3OutGis := []float32{0.45951304, 0.45951304, 0.45951304, 0.45951304}
 
 	for pi := 0; pi < 4; pi++ {
 		inpat, err := InPats.SubSlice(2, []int{pi})
@@ -88,21 +118,61 @@ func TestNetAct(t *testing.T) {
 			for cyc := 0; cyc < time.CycPerQtr; cyc++ {
 				TestNet.Cycle()
 				time.CycleInc()
+
+				if printCycs {
+					inActs := inLay.UnitVals("Act")
+					hidActs := hidLay.UnitVals("Act")
+					hidGes := hidLay.UnitVals("Ge")
+					hidGis := hidLay.UnitVals("Gi")
+					outActs := outLay.UnitVals("Act")
+					outGes := outLay.UnitVals("Ge")
+					outGis := outLay.UnitVals("Gi")
+					fmt.Printf("pat: %v qtr: %v cyc: %v\nin acts: %v\nhid acts: %v ges: %v gis: %v\nout acts: %v ges: %v gis: %v\n", pi, qtr, cyc, inActs, hidActs, hidGes, hidGis, outActs, outGes, outGis)
+				}
 			}
 			TestNet.QuarterFinal(time)
 			time.QuarterInc()
 
+			if printCycs && printQtrs {
+				fmt.Printf("=============================\n")
+			}
+
 			inActs := inLay.UnitVals("Act")
 			hidActs := hidLay.UnitVals("Act")
 			hidGes := hidLay.UnitVals("Ge")
+			hidGis := hidLay.UnitVals("Gi")
 			outActs := outLay.UnitVals("Act")
 			outGes := outLay.UnitVals("Ge")
-			fmt.Printf("pat: %v qtr: %v\nin acts: %v\nhid acts: %v ges: %v\nout acts: %v ges: %v\n", pi, qtr, inActs, hidActs, hidGes, outActs, outGes)
+			outGis := outLay.UnitVals("Gi")
 
-			// C++ emergent:
-			// q0: in act: .95
-			// hid act: 0.943078, net: 0.475499
-			// out act: 0.961023, net: 0.471143
+			if printQtrs {
+				fmt.Printf("pat: %v qtr: %v cyc: %v\nin acts: %v\nhid acts: %v ges: %v gis: %v\nout acts: %v ges: %v gis: %v\n", pi, qtr, time.Cycle, inActs, hidActs, hidGes, hidGis, outActs, outGes, outGis)
+			}
+
+			if printCycs && printQtrs {
+				fmt.Printf("=============================\n")
+			}
+
+			if pi == 0 && qtr == 0 {
+				CmprFloats(hidActs, qtr0HidActs, "qtr 0 hidActs", t)
+				CmprFloats(hidGes, qtr0HidGes, "qtr 0 hidGes", t)
+				CmprFloats(hidGis, qtr0HidGis, "qtr 0 hidGis", t)
+				CmprFloats(outActs, qtr0OutActs, "qtr 0 outActs", t)
+				CmprFloats(outGes, qtr0OutGes, "qtr 0 outGes", t)
+				CmprFloats(outGis, qtr0OutGis, "qtr 0 outGis", t)
+			}
+			if pi == 0 && qtr == 3 {
+				CmprFloats(hidActs, qtr3HidActs, "qtr 3 hidActs", t)
+				CmprFloats(hidGes, qtr3HidGes, "qtr 3 hidGes", t)
+				CmprFloats(hidGis, qtr3HidGis, "qtr 3 hidGis", t)
+				CmprFloats(outActs, qtr3OutActs, "qtr 3 outActs", t)
+				CmprFloats(outGes, qtr3OutGes, "qtr 3 outGes", t)
+				CmprFloats(outGis, qtr3OutGis, "qtr 3 outGis", t)
+			}
+		}
+
+		if printQtrs {
+			fmt.Printf("=============================\n")
 		}
 	}
 }

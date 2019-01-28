@@ -203,14 +203,13 @@ type XX1Params struct {
 	Thr          float32 `def:"0.5" desc:"threshold value Theta (Q) for firing output activation (.5 is more accurate value based on AdEx biological parameters and normalization"`
 	Gain         float32 `def:"80;100;40;20" min:"0" desc:"gain (gamma) of the rate-coded activation functions -- 100 is default, 80 works better for larger models, and 20 is closer to the actual spiking behavior of the AdEx model -- use lower values for more graded signals, generally in lower input/sensory layers of the network"`
 	NVar         float32 `def:"0.005;0.01" min:"0" desc:"variance of the Gaussian noise kernel for convolving with XX1 in NOISY_XX1 and NOISY_LINEAR -- determines the level of curvature of the activation function near the threshold -- increase for more graded responding there -- note that this is not actual stochastic noise, just constant convolved gaussian smoothness to the activation function"`
-	AvgCorrect   float32 `desc:"correction factor (multiplier) for average activation level in this layer -- e.g., if using adaptation or stp, may be lower than usual -- taken into account in netinput scaling out of this layer"`
 	VmActThr     float32 `def:"0.01" desc:"threshold on activation below which the direct vm - act.thr is used -- this should be low -- once it gets active should use net - g_e_thr ge-linear dynamics (gelin)"`
-	SigMult      float32 `def:"0.33" expert:"+" desc:"multiplier on sigmoid used for computing values for net < thr"`
-	SigMultPow   float32 `def:"0.8" expert:"+" desc:"power for computing sig_mult_eff as function of gain * nvar"`
-	SigGain      float32 `def:"3" expert:"+" desc:"gain multipler on (net - thr) for sigmoid used for computing values for net < thr"`
-	InterpRange  float32 `def:"0.01" expert:"+" desc:"interpolation range above zero to use interpolation"`
-	GainCorRange float32 `def:"10" expert:"+" desc:"range in units of nvar over which to apply gain correction to compensate for convolution"`
-	GainCor      float32 `def:"0.1 expert:"+" desc:"gain correction multiplier -- how much to correct gains"`
+	SigMult      float32 `def:"0.33" view:"-" desc:"multiplier on sigmoid used for computing values for net < thr"`
+	SigMultPow   float32 `def:"0.8" view:"-" desc:"power for computing sig_mult_eff as function of gain * nvar"`
+	SigGain      float32 `def:"3" view:"-" desc:"gain multipler on (net - thr) for sigmoid used for computing values for net < thr"`
+	InterpRange  float32 `def:"0.01" view:"-" desc:"interpolation range above zero to use interpolation"`
+	GainCorRange float32 `def:"10" view:"-" desc:"range in units of nvar over which to apply gain correction to compensate for convolution"`
+	GainCor      float32 `def:"0.1 view:"-" desc:"gain correction multiplier -- how much to correct gains"`
 
 	SigGainNVar float32 `view:"-" desc:"sig_gain / nvar"`
 	SigMultEff  float32 `view:"-" desc:"overall multiplier on sigmoidal component for values below threshold = sig_mult * pow(gain * nvar, sig_mult_pow)"`
@@ -230,7 +229,6 @@ func (xp *XX1Params) Defaults() {
 	xp.Gain = 100
 	xp.NVar = 0.005
 	xp.VmActThr = 0.01
-	xp.AvgCorrect = 1.0
 	xp.SigMult = 0.33
 	xp.SigMultPow = 0.8
 	xp.SigGain = 3.0
@@ -351,9 +349,9 @@ type DtParams struct {
 	GeTau  float32 `def:"1.4;3;5" min:"1" desc:"net input time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- this is important for damping oscillations -- generally reflects time constants associated with synaptic channels which are not modeled in the most abstract rate code models (set to 1 for detailed spiking models with more realistic synaptic currents) -- larger values (e.g., 3) can be important for models with higher netinputs that otherwise might be more prone to oscillation, and is default for GPiInvUnitSpec"`
 	AvgTau float32 `def:"200" desc:"for integrating activation average (ActAvg), time constant in trials (roughly, how long it takes for value to change significantly) -- used mostly for visualization and tracking *hog* units"`
 
-	VmDt  float32 `view:"-" expert:"+" desc:"nominal rate = 1 / tau"`
-	GeDt  float32 `view:"-" expert:"+" desc:"rate = 1 / tau"`
-	AvgDt float32 `view:"-" expert:"+" desc:"rate = 1 / tau"`
+	VmDt  float32 `view:"-" desc:"nominal rate = 1 / tau"`
+	GeDt  float32 `view:"-" desc:"rate = 1 / tau"`
+	AvgDt float32 `view:"-" desc:"rate = 1 / tau"`
 }
 
 func (dp *DtParams) Update() {

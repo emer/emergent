@@ -132,6 +132,7 @@ func (ly *Layer) Defaults() {
 	ly.Act.Defaults()
 	ly.Inhib.Defaults()
 	ly.Learn.Defaults()
+	ly.Inhib.Layer.On = true
 	for _, pj := range ly.RecvPrjns {
 		pj.Defaults()
 	}
@@ -574,6 +575,7 @@ func (ly *Layer) QuarterFinal(time *Time) {
 			nrn.ActM = nrn.Act
 			if nrn.HasFlag(NeurHasTarg) { // will be clamped in plus phase
 				nrn.Ext = nrn.Targ
+				nrn.SetFlag(NeurHasExt)
 			}
 		} else if time.Quarter == 3 {
 			nrn.ActP = nrn.Act
