@@ -57,6 +57,24 @@ func (bs *Slice) Cap() int {
 	return (cap(*bs) - 1) * 8
 }
 
+// SetLen sets the length of the slice, copying values if a new allocation is required
+func (bs *Slice) SetLen(ln int) {
+	by, bi := BitIdx(ln)
+	bln := by
+	if bi != 0 {
+		bln++
+	}
+	if cap(*bs) >= bln+1 {
+		*bs = (*bs)[0 : bln+1]
+		(*bs)[0] = byte(bi)
+	} else {
+		sl := make(Slice, bln+1)
+		sl[0] = byte(bi)
+		copy(sl, *bs)
+		*bs = sl
+	}
+}
+
 // Set sets value of given bit index -- no extra range checking is performed -- will panic if out of range
 func (bs *Slice) Set(idx int, val bool) {
 	by, bi := BitIdx(idx)

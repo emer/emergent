@@ -5,10 +5,16 @@
 package etensor
 
 import (
+	"errors"
+	"strconv"
+
+	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/apache/arrow/go/arrow/tensor"
 	"github.com/emer/emergent/bitslice"
+	"github.com/goki/ki/ints"
+	"github.com/goki/ki/kit"
 )
 
 {{range .In}}
@@ -41,6 +47,7 @@ func New{{.Name}}Shape(shape *Shape) *{{.Name}} {
 	return tsr
 }
 
+func (tsr *{{.Name}}) DataType() arrow.DataType { return &arrow.{{.Name}}Type{} }
 func (tsr *{{.Name}}) Value(i []int)  {{or .Type}} { j := tsr.Offset(i); return tsr.Values[j] }
 func (tsr *{{.Name}}) Set(i []int, val {{or .Type}})  { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *{{.Name}}) IsNull(i []int) bool {
@@ -58,6 +65,55 @@ func (tsr *{{.Name}}) SetNull(i []int, nul bool) {
 	tsr.Nulls.Set(j, nul)
 }
 
+func (tsr *{{.Name}}) Float64Val(i []int) float64 { j := tsr.Offset(i); return float64(tsr.Values[j]) }
+func (tsr *{{.Name}}) SetFloat64(i []int, val float64)  { j := tsr.Offset(i); tsr.Values[j] = {{or .Type}}(val) }
+
+func (tsr *{{.Name}}) StringVal(i []int) string { j := tsr.Offset(i); return kit.ToString(tsr.Values[j]) }
+func (tsr *{{.Name}}) SetString(i []int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		j := tsr.Offset(i);
+		tsr.Values[j] = {{or .Type}}(fv)
+	}
+}
+
+// AggFloat64 applies given aggregation function to each element in the tensor, using float64
+// conversions of the values.  init is the initial value for the agg variable.  returns final
+// aggregate value
+func (tsr *{{.Name}}) 	AggFloat64(fun func(val float64, agg float64) float64, ini float64) float64 {
+	ln := tsr.Len()
+	ag := ini
+	for j := 0; j < ln; j++ {
+		val := float64(tsr.Values[j])
+		ag = fun(val, ag)
+	}
+	return ag
+}
+
+
+// EvalFloat64 applies given function to each element in the tensor, using float64
+// conversions of the values, and puts the results into given float64 slice, which is
+// ensured to be of the proper length
+func (tsr *{{.Name}}) EvalFloat64(fun func(val float64) float64, res *[]float64) {
+	ln := tsr.Len()
+	if len(*res) != ln {
+		*res = make([]float64, ln)
+	}
+	for j := 0; j < ln; j++ {
+		val := float64(tsr.Values[j])
+		(*res)[j] = fun(val)
+	}
+}
+
+// UpdtFloat64 applies given function to each element in the tensor, using float64
+// conversions of the values, and writes the results back into the same tensor values
+func (tsr *{{.Name}}) 	UpdtFloat64(fun func(val float64) float64) {
+	ln := tsr.Len()
+	for j := 0; j < ln; j++ {
+		val := float64(tsr.Values[j])
+		tsr.Values[j] = {{or .Type}}(fun(val))
+	}
+}
+
 // Clone creates a new tensor that is a copy of the existing tensor, with its own
 // separate memory -- changes to the clone will not affect the source.
 func (tsr *{{.Name}}) Clone() *{{.Name}} {
@@ -67,6 +123,64 @@ func (tsr *{{.Name}}) Clone() *{{.Name}} {
 		csr.Nulls = tsr.Nulls.Clone()
 	}
 	return csr
+}
+
+// CloneTensor creates a new tensor that is a copy of the existing tensor, with its own
+// separate memory -- changes to the clone will not affect the source.
+func (tsr *{{.Name}}) CloneTensor() Tensor {
+	return tsr.Clone()
+}
+
+// SetShape sets the shape params, resizing backing storage appropriately
+func (tsr *{{.Name}}) SetShape(shape, strides []int, names []string) {
+	tsr.SetShape(shape, strides, names)
+	nln := tsr.Len()
+	if cap(tsr.Values) >= nln {
+		tsr.Values = tsr.Values[0:nln]
+	} else {
+		nv := make([]{{or .Type}}, nln)
+		copy(nv, tsr.Values)
+		tsr.Values = nv
+	}
+}
+
+// AddRows adds n rows (outer-most dimension) to RowMajor organized tensor.
+func (tsr *{{.Name}}) AddRows(n int) {
+	if !tsr.IsRowMajor() {
+		return
+	}
+	cln := tsr.Len()
+	rows := tsr.Dim(0)
+	inln := cln / rows // length of inner dims
+	nln := (rows + n) * inln
+	tsr.Shape.shape[0] += n
+	if cap(tsr.Values) >= nln {
+		tsr.Values = tsr.Values[0:nln]
+	} else {
+		nv := make([]{{or .Type}}, nln)
+		copy(nv, tsr.Values)
+		tsr.Values = nv
+	}
+}
+
+// SetNumRows sets the number of rows (outer-most dimension) in a RowMajor organized tensor.
+func (tsr *{{.Name}}) SetNumRows(rows int) {
+	if !tsr.IsRowMajor() {
+		return
+	}
+	rows = ints.MaxInt(1, rows) // must be > 0
+	cln := tsr.Len()
+	crows := tsr.Dim(0)
+	inln := cln / crows // length of inner dims
+	nln := rows * inln
+	tsr.Shape.shape[0] = rows
+	if cap(tsr.Values) >= nln {
+		tsr.Values = tsr.Values[0:nln]
+	} else {
+		nv := make([]{{or .Type}}, nln)
+		copy(nv, tsr.Values)
+		tsr.Values = nv
+	}
 }
 
 // SubSlice returns a new tensor as a sub-slice of the current one, incorporating the given number
@@ -146,4 +260,17 @@ func (tsr *{{.Name}}) FromArrow(arw *tensor.{{.Name}}, cpy bool) {
 
 {{- end}}
 
+func New(dtype arrow.Type, shape, strides []int, names []string) Tensor {
+	switch dtype {
+{{- range .In}}
+	case arrow.{{.DataType}}:
+		return New{{.Name}}(shape, strides, names)
+{{- end}}
+	case arrow.STRING:
+		return NewString(shape, strides, names)
+	case arrow.BOOL:
+		return NewBits(shape, strides, names)
+	}
+	return nil
+}
 

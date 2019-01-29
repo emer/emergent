@@ -3,6 +3,7 @@
     "Name": "Int64",
     "name": "int64",
     "Type": "int64",
+    "DataType": "INT64",
     "Default": "0",
     "Size": "8"
   },
@@ -10,6 +11,7 @@
     "Name": "Uint64",
     "name": "uint64",
     "Type": "uint64",
+    "DataType": "UINT64",
     "Default": "0",
     "Size": "8"
   },
@@ -17,6 +19,7 @@
     "Name": "Float64",
     "name": "float64",
     "Type": "float64",
+    "DataType": "FLOAT64",
     "Default": "0",
     "Size": "8"
   },
@@ -24,6 +27,7 @@
     "Name": "Int32",
     "name": "int32",
     "Type": "int32",
+    "DataType": "INT32",
     "Default": "0",
     "Size": "4",
     "Opt": {
@@ -34,6 +38,7 @@
     "Name": "Uint32",
     "name": "uint32",
     "Type": "uint32",
+    "DataType": "UINT32",
     "Default": "0",
     "Size": "4"
   },
@@ -41,6 +46,7 @@
     "Name": "Float32",
     "name": "float32",
     "Type": "float32",
+    "DataType": "FLOAT32",
     "Default": "0",
     "Size": "4"
   },
@@ -48,6 +54,7 @@
     "Name": "Int16",
     "name": "int16",
     "Type": "int16",
+    "DataType": "INT16",
     "Default": "0",
     "Size": "2"
   },
@@ -55,6 +62,7 @@
     "Name": "Uint16",
     "name": "uint16",
     "Type": "uint16",
+    "DataType": "UINT16",
     "Default": "0",
     "Size": "2"
   },
@@ -62,6 +70,7 @@
     "Name": "Int8",
     "name": "int8",
     "Type": "int8",
+    "DataType": "INT8",
     "Default": "0",
     "Size": "1"
   },
@@ -69,6 +78,7 @@
     "Name": "Uint8",
     "name": "uint8",
     "Type": "uint8",
+    "DataType": "UINT8",
     "Default": "0",
     "Size": "1"
   }
