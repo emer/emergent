@@ -130,6 +130,19 @@ func (sh *Shape) IsColMajor() bool {
 	return EqualInts(strides, sh.strides)
 }
 
+// RowCellSize returns the size of the outer-most Row shape dimension, and the size of all the
+// remaining inner dimensions (the "cell" size) -- e.g., for Tensors that are columns in a
+// data table.  Only valid for RowMajor organization.
+func (sh *Shape) RowCellSize() (rows, cells int) {
+	rows = sh.shape[0]
+	if len(sh.shape) == 1 {
+		cells = 1
+	} else {
+		cells = sh.Len() / rows
+	}
+	return
+}
+
 // Offset returns the "flat" 1D array index into an element at the given n-dimensional index
 // No checking is done on the length or size of the index values relative to the shape of the tensor.
 func (sh *Shape) Offset(index []int) int {

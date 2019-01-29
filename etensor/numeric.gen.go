@@ -148,10 +148,8 @@ func (tsr *Int64) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -168,10 +166,8 @@ func (tsr *Int64) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -385,10 +381,8 @@ func (tsr *Uint64) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -405,10 +399,8 @@ func (tsr *Uint64) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -622,10 +614,8 @@ func (tsr *Float64) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -642,10 +632,8 @@ func (tsr *Float64) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -859,10 +847,8 @@ func (tsr *Int32) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -879,10 +865,8 @@ func (tsr *Int32) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1096,10 +1080,8 @@ func (tsr *Uint32) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1116,10 +1098,8 @@ func (tsr *Uint32) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1333,10 +1313,8 @@ func (tsr *Float32) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1353,10 +1331,8 @@ func (tsr *Float32) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1570,10 +1546,8 @@ func (tsr *Int16) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1590,10 +1564,8 @@ func (tsr *Int16) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1807,10 +1779,8 @@ func (tsr *Uint16) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1827,10 +1797,8 @@ func (tsr *Uint16) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -2044,10 +2012,8 @@ func (tsr *Int8) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -2064,10 +2030,8 @@ func (tsr *Int8) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -2281,10 +2245,8 @@ func (tsr *Uint8) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -2301,10 +2263,8 @@ func (tsr *Uint8) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]

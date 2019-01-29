@@ -44,6 +44,11 @@ type Tensor interface {
 	IsRowMajor() bool
 	IsColMajor() bool
 
+	// RowCellSize returns the size of the outer-most Row shape dimension, and the size of all the
+	// remaining inner dimensions (the "cell" size) -- e.g., for Tensors that are columns in a
+	// data table. Only valid for RowMajor organization.
+	RowCellSize() (rows, cells int)
+
 	// Offset returns the flat 1D array / slice index into an element at the given n-dimensional index.
 	// No checking is done on the length or size of the index values relative to the shape of the tensor.
 	Offset(i []int) int

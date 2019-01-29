@@ -149,10 +149,8 @@ func (tsr *{{.Name}}) AddRows(n int) {
 	if !tsr.IsRowMajor() {
 		return
 	}
-	cln := tsr.Len()
-	rows := tsr.Dim(0)
-	inln := cln / rows // length of inner dims
-	nln := (rows + n) * inln
+	rows, cells := tsr.RowCellSize()
+	nln := (rows + n) * cells
 	tsr.Shape.shape[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -169,10 +167,8 @@ func (tsr *{{.Name}}) SetNumRows(rows int) {
 		return
 	}
 	rows = ints.MaxInt(1, rows) // must be > 0
-	cln := tsr.Len()
-	crows := tsr.Dim(0)
-	inln := cln / crows // length of inner dims
-	nln := rows * inln
+	_, cells := tsr.RowCellSize()
+	nln := rows * cells
 	tsr.Shape.shape[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
