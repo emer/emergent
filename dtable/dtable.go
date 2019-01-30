@@ -104,11 +104,11 @@ func (dt *Table) SetNumRows(rows int) {
 	}
 }
 
-// New returns a new Table constructed from given Schema
+// SetFromSchema configures table from given Schema.
 // The actual tensor number of rows is enforced to be > 0, because we
-// cannot have a null dimension in tensor shape
-func New(sc Schema, rows int) *Table {
-	dt := &Table{}
+// cannot have a null dimension in tensor shape.
+// does not preserve any existing columns / data.
+func (dt *Table) SetFromSchema(sc Schema, rows int) {
 	nc := len(sc)
 	dt.Cols = make([]etensor.Tensor, nc)
 	dt.ColNames = make([]string, nc)
@@ -123,5 +123,13 @@ func New(sc Schema, rows int) *Table {
 		dt.Cols[i] = tsr
 	}
 	dt.UpdateColNameMap()
+}
+
+// New returns a new Table constructed from given Schema.
+// The actual tensor number of rows is enforced to be > 0, because we
+// cannot have a null dimension in tensor shape
+func New(sc Schema, rows int) *Table {
+	dt := &Table{}
+	dt.SetFromSchema(sc, rows)
 	return dt
 }

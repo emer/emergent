@@ -65,6 +65,18 @@ type Tensor interface {
 	// SetString sets the value of given index as a string
 	SetString(i []int, val string)
 
+	// FlatFloat64Val returns the value of given flat index (0-Len()-1) as a float64
+	FlatFloat64Val(off int) float64
+
+	// SetFlatFloat64 sets the value of given flat index (0-Len()-1) as a float64
+	SetFlatFloat64(off int, val float64)
+
+	// FlatStringVal returns the value of given flat index (0-Len()-1) as a string
+	FlatStringVal(off int) string
+
+	// SetFlatString sets the value of given flat index (0-Len()-1) as a string
+	SetFlatString(off int, val string)
+
 	// AggFloat64 applies given aggregation function to each element in the tensor, using float64
 	// conversions of the values.  init is the initial value for the agg variable.  returns final
 	// aggregate value

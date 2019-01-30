@@ -153,15 +153,30 @@ func (sh *Shape) Offset(index []int) int {
 	return offset
 }
 
-// Index returns the n-dimensional index from a "flat" 1D array index
-// No checking is done on the length of the index relative to the shape of the tensor.
-// func (sh *Shape) Index(offset int) []int {
-// 	index := make([]int, len(sh.strides))
-// 	for i, v := range sh.strides {
-// 		index[i] = sh.strides[i]
-// 	}
-// 	return index
-// }
+// Index returns the n-dimensional index from a "flat" 1D array index.  Only works for RowMajor
+// or ColMajor organization.
+func (sh *Shape) Index(offset int) []int {
+	nd := len(sh.shape)
+	index := make([]int, nd)
+	if sh.IsRowMajor() {
+		rem := offset
+		for i := nd - 1; i >= 0; i-- {
+			s := sh.shape[i]
+			iv := rem % s
+			rem /= s
+			index[i] = iv
+		}
+	} else if sh.IsColMajor() {
+		rem := offset
+		for i := 0; i < nd; i++ {
+			s := sh.shape[i]
+			iv := rem % s
+			rem /= s
+			index[i] = iv
+		}
+	}
+	return index
+}
 
 // RowMajorStrides returns strides for shape where the first dimension is outer-most
 // and subsequent dimensions are progressively inner

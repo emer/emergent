@@ -76,6 +76,16 @@ func (tsr *Int64) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Int64) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Int64) SetFlatFloat64(off int, val float64) { tsr.Values[off] = int64(val) }
+
+func (tsr *Int64) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Int64) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = int64(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -132,7 +142,7 @@ func (tsr *Int64) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Int64) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -309,6 +319,16 @@ func (tsr *Uint64) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Uint64) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Uint64) SetFlatFloat64(off int, val float64) { tsr.Values[off] = uint64(val) }
+
+func (tsr *Uint64) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Uint64) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = uint64(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -365,7 +385,7 @@ func (tsr *Uint64) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Uint64) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -542,6 +562,16 @@ func (tsr *Float64) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Float64) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Float64) SetFlatFloat64(off int, val float64) { tsr.Values[off] = float64(val) }
+
+func (tsr *Float64) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Float64) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = float64(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -598,7 +628,7 @@ func (tsr *Float64) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Float64) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -775,6 +805,16 @@ func (tsr *Int32) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Int32) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Int32) SetFlatFloat64(off int, val float64) { tsr.Values[off] = int32(val) }
+
+func (tsr *Int32) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Int32) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = int32(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -831,7 +871,7 @@ func (tsr *Int32) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Int32) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1008,6 +1048,16 @@ func (tsr *Uint32) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Uint32) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Uint32) SetFlatFloat64(off int, val float64) { tsr.Values[off] = uint32(val) }
+
+func (tsr *Uint32) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Uint32) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = uint32(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -1064,7 +1114,7 @@ func (tsr *Uint32) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Uint32) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1241,6 +1291,16 @@ func (tsr *Float32) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Float32) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Float32) SetFlatFloat64(off int, val float64) { tsr.Values[off] = float32(val) }
+
+func (tsr *Float32) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Float32) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = float32(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -1297,7 +1357,7 @@ func (tsr *Float32) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Float32) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1474,6 +1534,16 @@ func (tsr *Int16) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Int16) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Int16) SetFlatFloat64(off int, val float64) { tsr.Values[off] = int16(val) }
+
+func (tsr *Int16) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Int16) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = int16(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -1530,7 +1600,7 @@ func (tsr *Int16) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Int16) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1707,6 +1777,16 @@ func (tsr *Uint16) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Uint16) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Uint16) SetFlatFloat64(off int, val float64) { tsr.Values[off] = uint16(val) }
+
+func (tsr *Uint16) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Uint16) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = uint16(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -1763,7 +1843,7 @@ func (tsr *Uint16) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Uint16) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -1940,6 +2020,16 @@ func (tsr *Int8) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Int8) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Int8) SetFlatFloat64(off int, val float64) { tsr.Values[off] = int8(val) }
+
+func (tsr *Int8) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Int8) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = int8(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -1996,7 +2086,7 @@ func (tsr *Int8) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Int8) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
@@ -2173,6 +2263,16 @@ func (tsr *Uint8) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Uint8) FlatFloat64Val(off int) float64      { return float64(tsr.Values[off]) }
+func (tsr *Uint8) SetFlatFloat64(off int, val float64) { tsr.Values[off] = uint8(val) }
+
+func (tsr *Uint8) FlatStringVal(off int) string { return kit.ToString(tsr.Values[off]) }
+func (tsr *Uint8) SetFlatString(off int, val string) {
+	if fv, err := strconv.ParseFloat(val, 64); err == nil {
+		tsr.Values[off] = uint8(fv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -2229,7 +2329,7 @@ func (tsr *Uint8) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Uint8) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]

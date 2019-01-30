@@ -92,6 +92,23 @@ func (tsr *Bits) SetString(i []int, val string) {
 	}
 }
 
+func (tsr *Bits) FlatFloat64Val(off int) float64 {
+	return BoolToFloat64(tsr.Values.Index(off))
+}
+func (tsr *Bits) SetFlatFloat64(off int, val float64) {
+	tsr.Values.Set(off, Float64ToBool(val))
+}
+
+func (tsr *Bits) FlatStringVal(off int) string {
+	return kit.ToString(tsr.Values.Index(off))
+}
+
+func (tsr *Bits) SetFlatString(off int, val string) {
+	if bv, ok := kit.ToBool(val); ok {
+		tsr.Values.Set(off, bv)
+	}
+}
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -145,7 +162,7 @@ func (tsr *Bits) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *Bits) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	tsr.Values.SetLen(nln)
 }

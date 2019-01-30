@@ -93,6 +93,17 @@ func (tsr *String) SetFloat64(i []int, val float64) {
 func (tsr *String) StringVal(i []int) string      { j := tsr.Offset(i); return tsr.Values[j] }
 func (tsr *String) SetString(i []int, val string) { j := tsr.Offset(i); tsr.Values[j] = val }
 
+func (tsr *String) FlatFloat64Val(off int) float64 {
+	return StringToFloat64(tsr.Values[off])
+}
+
+func (tsr *String) SetFlatFloat64(off int, val float64) {
+	tsr.Values[off] = Float64ToString(val)
+}
+
+func (tsr *String) FlatStringVal(off int) string      { return tsr.Values[off] }
+func (tsr *String) SetFlatString(off int, val string) { tsr.Values[off] = val }
+
 // AggFloat64 applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
@@ -149,7 +160,7 @@ func (tsr *String) CloneTensor() Tensor {
 
 // SetShape sets the shape params, resizing backing storage appropriately
 func (tsr *String) SetShape(shape, strides []int, names []string) {
-	tsr.SetShape(shape, strides, names)
+	tsr.Shape.SetShape(shape, strides, names)
 	nln := tsr.Len()
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
