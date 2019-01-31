@@ -184,6 +184,25 @@ func (ps *PrjnStru) String() string {
 }
 
 ///////////////////////////////////////////////////////////////////////
+//  WtBalRecvPrjn
+
+// WtBalRecvPrjn are state variables used in computing the WtBal weight balance function
+// There is one of these for each Recv Neuron participating in the projection.
+type WtBalRecvPrjn struct {
+	Avg  float32 `desc:"average of effective weight values that exceed WtBal.AvgThr across given Recv Neuron's connections for given Prjn"`
+	Fact float32 `desc:"overall weight balance factor that drives changes in WbInc vs. WbDec via a sigmoidal function -- this is the net strength of weight balance changes"`
+	Inc  float32 `desc:"weight balance increment factor -- extra multiplier to add to weight increases to maintain overall weight balance"`
+	Dec  float32 `desc:"weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance'`
+}
+
+func (wb *WtBalRecvPrjn) Init() {
+	wb.Avg = 0
+	wb.Fact = 0
+	wb.Inc = 1
+	wb.Dec = 1
+}
+
+///////////////////////////////////////////////////////////////////////
 //  leabra.Prjn
 
 // leabra.Prjn is a basic Leabra projection with synaptic learning parameters
@@ -192,7 +211,10 @@ type Prjn struct {
 	WtScale WtScaleParams  `desc:"weight scaling parameters: modulates overall strength of projection, using both absolute and relative factors"`
 	Learn   LearnSynParams `desc:"synaptic-level learning parameters"`
 	Syns    []Synapse      `desc:"synaptic state values, ordered by the sending layer units which "owns" them -- one-to-one with SConIdx array"`
-	GeScale float32        `desc:"scaling factor for integrating excitatory synaptic input conductance Ge -- computed in TrialInit, incorporates running-average activity levels"`
+
+	// misc state variables below:
+	GeScale float32         `desc:"scaling factor for integrating excitatory synaptic input conductance Ge -- computed in TrialInit, incorporates running-average activity levels"`
+	WbRecv  []WtBalRecvPrjn `desc:"weight balance state variables for this projection, one per recv neuron"`
 }
 
 func (pj *Prjn) Defaults() {
@@ -236,6 +258,57 @@ func (pj *Prjn) StyleParams(psty emer.ParamStyle) {
 	}
 }
 
+func (pj *Prjn) SynVarNames() []string {
+	return SynapseVars
+}
+
+// SynVals returns values of given variable name on synapses for each synapse in the projection
+// using the natural ordering of the synapses (sender based for Leabra)
+func (pj *Prjn) SynVals(varnm string) []float32 {
+	vl := make([]float32, len(pj.Syns))
+	for si := range pj.Syns {
+		sy := &pj.Syns[si]
+		sv, ok := sy.VarByName(varnm)
+		if ok {
+			vl[si] = sv
+		}
+	}
+	return vl
+}
+
+// SynVal returns value of given variable name on the synapse between given recv unit index
+// and send unit index -- returns error for access errors.
+func (pj *Prjn) SynVal(varnm string, ridx, sidx int) (float32, error) {
+	slay := pj.Send.(*Layer)
+	rlay := pj.Recv.(*Layer)
+	nr := len(rlay.Neurons)
+	ns := len(slay.Neurons)
+	if ridx >= nr {
+		return 0, fmt.Errorf("Prjn.SynVal: recv unit index %v is > size of recv layer: %v", ridx, nr)
+	}
+	if sidx >= ns {
+		return 0, fmt.Errorf("Prjn.SynVal: send unit index %v is > size of send layer: %v", sidx, ns)
+	}
+	nc := int(pj.RConN[ridx])
+	st := int(pj.RConIdxSt[ridx])
+	for ci := 0; ci < nc; ci++ {
+		si := int(pj.RConIdx[st+ci])
+		if si != sidx {
+			continue
+		}
+		rsi := pj.RSynIdx[st+ci]
+		sy := &pj.Syns[rsi]
+		sv, ok := sy.VarByName(varnm)
+		if ok {
+			return sv, nil
+		}
+	}
+	return 0, fmt.Errorf("Prjn.SynVal: recv unit index %v does not recv from send unit index %v, or variable name: %v not found in synapse", ridx, sidx, varnm)
+}
+
+///////////////////////////////////////////////////////////////////////
+//  Build, Save Weights
+
 // Build constructs the full connectivity among the layers as specified in this projection.
 // Calls PrjnStru.BuildStru and then allocates the synaptic values in Syns accordingly.
 func (pj *Prjn) Build() bool {
@@ -243,6 +316,10 @@ func (pj *Prjn) Build() bool {
 		return false
 	}
 	pj.Syns = make([]Synapse, len(pj.SConIdx))
+	rsh := pj.Recv.LayShape()
+	//	ssh := pj.Send.LayShape()
+	rlen := rsh.Len()
+	pj.WbRecv = make([]WtBalRecvPrjn, rlen)
 	return true
 }
 
@@ -300,24 +377,6 @@ func (pj *Prjn) WriteWtsJSON(w io.Writer, depth int) {
 	w.Write([]byte("}\n"))
 }
 
-///////////////////////////////////////////////////////////////////////
-//  leabra.PrjnList
-
-// PrjnList is a slice of projections
-type PrjnList []*Prjn
-
-// Add adds a projection to the list
-func (pl *PrjnList) Add(p *Prjn) {
-	(*pl) = append(*pl, p)
-}
-
-// Build calls Build on all the prjns in the list
-func (pl *PrjnList) Build() {
-	for _, pj := range *pl {
-		pj.Build()
-	}
-}
-
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
 
@@ -326,6 +385,39 @@ func (pj *Prjn) InitWts() {
 	for si := range pj.Syns {
 		sy := &pj.Syns[si]
 		pj.Learn.InitWts(sy)
+	}
+	for wi := range pj.WbRecv {
+		wb := &pj.WbRecv[wi]
+		wb.Init()
+	}
+}
+
+// InitWtSym initializes weight symmetry -- is given the reciprocal projection where
+// the Send and Recv layers are reversed.
+func (pj *Prjn) InitWtSym(rpj *Prjn) {
+	slay := pj.Send.(*Layer)
+	ns := len(slay.Neurons)
+	for si := 0; si < ns; si++ {
+		nc := int(pj.SConN[si])
+		st := int(pj.SConIdxSt[si])
+		for ci := 0; ci < nc; ci++ {
+			sy := &pj.Syns[st+ci]
+			ri := pj.SConIdx[st+ci]
+			// now we need to find the reciprocal synapse on rpj!
+			// look in ri for sending connections
+			rsi := ri
+			rsnc := int(rpj.SConN[rsi])
+			rsst := int(rpj.SConIdxSt[rsi])
+			for rci := 0; rci < rsnc; rci++ {
+				rri := int(rpj.SConIdx[rsst+rci])
+				if rri == si {
+					rsy := &rpj.Syns[rsst+rci]
+					rsy.Wt = sy.Wt
+					// note: if we support SymFmTop then can have option to go other way
+					// also for Scale support, copy scales
+				}
+			}
+		}
 	}
 }
 
@@ -352,7 +444,10 @@ func (pj *Prjn) SendGeDelta(si int, delta float32) {
 
 // DWt computes the weight change (learning) -- on sending projections
 func (pj *Prjn) DWt() {
-	slay := pj.Recv.(*Layer)
+	if !pj.Learn.Learn {
+		return
+	}
+	slay := pj.Send.(*Layer)
 	rlay := pj.Recv.(*Layer)
 	ns := len(slay.Neurons)
 	for si := 0; si < ns; si++ {
@@ -382,13 +477,86 @@ func (pj *Prjn) DWt() {
 			}
 			sy.DWt += pj.Learn.Lrate * dwt
 		}
+		// aggregate max DWtNorm over sending synapses
+		if pj.Learn.Norm.On {
+			maxNorm := float32(0)
+			for ci := 0; ci < nc; ci++ {
+				sy := &pj.Syns[st+ci]
+				if sy.DWtNorm > maxNorm {
+					maxNorm = sy.DWtNorm
+				}
+			}
+			for ci := 0; ci < nc; ci++ {
+				sy := &pj.Syns[st+ci]
+				sy.DWtNorm = maxNorm
+			}
+		}
 	}
 }
 
 // WtFmDWt updates the synaptic weight values from delta-weight changes -- on sending projections
 func (pj *Prjn) WtFmDWt() {
-	for si := range pj.Syns {
-		sy := &pj.Syns[si]
-		pj.Learn.WtFmDWt(sy.DWt, 1, 1, &sy.Wt, &sy.LWt)
+	if !pj.Learn.Learn {
+		return
+	}
+	slay := pj.Send.(*Layer)
+	ns := len(slay.Neurons)
+	for si := 0; si < ns; si++ {
+		nc := int(pj.SConN[si])
+		st := int(pj.SConIdxSt[si])
+		for ci := 0; ci < nc; ci++ {
+			sy := &pj.Syns[st+ci]
+			ri := pj.SConIdx[st+ci]
+			wb := &pj.WbRecv[ri]
+			pj.Learn.WtFmDWt(sy.DWt, wb.Inc, wb.Dec, &sy.Wt, &sy.LWt)
+		}
+	}
+
+	// todo: compare vs. putting WbInc / Dec into the synapses!
+	// for si := range pj.Syns {
+	// 	sy := &pj.Syns[si]
+	// 	pj.Learn.WtFmDWt(sy.DWt, sy.WbInc, sy.WbDec, &sy.Wt, &sy.LWt)
+	// }
+}
+
+// WtBalFmWt computes the Weight Balance factors based on average recv weights
+func (pj *Prjn) WtBalFmWt() {
+	if !pj.Learn.Learn || !pj.Learn.WtBal.On {
+		return
+	}
+
+	rlay := pj.Recv.(*Layer)
+	if rlay.Type == Target {
+		return
+	}
+	nr := len(rlay.Neurons)
+	for ri := 0; ri < nr; ri++ {
+		nc := int(pj.RConN[ri])
+		if nc <= 1 {
+			continue
+		}
+		rn := &rlay.Neurons[ri]
+		if rn.HasFlag(NeurHasTarg) { // todo: ensure that Pulvinar has this set, or do something else
+			continue
+		}
+		wb := &pj.WbRecv[ri]
+		st := int(pj.RConIdxSt[ri])
+		sumWt := float32(0)
+		sumN := 0
+		for ci := 0; ci < nc; ci++ {
+			rsi := pj.RSynIdx[st+ci]
+			sy := &pj.Syns[rsi]
+			if sy.Wt >= pj.Learn.WtBal.AvgThr {
+				sumWt += sy.Wt
+				sumN++
+			}
+		}
+		if sumN > 0 {
+			sumWt /= float32(sumN)
+		} else {
+			sumWt = 0
+		}
+		wb.Avg = sumWt
+		wb.Fact, wb.Inc, wb.Dec = pj.Learn.WtBal.WtBal(sumWt, rn.ActAvg)
 	}
 }

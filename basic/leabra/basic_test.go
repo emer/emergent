@@ -200,6 +200,15 @@ func TestNetLearn(t *testing.T) {
 	qtr3OutAvgS := []float32{0.9499999, 6.0347804e-30, 6.0347804e-30, 6.0347804e-30}
 	qtr3OutAvgM := []float32{0.9492211, 5.042516e-06, 5.042516e-06, 5.042516e-06}
 
+	trl0HidAvgL := []float32{0.3975, 0.3975, 0.3975, 0.3975}
+	trl1HidAvgL := []float32{0.5935205, 0.35775128, 0.35775128, 0.35775128}
+	trl2HidAvgL := []float32{0.5341764, 0.55774546, 0.32197616, 0.32197616}
+	trl3HidAvgL := []float32{0.48075876, 0.5019788, 0.5255478, 0.28977853}
+
+	trl1HidAvgLLrn := []float32{0.0008553083, 0.00034286897, 0.00034286897, 0.00034286897}
+	trl2HidAvgLLrn := []float32{0.0007263252, 0.00077755196, 0.00026511253, 0.00026511253}
+	trl3HidAvgLLrn := []float32{0.00061022304, 0.0006563444, 0.0007075711, 0.00019513167}
+
 	for pi := 0; pi < 4; pi++ {
 		inpat, err := InPats.SubSlice(2, []int{pi})
 		if err != nil {
@@ -260,5 +269,62 @@ func TestNetLearn(t *testing.T) {
 		if printQtrs {
 			fmt.Printf("=============================\n")
 		}
+
+		hidAvgL := hidLay.UnitVals("AvgL")
+		hidAvgLLrn := hidLay.UnitVals("AvgLLrn")
+		outAvgL := outLay.UnitVals("AvgL")
+		outAvgLLrn := outLay.UnitVals("AvgLLrn")
+		_ = outAvgL
+		_ = outAvgLLrn
+
+		// fmt.Printf("hid cosdif stats: %v\nhid avgl:   %v\nhid avgllrn: %v\n", hidLay.CosDiff, hidAvgL, hidAvgLLrn)
+		// fmt.Printf("out cosdif stats: %v\nout avgl:   %v\nout avgllrn: %v\n", outLay.CosDiff, outAvgL, outAvgLLrn)
+
+		TestNet.DWt()
+
+		var dwt float32
+		dwt, err = hidLay.RecvPrjns[0].SynVal("DWt", pi, pi)
+		if err != nil {
+			t.Error(err)
+		}
+
+		fmt.Printf("dwt: %v\n", dwt)
+
+		TestNet.WtFmDWt()
+
+		var wt float32
+		wt, err = hidLay.RecvPrjns[0].SynVal("Wt", pi, pi)
+		if err != nil {
+			t.Error(err)
+		}
+
+		fmt.Printf("wt: %v\n", wt)
+
+		switch pi {
+		case 0:
+			CmprFloats(hidAvgL, trl0HidAvgL, "trl 0 hidAvgL", t)
+		case 1:
+			CmprFloats(hidAvgL, trl1HidAvgL, "trl 1 hidAvgL", t)
+			CmprFloats(hidAvgLLrn, trl1HidAvgLLrn, "trl 1 hidAvgLLrn", t)
+		case 2:
+			CmprFloats(hidAvgL, trl2HidAvgL, "trl 2 hidAvgL", t)
+			CmprFloats(hidAvgLLrn, trl2HidAvgLLrn, "trl 2 hidAvgLLrn", t)
+		case 3:
+			CmprFloats(hidAvgL, trl3HidAvgL, "trl 3 hidAvgL", t)
+			CmprFloats(hidAvgLLrn, trl3HidAvgLLrn, "trl 3 hidAvgLLrn", t)
+		}
+
 	}
+
+	var buf bytes.Buffer
+	TestNet.WriteWtsJSON(&buf)
+	wb := buf.Bytes()
+	// fmt.Printf("TestNet Trained Weights:\n\n%v\n", string(wb))
+
+	fp, err := os.Create("testdata/testnet_train.wts")
+	defer fp.Close()
+	if err != nil {
+		t.Error(err)
+	}
+	fp.Write(wb)
 }

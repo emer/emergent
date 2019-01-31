@@ -62,12 +62,17 @@ func (nt *NetworkStru) MakeLayMap() {
 // leabra.Network has parameters for running a basic rate-coded Leabra network
 type Network struct {
 	NetworkStru
+	WtBalInterval int `def:"10" desc:"how frequently to update the weight balance average weight factor -- relatively expensive"`
+	WtBalCtr      int `inactive:"+" desc:"counter for how long it has been since last WtBal"`
 }
 
 // Defaults sets all the default parameters for all layers and projections
 func (nt *Network) Defaults() {
-	for _, ly := range nt.Layers {
-		ly.(*Layer).Defaults()
+	nt.WtBalInterval = 10
+	nt.WtBalCtr = 0
+	for li, ly := range nt.Layers {
+		ly.Defaults()
+		ly.(*Layer).Index = li
 	}
 }
 
@@ -75,15 +80,15 @@ func (nt *Network) Defaults() {
 // and projections
 func (nt *Network) UpdateParams() {
 	for _, ly := range nt.Layers {
-		ly.(*Layer).UpdateParams()
+		ly.UpdateParams()
 	}
 }
 
-// StyleParams applies a given styles to either this layer or the receiving projections in this layer
+// StyleParams applies a given styles to layers and receiving projections,
 // depending on the style specification (.Class, #Name, Type) and target value of params
 func (nt *Network) StyleParams(psty emer.ParamStyle) {
 	for _, ly := range nt.Layers {
-		ly.(*Layer).StyleParams(psty)
+		ly.StyleParams(psty)
 	}
 }
 
@@ -138,10 +143,11 @@ func (nt *Network) ConnectLayers(recv, send *Layer, pat prjn.Pattern) *Prjn {
 // Build constructs the layer and projection state based on the layer shapes and patterns
 // of interconnectivity
 func (nt *Network) Build() {
-	for _, ly := range nt.Layers {
+	for li, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
+		ly.(*Layer).Index = li
 		ly.(*Layer).Build()
 	}
 }
@@ -182,11 +188,19 @@ func (nt *Network) WriteWtsJSON(w io.Writer) {
 // InitWts initializes synaptic weights and all other associated long-term state variables
 // including running-average state values (e.g., layer running average activations etc)
 func (nt *Network) InitWts() {
+	nt.WtBalCtr = 0
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
 		ly.(*Layer).InitWts()
+	}
+	// separate pass to enforce symmetry
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).InitWtSym()
 	}
 }
 
@@ -318,13 +332,29 @@ func (nt *Network) DWt() {
 	}
 }
 
-// WtFmDWt updates the weights from delta-weight changes
+// WtFmDWt updates the weights from delta-weight changes.
+// Also calls WtBalFmWt every WtBalInterval times
 func (nt *Network) WtFmDWt() {
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
 		ly.(*Layer).WtFmDWt()
+	}
+	nt.WtBalCtr++
+	if nt.WtBalCtr >= nt.WtBalInterval {
+		nt.WtBalCtr = 0
+		nt.WtBalFmWt()
+	}
+}
+
+// WtBalFmWt updates the weight balance factors based on average recv weights
+func (nt *Network) WtBalFmWt() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).WtBalFmWt()
 	}
 }
 

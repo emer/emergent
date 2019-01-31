@@ -48,10 +48,10 @@ func (ln *LearnNeurParams) AvgsFmAct(nrn *Neuron) {
 	ln.ActAvg.AvgsFmAct(nrn.Act, &nrn.AvgSS, &nrn.AvgS, &nrn.AvgM, &nrn.AvgSLrn)
 }
 
-// AvgLFmAct computes long-term average activation value, and learning factor, from given activation.
+// AvgLFmAct computes long-term average activation value, and learning factor, from current AvgM.
 // Called at start of new trial.
-func (ln *LearnNeurParams) AvgLFmAct(nrn *Neuron) {
-	ln.AvgL.AvgLFmAct(nrn.Act, &nrn.AvgL, &nrn.AvgLLrn)
+func (ln *LearnNeurParams) AvgLFmAvgM(nrn *Neuron) {
+	ln.AvgL.AvgLFmAvgM(nrn.AvgM, &nrn.AvgL, &nrn.AvgLLrn)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -61,6 +61,7 @@ func (ln *LearnNeurParams) AvgLFmAct(nrn *Neuron) {
 
 // leabra.LearnSynParams manages learning-related parameters at the synapse-level.
 type LearnSynParams struct {
+	Learn    bool            `desc:"enable learning for this projection"`
 	Lrate    float32         `desc:"learning rate"`
 	WtInit   erand.RndParams `inline:"+" desc:"initial random weight distribution"`
 	XCal     XCalParams      `inline:"+" desc:"parameters for the XCal learning rule"`
@@ -79,6 +80,7 @@ func (ls *LearnSynParams) Update() {
 }
 
 func (ls *LearnSynParams) Defaults() {
+	ls.Learn = true
 	ls.Lrate = 0.04
 	ls.WtInit.Mean = 0.5
 	ls.WtInit.Var = 0.25
@@ -96,8 +98,8 @@ func (ls *LearnSynParams) InitWts(syn *Synapse) {
 	syn.DWt = 0
 	syn.DWtNorm = 0
 	syn.Moment = 0
-	syn.WbInc = 1
-	syn.WbDec = 1
+	// syn.WbInc = 1
+	// syn.WbDec = 1
 }
 
 // CHLdWt returns the error-driven and bcm Hebbian weight change components for the
@@ -111,23 +113,23 @@ func (ls *LearnSynParams) CHLdWt(suAvgSLrn, suAvgM, ruAvgSLrn, ruAvgM, ruAvgL fl
 }
 
 // WtFmDWt updates the synaptic weights from accumulated weight changes
-// wb_inc and _dec are the weight balance factors, wt is the sigmoidal contrast-enhanced
+// wbInc and wbDec are the weight balance factors, wt is the sigmoidal contrast-enhanced
 // weight and lwt is the linear weight value
-func (ls *LearnSynParams) WtFmDWt(dwt, wb_inc, wb_dec float32, wt, lwt *float32) {
+func (ls *LearnSynParams) WtFmDWt(dwt, wbInc, wbDec float32, wt, lwt *float32) {
 	if dwt == 0 {
 		return
 	}
 	if ls.WtSig.SoftBound {
 		if dwt > 0 {
-			dwt *= wb_inc * (1 - *lwt)
+			dwt *= wbInc * (1 - *lwt)
 		} else {
-			dwt *= wb_dec * *lwt
+			dwt *= wbDec * *lwt
 		}
 	} else {
 		if dwt > 0 {
-			dwt *= wb_inc
+			dwt *= wbInc
 		} else {
-			dwt *= wb_dec
+			dwt *= wbDec
 		}
 	}
 	*lwt += dwt
@@ -142,101 +144,6 @@ func (ls *LearnSynParams) WtFmDWt(dwt, wb_inc, wb_dec float32, wt, lwt *float32)
 	//      adapt_scale.AdaptWtScale(scale, wt);
 	//    }
 }
-
-//    Init_Weights_symflag(net, thr_no);
-//    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)pcg;
-//
-//    cg->err_dwt_max = 0.0f;    cg->bcm_dwt_max = 0.0f; cg->dwt_max = 0.0f;
-//    cg->wb_inc = 1.0f;         cg->wb_dec = 1.0f;
-//
-
-//    float* wts = cg->OwnCnVar(WT);
-//    float* dwts = cg->OwnCnVar(DWT);
-//    float* scales = cg->OwnCnVar(SCALE);
-//    // NOTE: it is ESSENTIAL that Init_Weights ONLY does wt, dwt, and scale -- all other vars
-//    // MUST be initialized in post -- projections with topo weights ONLY do these specific
-//    // variables but no others..
-//
-//    int eff_thr_no = net->HasNetFlag(NETWORK_STATE::INIT_WTS_1_THREAD) ? 0 : thr_no;
-//
-//    const int sz = cg->size;
-//    for(int i=0; i<sz; i++) {
-//      scales[i] = 1.0f;         // default -- must be set in prjn spec if different
-//    }
-//
-//    for(int i=0; i<sz; i++) {
-//      if(rnd.type != STATE_CLASS(Random)::NONE) {
-//        C_Init_Weight_Rnd(wts[i], eff_thr_no);
-//      }
-//      C_Init_dWt(dwts[i]);
-//    }
-
-/*
-  INLINE void Init_Weights_scale(CON_STATE* rcg, NETWORK_STATE* net, int thr_no, float init_wt_val) override {
-    Init_Weights_symflag(net, thr_no);
-
-    // this is called *receiver based*!!!
-
-    int eff_thr_no = net->HasNetFlag(NETWORK_STATE::INIT_WTS_1_THREAD) ? 0 : thr_no;
-
-    const int sz = rcg->size;
-    for(int i=0; i<sz; i++) {
-      if(rnd.type != STATE_CLASS(Random)::NONE) {
-        C_Init_Weight_Rnd(rcg->PtrCn(i, SCALE, net), eff_thr_no);
-      }
-      rcg->PtrCn(i, WT, net) = init_wt_val;
-      C_Init_dWt(rcg->PtrCn(i, DWT, net));
-    }
-  }
-
-  INLINE void  ApplySymmetry_s(CON_STATE* cg, NETWORK_STATE* net, int thr_no) override {
-    if(!wt_limits.sym) return;
-    UNIT_STATE* su = cg->ThrOwnUnState(net, thr_no);
-    const int sz = cg->size;
-    for(int i=0; i<sz;i++) {
-      int con_idx = -1;
-      CON_STATE* rscg = net->FindRecipSendCon(con_idx, cg->UnState(i,net), su);
-      if(rscg && con_idx >= 0) {
-        CON_SPEC_CPP* rscs = rscg->GetConSpec(net);
-        if(rscs && rscs->wt_limits.sym) {
-          if(wt_limits.sym_fm_top) {
-            cg->OwnCn(i, WT) = rscg->OwnCn(con_idx, WT);
-            cg->OwnCn(i, SCALE) = rscg->OwnCn(con_idx, SCALE); // only diff: sync scales!
-          }
-          else {
-            rscg->OwnCn(con_idx, WT) = cg->OwnCn(i, WT);
-            rscg->OwnCn(con_idx, SCALE) = cg->OwnCn(i, SCALE);
-          }
-        }
-      }
-    }
-  }
-
-  INLINE void Init_Weights_post(CON_STATE* pcg, NETWORK_STATE* net, int thr_no) override {
-    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)pcg;
-    cg->Init_ConState();
-
-    float* wts = cg->OwnCnVar(WT);
-    float* swts = cg->OwnCnVar(SWT);
-    float* fwts = cg->OwnCnVar(FWT);
-    float* scales = cg->OwnCnVar(SCALE);
-    float* dwnorms = cg->OwnCnVar(DWNORM);
-    float* moments = cg->OwnCnVar(MOMENT);
-    float* wbincs = cg->OwnCnVar(WB_INC);
-    float* wbdecs = cg->OwnCnVar(WB_DEC);
-    for(int i=0; i<cg->size; i++) {
-      fwts[i] = LinFmSigWt(wts[i]); // swt, fwt are linear underlying weight values
-      dwnorms[i] = 0.0f;
-      moments[i] = 0.0f;
-      swts[i] = fwts[i];
-      wts[i] *= scales[i];
-      wbincs[i] = wbdecs[i] = 1.0f;
-
-      LEABRA_CON_STATE* rcg = cg->UnCons(i, net);
-      rcg->Init_ConState();    // recv based otherwise doesn't get initialized!
-    }
-  }
-*/
 
 // LrnActAvgParams has rate constants for averaging over activations at different time scales,
 // to produce the running average activation values that then drive learning in the XCAL learning rules
@@ -299,13 +206,14 @@ type AvgLParams struct {
 	LrnFact float32 `view:"-" inactive:"+" desc:"(LrnMax - LrnMin) / (Gain - Min)"`
 }
 
-// AvgLFmAct computes long-term average activation value, and learning factor, from given activation
-func (al *AvgLParams) AvgLFmAct(act float32, avgl, lrn *float32) {
-	*avgl += al.Dt * (al.Gain*act - *avgl)
-	if *avgl < al.Min {
-		*avgl = al.Min
+// AvgLFmAvgM computes long-term average activation value, and learning factor, from given
+// medium-scale running average activation avgM
+func (al *AvgLParams) AvgLFmAvgM(avgM float32, avgL, lrn *float32) {
+	*avgL += al.Dt * (al.Gain*avgM - *avgL)
+	if *avgL < al.Min {
+		*avgL = al.Min
 	}
-	*lrn = al.LrnFact * (*avgl - al.Min)
+	*lrn = al.LrnFact * (*avgL - al.Min)
 }
 
 // ErrModFmLayErr computes AvgLLrn multiplier from layer cosine diff avg statistic
@@ -402,6 +310,14 @@ type CosDiffStats struct {
 	Var        float32 `desc:"running variance of cosine (normalized dot product) difference between act_p and act_m -- computed with layerspec cos_diff.diff_avg_tau time constant in Quarter_Final, used for modulating overall learning rate"`
 	AvgLrn     float32 `desc:"1 - Avg and 0 for non-HIDDEN layers"`
 	ModAvgLLrn float32 `desc:"1 - AvgLrn and 0 for non-HIDDEN layers -- this is the value of cos_diff_avg used for avg_l.err_mod_l modulation of the avg_l_lrn factor if enabled"`
+}
+
+func (cd *CosDiffStats) Init() {
+	cd.Cos = 0
+	cd.Avg = 0
+	cd.Var = 0
+	cd.AvgLrn = 0
+	cd.ModAvgLLrn = 0
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -581,7 +497,7 @@ func (dn *DWtNormParams) Update() {
 }
 
 func (dn *DWtNormParams) Defaults() {
-	dn.On = true
+	dn.On = false // true
 	dn.DecayTau = 1000
 	dn.LrComp = 0.15
 	dn.NormMin = 0.001
@@ -615,7 +531,7 @@ func (mp *MomentumParams) Update() {
 }
 
 func (mp *MomentumParams) Defaults() {
-	mp.On = true
+	mp.On = false // true
 	mp.MTau = 10
 	mp.LrComp = 0.1
 	mp.Update()
@@ -629,15 +545,14 @@ func (mp *MomentumParams) Defaults() {
 // how strong the weights are overall (subject to thresholding) and long time-averaged activation.
 // Plugs into soft bounding function.
 type WtBalParams struct {
-	On      bool    `desc:"perform weight balance soft normalization?  if so, maintains overall weight balance across units by progressively penalizing weight increases as a function of amount of averaged weight above a high threshold (hi_thr) and long time-average activation above an act_thr -- this is generally very beneficial for larger models where hog units are a problem, but not as much for smaller models where the additional constraints are not beneficial -- uses a sigmoidal function: wb_inc = 1 / (1 + hi_gain*(wb_avg - hi_thr) + act_gain * (act_avg - act_thr)))"`
-	AvgThr  float32 `view:"if On=true" def:"0.25" desc:"threshold on weight value for inclusion into the weight average that is then subject to the further hi_thr threshold for then driving a change in weight balance -- this avg_thr allows only stronger weights to contribute so that weakening of lower weights does not dilute sensitivity to number and strength of strong weights"`
-	HiThr   float32 `view:"if On=true" def:"0.4" desc:"high threshold on weight average (subject to avg_thr) before it drives changes in weight increase vs. decrease factors"`
-	HiGain  float32 `view:"if On=true"def:"4" desc:"gain multiplier applied to above-hi_thr thresholded weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced"`
-	LoThr   float32 `view:"if On=true" def:"0.4" desc:"low threshold on weight average (subject to avg_thr) before it drives changes in weight increase vs. decrease factors"`
+	On      bool    `desc:"perform weight balance soft normalization?  if so, maintains overall weight balance across units by progressively penalizing weight increases as a function of amount of averaged receiver weight above a high threshold (hi_thr) and long time-average activation above an act_thr -- this is generally very beneficial for larger models where hog units are a problem, but not as much for smaller models where the additional constraints are not beneficial -- uses a sigmoidal function: WbInc = 1 / (1 + HiGain*(WbAvg - HiThr) + ActGain * (nrn.ActAvg - ActThr)))"`
+	AvgThr  float32 `view:"if On=true" def:"0.25" desc:"threshold on weight value for inclusion into the weight average that is then subject to the further HiThr threshold for then driving a change in weight balance -- this AvgThr allows only stronger weights to contribute so that weakening of lower weights does not dilute sensitivity to number and strength of strong weights"`
+	HiThr   float32 `view:"if On=true" def:"0.4" desc:"high threshold on weight average (subject to AvgThr) before it drives changes in weight increase vs. decrease factors"`
+	HiGain  float32 `view:"if On=true"def:"4" desc:"gain multiplier applied to above-HiThr thresholded weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced"`
+	LoThr   float32 `view:"if On=true" def:"0.4" desc:"low threshold on weight average (subject to AvgThr) before it drives changes in weight increase vs. decrease factors"`
 	LoGain  float32 `view:"if On=true" def:"6;0" desc:"gain multiplier applied to below-lo_thr thresholded weight averages -- higher values turn weight increases up more rapidly as the weights become more imbalanced -- generally beneficial but sometimes not -- worth experimenting with either 6 or 0"`
 	ActThr  float32 `view:"if On=true" def:"0.25" desc:"threshold for long time-average activation (act_avg) contribution to weight balance -- based on act_avg relative to act_thr -- same statistic that we use to measure hogging with default .3 threshold"`
 	ActGain float32 `view:"if On=true" def:"0;2" desc:"gain multiplier applied to above-threshold weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced -- see act_thr for equation"`
-	NoTarg  bool    `view:"if On=true" def:"true" desc:"exclude receiving projections into TARGET layers where units are clamped and also TRC (Pulvinar) thalamic neurons -- typically for clamped layers you do not want to be applying extra constraints such as this weight balancing dynamic -- the BCM hebbian learning is also automatically turned off for such layers as well"`
 }
 
 func (wb *WtBalParams) Update() {
@@ -645,7 +560,6 @@ func (wb *WtBalParams) Update() {
 
 func (wb *WtBalParams) Defaults() {
 	wb.On = true
-	wb.NoTarg = true
 	wb.AvgThr = 0.25
 	wb.HiThr = 0.4
 	wb.HiGain = 4
@@ -657,103 +571,28 @@ func (wb *WtBalParams) Defaults() {
 
 // WtBal computes weight balance factors for increase and decrease based on extent
 // to which weights and average act exceed thresholds
-func (wb *WtBalParams) WtBal(wbAvg, actAvg float32) (wbFact, wbInc, wbDec float32) {
-	wbInc = 1
-	wbDec = 1
+func (wb *WtBalParams) WtBal(wbAvg, actAvg float32) (fact, inc, dec float32) {
+	inc = 1
+	dec = 1
 	if wbAvg < wb.LoThr {
 		if wbAvg < wb.AvgThr {
 			wbAvg = wb.AvgThr // prevent extreme low if everyone below thr
 		}
-		wbFact = wb.LoGain * (wb.LoThr - wbAvg)
-		wbDec = 1 / (1 + wbFact)
-		wbInc = 2 - wbDec
+		fact = wb.LoGain * (wb.LoThr - wbAvg)
+		dec = 1 / (1 + fact)
+		inc = 2 - dec
 	} else if wbAvg > wb.HiThr {
-		wbFact += wb.HiGain * (wbAvg - wb.HiThr)
+		fact += wb.HiGain * (wbAvg - wb.HiThr)
 		if actAvg > wb.ActThr {
-			wbFact += wb.ActGain * (actAvg - wb.ActThr)
+			fact += wb.ActGain * (actAvg - wb.ActThr)
 		}
-		wbInc = 1 / (1 + wbFact) // gets sigmoidally small toward 0 as wbFact gets larger -- is quick acting but saturates -- apply pressure earlier..
-		wbDec = 2 - wbInc        // as wb_inc goes down, wb_dec goes up..  sum to 2
+		inc = 1 / (1 + fact) // gets sigmoidally small toward 0 as fact gets larger -- is quick acting but saturates -- apply pressure earlier..
+		dec = 2 - inc        // as inc goes down, dec goes up..  sum to 2
 	}
-	return wbFact, wbInc, wbDec
+	return fact, inc, dec
 }
 
 /*
-
-class STATE_CLASS(AdaptWtScaleSpec) : public STATE_CLASS(SpecMemberBase) {
-  // ##INLINE ##NO_TOKENS ##CAT_Leabra parameters to adapt the scale multiplier on weights, as a function of weight value
-INHERITED(SpecMemberBase)
-public:
-  bool          on;             // turn on weight scale adaptation as function of weight values
-        tau;            // #CONDSHOW_ON_on def:"5000 time constant as a function of weight updates (trials) that weight scale adapts on -- should be fairly slow in general
-        lo_thr;         // #CONDSHOW_ON_on def:"0.25 low threshold:  normalized contrast-enhanced effective weights (wt/scale, 0-1 range) below this value cause scale to move downward toward lo_scale value
-        hi_thr;         // #CONDSHOW_ON_on def:"0.75 high threshold: normalized contrast-enhanced effective weights (wt/scale, 0-1 range) above this value cause scale to move upward toward hi_scale value
-        lo_scale;       // #CONDSHOW_ON_on min:"0.01 def:"0.01 lowest value of scale
-        hi_scale;       // #CONDSHOW_ON_on def:"2 highest value of scale
-
-        dt;             // #READ_ONLY #EXPERT rate = 1 / tau
-
-  INLINE void   AdaptWtScale(float& scale, const float wt) {
-    const float nrm_wt = wt / scale;
-    if(nrm_wt < lo_thr) {
-      scale += dt * (lo_scale - scale);
-    }
-    else if(nrm_wt > hi_thr) {
-      scale += dt * (hi_scale - scale);
-    }
-  }
-  // adapt weight scale
-
-  STATE_DECO_KEY("ConSpec");
-  STATE_TA_STD_CODE_SPEC(AdaptWtScaleSpec);
-  STATE_UAE( dt = 1.0f / tau; );
-private:
-  void  Initialize()     {   on = false;  Defaults_init(); }
-  void  Defaults_init() {
-    tau = 5000.0f;  lo_thr = 0.25f;  hi_thr = 0.75f;  lo_scale = 0.01f;  hi_scale = 2.0f;
-    dt = 1.0f / tau;
-  }
-};
-
-*/
-
-/*
-
-  INLINE void  LoadWeightVal(float wtval, CON_STATE* cg, int cidx, NETWORK_STATE* net) override {
-    cg->Cn(cidx, WT, net) = wtval;
-    float linwt = LinFmSigWt(wtval / cg->Cn(cidx, SCALE, net));
-    cg->Cn(cidx, SWT, net) = linwt;
-    cg->Cn(cidx, FWT, net) = linwt;
-  }
-
-  INLINE void SetConScale(float scale, CON_STATE* cg, int cidx, NETWORK_STATE* net, int thr_no) override {
-    cg->Cn(cidx, SCALE, net) = scale;
-  }
-
-  INLINE void  RenormScales(CON_STATE* cg, NETWORK_STATE* net, int thr_no, bool mult_norm,
-                            float avg_wt) override {
-    const int sz = cg->size;
-    if(sz < 2) return;
-    float avg = 0.0f;
-    for(int i=0; i<sz; i++) {
-      avg += cg->Cn(i, SCALE, net);
-    }
-    avg /= (float)sz;
-    if(mult_norm) {
-      float adj = avg_wt / avg;
-      for(int i=0; i<sz; i++) {
-        cg->Cn(i, SCALE, net) *= adj;
-      }
-    }
-    else {
-      float adj = avg_wt - avg;
-      for(int i=0; i<sz; i++) {
-        cg->Cn(i, SCALE, net) += adj;
-      }
-    }
-  }
-
-
   /////////////////////////////////////
   // CtLeabraXCAL code
 
@@ -781,159 +620,5 @@ private:
   // }
   // also: fminf(ru_avg_l,1.0f) for threshold as an option..
 
-
-  INLINE void   C_Compute_Weights_CtLeabraXCAL
-    (float& wt, float dwt, float& fwt, float& swt, float& scale,
-     const float wb_inc, const float wb_dec, int thr_no)
-  {
-    if(dwt == 0.0f) return;
-    if(wt_sig.soft_bound) {
-      if(dwt > 0.0f)    dwt *= wb_inc * (1.0f - fwt);
-      else              dwt *= wb_dec * fwt;
-    }
-    else {
-      if(dwt > 0.0f)    dwt *= wb_inc;
-      else              dwt *= wb_dec;
-    }
-    fwt += dwt;
-    C_ApplyLimits(fwt);
-    // swt = fwt;  // leave swt as pristine original weight value -- saves time
-    // and is useful for visualization!
-    wt = scale * SigFmLinWt(fwt);
-    // dwt = 0.0f;
-
-    if(adapt_scale.on) {
-      adapt_scale.AdaptWtScale(scale, wt);
-    }
-  }
-  // #IGNORE overall compute weights for CtLeabraXCAL learning rule -- no slow wts
-
-
-  INLINE void   Compute_Weights(CON_STATE* scg, NETWORK_STATE* net, int thr_no) override {
-    if(!learn) return;
-    LEABRA_CON_STATE* cg = (LEABRA_CON_STATE*)scg;
-    float* wts = cg->OwnCnVar(WT);      float* dwts = cg->OwnCnVar(DWT);
-    float* fwts = cg->OwnCnVar(FWT);    float* swts = cg->OwnCnVar(SWT);
-    float* scales = cg->OwnCnVar(SCALE);
-    const int sz = cg->size;
-
-    int neigh = dwt_share.neigh;
-    bool dwt_sh = (dwt_share.on && sz > 2 * neigh &&
-                   (dwt_share.p_share == 1.0f || Random::BoolProb(dwt_share.p_share, thr_no)));
-
-    if(wt_bal.on) {
-      // note: MUST get these from ru -- diff for each con -- can't copy to sender!
-      // storing in synapses is about 2x faster and essentially no overhead vs. no wtbal
-      float* wbincs = cg->OwnCnVar(WB_INC);
-      float* wbdecs = cg->OwnCnVar(WB_DEC);
-
-      if(slow_wts.on) {
-        for(int i=0; i<sz; i++) {
-          float dwt = C_Compute_Weights_dwtshare(dwt_sh, dwts, i, neigh, sz);
-          C_Compute_Weights_CtLeabraXCAL_slow
-            (wts[i], dwt, fwts[i], swts[i], scales[i], wbincs[i], wbdecs[i], thr_no);
-        }
-      }
-      else {
-        for(int i=0; i<sz; i++) {
-          float dwt = C_Compute_Weights_dwtshare(dwt_sh, dwts, i, neigh, sz);
-          C_Compute_Weights_CtLeabraXCAL
-            (wts[i], dwt, fwts[i], swts[i], scales[i], wbincs[i], wbdecs[i], thr_no);
-        }
-      }
-    }
-    else {
-      if(slow_wts.on) {
-        for(int i=0; i<sz; i++) {
-          float dwt = C_Compute_Weights_dwtshare(dwt_sh, dwts, i, neigh, sz);
-          C_Compute_Weights_CtLeabraXCAL_slow
-            (wts[i], dwt, fwts[i], swts[i], scales[i], 1.0f, 1.0f, thr_no);
-        }
-      }
-      else {
-        for(int i=0; i<sz; i++) {
-          float dwt = C_Compute_Weights_dwtshare(dwt_sh, dwts, i, neigh, sz);
-          C_Compute_Weights_CtLeabraXCAL
-            (wts[i], dwt, fwts[i], swts[i], scales[i], 1.0f, 1.0f, thr_no);
-        }
-      }
-    }
-    // reset dwts after updating -- dwtshare requires doing this after the fact
-    for(int i=0; i<sz; i++) {
-      dwts[i] = 0.0f;
-    }
-  }
-
-  INLINE virtual void DwtNorm_SendCons(LEABRA_CON_STATE* cg, LEABRA_NETWORK_STATE* net,
-                                       int thr_no) {
-    float* dwnorms = cg->OwnCnVar(DWNORM);
-    const int sz = cg->size;
-    float max_dwnorm = 0.0f;
-    for(int i=0; i<sz; i++) {
-      max_dwnorm = fmaxf(max_dwnorm, dwnorms[i]); // simple max
-    }
-    cg->cons_dwnorm = max_dwnorm;
-    for(int i=0; i<sz; i++) {
-      dwnorms[i] = max_dwnorm;
-    }
-  }
-  // #IGNORE compute dwt_norm sender-based con group level dwnorm factor
-
-  INLINE virtual void   Compute_WtBal_DwtNormRecv(LEABRA_CON_STATE* cg, LEABRA_NETWORK_STATE* net, int thr_no) {
-    bool do_wb = wt_bal.on;
-    bool do_norm = dwt_norm.RecvConsAgg();
-    if(!learn || cg->size < 1 || !(do_wb || do_norm)) return;
-    LEABRA_UNIT_STATE* ru = cg->ThrOwnUnState(net, thr_no);
-    if(wt_bal.no_targ &&
-       (ru->HasUnitFlag(LEABRA_UNIT_STATE::TRC) || ru->HasExtFlag(LEABRA_UNIT_STATE::TARG))) {
-      do_wb = false;
-      if(!do_norm) return;      // no need
-    }
-
-    float sum_wt = 0.0f;
-    int sum_n = 0;
-    float max_dwnorm = 0.0f;
-
-    const int sz = cg->size;
-    for(int i=0; i<sz; i++) {
-      if(do_wb) {
-        float wt = cg->PtrCn(i,WT,net);
-        if(wt >= wt_bal.avg_thr) {
-          sum_wt += wt;
-          sum_n++;
-        }
-      }
-      if(do_norm) {
-        float dwnorm = cg->PtrCn(i,DWNORM,net);
-        max_dwnorm = fmaxf(max_dwnorm, dwnorm);
-      }
-    }
-
-    if(do_norm) {
-      cg->cons_dwnorm = max_dwnorm;
-    }
-
-    if(do_wb) {
-      if(sum_n > 0)
-        sum_wt /= (float)sum_n;
-      else
-        sum_wt = 0.0f;
-      cg->wb_avg = sum_wt;
-      wt_bal.WtBal(sum_wt, ru->act_avg, cg->wb_fact, cg->wb_inc, cg->wb_dec);
-    }
-    // note: these are specific to recv unit and cannot be copied to sender!
-    // BUT can copy to synapses:
-
-    for(int i=0; i<sz; i++) {
-      if(do_wb) {
-        cg->PtrCn(i,WB_INC,net) = cg->wb_inc;
-        cg->PtrCn(i,WB_DEC,net) = cg->wb_dec;
-      }
-      if(do_norm) {
-        cg->PtrCn(i,DWNORM,net) = max_dwnorm;
-      }
-    }
-  }
-  // #IGNORE compute weight balance factors and / or DwtNorm at a recv level
 
 */

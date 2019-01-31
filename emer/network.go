@@ -22,4 +22,14 @@ type Network interface {
 
 	// LayerByNameErrMsg returns layer of given name, emits a log error message and returns false if not found
 	LayerByNameErrMsg(name string) (Layer, bool)
+
+	// Defaults sets default parameter values for everything in the Network
+	Defaults()
+
+	// UpdateParams() updates parameter values for all Network parameters,
+	// based on any other params that might have changed.
+	UpdateParams()
+
+	// StyleParams applies a given ParamStyle style sheet to the layers and projections in network
+	StyleParams(psty ParamStyle)
 }

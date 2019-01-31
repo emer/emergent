@@ -31,6 +31,12 @@ type Layer interface {
 	// LayPos returns the 3D position of the lower-left-hand corner of the layer
 	LayPos() Vec3i
 
+	// LayIndex returns a 0..n-1 index of the position of the layer within list of layers
+	// in the network.  For backprop networks, index position has computational significance.
+	// For Leabra networks, it only has significance in determining who gets which weights for
+	// enforcing initial weight symmetry -- higher layers get weights from lower layers.
+	LayIndex() int
+
 	// Unit returns the unit at given index, which must be valid according to shape
 	// otherwise a nil is returned
 	Unit(index []int) Unit
@@ -38,14 +44,17 @@ type Layer interface {
 	// UnitVals returns values of given variable name on unit for each unit in the layer, as a float32 slice
 	UnitVals(varnm string) []float32
 
+	// RecvPrjnList returns the full list of receiving projections
+	RecvPrjnList() PrjnList
+
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int
 
 	// RecvPrjn returns a specific receiving projection
 	RecvPrjn(idx int) Prjn
 
-	// RecvPrjnBySendName returns the receiving projection from given sending layer name, false if not found
-	RecvPrjnBySendName(sender string) (Prjn, bool)
+	// SendPrjnList returns the full list of sending projections
+	SendPrjnList() PrjnList
 
 	// NSendPrjns returns the number of sending projections
 	NSendPrjns() int
@@ -53,6 +62,13 @@ type Layer interface {
 	// SendPrjn returns a specific sending projection
 	SendPrjn(idx int) Prjn
 
-	// SendPrjnByRecvName returns the sending projection to given receiver layer name, false if not found
-	SendPrjnByRecvName(recv string) (Prjn, bool)
+	// Defaults sets default parameter values for all Layer and recv projection parameters
+	Defaults()
+
+	// UpdateParams() updates parameter values for all Layer and recv projection parameters,
+	// based on any other params that might have changed.
+	UpdateParams()
+
+	// StyleParams applies a given ParamStyle style sheet to the layer and recv projections
+	StyleParams(psty ParamStyle)
 }

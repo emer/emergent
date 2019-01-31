@@ -28,21 +28,25 @@ type LayerStru struct {
 	Type      LayerType     `desc:"type of layer -- Hidden, Input, Target, Compare"`
 	Rel       emer.Rel      `desc:"Spatial relationship to other layer, determines positioning"`
 	Pos       emer.Vec3i    `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
-	RecvPrjns PrjnList      `desc:"list of receiving projections into this layer from other layers"`
-	SendPrjns PrjnList      `desc:"list of sending projections from this layer to other layers"`
+	Index     int           `desc:"a 0..n-1 index of the position of the layer within list of layers in the network. For Leabra networks, it only has significance in determining who gets which weights for enforcing initial weight symmetry -- higher layers get weights from lower layers."`
+	RecvPrjns emer.PrjnList `desc:"list of receiving projections into this layer from other layers"`
+	SendPrjns emer.PrjnList `desc:"list of sending projections from this layer to other layers"`
 }
 
 // emer.Layer interface methods
 
-func (ls *LayerStru) LayName() string            { return ls.Name }
-func (ls *LayerStru) LayClass() string           { return ls.Class }
-func (ls *LayerStru) IsOff() bool                { return ls.Off }
-func (ls *LayerStru) LayShape() *etensor.Shape   { return &ls.Shape }
-func (ls *LayerStru) LayPos() emer.Vec3i         { return ls.Pos }
-func (ls *LayerStru) NRecvPrjns() int            { return len(ls.RecvPrjns) }
-func (ls *LayerStru) RecvPrjn(idx int) emer.Prjn { return ls.RecvPrjns[idx] }
-func (ls *LayerStru) NSendPrjns() int            { return len(ls.SendPrjns) }
-func (ls *LayerStru) SendPrjn(idx int) emer.Prjn { return ls.SendPrjns[idx] }
+func (ls *LayerStru) LayName() string             { return ls.Name }
+func (ls *LayerStru) LayClass() string            { return ls.Class }
+func (ls *LayerStru) IsOff() bool                 { return ls.Off }
+func (ls *LayerStru) LayShape() *etensor.Shape    { return &ls.Shape }
+func (ls *LayerStru) LayPos() emer.Vec3i          { return ls.Pos }
+func (ls *LayerStru) LayIndex() int               { return ls.Index }
+func (ls *LayerStru) RecvPrjnList() emer.PrjnList { return ls.RecvPrjns }
+func (ls *LayerStru) NRecvPrjns() int             { return len(ls.RecvPrjns) }
+func (ls *LayerStru) RecvPrjn(idx int) emer.Prjn  { return ls.RecvPrjns[idx] }
+func (ls *LayerStru) SendPrjnList() emer.PrjnList { return ls.SendPrjns }
+func (ls *LayerStru) NSendPrjns() int             { return len(ls.SendPrjns) }
+func (ls *LayerStru) SendPrjn(idx int) emer.Prjn  { return ls.SendPrjns[idx] }
 
 // SetShape sets the layer shape and also uses default dim names
 func (ls *LayerStru) SetShape(shape []int) {
@@ -55,24 +59,6 @@ func (ls *LayerStru) SetShape(shape []int) {
 	ls.Shape.SetShape(shape, nil, dnms) // row major default
 }
 
-func (ls *LayerStru) RecvPrjnBySendName(sender string) (emer.Prjn, bool) {
-	for _, pj := range ls.RecvPrjns {
-		if pj.Send.LayName() == sender {
-			return pj, true
-		}
-	}
-	return nil, false
-}
-
-func (ls *LayerStru) SendPrjnByRecvName(recv string) (emer.Prjn, bool) {
-	for _, pj := range ls.SendPrjns {
-		if pj.Recv.LayName() == recv {
-			return pj, true
-		}
-	}
-	return nil, false
-}
-
 // NPools returns the number of unit sub-pools according to the shape parameters.
 // Currently supported for a 4D shape, where the unit pools are the first 2 Y,X dims
 // and then the units within the pools are the 2nd 2 Y,X dims
@@ -82,6 +68,19 @@ func (ls *LayerStru) NPools() int {
 	}
 	sh := ls.Shape.Shape()
 	return int(sh[0] * sh[1])
+}
+
+// RecipToSendPrjn finds the reciprocal projection relative to the given sending projection
+// found within the SendPrjns of this layer.  This is then a recv prjn within this layer:
+//  S=A -> R=B recip: R=A <- S=B -- ly = A -- we are the sender of srj and recv of rpj.
+// returns false if not found.
+func (ls *LayerStru) RecipToSendPrjn(spj emer.Prjn) (emer.Prjn, bool) {
+	for _, rpj := range ls.RecvPrjns {
+		if rpj.SendLay() == spj.RecvLay() {
+			return rpj, true
+		}
+	}
+	return nil, false
 }
 
 // LayerType is the type of the layer: Input, Hidden, Target, Compare
@@ -172,7 +171,7 @@ func (ly *Layer) StyleParam(sty string, pars emer.Params) bool {
 	}
 	set := false
 	for _, pj := range ly.RecvPrjns {
-		did := pj.StyleParam(sty, pars)
+		did := pj.(*Prjn).StyleParam(sty, pars) // note: could add to emer interface
 		if did {
 			set = true
 		}
@@ -226,7 +225,13 @@ func (ly *Layer) Build() {
 	if np > 1 {
 		ly.BuildPools()
 	}
-	ly.RecvPrjns.Build()
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(*Prjn)
+		pj.Build()
+	}
 }
 
 // WriteWtsJSON writes the weights from this layer from the receiver-side perspective
@@ -243,7 +248,7 @@ func (ly *Layer) WriteWtsJSON(w io.Writer, depth int) {
 		if pj.IsOff() {
 			continue
 		}
-		pj.WriteWtsJSON(w, depth)
+		pj.(*Prjn).WriteWtsJSON(w, depth)
 	}
 	depth--
 	w.Write(indent.TabBytes(depth))
@@ -288,7 +293,11 @@ func (ly *Layer) BuildPools() {
 // InitWts initializes the weight values in the network, i.e., resetting learning
 // Also calls InitActs
 func (ly *Layer) InitWts() {
-	for _, pj := range ly.SendPrjns {
+	for _, p := range ly.SendPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(*Prjn)
 		pj.InitWts()
 	}
 	for pi := range ly.Pools {
@@ -299,6 +308,7 @@ func (ly *Layer) InitWts() {
 	}
 	ly.InitActAvg()
 	ly.InitActs()
+	ly.CosDiff.Init()
 }
 
 // InitActAvg initializes the running-average activation values that drive learning.
@@ -314,6 +324,25 @@ func (ly *Layer) InitActs() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		ly.Act.InitActs(nrn)
+	}
+}
+
+// InitWtsSym initializes the weight symmetry -- higher layers copy weights from lower layers
+func (ly *Layer) InitWtSym() {
+	for _, p := range ly.SendPrjns {
+		if p.IsOff() {
+			continue
+		}
+		// key ordering constraint on which way weights are copied
+		if p.RecvLay().LayIndex() < p.SendLay().LayIndex() {
+			continue
+		}
+		rpj, has := ly.RecipToSendPrjn(p)
+		if !has {
+			continue
+		}
+		pj := p.(*Prjn)
+		pj.InitWtSym(rpj.(*Prjn))
 	}
 }
 
@@ -364,7 +393,7 @@ func (ly *Layer) ApplyExt(ext *etensor.Float32) {
 // netinput scaling from running average activation etc.
 // should already have presented the external input to the network at this point.
 func (ly *Layer) TrialInit() {
-	ly.AvgLFmAct()
+	ly.AvgLFmAvgM()
 	for pi := range ly.Pools {
 		pl := &ly.Pools[pi]
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActMAvg, pl.ActM.Avg)
@@ -381,11 +410,11 @@ func (ly *Layer) TrialInit() {
 	}
 }
 
-// AvgLFmAct updates AvgL long-term running average activation that drives BCM Hebbian learning
-func (ly *Layer) AvgLFmAct() {
+// AvgLFmAvgM updates AvgL long-term running average activation that drives BCM Hebbian learning
+func (ly *Layer) AvgLFmAvgM() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
-		ly.Learn.AvgLFmAct(nrn)
+		ly.Learn.AvgLFmAvgM(nrn)
 		if ly.Learn.AvgL.ErrMod {
 			nrn.AvgLLrn *= ly.CosDiff.ModAvgLLrn
 		}
@@ -398,10 +427,11 @@ func (ly *Layer) AvgLFmAct() {
 // to achieve a general target of around .5 to 1 for the integrated Ge value.
 func (ly *Layer) GeScaleFmAvgAct() {
 	totRel := float32(0)
-	for _, pj := range ly.RecvPrjns {
-		if pj.IsOff() {
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
 			continue
 		}
+		pj := p.(*Prjn)
 		slay := pj.Send.(*Layer)
 		slpl := slay.Pools[0]
 		savg := slpl.ActAvg.ActPAvgEff // todo: avg_correct
@@ -411,10 +441,11 @@ func (ly *Layer) GeScaleFmAvgAct() {
 		totRel += pj.WtScale.Rel
 	}
 
-	for _, pj := range ly.RecvPrjns {
-		if pj.IsOff() {
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
 			continue
 		}
+		pj := p.(*Prjn)
 		if totRel > 0 {
 			pj.GeScale /= totRel
 		}
@@ -476,7 +507,7 @@ func (ly *Layer) SendGeDelta() {
 					if sp.IsOff() {
 						continue
 					}
-					sp.SendGeDelta(ni, delta)
+					sp.(*Prjn).SendGeDelta(ni, delta)
 				}
 				nrn.ActSent = nrn.Act
 			}
@@ -487,7 +518,7 @@ func (ly *Layer) SendGeDelta() {
 				if sp.IsOff() {
 					continue
 				}
-				sp.SendGeDelta(ni, delta)
+				sp.(*Prjn).SendGeDelta(ni, delta)
 			}
 			nrn.ActSent = 0
 		}
@@ -591,7 +622,9 @@ func (ly *Layer) QuarterFinal(time *Time) {
 			nrn.ActAvg += ly.Act.Dt.AvgDt * (nrn.Act - nrn.ActAvg)
 		}
 	}
-	ly.CosDiffFmActs()
+	if time.Quarter == 3 {
+		ly.CosDiffFmActs()
+	}
 }
 
 // CosDiffFmActs computes the cosine difference in activation state between minus and plus phases.
@@ -599,7 +632,7 @@ func (ly *Layer) QuarterFinal(time *Time) {
 func (ly *Layer) CosDiffFmActs() {
 	lpl := &ly.Pools[0]
 	avgM := lpl.ActM.Avg
-	avgP := lpl.ActM.Avg
+	avgP := lpl.ActP.Avg
 	cosv := float32(0)
 	ssm := float32(0)
 	ssp := float32(0)
@@ -631,14 +664,33 @@ func (ly *Layer) CosDiffFmActs() {
 
 // DWt computes the weight change (learning) -- calls DWt method on sending projections
 func (ly *Layer) DWt() {
-	for _, pj := range ly.SendPrjns {
+	for _, p := range ly.SendPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(*Prjn)
 		pj.DWt()
 	}
 }
 
 // WtFmDWt updates the weights from delta-weight changes -- on the sending projections
 func (ly *Layer) WtFmDWt() {
-	for _, pj := range ly.SendPrjns {
+	for _, p := range ly.SendPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(*Prjn)
 		pj.WtFmDWt()
+	}
+}
+
+// WtBalFmWt computes the Weight Balance factors based on average recv weights
+func (ly *Layer) WtBalFmWt() {
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(*Prjn)
+		pj.WtBalFmWt()
 	}
 }
