@@ -96,7 +96,7 @@ func (ls *LearnSynParams) InitWts(syn *Synapse) {
 	syn.Wt = float32(ls.WtInit.Gen(-1))
 	syn.LWt = ls.WtSig.LinFmSigWt(syn.Wt)
 	syn.DWt = 0
-	syn.DWtNorm = 0
+	syn.Norm = 0
 	syn.Moment = 0
 	// syn.WbInc = 1
 	// syn.WbDec = 1
@@ -482,13 +482,12 @@ type DWtNormParams struct {
 // DWtNormParams updates the dwnorm running max_abs, slowly decaying value
 // jumps up to max(abs_dwt) and slowly decays
 // returns the effective normalization factor, as a multiplier, including lrate comp
-func (dn *DWtNormParams) NormFmAbsDWt(dwnorm, absDwt float32) float32 {
-	dwnorm = math32.Max(dn.DecayDtC*dwnorm, absDwt)
-	if dwnorm == 0 {
+func (dn *DWtNormParams) NormFmAbsDWt(norm *float32, absDwt float32) float32 {
+	*norm = math32.Max(dn.DecayDtC**norm, absDwt)
+	if *norm == 0 {
 		return 1
 	}
-	norm := math32.Max(dwnorm, dn.NormMin)
-	return dn.LrComp / norm
+	return dn.LrComp / math32.Max(*norm, dn.NormMin)
 }
 
 func (dn *DWtNormParams) Update() {
@@ -521,7 +520,7 @@ type MomentumParams struct {
 
 // MomentFmDWt updates synaptic moment variable based on dwt weight change value
 // and returns new momentum factor * LrComp
-func (mp *MomentumParams) MomentFmDWt(dwt float32, moment *float32) float32 {
+func (mp *MomentumParams) MomentFmDWt(moment *float32, dwt float32) float32 {
 	*moment = mp.MDtC**moment + dwt
 	return mp.LrComp * *moment
 }

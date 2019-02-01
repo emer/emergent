@@ -22,14 +22,49 @@ import (
 var TestNet Network
 var InPats *etensor.Float32
 
-var Pars = emer.ParamStyle{
-	"Prjn": {
-		"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
-		"Prjn.Learn.Norm.On":     0,
-		"Prjn.Learn.Momentum.On": 0,
+// number of distinct sets of learning parameters to test
+const NLrnPars = 4
+
+var Pars = [NLrnPars]emer.ParamStyle{
+	{
+		"Prjn": {
+			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
+			"Prjn.Learn.Norm.On":     0,
+			"Prjn.Learn.Momentum.On": 0,
+		},
+		".TopDown": {
+			"Prjn.WtScale.Rel": 0.2,
+		},
 	},
-	".TopDown": {
-		"Prjn.WtScale.Rel": 0.2,
+	{
+		"Prjn": {
+			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
+			"Prjn.Learn.Norm.On":     1,
+			"Prjn.Learn.Momentum.On": 0,
+		},
+		".TopDown": {
+			"Prjn.WtScale.Rel": 0.2,
+		},
+	},
+	{
+		"Prjn": {
+			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
+			"Prjn.Learn.Norm.On":     0,
+			"Prjn.Learn.Momentum.On": 1,
+		},
+		".TopDown": {
+			"Prjn.WtScale.Rel": 0.2,
+		},
+	},
+	{
+		"Prjn": {
+			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
+			"Prjn.Learn.Norm.On":     1,
+			"Prjn.Learn.Momentum.On": 1,
+		},
+		".TopDown": {
+			"Prjn.WtScale.Rel": 0.2,
+		},
 	},
 }
 
@@ -45,7 +80,7 @@ func TestMakeNet(t *testing.T) {
 	outHid.Class = "TopDown"
 
 	TestNet.Defaults()
-	TestNet.StyleParams(Pars)
+	TestNet.StyleParams(Pars[0])
 	TestNet.Build()
 	TestNet.InitWts()
 	TestNet.TrialInit() // get GeScale
@@ -180,14 +215,9 @@ func TestNetAct(t *testing.T) {
 }
 
 func TestNetLearn(t *testing.T) {
-	TestNet.InitWts()
-	TestNet.InitExt()
-
 	inLay := TestNet.LayerByName("Input").(*Layer)
 	hidLay := TestNet.LayerByName("Hidden").(*Layer)
 	outLay := TestNet.LayerByName("Output").(*Layer)
-
-	time := NewTime()
 
 	printCycs := false
 	printQtrs := false
@@ -211,112 +241,171 @@ func TestNetLearn(t *testing.T) {
 	trl2HidAvgLLrn := []float32{0.0007263252, 0.00077755196, 0.00026511253, 0.00026511253}
 	trl3HidAvgLLrn := []float32{0.00061022304, 0.0006563444, 0.0007075711, 0.00019513167}
 
-	for pi := 0; pi < 4; pi++ {
-		inpat, err := InPats.SubSlice(2, []int{pi})
-		if err != nil {
-			t.Error(err)
-		}
-		inLay.ApplyExt(inpat)
-		outLay.ApplyExt(inpat)
+	// these are organized by pattern within and then by test iteration (params) outer
+	hidDwts := []float32{3.376007e-06, 1.1105859e-05, 9.811188e-06, 8.4557105e-06,
+		0.00050640106, 0.0016658787, 0.0014716781, 0.0012683566,
+		3.376007e-07, 1.1105858e-06, 9.811188e-07, 8.4557104e-07,
+		5.0640105e-05, 0.00016658788, 0.00014716781, 0.00012683566}
+	outDwts := []float32{2.8908253e-05, 2.9251574e-05, 2.9251574e-05, 2.9251574e-05,
+		0.004336238, 0.0043877363, 0.0043877363, 0.0043877363,
+		2.8908253e-06, 2.9251576e-06, 2.9251576e-06, 2.9251576e-06,
+		0.0004336238, 0.00043877363, 0.00043877363, 0.00043877363}
+	hidNorms := []float32{0, 0, 0, 0, 8.440018e-05, 0.00027764647, 0.0002452797, 0.00021139276,
+		0, 0, 0, 0, 8.440018e-05, 0.00027764647, 0.0002452797, 0.00021139276}
+	outNorms := []float32{0, 0, 0, 0, 0.0007227063, 0.0007312894, 0.0007312894, 0.0007312894,
+		0, 0, 0, 0, 0.0007227063, 0.0007312894, 0.0007312894, 0.0007312894}
+	hidMoments := []float32{0, 0, 0, 0, 0, 0, 0, 0,
+		8.440018e-05, 0.00027764647, 0.0002452797, 0.00021139276,
+		8.440018e-05, 0.00027764647, 0.0002452797, 0.00021139276}
+	outMoments := []float32{0, 0, 0, 0, 0, 0, 0, 0,
+		0.0007227063, 0.0007312894, 0.0007312894, 0.0007312894,
+		0.0007227063, 0.0007312894, 0.0007312894, 0.0007312894}
+	hidWts := []float32{0.50001, 0.50003326, 0.5000293, 0.5000254,
+		0.50151914, 0.5049973, 0.5044148, 0.5038051,
+		0.5000011, 0.5000032, 0.50000286, 0.5000025,
+		0.500152, 0.5004996, 0.5004417, 0.5003805}
+	outWts := []float32{0.50008655, 0.5000876, 0.5000876, 0.5000876,
+		0.51300585, 0.5131602, 0.5131602, 0.5131602,
+		0.5000086, 0.50000894, 0.50000894, 0.50000894,
+		0.5013011, 0.5013164, 0.5013164, 0.5013164}
 
-		TestNet.TrialInit()
-		time.TrialStart()
-		for qtr := 0; qtr < 4; qtr++ {
-			for cyc := 0; cyc < time.CycPerQtr; cyc++ {
-				TestNet.Cycle()
-				time.CycleInc()
+	hiddwt := make([]float32, 4*NLrnPars)
+	outdwt := make([]float32, 4*NLrnPars)
+	hidwt := make([]float32, 4*NLrnPars)
+	outwt := make([]float32, 4*NLrnPars)
+	hidnorm := make([]float32, 4*NLrnPars)
+	outnorm := make([]float32, 4*NLrnPars)
+	hidmoment := make([]float32, 4*NLrnPars)
+	outmoment := make([]float32, 4*NLrnPars)
 
-				hidAct := hidLay.UnitVals("Act")
-				hidGes := hidLay.UnitVals("Ge")
-				hidGis := hidLay.UnitVals("Gi")
-				hidAvgSS := hidLay.UnitVals("AvgSS")
+	for ti := 0; ti < NLrnPars; ti++ {
+		TestNet.Defaults()
+		TestNet.StyleParams(Pars[ti])
+		TestNet.InitWts()
+		TestNet.InitExt()
+
+		time := NewTime()
+
+		for pi := 0; pi < 4; pi++ {
+			inpat, err := InPats.SubSlice(2, []int{pi})
+			if err != nil {
+				t.Error(err)
+			}
+			inLay.ApplyExt(inpat)
+			outLay.ApplyExt(inpat)
+
+			TestNet.TrialInit()
+			time.TrialStart()
+			for qtr := 0; qtr < 4; qtr++ {
+				for cyc := 0; cyc < time.CycPerQtr; cyc++ {
+					TestNet.Cycle()
+					time.CycleInc()
+
+					hidAct := hidLay.UnitVals("Act")
+					hidGes := hidLay.UnitVals("Ge")
+					hidGis := hidLay.UnitVals("Gi")
+					hidAvgSS := hidLay.UnitVals("AvgSS")
+					hidAvgS := hidLay.UnitVals("AvgS")
+					hidAvgM := hidLay.UnitVals("AvgM")
+
+					outAvgS := outLay.UnitVals("AvgS")
+					outAvgM := outLay.UnitVals("AvgM")
+
+					if printCycs {
+						fmt.Printf("pat: %v qtr: %v cyc: %v\nhid act: %v ges: %v gis: %v\nhid avgss: %v avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAct, hidGes, hidGis, hidAvgSS, hidAvgS, hidAvgM, outAvgS, outAvgM)
+					}
+
+				}
+				TestNet.QuarterFinal(time)
+				time.QuarterInc()
+
 				hidAvgS := hidLay.UnitVals("AvgS")
 				hidAvgM := hidLay.UnitVals("AvgM")
 
 				outAvgS := outLay.UnitVals("AvgS")
 				outAvgM := outLay.UnitVals("AvgM")
 
-				if printCycs {
-					fmt.Printf("pat: %v qtr: %v cyc: %v\nhid act: %v ges: %v gis: %v\nhid avgss: %v avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAct, hidGes, hidGis, hidAvgSS, hidAvgS, hidAvgM, outAvgS, outAvgM)
+				if printQtrs {
+					fmt.Printf("pat: %v qtr: %v cyc: %v\nhid avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAvgS, hidAvgM, outAvgS, outAvgM)
 				}
 
+				if pi == 0 && qtr == 0 {
+					CmprFloats(hidAvgS, qtr0HidAvgS, "qtr 0 hidAvgS", t)
+					CmprFloats(hidAvgM, qtr0HidAvgM, "qtr 0 hidAvgM", t)
+					CmprFloats(outAvgS, qtr0OutAvgS, "qtr 0 outAvgS", t)
+					CmprFloats(outAvgM, qtr0OutAvgM, "qtr 0 outAvgM", t)
+				}
+				if pi == 0 && qtr == 3 {
+					CmprFloats(hidAvgS, qtr3HidAvgS, "qtr 3 hidAvgS", t)
+					CmprFloats(hidAvgM, qtr3HidAvgM, "qtr 3 hidAvgM", t)
+					CmprFloats(outAvgS, qtr3OutAvgS, "qtr 3 outAvgS", t)
+					CmprFloats(outAvgM, qtr3OutAvgM, "qtr 3 outAvgM", t)
+				}
 			}
-			TestNet.QuarterFinal(time)
-			time.QuarterInc()
-
-			hidAvgS := hidLay.UnitVals("AvgS")
-			hidAvgM := hidLay.UnitVals("AvgM")
-
-			outAvgS := outLay.UnitVals("AvgS")
-			outAvgM := outLay.UnitVals("AvgM")
 
 			if printQtrs {
-				fmt.Printf("pat: %v qtr: %v cyc: %v\nhid avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAvgS, hidAvgM, outAvgS, outAvgM)
+				fmt.Printf("=============================\n")
 			}
 
-			if pi == 0 && qtr == 0 {
-				CmprFloats(hidAvgS, qtr0HidAvgS, "qtr 0 hidAvgS", t)
-				CmprFloats(hidAvgM, qtr0HidAvgM, "qtr 0 hidAvgM", t)
-				CmprFloats(outAvgS, qtr0OutAvgS, "qtr 0 outAvgS", t)
-				CmprFloats(outAvgM, qtr0OutAvgM, "qtr 0 outAvgM", t)
+			hidAvgL := hidLay.UnitVals("AvgL")
+			hidAvgLLrn := hidLay.UnitVals("AvgLLrn")
+			outAvgL := outLay.UnitVals("AvgL")
+			outAvgLLrn := outLay.UnitVals("AvgLLrn")
+			_ = outAvgL
+			_ = outAvgLLrn
+
+			// fmt.Printf("hid cosdif stats: %v\nhid avgl:   %v\nhid avgllrn: %v\n", hidLay.CosDiff, hidAvgL, hidAvgLLrn)
+			// fmt.Printf("out cosdif stats: %v\nout avgl:   %v\nout avgllrn: %v\n", outLay.CosDiff, outAvgL, outAvgLLrn)
+
+			TestNet.DWt()
+
+			didx := ti*4 + pi
+
+			hiddwt[didx], err = hidLay.RecvPrjns[0].SynVal("DWt", pi, pi)
+			if err != nil {
+				t.Error(err)
 			}
-			if pi == 0 && qtr == 3 {
-				CmprFloats(hidAvgS, qtr3HidAvgS, "qtr 3 hidAvgS", t)
-				CmprFloats(hidAvgM, qtr3HidAvgM, "qtr 3 hidAvgM", t)
-				CmprFloats(outAvgS, qtr3OutAvgS, "qtr 3 outAvgS", t)
-				CmprFloats(outAvgM, qtr3OutAvgM, "qtr 3 outAvgM", t)
+			outdwt[didx], err = outLay.RecvPrjns[0].SynVal("DWt", pi, pi)
+			if err != nil {
+				t.Error(err)
 			}
+			hidnorm[didx], _ = hidLay.RecvPrjns[0].SynVal("Norm", pi, pi)
+			outnorm[didx], _ = outLay.RecvPrjns[0].SynVal("Norm", pi, pi)
+			hidmoment[didx], _ = hidLay.RecvPrjns[0].SynVal("Moment", pi, pi)
+			outmoment[didx], _ = outLay.RecvPrjns[0].SynVal("Moment", pi, pi)
+
+			TestNet.WtFmDWt()
+
+			hidwt[didx], _ = hidLay.RecvPrjns[0].SynVal("Wt", pi, pi)
+			outwt[didx], _ = outLay.RecvPrjns[0].SynVal("Wt", pi, pi)
+
+			switch pi {
+			case 0:
+				CmprFloats(hidAvgL, trl0HidAvgL, "trl 0 hidAvgL", t)
+			case 1:
+				CmprFloats(hidAvgL, trl1HidAvgL, "trl 1 hidAvgL", t)
+				CmprFloats(hidAvgLLrn, trl1HidAvgLLrn, "trl 1 hidAvgLLrn", t)
+			case 2:
+				CmprFloats(hidAvgL, trl2HidAvgL, "trl 2 hidAvgL", t)
+				CmprFloats(hidAvgLLrn, trl2HidAvgLLrn, "trl 2 hidAvgLLrn", t)
+			case 3:
+				CmprFloats(hidAvgL, trl3HidAvgL, "trl 3 hidAvgL", t)
+				CmprFloats(hidAvgLLrn, trl3HidAvgLLrn, "trl 3 hidAvgLLrn", t)
+			}
+
 		}
-
-		if printQtrs {
-			fmt.Printf("=============================\n")
-		}
-
-		hidAvgL := hidLay.UnitVals("AvgL")
-		hidAvgLLrn := hidLay.UnitVals("AvgLLrn")
-		outAvgL := outLay.UnitVals("AvgL")
-		outAvgLLrn := outLay.UnitVals("AvgLLrn")
-		_ = outAvgL
-		_ = outAvgLLrn
-
-		// fmt.Printf("hid cosdif stats: %v\nhid avgl:   %v\nhid avgllrn: %v\n", hidLay.CosDiff, hidAvgL, hidAvgLLrn)
-		// fmt.Printf("out cosdif stats: %v\nout avgl:   %v\nout avgllrn: %v\n", outLay.CosDiff, outAvgL, outAvgLLrn)
-
-		TestNet.DWt()
-
-		var dwt float32
-		dwt, err = hidLay.RecvPrjns[0].SynVal("DWt", pi, pi)
-		if err != nil {
-			t.Error(err)
-		}
-
-		fmt.Printf("dwt: %v\n", dwt)
-
-		TestNet.WtFmDWt()
-
-		var wt float32
-		wt, err = hidLay.RecvPrjns[0].SynVal("Wt", pi, pi)
-		if err != nil {
-			t.Error(err)
-		}
-
-		fmt.Printf("wt: %v\n", wt)
-
-		switch pi {
-		case 0:
-			CmprFloats(hidAvgL, trl0HidAvgL, "trl 0 hidAvgL", t)
-		case 1:
-			CmprFloats(hidAvgL, trl1HidAvgL, "trl 1 hidAvgL", t)
-			CmprFloats(hidAvgLLrn, trl1HidAvgLLrn, "trl 1 hidAvgLLrn", t)
-		case 2:
-			CmprFloats(hidAvgL, trl2HidAvgL, "trl 2 hidAvgL", t)
-			CmprFloats(hidAvgLLrn, trl2HidAvgLLrn, "trl 2 hidAvgLLrn", t)
-		case 3:
-			CmprFloats(hidAvgL, trl3HidAvgL, "trl 3 hidAvgL", t)
-			CmprFloats(hidAvgLLrn, trl3HidAvgLLrn, "trl 3 hidAvgLLrn", t)
-		}
-
 	}
+
+	//	fmt.Printf("hid dwt: %v\nout dwt: %v\nhid norm: %v\n hid moment: %v\nout norm: %v\nout moment: %v\nhid wt: %v\nout wt: %v\n", hiddwt, outdwt, hidnorm, hidmoment, outnorm, outmoment, hidwt, outwt)
+
+	CmprFloats(hiddwt, hidDwts, "hid DWt", t)
+	CmprFloats(outdwt, outDwts, "out DWt", t)
+	CmprFloats(hidnorm, hidNorms, "hid Norm", t)
+	CmprFloats(outnorm, outNorms, "out Norm", t)
+	CmprFloats(hidmoment, hidMoments, "hid Moment", t)
+	CmprFloats(outmoment, outMoments, "out Moment", t)
+	CmprFloats(hidwt, hidWts, "hid Wt", t)
+	CmprFloats(outwt, outWts, "out Wt", t)
 
 	var buf bytes.Buffer
 	TestNet.WriteWtsJSON(&buf)

@@ -135,6 +135,7 @@ func (ps *PrjnStru) BuildStru() bool {
 				break
 			}
 			ps.SConIdx[sst+sci] = int32(ri)
+			ps.RSynIdx[rst+rci] = sst + sci
 			(sconN[si])++
 			rci++
 		}
@@ -468,10 +469,10 @@ func (pj *Prjn) DWt() {
 			dwt := bcm + err
 			norm := float32(1)
 			if pj.Learn.Norm.On {
-				norm = pj.Learn.Norm.NormFmAbsDWt(sy.DWtNorm, math32.Abs(dwt))
+				norm = pj.Learn.Norm.NormFmAbsDWt(&sy.Norm, math32.Abs(dwt))
 			}
 			if pj.Learn.Momentum.On {
-				dwt = norm * pj.Learn.Momentum.MomentFmDWt(dwt, &sy.Moment)
+				dwt = norm * pj.Learn.Momentum.MomentFmDWt(&sy.Moment, dwt)
 			} else {
 				dwt *= norm
 			}
@@ -482,13 +483,13 @@ func (pj *Prjn) DWt() {
 			maxNorm := float32(0)
 			for ci := 0; ci < nc; ci++ {
 				sy := &pj.Syns[st+ci]
-				if sy.DWtNorm > maxNorm {
-					maxNorm = sy.DWtNorm
+				if sy.Norm > maxNorm {
+					maxNorm = sy.Norm
 				}
 			}
 			for ci := 0; ci < nc; ci++ {
 				sy := &pj.Syns[st+ci]
-				sy.DWtNorm = maxNorm
+				sy.Norm = maxNorm
 			}
 		}
 	}
