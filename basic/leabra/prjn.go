@@ -471,7 +471,7 @@ func (pj *Prjn) DWt() {
 				norm = pj.Learn.Norm.NormFmAbsDWt(sy.DWtNorm, math32.Abs(dwt))
 			}
 			if pj.Learn.Momentum.On {
-				dwt = norm * pj.Learn.Momentum.MomentFmDWt(sy.Moment, dwt)
+				dwt = norm * pj.Learn.Momentum.MomentFmDWt(dwt, &sy.Moment)
 			} else {
 				dwt *= norm
 			}

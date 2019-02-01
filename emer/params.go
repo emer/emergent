@@ -76,6 +76,9 @@ func SetParam(obj interface{}, path string, val float32) bool {
 	case reflect.Float32:
 		npf.SetFloat(float64(val))
 		return true
+	case reflect.Bool:
+		npf.SetBool((val != 0))
+		return true
 	}
 	return false
 }

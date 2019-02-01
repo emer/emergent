@@ -24,7 +24,9 @@ var InPats *etensor.Float32
 
 var Pars = emer.ParamStyle{
 	"Prjn": {
-		"Prjn.Learn.WtInit.Var": 0, // for reproducibility, identical weights
+		"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
+		"Prjn.Learn.Norm.On":     0,
+		"Prjn.Learn.Momentum.On": 0,
 	},
 	".TopDown": {
 		"Prjn.WtScale.Rel": 0.2,

@@ -497,7 +497,7 @@ func (dn *DWtNormParams) Update() {
 }
 
 func (dn *DWtNormParams) Defaults() {
-	dn.On = false // true
+	dn.On = true
 	dn.DecayTau = 1000
 	dn.LrComp = 0.15
 	dn.NormMin = 0.001
@@ -519,10 +519,11 @@ type MomentumParams struct {
 	MDtC float32 `inactive:"+" view:"-" desc:"complement rate constant of momentum integration = 1 - (1 / m_tau)"`
 }
 
-// MomentFmDt compute momentum from weight change value
-func (mp *MomentumParams) MomentFmDWt(moment, dwt float32) float32 {
-	moment = mp.MDtC*moment + dwt
-	return moment
+// MomentFmDWt updates synaptic moment variable based on dwt weight change value
+// and returns new momentum factor * LrComp
+func (mp *MomentumParams) MomentFmDWt(dwt float32, moment *float32) float32 {
+	*moment = mp.MDtC**moment + dwt
+	return mp.LrComp * *moment
 }
 
 func (mp *MomentumParams) Update() {
@@ -531,7 +532,7 @@ func (mp *MomentumParams) Update() {
 }
 
 func (mp *MomentumParams) Defaults() {
-	mp.On = false // true
+	mp.On = true
 	mp.MTau = 10
 	mp.LrComp = 0.1
 	mp.Update()
