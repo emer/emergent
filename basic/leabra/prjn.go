@@ -508,7 +508,7 @@ func (pj *Prjn) WtFmDWt() {
 			sy := &pj.Syns[st+ci]
 			ri := pj.SConIdx[st+ci]
 			wb := &pj.WbRecv[ri]
-			pj.Learn.WtFmDWt(sy.DWt, wb.Inc, wb.Dec, &sy.Wt, &sy.LWt)
+			pj.Learn.WtFmDWt(wb.Inc, wb.Dec, &sy.DWt, &sy.Wt, &sy.LWt)
 		}
 	}
 

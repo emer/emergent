@@ -115,31 +115,31 @@ func (ls *LearnSynParams) CHLdWt(suAvgSLrn, suAvgM, ruAvgSLrn, ruAvgM, ruAvgL fl
 // WtFmDWt updates the synaptic weights from accumulated weight changes
 // wbInc and wbDec are the weight balance factors, wt is the sigmoidal contrast-enhanced
 // weight and lwt is the linear weight value
-func (ls *LearnSynParams) WtFmDWt(dwt, wbInc, wbDec float32, wt, lwt *float32) {
-	if dwt == 0 {
+func (ls *LearnSynParams) WtFmDWt(wbInc, wbDec float32, dwt, wt, lwt *float32) {
+	if *dwt == 0 {
 		return
 	}
 	if ls.WtSig.SoftBound {
-		if dwt > 0 {
-			dwt *= wbInc * (1 - *lwt)
+		if *dwt > 0 {
+			*dwt *= wbInc * (1 - *lwt)
 		} else {
-			dwt *= wbDec * *lwt
+			*dwt *= wbDec * *lwt
 		}
 	} else {
-		if dwt > 0 {
-			dwt *= wbInc
+		if *dwt > 0 {
+			*dwt *= wbInc
 		} else {
-			dwt *= wbDec
+			*dwt *= wbDec
 		}
 	}
-	*lwt += dwt
+	*lwt += *dwt
 	if *lwt < 0 {
 		*lwt = 0
 	} else if *lwt > 1 {
 		*lwt = 1
 	}
 	*wt = ls.WtSig.SigFmLinWt(*lwt) // todo: scale *
-	dwt = 0
+	*dwt = 0
 	//    if(adapt_scale.on) {
 	//      adapt_scale.AdaptWtScale(scale, wt);
 	//    }

@@ -116,7 +116,7 @@ func (ac *ActParams) GeFmGeInc(nrn *Neuron) {
 		}
 	}
 
-	nrn.Ge += ac.Dt.Integ * ac.Dt.GeDt * (nrn.GeRaw - nrn.Ge)
+	nrn.Ge += ac.Dt.Integ * ac.Dt.GeDt * (geEff - nrn.Ge)
 
 	// first place noise is required -- generate here!
 	if ac.Noise.Type != NoNoise && !ac.Noise.TrialFixed && ac.Noise.Dist != erand.None {
@@ -344,7 +344,7 @@ func (ai *ActInitParams) Defaults() {
 
 // DtParams are time and rate constants for temporal derivatives in Leabra (Vm, net input)
 type DtParams struct {
-	Integ  float32 `def:"1;0.5" min:"0" desc:"overall rate constant for numerical integration, for all equations at the unit level -- all time constants are specified in millisecond units, with one cycle = 1 msec -- if you instead want to make one cycle = 2 msec, you can do this globaly by setting this integ value to 2 (etc).  However, stability issues will likely arise if you go too high.  For improved numerical stability, you may even need to reduce this value to 0.5 or possibly even lower (typically however this is not necessary).  MUST also coordinate this with network.time_inc variable to ensure that global network.time reflects simulated time accurately"`
+	Integ  float32 `def:"1;0.5" min:"0" desc:"overall rate constant for numerical integration, for all equations at the unit level -- all time constants are specified in millisecond units, with one cycle = 1 msec -- if you instead want to make one cycle = 2 msec, you can do this globally by setting this integ value to 2 (etc).  However, stability issues will likely arise if you go too high.  For improved numerical stability, you may even need to reduce this value to 0.5 or possibly even lower (typically however this is not necessary).  MUST also coordinate this with network.time_inc variable to ensure that global network.time reflects simulated time accurately"`
 	VmTau  float32 `def:"2.81:10" min:"1" desc:"[3.3 std for rate code, 2.81 for spiking] membrane potential and rate-code activation time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- reflects the capacitance of the neuron in principle -- biological default for AeEx spiking model C = 281 pF = 2.81 normalized -- for rate-code activation, this also determines how fast to integrate computed activation values over time"`
 	GeTau  float32 `def:"1.4;3;5" min:"1" desc:"net input time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- this is important for damping oscillations -- generally reflects time constants associated with synaptic channels which are not modeled in the most abstract rate code models (set to 1 for detailed spiking models with more realistic synaptic currents) -- larger values (e.g., 3) can be important for models with higher netinputs that otherwise might be more prone to oscillation, and is default for GPiInvUnitSpec"`
 	AvgTau float32 `def:"200" desc:"for integrating activation average (ActAvg), time constant in trials (roughly, how long it takes for value to change significantly) -- used mostly for visualization and tracking *hog* units"`
@@ -376,7 +376,7 @@ type Chans struct {
 	E float32 `desc:"excitatory sodium (Na) AMPA channels activated by synaptic glutamate"`
 	L float32 `desc:"constant leak (potassium, K+) channels -- determines resting potential (typically higher than resting potential of K)"`
 	I float32 `desc:"inhibitory chloride (Cl-) channels activated by synaptic GABA"`
-	K float32 `desc:"gated / active potassium channels -- typicaly hyperpolarizing relative to leak / rest"`
+	K float32 `desc:"gated / active potassium channels -- typically hyperpolarizing relative to leak / rest"`
 }
 
 // SetAll sets all the values
@@ -472,7 +472,7 @@ func (ws *WtScaleParams) SLayActScale(savg, snu, ncon float32) float32 {
 	semExtra := 2
 	slayActN := int(savg*snu + .5) // sending layer actual # active
 	slayActN = ints.MaxInt(slayActN, 1)
-	sc := float32(1)
+	var sc float32
 	if ncon == snu {
 		sc = 1 / float32(slayActN)
 	} else {
