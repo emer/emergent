@@ -209,7 +209,7 @@ type XX1Params struct {
 	SigGain      float32 `def:"3" view:"-" desc:"gain multipler on (net - thr) for sigmoid used for computing values for net < thr"`
 	InterpRange  float32 `def:"0.01" view:"-" desc:"interpolation range above zero to use interpolation"`
 	GainCorRange float32 `def:"10" view:"-" desc:"range in units of nvar over which to apply gain correction to compensate for convolution"`
-	GainCor      float32 `def:"0.1 view:"-" desc:"gain correction multiplier -- how much to correct gains"`
+	GainCor      float32 `def:"0.1" view:"-" desc:"gain correction multiplier -- how much to correct gains"`
 
 	SigGainNVar float32 `view:"-" desc:"sig_gain / nvar"`
 	SigMultEff  float32 `view:"-" desc:"overall multiplier on sigmoidal component for values below threshold = sig_mult * pow(gain * nvar, sig_mult_pow)"`

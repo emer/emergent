@@ -193,7 +193,7 @@ type WtBalRecvPrjn struct {
 	Avg  float32 `desc:"average of effective weight values that exceed WtBal.AvgThr across given Recv Neuron's connections for given Prjn"`
 	Fact float32 `desc:"overall weight balance factor that drives changes in WbInc vs. WbDec via a sigmoidal function -- this is the net strength of weight balance changes"`
 	Inc  float32 `desc:"weight balance increment factor -- extra multiplier to add to weight increases to maintain overall weight balance"`
-	Dec  float32 `desc:"weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance'`
+	Dec  float32 `desc:"weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance"`
 }
 
 func (wb *WtBalRecvPrjn) Init() {
@@ -211,7 +211,7 @@ type Prjn struct {
 	PrjnStru
 	WtScale WtScaleParams  `desc:"weight scaling parameters: modulates overall strength of projection, using both absolute and relative factors"`
 	Learn   LearnSynParams `desc:"synaptic-level learning parameters"`
-	Syns    []Synapse      `desc:"synaptic state values, ordered by the sending layer units which "owns" them -- one-to-one with SConIdx array"`
+	Syns    []Synapse      `desc:"synaptic state values, ordered by the sending layer units which owns them -- one-to-one with SConIdx array"`
 
 	// misc state variables below:
 	GeScale float32         `desc:"scaling factor for integrating excitatory synaptic input conductance Ge -- computed in TrialInit, incorporates running-average activity levels"`
