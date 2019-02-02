@@ -25,7 +25,7 @@ var Pars = emer.ParamStyle{
 	"Prjn": {
 		"Prjn.Learn.Norm.On":     1,
 		"Prjn.Learn.Momentum.On": 1,
-		"Prjn.Learn.WtBal.On":    1,
+		"Prjn.Learn.WtBal.On":    0,
 	},
 	"Layer": {
 		"Layer.Inhib.Layer.Gi": 1.8,
@@ -82,6 +82,11 @@ func ConfigEpcLog(dt *dtable.Table) {
 		{"Epoch", etensor.INT64, nil, nil},
 		{"CosDiff", etensor.FLOAT32, nil, nil},
 		{"AvgCosDiff", etensor.FLOAT32, nil, nil},
+		{"SSE", etensor.FLOAT32, nil, nil},
+		{"Avg SSE", etensor.FLOAT32, nil, nil},
+		{"Count Err", etensor.FLOAT32, nil, nil},
+		{"Pct Err", etensor.FLOAT32, nil, nil},
+		{"Pct Cor", etensor.FLOAT32, nil, nil},
 		{"Hid1 ActAvg", etensor.FLOAT32, nil, nil},
 		{"Hid2 ActAvg", etensor.FLOAT32, nil, nil},
 		{"Out ActAvg", etensor.FLOAT32, nil, nil},
@@ -110,6 +115,9 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 	for epc := 0; epc < epcs; epc++ {
 		// todo: shuffle order
 		outCosDiff := float32(0)
+		cntErr := 0
+		sse := float32(0)
+		avgSSE := float32(0)
 		for pi := 0; pi < np; pi++ {
 			inp, _ := inPats.SubSlice(2, []int{pi})
 			outp, _ := outPats.SubSlice(2, []int{pi})
@@ -130,12 +138,27 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 			net.DWt()
 			net.WtFmDWt()
 			outCosDiff += outLay.CosDiff.Cos
+			pSSE, pAvgSSE := outLay.SSE(0.5)
+			sse += pSSE
+			avgSSE += pAvgSSE
+			if pSSE != 0 {
+				cntErr++
+			}
 		}
 		outCosDiff /= float32(np)
+		sse /= float32(np)
+		avgSSE /= float32(np)
+		pctErr := float32(cntErr) / float32(np)
+		pctCor := 1 - pctErr
 		// fmt.Printf("epc: %v  \tCosDiff: %v \tAvgCosDif: %v\n", epc, outCosDiff, outLay.CosDiff.Avg)
 		epcLog.ColByName("Epoch").SetFlatFloat64(epc, float64(epc))
 		epcLog.ColByName("CosDiff").SetFlatFloat64(epc, float64(outCosDiff))
 		epcLog.ColByName("AvgCosDiff").SetFlatFloat64(epc, float64(outLay.CosDiff.Avg))
+		epcLog.ColByName("SSE").SetFlatFloat64(epc, float64(sse))
+		epcLog.ColByName("Avg SSE").SetFlatFloat64(epc, float64(avgSSE))
+		epcLog.ColByName("Count Err").SetFlatFloat64(epc, float64(cntErr))
+		epcLog.ColByName("Pct Err").SetFlatFloat64(epc, float64(pctErr))
+		epcLog.ColByName("Pct Cor").SetFlatFloat64(epc, float64(pctCor))
 		epcLog.ColByName("Hid1 ActAvg").SetFlatFloat64(epc, float64(hid1Lay.Pools[0].ActAvg.ActPAvgEff))
 		epcLog.ColByName("Hid2 ActAvg").SetFlatFloat64(epc, float64(hid2Lay.Pools[0].ActAvg.ActPAvgEff))
 		epcLog.ColByName("Out ActAvg").SetFlatFloat64(epc, float64(outLay.Pools[0].ActAvg.ActPAvgEff))

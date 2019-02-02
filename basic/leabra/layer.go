@@ -699,3 +699,27 @@ func (ly *Layer) WtBalFmWt() {
 		pj.WtBalFmWt()
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Stats
+
+// SSE returns the sum-squared-error and avg-squared-error
+// over the layer, in terms of ActP - ActM (valideven on non-target layers FWIW).
+// Uses the given tolerance per-unit to count an error at all
+// (e.g., .5 = activity just has to be on the right side of .5).
+func (ly *Layer) SSE(tol float32) (sum, avg float32) {
+	nn := len(ly.Neurons)
+	if nn == 0 {
+		return 0, 0
+	}
+	sse := float32(0)
+	for ni := range ly.Neurons {
+		nrn := &ly.Neurons[ni]
+		d := nrn.ActP - nrn.ActM
+		if math32.Abs(d) < tol {
+			continue
+		}
+		sse += d * d
+	}
+	return sse, sse / float32(nn)
+}
