@@ -9,15 +9,53 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/apache/arrow/go/arrow"
 	"github.com/emer/emergent/etensor"
+	"github.com/goki/gi/gi"
 )
 
-// ReadCSV reads a table from a comma-separated-values (CSV) file (where comma = any delimiter)
-// using the Go standard encoding/csv reader conforming to the official CSV standard.
+// SaveCSV writes a table to a comma-separated-values (CSV) file (where comma = any delimiter,
+// specified in the delim arg).
+// If headers = true then generate C++ emergent-tyle column headers and add _H: to the header line
+// and _D: to the data lines.  These headers have full configuration information for the tensor
+// columns.  Otherwise, only the data is written.
+func (dt *Table) SaveCSV(filename gi.FileName, delim rune, headers bool) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	dt.WriteCSV(fp, delim, headers)
+	return nil
+}
+
+// OpenCSV reads a table from a comma-separated-values (CSV) file (where comma = any delimiter,
+// specified in the delim arg), using the Go standard encoding/csv reader conforming
+// to the official CSV standard.
+// If the table does not currently have any columns, the first row of the file is assumed to be
+// headers, and columns are constructed therefrom.  We parse the C++ emergent column
+// headers, if the first line starts with _H: -- these have full configuration information for tensor
+// dimensionality, and are also supported for writing using WriteCSV.
+// If the table DOES have existing columns, then those are used robustly for whatever information
+// fits from each row of the file.
+func (dt *Table) OpenCSV(filename gi.FileName, delim rune) error {
+	fp, err := os.Open(string(filename))
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return dt.ReadCSV(fp, delim)
+}
+
+// ReadCSV reads a table from a comma-separated-values (CSV) file (where comma = any delimiter,
+// specified in the delim arg), using the Go standard encoding/csv reader conforming
+// to the official CSV standard.
 // If the table does not currently have any columns, the first row of the file is assumed to be
 // headers, and columns are constructed therefrom.  We parse the C++ emergent column
 // headers, if the first line starts with _H: -- these have full configuration information for tensor
@@ -172,7 +210,8 @@ func ShapeFromString(dims string) []int {
 //////////////////////////////////////////////////////////////////////////
 // WriteCSV
 
-// WriteCSV writes a table to a comma-separated-values (CSV) file (where comma = any delimiter).
+// WriteCSV writes a table to a comma-separated-values (CSV) file (where comma = any delimiter,
+//  specified in the delim arg).
 // If headers = true then generate C++ emergent-tyle column headers and add _H: to the header line
 // and _D: to the data lines.  These headers have full configuration information for the tensor
 // columns.  Otherwise, only the data is written.

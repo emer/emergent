@@ -45,6 +45,7 @@ func (ps *PrjnStru) PrjnClass() string { return ps.Class }
 func (ps *PrjnStru) PrjnName() string {
 	return ps.Recv.LayName() + "Fm" + ps.Send.LayName()
 }
+func (ps *PrjnStru) Label() string         { return ps.PrjnName() }
 func (ps *PrjnStru) RecvLay() emer.Layer   { return ps.Recv }
 func (ps *PrjnStru) SendLay() emer.Layer   { return ps.Send }
 func (ps *PrjnStru) Pattern() prjn.Pattern { return ps.Pat }

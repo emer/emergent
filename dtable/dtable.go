@@ -50,13 +50,24 @@ func (dt *Table) Schema() Schema {
 	return sc
 }
 
-// ColByName returns the tensor at given column name, error if not found
-func (dt *Table) ColByName(name string) (etensor.Tensor, error) {
+// ColByNameCheck returns the tensor at given column name, checks for not found and returns
+// error if not found
+func (dt *Table) ColByNameCheck(name string) (etensor.Tensor, error) {
 	i, ok := dt.ColNameMap[name]
 	if !ok {
 		return nil, fmt.Errorf("dtable.Table ColByName: column named: %v not found", name)
 	}
 	return dt.Cols[i], nil
+}
+
+// ColByName returns the tensor at given column name without any error messages -- just
+// returns nil if not found and your code will panic..
+func (dt *Table) ColByName(name string) etensor.Tensor {
+	i, ok := dt.ColNameMap[name]
+	if !ok {
+		return nil
+	}
+	return dt.Cols[i]
 }
 
 // ColName returns the name of given column

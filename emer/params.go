@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/goki/gi/gi"
 	"github.com/goki/ki/kit"
 )
 
@@ -51,7 +52,7 @@ func FindParam(val reflect.Value, path string) (reflect.Value, bool) {
 	paths := strings.Split(path, ".")
 	fnm := paths[0]
 	fld := npv.FieldByName(fnm)
-	if kit.ValueIsZero(fld) {
+	if !fld.IsValid() {
 		log.Printf("Params.FindParam: could not find Field named: %v in struct: %v kind: %v, path: %v\n", fnm, npv.String(), npv.Kind(), path)
 		return fld, false
 	}
@@ -104,13 +105,18 @@ func (pr *Params) Path(path string) string {
 // object must already be the appropriate target type based on the first element of the path
 // (see Target method)
 func (pr *Params) Set(obj interface{}) {
+	olbl := ""
+	olblr, haslbl := obj.(gi.Labeler)
+	if haslbl {
+		olbl = olblr.Label()
+	}
 	for pt, v := range *pr {
 		path := pr.Path(pt)
 		ok := SetParam(obj, path, v)
 		if ok {
-			log.Printf("Set param path: %v to value: %v\n", pt, v)
+			log.Printf("%v Set param path: %v to value: %v\n", olbl, pt, v)
 		} else {
-			log.Printf("Failed to set param path: %v to value: %v\n", pt, v)
+			log.Printf("%v Failed to set param path: %v to value: %v\n", olbl, pt, v)
 		}
 	}
 }

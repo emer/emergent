@@ -5,7 +5,6 @@
 package leabra
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -26,6 +25,7 @@ type NetworkStru struct {
 
 // emer.Network interface methods:
 func (nt *NetworkStru) NetName() string               { return nt.Name }
+func (nt *NetworkStru) Label() string                 { return nt.Name }
 func (nt *NetworkStru) NLayers() int                  { return len(nt.Layers) }
 func (nt *NetworkStru) LayerIndex(idx int) emer.Layer { return nt.Layers[idx] }
 
@@ -158,16 +158,13 @@ func (nt *Network) Build() {
 // SaveWtsJSON saves network weights (and any other state that adapts with learning)
 // to a JSON-formatted file
 func (nt *Network) SaveWtsJSON(filename gi.FileName) error {
-	var buf bytes.Buffer
-	nt.WriteWtsJSON(&buf)
-	wb := buf.Bytes()
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	fp.Write(wb)
+	nt.WriteWtsJSON(fp)
 	return nil
 }
 

@@ -36,6 +36,7 @@ type LayerStru struct {
 // emer.Layer interface methods
 
 func (ls *LayerStru) LayName() string             { return ls.Name }
+func (ls *LayerStru) Label() string               { return ls.Name }
 func (ls *LayerStru) LayClass() string            { return ls.Class }
 func (ls *LayerStru) IsOff() bool                 { return ls.Off }
 func (ls *LayerStru) LayShape() *etensor.Shape    { return &ls.Shape }
@@ -434,7 +435,7 @@ func (ly *Layer) GeScaleFmAvgAct() {
 		pj := p.(*Prjn)
 		slay := pj.Send.(*Layer)
 		slpl := slay.Pools[0]
-		savg := slpl.ActAvg.ActPAvgEff // todo: avg_correct
+		savg := slpl.ActAvg.ActPAvgEff
 		snu := len(slay.Neurons)
 		ncon := pj.RConNAvgMax.Avg
 		pj.GeScale = pj.WtScale.FullScale(savg, float32(snu), ncon)
@@ -448,6 +449,10 @@ func (ly *Layer) GeScaleFmAvgAct() {
 		pj := p.(*Prjn)
 		if totRel > 0 {
 			pj.GeScale /= totRel
+			// slay := pj.Send.(*Layer)
+			// slpl := slay.Pools[0]
+			// savg := slpl.ActAvg.ActPAvgEff
+			// fmt.Printf("GeScale: %v  savg: %v  savg raw: %v  actP.avg: %v\n", pj.GeScale, savg, slpl.ActAvg.ActPAvg, slpl.ActP.Avg)
 		}
 	}
 }

@@ -305,11 +305,11 @@ func (cd *CosDiffParams) AvgVarFmCos(avg, vr *float32, cos float32) {
 
 // CosDiffStats holds cosine-difference statistics at the layer level
 type CosDiffStats struct {
-	Cos        float32 `desc:"cosine (normalized dot product) activation difference between act_p and act_m on this trial for this layer -- computed by Compute_CosDiff -- must be called after Quarter_Final in plus phase to get act_p values"`
-	Avg        float32 `desc:"running average of cosine (normalized dot product) difference between act_p and act_m -- computed with layerspec cos_diff.avg_tau time constant in Quarter_Final, and used for modulating hebbian learning (see cos_diff_avg_lrn) and overall learning rate"`
-	Var        float32 `desc:"running variance of cosine (normalized dot product) difference between act_p and act_m -- computed with layerspec cos_diff.diff_avg_tau time constant in Quarter_Final, used for modulating overall learning rate"`
-	AvgLrn     float32 `desc:"1 - Avg and 0 for non-HIDDEN layers"`
-	ModAvgLLrn float32 `desc:"1 - AvgLrn and 0 for non-HIDDEN layers -- this is the value of cos_diff_avg used for avg_l.err_mod_l modulation of the avg_l_lrn factor if enabled"`
+	Cos        float32 `desc:"cosine (normalized dot product) activation difference between ActP and ActM on this trial for this layer -- computed by CosDiffFmActs at end of QuarterFinal for quarter = 3"`
+	Avg        float32 `desc:"running average of cosine (normalized dot product) difference between ActP and ActM -- computed with CosDiff.Tau time constant in QuarterFinal, and used for modulating BCM Hebbian learning (see AvgLrn) and overall learning rate"`
+	Var        float32 `desc:"running variance of cosine (normalized dot product) difference between ActP and ActM -- computed with CosDiff.Tau time constant in QuarterFinal, used for modulating overall learning rate"`
+	AvgLrn     float32 `desc:"1 - Avg and 0 for non-Hidden layers"`
+	ModAvgLLrn float32 `desc:"1 - AvgLrn and 0 for non-Hidden layers -- this is the value of Avg used for AvgLParams ErrMod modulation of the AvgLLrn factor if enabled"`
 }
 
 func (cd *CosDiffStats) Init() {
@@ -559,7 +559,7 @@ func (wb *WtBalParams) Update() {
 }
 
 func (wb *WtBalParams) Defaults() {
-	wb.On = true
+	wb.On = false
 	wb.AvgThr = 0.25
 	wb.HiThr = 0.4
 	wb.HiGain = 4

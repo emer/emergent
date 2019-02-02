@@ -16,6 +16,9 @@ type Network interface {
 	// NetName returns the name of this network
 	NetName() string
 
+	// Label satisfies the gi.Labeler interface for getting the name of objects generically
+	Label() string
+
 	// NLayers returns the number of layers in the network
 	NLayers() int
 

@@ -17,6 +17,9 @@ type Layer interface {
 	// LayName returns the name of this layer
 	LayName() string
 
+	// Label satisfies the gi.Labeler interface for getting the name of objects generically
+	Label() string
+
 	// LayClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
 	LayClass() string
 

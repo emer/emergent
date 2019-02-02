@@ -6,6 +6,10 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"time"
+
 	"github.com/emer/emergent/basic/leabra"
 	"github.com/emer/emergent/dtable"
 	"github.com/emer/emergent/emer"
@@ -14,12 +18,20 @@ import (
 )
 
 var Net *leabra.Network
-var InPats *dtable.Table
+var Pats *dtable.Table
+var EpcLog *dtable.Table
 
 var Pars = emer.ParamStyle{
 	"Prjn": {
 		"Prjn.Learn.Norm.On":     1,
 		"Prjn.Learn.Momentum.On": 1,
+		"Prjn.Learn.WtBal.On":    1,
+	},
+	"Layer": {
+		"Layer.Inhib.Layer.Gi": 1.8,
+	},
+	"#Output": {
+		"Layer.Inhib.Layer.Gi": 1.4, // this turns out to be critical for small output layer
 	},
 	".TopDown": {
 		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
@@ -29,8 +41,8 @@ var Pars = emer.ParamStyle{
 func ConfigNet(net *leabra.Network) {
 	net.Name = "RA25"
 	inLay := net.AddLayer("Input", []int{5, 5}, leabra.Input)
-	hid1Lay := net.AddLayer("Hidden1", []int{5, 5}, leabra.Hidden)
-	hid2Lay := net.AddLayer("Hidden2", []int{5, 5}, leabra.Hidden)
+	hid1Lay := net.AddLayer("Hidden1", []int{7, 7}, leabra.Hidden)
+	hid2Lay := net.AddLayer("Hidden2", []int{7, 7}, leabra.Hidden)
 	outLay := net.AddLayer("Output", []int{5, 5}, leabra.Target)
 
 	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull())
@@ -48,16 +60,104 @@ func ConfigNet(net *leabra.Network) {
 	net.InitWts()
 }
 
-func ConfigInPats(dt *dtable.Table) {
+func ConfigPats(dt *dtable.Table) {
 	dt.SetFromSchema(dtable.Schema{
-		{"name", etensor.STRING, nil, nil},
-		{"pattern", etensor.FLOAT32, []int{5, 5}, []string{"Y", "X"}},
+		{"Name", etensor.STRING, nil, nil},
+		{"Input", etensor.FLOAT32, []int{5, 5}, []string{"Y", "X"}},
+		{"Output", etensor.FLOAT32, []int{5, 5}, []string{"Y", "X"}},
 	}, 25)
 
-	// for pi := 0; pi < 4; pi++ {
-	// 	InPats.Set([]int{pi, pi, 0}, 1)
-	// }
+	// todo: write code to generate the patterns using bit flip logic..
+}
+
+func OpenPats(dt *dtable.Table) {
+	err := dt.OpenCSV("random_5x5_25.dat", '\t')
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func ConfigEpcLog(dt *dtable.Table) {
+	dt.SetFromSchema(dtable.Schema{
+		{"Epoch", etensor.INT64, nil, nil},
+		{"CosDiff", etensor.FLOAT32, nil, nil},
+		{"AvgCosDiff", etensor.FLOAT32, nil, nil},
+		{"Hid1 ActAvg", etensor.FLOAT32, nil, nil},
+		{"Hid2 ActAvg", etensor.FLOAT32, nil, nil},
+		{"Out ActAvg", etensor.FLOAT32, nil, nil},
+	}, 0)
+}
+
+func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
+	ltime := leabra.NewTime()
+	net.InitWts()
+	np := pats.NumRows()
+
+	epcLog.SetNumRows(epcs)
+
+	inLay := net.LayerByName("Input").(*leabra.Layer)
+	hid1Lay := net.LayerByName("Hidden1").(*leabra.Layer)
+	hid2Lay := net.LayerByName("Hidden2").(*leabra.Layer)
+	outLay := net.LayerByName("Output").(*leabra.Layer)
+
+	_ = hid1Lay
+	_ = hid2Lay
+
+	inPats := pats.ColByName("Input").(*etensor.Float32)
+	outPats := pats.ColByName("Output").(*etensor.Float32)
+
+	stts := time.Now()
+	for epc := 0; epc < epcs; epc++ {
+		// todo: shuffle order
+		outCosDiff := float32(0)
+		for pi := 0; pi < np; pi++ {
+			inp, _ := inPats.SubSlice(2, []int{pi})
+			outp, _ := outPats.SubSlice(2, []int{pi})
+
+			inLay.ApplyExt(inp)
+			outLay.ApplyExt(outp)
+
+			net.TrialInit()
+			ltime.TrialStart()
+			for qtr := 0; qtr < 4; qtr++ {
+				for cyc := 0; cyc < ltime.CycPerQtr; cyc++ {
+					net.Cycle()
+					ltime.CycleInc()
+				}
+				net.QuarterFinal(ltime)
+				ltime.QuarterInc()
+			}
+			net.DWt()
+			net.WtFmDWt()
+			outCosDiff += outLay.CosDiff.Cos
+		}
+		outCosDiff /= float32(np)
+		// fmt.Printf("epc: %v  \tCosDiff: %v \tAvgCosDif: %v\n", epc, outCosDiff, outLay.CosDiff.Avg)
+		epcLog.ColByName("Epoch").SetFlatFloat64(epc, float64(epc))
+		epcLog.ColByName("CosDiff").SetFlatFloat64(epc, float64(outCosDiff))
+		epcLog.ColByName("AvgCosDiff").SetFlatFloat64(epc, float64(outLay.CosDiff.Avg))
+		epcLog.ColByName("Hid1 ActAvg").SetFlatFloat64(epc, float64(hid1Lay.Pools[0].ActAvg.ActPAvgEff))
+		epcLog.ColByName("Hid2 ActAvg").SetFlatFloat64(epc, float64(hid2Lay.Pools[0].ActAvg.ActPAvgEff))
+		epcLog.ColByName("Out ActAvg").SetFlatFloat64(epc, float64(outLay.Pools[0].ActAvg.ActPAvgEff))
+	}
+	etts := time.Now()
+	secs := float64(etts.Sub(stts)) / float64(time.Second)
+	fmt.Printf("Took %v secs for %v epochs\n", secs, epcs)
 }
 
 func main() {
+	Net = &leabra.Network{}
+	ConfigNet(Net)
+	Net.SaveWtsJSON("ra25_net_init.wts")
+
+	Pats = &dtable.Table{}
+	OpenPats(Pats)
+
+	EpcLog = &dtable.Table{}
+	ConfigEpcLog(EpcLog)
+
+	TrainNet(Net, Pats, EpcLog, 100)
+	Net.SaveWtsJSON("ra25_net_trained.wts")
+
+	EpcLog.SaveCSV("ra25_epc.dat", ',', true)
 }

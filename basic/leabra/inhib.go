@@ -136,40 +136,14 @@ func (si *SelfInhibParams) Inhib(self *float32, act float32) {
 // Also specifies time constant for updating average
 // and for the target value for adapting inhibition in inhib_adapt.
 type ActAvgParams struct {
-	Init      float32 `min:"0" desc:"[typically 0.1 - 0.2] initial estimated average activity level in the layer (see also UseFirst option -- if that is off then it is used as a starting point for running average actual activity level, acts_m_avg and acts_p_avg) -- acts_p_avg is used primarily for automatic netinput scaling, to balance out layers that have different activity levels -- thus it is important that init be relatively accurate -- good idea to update from recorded acts_p_avg levels (see LayerAvgAct button, here and on network)"`
-	Fixed     bool    `def:"false" desc:"if true, then the Init value is used as a constant for acts_p_avg_eff (the effective value used for netinput rescaling), instead of using the actual running average activation"`
-	UseExtAct bool    `def:"false" desc:"if true, then use the activation level computed from the external inputs to this layer (avg of targ or ext unit vars) -- this will only be applied to layers with INPUT or TARGET / OUTPUT layer types, and falls back on the targ_init value if external inputs are not available or have a zero average -- implies fixed behavior"`
+	Init      float32 `min:"0" desc:"[typically 0.1 - 0.2] initial estimated average activity level in the layer (see also UseFirst option -- if that is off then it is used as a starting point for running average actual activity level, ActMAvg and ActPAvg) -- ActPAvg is used primarily for automatic netinput scaling, to balance out layers that have different activity levels -- thus it is important that init be relatively accurate -- good idea to update from recorded ActPAvg levels"`
+	Fixed     bool    `def:"false" desc:"if true, then the Init value is used as a constant for ActPAvgEff (the effective value used for netinput rescaling), instead of using the actual running average activation"`
+	UseExtAct bool    `def:"false" desc:"if true, then use the activation level computed from the external inputs to this layer (avg of targ or ext unit vars) -- this will only be applied to layers with Input or Target / Compare layer types, and falls back on the targ_init value if external inputs are not available or have a zero average -- implies fixed behavior"`
 	UseFirst  bool    `view:"if Fixed=false" def:"true" desc:"use the first actual average value to override targ_init value -- actual value is likely to be a better estimate than our guess"`
 	Tau       float32 `view:"if Fixed=false" def:"100" min:"1" desc:"time constant in trials for integrating time-average values at the layer level -- used for computing Pool.ActAvg.ActsMAvg, ActsPAvg"`
-	Adjust    float32 `view:"if Fixed=false" def:"1" desc:"adjustment multiplier on the computed acts_p_avg value that is used to compute acts_p_avg_eff, which is actually used for netinput rescaling -- if based on connectivity patterns or other factors the actual running-average value is resulting in netinputs that are too high or low, then this can be used to adjust the effective average activity value -- reducing the average activity with a factor < 1 will increase netinput scaling (stronger net inputs from layers that receive from this layer), and vice-versa for increasing (decreases net inputs)"`
+	Adjust    float32 `view:"if Fixed=false" def:"1" desc:"adjustment multiplier on the computed ActPAvg value that is used to compute ActPAvgEff, which is actually used for netinput rescaling -- if based on connectivity patterns or other factors the actual running-average value is resulting in netinputs that are too high or low, then this can be used to adjust the effective average activity value -- reducing the average activity with a factor < 1 will increase netinput scaling (stronger net inputs from layers that receive from this layer), and vice-versa for increasing (decreases net inputs)"`
 
 	Dt float32 `inactive:"+" view:"-" desc:"rate = 1 / tau"`
-}
-
-// EffInit returns the initial value applied during InitWts for the AvgPAvgEff effective layer activity
-func (aa *ActAvgParams) EffInit() float32 {
-	if aa.Fixed {
-		return aa.Init
-	}
-	return aa.Adjust * aa.Init
-}
-
-// AvgFmAct updates the running-average activation given average activity level in layer
-func (aa *ActAvgParams) AvgFmAct(avg *float32, act float32) {
-	if aa.UseFirst && *avg == aa.Init {
-		*avg += 0.5 * (act - *avg)
-	} else {
-		*avg += aa.Dt * (act - *avg)
-	}
-}
-
-// EffFmAvg updates the effective value from the running-average value
-func (aa *ActAvgParams) EffFmAvg(eff *float32, avg float32) {
-	if aa.Fixed {
-		*eff = aa.Init
-	} else {
-		*eff = aa.Adjust * avg
-	}
 }
 
 func (aa *ActAvgParams) Update() {
@@ -184,4 +158,33 @@ func (aa *ActAvgParams) Defaults() {
 	aa.Tau = 100
 	aa.Adjust = 1
 	aa.Update()
+}
+
+// EffInit returns the initial value applied during InitWts for the AvgPAvgEff effective layer activity
+func (aa *ActAvgParams) EffInit() float32 {
+	if aa.Fixed {
+		return aa.Init
+	}
+	return aa.Adjust * aa.Init
+}
+
+// AvgFmAct updates the running-average activation given average activity level in layer
+func (aa *ActAvgParams) AvgFmAct(avg *float32, act float32) {
+	if act == 0 {
+		return
+	}
+	if aa.UseFirst && *avg == aa.Init {
+		*avg += 0.5 * (act - *avg)
+	} else {
+		*avg += aa.Dt * (act - *avg)
+	}
+}
+
+// EffFmAvg updates the effective value from the running-average value
+func (aa *ActAvgParams) EffFmAvg(eff *float32, avg float32) {
+	if aa.Fixed {
+		*eff = aa.Init
+	} else {
+		*eff = aa.Adjust * avg
+	}
 }

@@ -23,6 +23,9 @@ type Prjn interface {
 	// PrjnName is the automatic name of projection: RecvLay().LayName() + "Fm" + SendLay().LayName()
 	PrjnName() string
 
+	// Label satisfies the gi.Labeler interface for getting the name of objects generically
+	Label() string
+
 	// IsOff returns true if projection or either send or recv layer has been turned Off -- for experimentation
 	IsOff() bool
 
