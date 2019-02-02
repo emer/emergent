@@ -4,6 +4,12 @@
 
 package emer
 
+import (
+	"io"
+
+	"github.com/goki/gi/gi"
+)
+
 // Network defines the basic interface for a neural network, used for managing the structural
 // elements of a network, and for visualization, I/O, etc
 type Network interface {
@@ -32,4 +38,20 @@ type Network interface {
 
 	// StyleParams applies a given ParamStyle style sheet to the layers and projections in network
 	StyleParams(psty ParamStyle)
+
+	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
+	// to JSON-formatted output
+	WriteWtsJSON(w io.Writer)
+
+	// ReadWtsJSON reads network weights (and any other state that adapts with learning)
+	// from JSON-formatted input
+	ReadWtsJSON(r io.Reader) error
+
+	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
+	// to a JSON-formatted file
+	SaveWtsJSON(filename gi.FileName) error
+
+	// OpenWtsJSON opens network weights (and any other state that adapts with learning)
+	// from a JSON-formatted file
+	OpenWtsJSON(filename gi.FileName) error
 }

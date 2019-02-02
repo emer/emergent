@@ -266,8 +266,11 @@ func (tsr *{{.Name}}) FromArrow(arw *tensor.{{.Name}}, cpy bool) {
 
 {{- end}}
 
-func New(dtype arrow.Type, shape, strides []int, names []string) Tensor {
-	switch dtype {
+// New returns a new Tensor of given type, using our Type specifier which is
+// isomorphic with arrow.Type
+func New(dtype Type, shape, strides []int, names []string) Tensor {
+	aty := arrow.Type(dtype)
+	switch aty {
 {{- range .In}}
 	case arrow.{{.DataType}}:
 		return New{{.Name}}(shape, strides, names)

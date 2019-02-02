@@ -98,14 +98,14 @@ func SchemaFromEmerHeaders(hdrs []string) (Schema, error) {
 			hd = hd[:lbst]
 			csh := ShapeFromString(dims)
 			// new tensor starting
-			sc = append(sc, Column{Name: hd, Type: typ, CellShape: csh})
+			sc = append(sc, Column{Name: hd, Type: etensor.Type(typ), CellShape: csh})
 			continue
 		}
 		dimst = strings.Index(hd, "[")
 		if dimst > 0 {
 			continue
 		}
-		sc = append(sc, Column{Name: hd, Type: typ, CellShape: nil})
+		sc = append(sc, Column{Name: hd, Type: etensor.Type(typ), CellShape: nil})
 	}
 	return sc, nil
 }

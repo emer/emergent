@@ -43,7 +43,7 @@ func (dt *Table) Schema() Schema {
 		cl := &sc[i]
 		tsr := dt.Cols[i]
 		cl.Name = dt.ColNames[i]
-		cl.Type = tsr.DataType().ID()
+		cl.Type = etensor.Type(tsr.DataType().ID())
 		cl.CellShape = tsr.Shapes()[1:]
 		cl.DimNames = tsr.DimNames()[1:]
 	}

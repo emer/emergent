@@ -74,9 +74,9 @@ func TestMakeNet(t *testing.T) {
 	hidLay := TestNet.AddLayer("Hidden", []int{4, 1}, Hidden)
 	outLay := TestNet.AddLayer("Output", []int{4, 1}, Target)
 
-	TestNet.ConnectLayers(hidLay, inLay, prjn.NewOneToOne())
-	TestNet.ConnectLayers(outLay, hidLay, prjn.NewOneToOne())
-	outHid := TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne())
+	TestNet.ConnectLayers(inLay, hidLay, prjn.NewOneToOne())
+	TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne())
+	outHid := TestNet.ConnectLayers(outLay, hidLay, prjn.NewOneToOne())
 	outHid.Class = "TopDown"
 
 	TestNet.Defaults()

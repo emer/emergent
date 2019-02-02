@@ -5,12 +5,15 @@
 package leabra
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
+	"os"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/prjn"
+	"github.com/goki/gi/gi"
 	"github.com/goki/ki/indent"
 )
 
@@ -112,7 +115,7 @@ func (nt *Network) AddLayer(name string, shape []int, typ LayerType) *Layer {
 // adding to the recv and send projection lists on each side of the connection.
 // Returns false if not successful. Does not yet actually connect the units within the layers -- that
 // requires Build.
-func (nt *Network) ConnectLayersNames(recv, send string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, ok bool) {
+func (nt *Network) ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, ok bool) {
 	ok = false
 	rlay, has := nt.LayerByNameErrMsg(recv)
 	if !has {
@@ -126,11 +129,11 @@ func (nt *Network) ConnectLayersNames(recv, send string, pat prjn.Pattern) (rlay
 	return
 }
 
-// ConnectLayers establishes a projection between two layers, referenced by name
+// ConnectLayers establishes a projection between two layers,
 // adding to the recv and send projection lists on each side of the connection.
 // Returns false if not successful. Does not yet actually connect the units within the layers -- that
 // requires Build.
-func (nt *Network) ConnectLayers(recv, send *Layer, pat prjn.Pattern) *Prjn {
+func (nt *Network) ConnectLayers(send, recv *Layer, pat prjn.Pattern) *Prjn {
 	pj := &Prjn{}
 	pj.Recv = recv
 	pj.Send = send
@@ -150,6 +153,34 @@ func (nt *Network) Build() {
 		ly.(*Layer).Index = li
 		ly.(*Layer).Build()
 	}
+}
+
+// SaveWtsJSON saves network weights (and any other state that adapts with learning)
+// to a JSON-formatted file
+func (nt *Network) SaveWtsJSON(filename gi.FileName) error {
+	var buf bytes.Buffer
+	nt.WriteWtsJSON(&buf)
+	wb := buf.Bytes()
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	fp.Write(wb)
+	return nil
+}
+
+// OpenWtsJSON opens network weights (and any other state that adapts with learning)
+// from a JSON-formatted file
+func (nt *Network) OpenWtsJSON(filename gi.FileName) error {
+	fp, err := os.Open(string(filename))
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nt.ReadWtsJSON(fp)
 }
 
 // WriteWtsJSON writes the weights from this layer from the receiver-side perspective
@@ -175,6 +206,13 @@ func (nt *Network) WriteWtsJSON(w io.Writer) {
 	depth--
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte("}\n"))
+}
+
+// ReadWtsJSON reads the weights from this layer from the receiver-side perspective
+// in a JSON text format.  We build in the indentation logic to make it much faster and
+// more efficient.
+func (nt *Network) ReadWtsJSON(r io.Reader) error {
+	return nil
 }
 
 // below are all the computational algorithm methods, which generally just call layer

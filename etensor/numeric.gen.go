@@ -2449,8 +2449,11 @@ func (tsr *Uint8) FromArrow(arw *tensor.Uint8, cpy bool) {
 	// }
 }
 
-func New(dtype arrow.Type, shape, strides []int, names []string) Tensor {
-	switch dtype {
+// New returns a new Tensor of given type, using our Type specifier which is
+// isomorphic with arrow.Type
+func New(dtype Type, shape, strides []int, names []string) Tensor {
+	aty := arrow.Type(dtype)
+	switch aty {
 	case arrow.INT64:
 		return NewInt64(shape, strides, names)
 	case arrow.UINT64:
