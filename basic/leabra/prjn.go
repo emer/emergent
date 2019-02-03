@@ -233,31 +233,37 @@ func (pj *Prjn) UpdateParams() {
 }
 
 // SetParams sets given parameters to this prjn, if the target type is Prjn
-// calls UpdateParams to ensure derived parameters are all updated
-func (pj *Prjn) SetParams(pars emer.Params) bool {
+// calls UpdateParams to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (pj *Prjn) SetParams(pars emer.Params, setMsg bool) bool {
 	trg := pars.Target()
 	if trg != "Prjn" {
 		return false
 	}
-	pars.Set(pj)
+	pars.Set(pj, setMsg)
 	pj.UpdateParams()
 	return true
 }
 
 // StyleParam applies a given style to this projection
 // depending on the style specification (.Class, #Name, Type) and target value of params
-func (pj *Prjn) StyleParam(sty string, pars emer.Params) bool {
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (pj *Prjn) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
 	if emer.StyleMatch(sty, pj.PrjnName(), pj.Class, "Prjn") {
-		return pj.SetParams(pars)
+		return pj.SetParams(pars, setMsg)
 	}
 	return false
 }
 
 // StyleParams applies a given styles to either this prjn
 // depending on the style specification (.Class, #Name, Type) and target value of params
-func (pj *Prjn) StyleParams(psty emer.ParamStyle) {
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (pj *Prjn) StyleParams(psty emer.ParamStyle, setMsg bool) {
 	for sty, pars := range psty {
-		pj.StyleParam(sty, pars)
+		pj.StyleParam(sty, pars, setMsg)
 	}
 }
 

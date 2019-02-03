@@ -84,5 +84,7 @@ type Layer interface {
 	UpdateParams()
 
 	// StyleParams applies a given ParamStyle style sheet to the layer and recv projections
-	StyleParams(psty ParamStyle)
+	// If setMsg is true, then a message is printed to confirm each parameter that is set.
+	// it always prints a message if a parameter fails to be set.
+	StyleParams(psty ParamStyle, setMsg bool)
 }

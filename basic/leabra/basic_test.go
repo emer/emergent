@@ -80,7 +80,7 @@ func TestMakeNet(t *testing.T) {
 	outHid.Class = "TopDown"
 
 	TestNet.Defaults()
-	TestNet.StyleParams(Pars[0])
+	TestNet.StyleParams(Pars[0], false) // no msg
 	TestNet.Build()
 	TestNet.InitWts()
 	TestNet.TrialInit() // get GeScale
@@ -280,7 +280,7 @@ func TestNetLearn(t *testing.T) {
 
 	for ti := 0; ti < NLrnPars; ti++ {
 		TestNet.Defaults()
-		TestNet.StyleParams(Pars[ti])
+		TestNet.StyleParams(Pars[ti], false) // no msg
 		TestNet.InitWts()
 		TestNet.InitExt()
 

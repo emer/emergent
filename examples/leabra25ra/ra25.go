@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// ra25 runs a simple random-associator 5x5 = 25 four-layer leabra network
+// labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
 package main
 
 import (
 	"fmt"
 	"log"
-	"time"
+	"math/rand"
 
 	"github.com/emer/emergent/basic/leabra"
 	"github.com/emer/emergent/dtable"
 	"github.com/emer/emergent/emer"
+	"github.com/emer/emergent/erand"
 	"github.com/emer/emergent/etensor"
+	"github.com/emer/emergent/patgen"
 	"github.com/emer/emergent/prjn"
+	"github.com/emer/emergent/timer"
 )
 
 var Net *leabra.Network
@@ -28,9 +31,9 @@ var Pars = emer.ParamStyle{
 		"Prjn.Learn.Momentum.On": 1,
 		"Prjn.Learn.WtBal.On":    0,
 	},
-	"Layer": {
-		"Layer.Inhib.Layer.Gi": 1.8,
-	},
+	// "Layer": {
+	// 	"Layer.Inhib.Layer.Gi": 1.8, // this is the default
+	// },
 	"#Output": {
 		"Layer.Inhib.Layer.Gi": 1.4, // this turns out to be critical for small output layer
 	},
@@ -61,7 +64,7 @@ func ConfigNet(net *leabra.Network) {
 	}
 
 	net.Defaults()
-	net.StyleParams(Pars)
+	net.StyleParams(Pars, true) // set msg
 	net.Build()
 	net.InitWts()
 }
@@ -73,7 +76,9 @@ func ConfigPats(dt *dtable.Table) {
 		{"Output", etensor.FLOAT32, []int{5, 5}, []string{"Y", "X"}},
 	}, 25)
 
-	// todo: write code to generate the patterns using bit flip logic..
+	patgen.PermutedBinaryRows(dt.Cols[1], 6, 1, 0)
+	patgen.PermutedBinaryRows(dt.Cols[2], 6, 1, 0)
+	dt.SaveCSV("random_5x5_25_gen.dat", ',', true)
 }
 
 func OpenPats(dt *dtable.Table) {
@@ -103,6 +108,7 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 	ltime := leabra.NewTime()
 	net.InitWts()
 	np := pats.NumRows()
+	porder := rand.Perm(np) // randomly permuted order of ints
 
 	epcLog.SetNumRows(epcs)
 
@@ -117,16 +123,18 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 	inPats := pats.ColByName("Input").(*etensor.Float32)
 	outPats := pats.ColByName("Output").(*etensor.Float32)
 
-	stts := time.Now()
+	tmr := timer.Time{}
+	tmr.Start()
 	for epc := 0; epc < epcs; epc++ {
-		// todo: shuffle order
+		erand.PermuteInts(porder)
 		outCosDiff := float32(0)
 		cntErr := 0
 		sse := float32(0)
 		avgSSE := float32(0)
 		for pi := 0; pi < np; pi++ {
-			inp, _ := inPats.SubSlice(2, []int{pi})
-			outp, _ := outPats.SubSlice(2, []int{pi})
+			ppi := porder[pi]
+			inp, _ := inPats.SubSlice(2, []int{ppi})
+			outp, _ := outPats.SubSlice(2, []int{ppi})
 
 			inLay.ApplyExt(inp)
 			outLay.ApplyExt(outp)
@@ -169,9 +177,8 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 		epcLog.ColByName("Hid2 ActAvg").SetFlatFloat64(epc, float64(hid2Lay.Pools[0].ActAvg.ActPAvgEff))
 		epcLog.ColByName("Out ActAvg").SetFlatFloat64(epc, float64(outLay.Pools[0].ActAvg.ActPAvgEff))
 	}
-	etts := time.Now()
-	secs := float64(etts.Sub(stts)) / float64(time.Second)
-	fmt.Printf("Took %v secs for %v epochs\n", secs, epcs)
+	tmr.Stop()
+	fmt.Printf("Took %6g secs for %v epochs, avg per epc: %6g\n", tmr.TotalSecs(), epcs, tmr.TotalSecs()/float64(epcs))
 }
 
 func main() {
@@ -180,6 +187,7 @@ func main() {
 	Net.SaveWtsJSON("ra25_net_init.wts")
 
 	Pats = &dtable.Table{}
+	// ConfigPats(Pats)
 	OpenPats(Pats)
 
 	EpcLog = &dtable.Table{}

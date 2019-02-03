@@ -152,13 +152,15 @@ func (ly *Layer) UpdateParams() {
 }
 
 // SetParams sets given parameters to this layer, if the target type is Layer
-// calls UpdateParams to ensure derived parameters are all updated
-func (ly *Layer) SetParams(pars emer.Params) bool {
+// calls UpdateParams to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (ly *Layer) SetParams(pars emer.Params, setMsg bool) bool {
 	trg := pars.Target()
 	if trg != "Layer" {
 		return false
 	}
-	pars.Set(ly)
+	pars.Set(ly, setMsg)
 	ly.UpdateParams()
 	return true
 }
@@ -166,15 +168,17 @@ func (ly *Layer) SetParams(pars emer.Params) bool {
 // StyleParam applies a given style to either this layer or the receiving projections in this layer
 // depending on the style specification (.Class, #Name, Type) and target value of params.
 // returns true if applied successfully.
-func (ly *Layer) StyleParam(sty string, pars emer.Params) bool {
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (ly *Layer) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
 	if emer.StyleMatch(sty, ly.Name, ly.Class, "Layer") {
-		if ly.SetParams(pars) {
+		if ly.SetParams(pars, setMsg) {
 			return true // done -- otherwise, might be for prjns
 		}
 	}
 	set := false
 	for _, pj := range ly.RecvPrjns {
-		did := pj.(*Prjn).StyleParam(sty, pars) // note: could add to emer interface
+		did := pj.(*Prjn).StyleParam(sty, pars, setMsg) // note: could add to emer interface
 		if did {
 			set = true
 		}
@@ -184,9 +188,11 @@ func (ly *Layer) StyleParam(sty string, pars emer.Params) bool {
 
 // StyleParams applies a given styles to either this layer or the receiving projections in this layer
 // depending on the style specification (.Class, #Name, Type) and target value of params
-func (ly *Layer) StyleParams(psty emer.ParamStyle) {
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (ly *Layer) StyleParams(psty emer.ParamStyle, setMsg bool) {
 	for sty, pars := range psty {
-		ly.StyleParam(sty, pars)
+		ly.StyleParam(sty, pars, setMsg)
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/prjn"
+	"github.com/emer/emergent/timer"
 	"github.com/goki/gi/gi"
 	"github.com/goki/ki/indent"
 	"github.com/goki/ki/ints"
@@ -25,7 +26,8 @@ type NetworkStru struct {
 	LayMap map[string]emer.Layer `desc:"map of name to layers -- layer names must be unique"`
 
 	NThreads int            `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
-	LayThr   [][]emer.Layer `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
+	ThrLay   [][]emer.Layer `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
+	ThrTimes []timer.Time   `desc:"timers for each thread, so you can see how evenly the workload is being distributed"`
 }
 
 // emer.Network interface methods:
@@ -74,16 +76,17 @@ func (nt *NetworkStru) BuildThreads() {
 		nthr = ints.MaxInt(nthr, ly.LayThread())
 	}
 	nt.NThreads = nthr + 1
-	nt.LayThr = make([][]emer.Layer, nt.NThreads)
+	nt.ThrLay = make([][]emer.Layer, nt.NThreads)
+	nt.ThrTimes = make([]timer.Time, nt.NThreads)
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
 		th := ly.LayThread()
-		nt.LayThr[th] = append(nt.LayThr[th], ly)
+		nt.ThrLay[th] = append(nt.ThrLay[th], ly)
 	}
 	for th := 0; th < nt.NThreads; th++ {
-		if len(nt.LayThr[th]) == 0 {
+		if len(nt.ThrLay[th]) == 0 {
 			log.Printf("Network BuildThreads: Network %v has no layers for thread: %v\n", nt.Name, th)
 		}
 	}
@@ -135,9 +138,11 @@ func (nt *Network) UpdateParams() {
 
 // StyleParams applies a given styles to layers and receiving projections,
 // depending on the style specification (.Class, #Name, Type) and target value of params
-func (nt *Network) StyleParams(psty emer.ParamStyle) {
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (nt *Network) StyleParams(psty emer.ParamStyle, setMsg bool) {
 	for _, ly := range nt.Layers {
-		ly.StyleParams(psty)
+		ly.StyleParams(psty, setMsg)
 	}
 }
 
@@ -333,7 +338,8 @@ func (nt *Network) Cycle() {
 	nt.AvgMaxAct()
 }
 
-// ThrLayFun calls function on layer, using threaded (go routine) computation
+// ThrLayFun calls function on layer, using threaded (go routine) computation if NThreads > 1
+// and otherwise just iterates over layers in the current thread.
 func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
 	if nt.NThreads <= 1 {
 		for _, ly := range nt.Layers {
@@ -347,17 +353,45 @@ func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
 		for th := 0; th < nt.NThreads; th++ {
 			wg.Add(1)
 			go func(tt int) {
-				thly := nt.LayThr[tt]
+				thly := nt.ThrLay[tt]
+				nt.ThrTimes[tt].Start()
 				for _, ly := range thly {
 					if ly.IsOff() {
 						continue
 					}
 					fun(ly.(*Layer))
 				}
+				nt.ThrTimes[tt].Stop()
 				wg.Done()
 			}(th)
 		}
 		wg.Wait()
+	}
+}
+
+// ThrTimerReport reports the amount of time spent in each thread
+func (nt *Network) ThrTimerReport() {
+	if nt.NThreads <= 1 {
+		fmt.Printf("ThrTimerReport: not running multiple threads\n")
+		return
+	}
+	fmt.Printf("ThrTimerReport: %v, NThreads: %v\n", nt.Name, nt.NThreads)
+	fmt.Printf("\tThr\tTotal Secs\tPct\n")
+	pcts := make([]float64, nt.NThreads)
+	tot := 0.0
+	for th := 0; th < nt.NThreads; th++ {
+		pcts[th] = nt.ThrTimes[th].TotalSecs()
+		tot += pcts[th]
+	}
+	for th := 0; th < nt.NThreads; th++ {
+		fmt.Printf("\t%v \t%6g\t%6g\n", th, pcts[th], pcts[th]/tot)
+	}
+}
+
+// ThrTimerReset resets the per-thread timers
+func (nt *Network) ThrTimerReset() {
+	for th := 0; th < nt.NThreads; th++ {
+		nt.ThrTimes[th].Reset()
 	}
 }
 

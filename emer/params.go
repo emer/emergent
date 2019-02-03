@@ -103,8 +103,9 @@ func (pr *Params) Path(path string) string {
 
 // Set applies all parameter values to given object.
 // object must already be the appropriate target type based on the first element of the path
-// (see Target method)
-func (pr *Params) Set(obj interface{}) {
+// (see Target method).  if setMsg is true, then it will print a confirmation that the parameter
+// was set (it always prints an error message if it fails to set the parameter at given path)
+func (pr *Params) Set(obj interface{}, setMsg bool) {
 	olbl := ""
 	olblr, haslbl := obj.(gi.Labeler)
 	if haslbl {
@@ -114,7 +115,9 @@ func (pr *Params) Set(obj interface{}) {
 		path := pr.Path(pt)
 		ok := SetParam(obj, path, v)
 		if ok {
-			log.Printf("%v Set param path: %v to value: %v\n", olbl, pt, v)
+			if setMsg {
+				log.Printf("%v Set param path: %v to value: %v\n", olbl, pt, v)
+			}
 		} else {
 			log.Printf("%v Failed to set param path: %v to value: %v\n", olbl, pt, v)
 		}

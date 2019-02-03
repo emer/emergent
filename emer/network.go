@@ -40,7 +40,9 @@ type Network interface {
 	UpdateParams()
 
 	// StyleParams applies a given ParamStyle style sheet to the layers and projections in network
-	StyleParams(psty ParamStyle)
+	// If setMsg is true, then a message is printed to confirm each parameter that is set.
+	// it always prints a message if a parameter fails to be set.
+	StyleParams(psty ParamStyle, setMsg bool)
 
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
 	// to JSON-formatted output
