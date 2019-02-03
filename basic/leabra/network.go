@@ -9,11 +9,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/prjn"
 	"github.com/goki/gi/gi"
 	"github.com/goki/ki/indent"
+	"github.com/goki/ki/ints"
 )
 
 // leabra.NetworkStru holds the basic structural components of a network (layers)
@@ -21,6 +23,9 @@ type NetworkStru struct {
 	Name   string `desc:"overall name of network -- helps discriminate if there are multiple"`
 	Layers []emer.Layer
 	LayMap map[string]emer.Layer `desc:"map of name to layers -- layer names must be unique"`
+
+	NThreads int            `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
+	LayThr   [][]emer.Layer `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
 }
 
 // emer.Network interface methods:
@@ -40,15 +45,15 @@ func (nt *NetworkStru) LayerByName(name string) emer.Layer {
 	return ly
 }
 
-// LayerByNameErrMsg returns a layer by looking it up by name -- emits a log error message
+// LayerByNameCheck returns a layer by looking it up by name -- emits a log error message
 // if layer is not found
-func (nt *NetworkStru) LayerByNameErrMsg(name string) (emer.Layer, bool) {
+func (nt *NetworkStru) LayerByNameCheck(name string) (emer.Layer, error) {
 	ly := nt.LayerByName(name)
 	if ly == nil {
-		log.Printf("Layer named: %v not found in Network: %v\n", name, nt.Name)
-		return ly, false
+		err := fmt.Errorf("Layer named: %v not found in Network: %v\n", name, nt.Name)
+		return ly, err
 	}
-	return ly, true
+	return ly, nil
 }
 
 // MakeLayMap updates layer map based on current layers
@@ -58,6 +63,47 @@ func (nt *NetworkStru) MakeLayMap() {
 		nt.LayMap[ly.LayName()] = ly
 	}
 }
+
+// BuildThreads constructs the layer thread allocation based on Thread setting in the layers
+func (nt *NetworkStru) BuildThreads() {
+	nthr := 0
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		nthr = ints.MaxInt(nthr, ly.LayThread())
+	}
+	nt.NThreads = nthr + 1
+	nt.LayThr = make([][]emer.Layer, nt.NThreads)
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		th := ly.LayThread()
+		nt.LayThr[th] = append(nt.LayThr[th], ly)
+	}
+	for th := 0; th < nt.NThreads; th++ {
+		if len(nt.LayThr[th]) == 0 {
+			log.Printf("Network BuildThreads: Network %v has no layers for thread: %v\n", nt.Name, th)
+		}
+	}
+}
+
+// StdVertLayout arranges layers in a standard vertical (z axis stack) layout, by setting
+// the Rel settings
+func (nt *NetworkStru) StdVertLayout() {
+	lstnm := ""
+	for li, ly := range nt.Layers {
+		if li == 0 {
+			ly.SetLayRel(emer.Rel{Rel: emer.NoRel})
+			lstnm = ly.LayName()
+		} else {
+			ly.SetLayRel(emer.Rel{Rel: emer.Above, Other: lstnm, XAlign: emer.Middle, YAlign: emer.Front})
+		}
+	}
+}
+
+// todo: compute positions
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Network
@@ -113,16 +159,15 @@ func (nt *Network) AddLayer(name string, shape []int, typ LayerType) *Layer {
 
 // ConnectLayerNames establishes a projection between two layers, referenced by name
 // adding to the recv and send projection lists on each side of the connection.
-// Returns false if not successful. Does not yet actually connect the units within the layers -- that
-// requires Build.
-func (nt *Network) ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, ok bool) {
-	ok = false
-	rlay, has := nt.LayerByNameErrMsg(recv)
-	if !has {
+// Returns error if not successful.
+// Does not yet actually connect the units within the layers -- that requires Build.
+func (nt *Network) ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, err error) {
+	rlay, err = nt.LayerByNameCheck(recv)
+	if err != nil {
 		return
 	}
-	slay, has = nt.LayerByNameErrMsg(send)
-	if !has {
+	slay, err = nt.LayerByNameCheck(send)
+	if err != nil {
 		return
 	}
 	pj = nt.ConnectLayers(rlay.(*Layer), slay.(*Layer), pat)
@@ -147,12 +192,13 @@ func (nt *Network) ConnectLayers(send, recv *Layer, pat prjn.Pattern) *Prjn {
 // of interconnectivity
 func (nt *Network) Build() {
 	for li, ly := range nt.Layers {
+		ly.(*Layer).Index = li
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).Index = li
 		ly.(*Layer).Build()
 	}
+	nt.BuildThreads()
 }
 
 // SaveWtsJSON saves network weights (and any other state that adapts with learning)
@@ -287,71 +333,64 @@ func (nt *Network) Cycle() {
 	nt.AvgMaxAct()
 }
 
+// ThrLayFun calls function on layer, using threaded (go routine) computation
+func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
+	if nt.NThreads <= 1 {
+		for _, ly := range nt.Layers {
+			if ly.IsOff() {
+				continue
+			}
+			fun(ly.(*Layer))
+		}
+	} else {
+		var wg sync.WaitGroup
+		for th := 0; th < nt.NThreads; th++ {
+			wg.Add(1)
+			go func(tt int) {
+				thly := nt.LayThr[tt]
+				for _, ly := range thly {
+					if ly.IsOff() {
+						continue
+					}
+					fun(ly.(*Layer))
+				}
+				wg.Done()
+			}(th)
+		}
+		wg.Wait()
+	}
+}
+
 // SendGeDelta sends change in activation since last sent, if above thresholds
 // and integrates sent deltas into GeRaw and time-integrated Ge values
 func (nt *Network) SendGeDelta() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).SendGeDelta()
-	}
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).GeFmGeInc()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.SendGeDelta() })
+	nt.ThrLayFun(func(ly *Layer) { ly.GeFmGeInc() })
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxGe() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).AvgMaxGe()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.AvgMaxGe() })
 }
 
 // InhibiFmGeAct computes inhibition Gi from Ge and Act stats within relevant Pools
 func (nt *Network) InhibFmGeAct() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).InhibFmGeAct()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.InhibFmGeAct() })
 }
 
 // ActFmG computes rate-code activation from Ge, Gi, Gl conductances
 func (nt *Network) ActFmG() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).ActFmG()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.ActFmG() })
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxAct() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).AvgMaxAct()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.AvgMaxAct() })
 }
 
 // QuarterFinal does updating after end of a quarter
-func (nt *Network) QuarterFinal(time *Time) {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).QuarterFinal(time)
-	}
+func (nt *Network) QuarterFinal(ltime *Time) {
+	nt.ThrLayFun(func(ly *Layer) { ly.QuarterFinal(ltime) })
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -359,23 +398,13 @@ func (nt *Network) QuarterFinal(time *Time) {
 
 // DWt computes the weight change (learning) based on current running-average activation values
 func (nt *Network) DWt() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).DWt()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.DWt() })
 }
 
 // WtFmDWt updates the weights from delta-weight changes.
 // Also calls WtBalFmWt every WtBalInterval times
 func (nt *Network) WtFmDWt() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).WtFmDWt()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.WtFmDWt() })
 	nt.WtBalCtr++
 	if nt.WtBalCtr >= nt.WtBalInterval {
 		nt.WtBalCtr = 0
@@ -385,86 +414,5 @@ func (nt *Network) WtFmDWt() {
 
 // WtBalFmWt updates the weight balance factors based on average recv weights
 func (nt *Network) WtBalFmWt() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).WtBalFmWt()
-	}
+	nt.ThrLayFun(func(ly *Layer) { ly.WtBalFmWt() })
 }
-
-// for reference: full cycle run from C++ leabra
-/*
-void LEABRA_NETWORK_STATE::Cycle_Run_Thr(int thr_no) {
-  int tot_cyc = 1;
-  if(times.cycle_qtr)
-    tot_cyc = times.quarter;
-  for(int cyc = 0; cyc < tot_cyc; cyc++) {
-    Send_Netin_Thr(thr_no);
-    ThreadSyncSpin(thr_no, 0);
-
-    Compute_NetinInteg_Thr(thr_no);
-    ThreadSyncSpin(thr_no, 1);
-
-    StartTimer(NT_NETIN_STATS, thr_no);
-
-    Compute_NetinStats_Thr(thr_no);
-    if(deep.mod_net) {
-      Compute_DeepModStats_Thr(thr_no);
-    }
-    ThreadSyncSpin(thr_no, 2);
-    if(thr_no == 0) {
-      Compute_NetinStats_Post();
-      if(deep.mod_net) {
-        Compute_DeepModStats_Post();
-      }
-    }
-    ThreadSyncSpin(thr_no, 0);
-
-    InitCycleNetinTmp_Thr(thr_no);
-
-    EndTimer(NT_NETIN_STATS, thr_no);
-
-    if(thr_no == 0) {
-      Compute_Inhib();
-    }
-    ThreadSyncSpin(thr_no, 1);
-
-    Compute_Act_Thr(thr_no);
-    ThreadSyncSpin(thr_no, 2);
-
-    if(thr_no == 0) {
-      Compute_CycleStats_Pre(); // prior to act post!
-    }
-    ThreadSyncSpin(thr_no, 0);
-
-    Compute_Act_Post_Thr(thr_no);
-    ThreadSyncSpin(thr_no, 1);
-
-    StartTimer(NT_CYCLE_STATS, thr_no);
-
-    Compute_CycleStats_Thr(thr_no);
-    ThreadSyncSpin(thr_no, 2);
-
-    if(thr_no == 0) {
-      Compute_CycleStats_Post();
-    }
-    ThreadSyncSpin(thr_no, 0);
-
-    if(deep.on && deep.Quarter_DeepRawNow(quarter)) {
-      int qtrcyc = cycle % times.quarter;
-      if(qtrcyc % times.deep_cyc == 0) {
-        Compute_DeepRaw_Thr(thr_no);
-      }
-    }
-    ThreadSyncSpin(thr_no, 1);
-
-    EndTimer(NT_CYCLE_STATS, thr_no);
-
-    if(thr_no == 0) {
-      Cycle_IncrCounters();
-    }
-  }
-}
-
-*/

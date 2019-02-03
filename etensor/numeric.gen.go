@@ -194,7 +194,6 @@ func (tsr *Int64) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -242,7 +241,7 @@ func (tsr *Int64) ToArrow() *tensor.Int64 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Int64) FromArrow(arw *tensor.Int64, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -254,7 +253,7 @@ func (tsr *Int64) FromArrow(arw *tensor.Int64, cpy bool) {
 	} else {
 		tsr.Values = arw.Int64Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -437,7 +436,6 @@ func (tsr *Uint64) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -485,7 +483,7 @@ func (tsr *Uint64) ToArrow() *tensor.Uint64 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Uint64) FromArrow(arw *tensor.Uint64, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -497,7 +495,7 @@ func (tsr *Uint64) FromArrow(arw *tensor.Uint64, cpy bool) {
 	} else {
 		tsr.Values = arw.Uint64Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -680,7 +678,6 @@ func (tsr *Float64) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -728,7 +725,7 @@ func (tsr *Float64) ToArrow() *tensor.Float64 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Float64) FromArrow(arw *tensor.Float64, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -740,7 +737,7 @@ func (tsr *Float64) FromArrow(arw *tensor.Float64, cpy bool) {
 	} else {
 		tsr.Values = arw.Float64Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -923,7 +920,6 @@ func (tsr *Int32) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -971,7 +967,7 @@ func (tsr *Int32) ToArrow() *tensor.Int32 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Int32) FromArrow(arw *tensor.Int32, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -983,7 +979,7 @@ func (tsr *Int32) FromArrow(arw *tensor.Int32, cpy bool) {
 	} else {
 		tsr.Values = arw.Int32Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -1166,7 +1162,6 @@ func (tsr *Uint32) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -1214,7 +1209,7 @@ func (tsr *Uint32) ToArrow() *tensor.Uint32 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Uint32) FromArrow(arw *tensor.Uint32, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -1226,7 +1221,7 @@ func (tsr *Uint32) FromArrow(arw *tensor.Uint32, cpy bool) {
 	} else {
 		tsr.Values = arw.Uint32Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -1409,7 +1404,6 @@ func (tsr *Float32) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -1457,7 +1451,7 @@ func (tsr *Float32) ToArrow() *tensor.Float32 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Float32) FromArrow(arw *tensor.Float32, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -1469,7 +1463,7 @@ func (tsr *Float32) FromArrow(arw *tensor.Float32, cpy bool) {
 	} else {
 		tsr.Values = arw.Float32Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -1652,7 +1646,6 @@ func (tsr *Int16) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -1700,7 +1693,7 @@ func (tsr *Int16) ToArrow() *tensor.Int16 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Int16) FromArrow(arw *tensor.Int16, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -1712,7 +1705,7 @@ func (tsr *Int16) FromArrow(arw *tensor.Int16, cpy bool) {
 	} else {
 		tsr.Values = arw.Int16Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -1895,7 +1888,6 @@ func (tsr *Uint16) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -1943,7 +1935,7 @@ func (tsr *Uint16) ToArrow() *tensor.Uint16 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Uint16) FromArrow(arw *tensor.Uint16, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -1955,7 +1947,7 @@ func (tsr *Uint16) FromArrow(arw *tensor.Uint16, cpy bool) {
 	} else {
 		tsr.Values = arw.Uint16Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -2138,7 +2130,6 @@ func (tsr *Int8) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -2186,7 +2177,7 @@ func (tsr *Int8) ToArrow() *tensor.Int8 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Int8) FromArrow(arw *tensor.Int8, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -2198,7 +2189,7 @@ func (tsr *Int8) FromArrow(arw *tensor.Int8, cpy bool) {
 	} else {
 		tsr.Values = arw.Int8Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()
@@ -2381,7 +2372,6 @@ func (tsr *Uint8) SetNumRows(rows int) {
 // offs are offsets for the outer dimensions (len = NDims - subdim) for the subslice to return.
 // The new tensor points to the values of the this tensor (i.e., modifications will affect both).
 // Use Clone() method to separate the two.
-// todo: not getting nulls yet.
 func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
 	nd := tsr.NumDims()
 	od := nd - subdim
@@ -2429,7 +2419,7 @@ func (tsr *Uint8) ToArrow() *tensor.Uint8 {
 // to the go GC and / or your own memory management policies to ensure the data
 // remains intact!
 func (tsr *Uint8) FromArrow(arw *tensor.Uint8, cpy bool) {
-	nms := make([]string, arw.NumDims()) // todo: would be nice if it exposed DimNames()
+	nms := make([]string, arw.NumDims()) // note: would be nice if it exposed DimNames()
 	for i := range nms {
 		nms[i] = arw.DimName(i)
 	}
@@ -2441,7 +2431,7 @@ func (tsr *Uint8) FromArrow(arw *tensor.Uint8, cpy bool) {
 	} else {
 		tsr.Values = arw.Uint8Values()
 	}
-	// todo: doesn't look like the Data() exposes the nulls themselves so it is not
+	// note: doesn't look like the Data() exposes the nulls themselves so it is not
 	// clear we can copy the null values -- nor does it seem that the tensor class
 	// exposes it either!  https://github.com/apache/arrow/issues/3496
 	// nln := arw.Data().NullN()

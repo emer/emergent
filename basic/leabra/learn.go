@@ -138,7 +138,7 @@ func (ls *LearnSynParams) WtFmDWt(wbInc, wbDec float32, dwt, wt, lwt *float32) {
 	} else if *lwt > 1 {
 		*lwt = 1
 	}
-	*wt = ls.WtSig.SigFmLinWt(*lwt) // todo: scale *
+	*wt = ls.WtSig.SigFmLinWt(*lwt) //  todo: scale *
 	*dwt = 0
 	//    if(adapt_scale.on) {
 	//      adapt_scale.AdaptWtScale(scale, wt);

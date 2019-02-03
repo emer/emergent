@@ -31,6 +31,17 @@ type Layer interface {
 	// If 4D, then it is standard unit group X,Y units X,Y.
 	LayShape() *etensor.Shape
 
+	// LayThread() returns the thread number (go routine) to use in updating this layer.
+	// The user is responsible for allocating layers to threads, trying to maintain an even
+	// distribution across layers and establishing good break-points.
+	LayThread() int
+
+	// LayRel returns the relative 3D position specification for this layer
+	LayRel() Rel
+
+	// SetLayRel sets the the relative 3D position specification for this layer
+	SetLayRel(rel Rel)
+
 	// LayPos returns the 3D position of the lower-left-hand corner of the layer
 	LayPos() Vec3i
 

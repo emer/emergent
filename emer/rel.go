@@ -32,7 +32,8 @@ func (ev *Relations) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSO
 
 // The relations
 const (
-	RightOf Relations = iota
+	NoRel Relations = iota
+	RightOf
 	LeftOf
 	Behind
 	FrontOf

@@ -9,9 +9,9 @@ import (
 
 var _ = errors.New("dummy error")
 
-const _Relations_name = "RightOfLeftOfBehindFrontOfAboveBelowRelationsN"
+const _Relations_name = "NoRelRightOfLeftOfBehindFrontOfAboveBelowRelationsN"
 
-var _Relations_index = [...]uint8{0, 7, 13, 19, 26, 31, 36, 46}
+var _Relations_index = [...]uint8{0, 5, 12, 18, 24, 31, 36, 41, 51}
 
 func (i Relations) String() string {
 	if i < 0 || i >= Relations(len(_Relations_index)-1) {

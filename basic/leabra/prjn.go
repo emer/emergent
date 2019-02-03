@@ -216,6 +216,7 @@ type Prjn struct {
 
 	// misc state variables below:
 	GeScale float32         `desc:"scaling factor for integrating excitatory synaptic input conductance Ge -- computed in TrialInit, incorporates running-average activity levels"`
+	GeInc   []float32       `desc:"local increment accumulator for Ge excitatory conductance from sending units -- this will be thread-safe"`
 	WbRecv  []WtBalRecvPrjn `desc:"weight balance state variables for this projection, one per recv neuron"`
 }
 
@@ -321,6 +322,7 @@ func (pj *Prjn) Build() bool {
 	rsh := pj.Recv.LayShape()
 	//	ssh := pj.Send.LayShape()
 	rlen := rsh.Len()
+	pj.GeInc = make([]float32, rlen)
 	pj.WbRecv = make([]WtBalRecvPrjn, rlen)
 	return true
 }
@@ -426,18 +428,37 @@ func (pj *Prjn) InitWtSym(rpj *Prjn) {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Act methods
 
+// InitGeInc initializes the per-projection GeInc threadsafe increment
+func (pj *Prjn) InitGeInc() {
+	rlay := pj.Recv.(*Layer)
+	nr := len(rlay.Neurons)
+	for ri := 0; ri < nr; ri++ {
+		pj.GeInc[ri] = 0
+	}
+}
+
 // SendGeDelta sends the delta-activation from sending neuron index si,
 // to integrate excitatory conductance on receivers
 func (pj *Prjn) SendGeDelta(si int, delta float32) {
 	scdel := delta * pj.GeScale
 	nc := int(pj.SConN[si])
 	st := int(pj.SConIdxSt[si])
-	rlay := pj.Recv.(*Layer)
 	for ci := 0; ci < nc; ci++ {
 		sy := &pj.Syns[st+ci]
 		ri := pj.SConIdx[st+ci]
+		pj.GeInc[ri] += scdel * sy.Wt
+		// 	fatomic.AddFloat32(&rn.GeInc, scdel*sy.Wt) is very slow
+	}
+}
+
+// RecvGeInc increments the receiver's GeInc from that of all the projections
+func (pj *Prjn) RecvGeInc() {
+	rlay := pj.Recv.(*Layer)
+	nr := len(rlay.Neurons)
+	for ri := 0; ri < nr; ri++ {
 		rn := &rlay.Neurons[ri]
-		rn.GeInc += scdel * sy.Wt // todo: will need atomic for thread-safety
+		rn.GeInc += pj.GeInc[ri]
+		pj.GeInc[ri] = 0
 	}
 }
 

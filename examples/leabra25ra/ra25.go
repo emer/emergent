@@ -20,6 +20,7 @@ import (
 var Net *leabra.Network
 var Pats *dtable.Table
 var EpcLog *dtable.Table
+var Thread = false // much slower for small net
 
 var Pars = emer.ParamStyle{
 	"Prjn": {
@@ -53,6 +54,11 @@ func ConfigNet(net *leabra.Network) {
 	outHid2.Class = "TopDown"
 	hid2Hid1 := net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull())
 	hid2Hid1.Class = "TopDown"
+
+	if Thread {
+		hid2Lay.Thread = 1
+		outLay.Thread = 1
+	}
 
 	net.Defaults()
 	net.StyleParams(Pars)

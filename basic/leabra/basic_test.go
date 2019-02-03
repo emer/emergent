@@ -159,7 +159,7 @@ func TestNetAct(t *testing.T) {
 				if printCycs {
 					inActs := inLay.UnitVals("Act")
 					hidActs := hidLay.UnitVals("Act")
-					hidGes := hidLay.UnitVals("Ge")
+					hidGes := hidLay.UnitVals("GeInc")
 					hidGis := hidLay.UnitVals("Gi")
 					outActs := outLay.UnitVals("Act")
 					outGes := outLay.UnitVals("Ge")
