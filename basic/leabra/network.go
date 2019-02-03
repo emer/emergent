@@ -19,6 +19,9 @@ import (
 	"github.com/goki/ki/ints"
 )
 
+// LayFunChan is a channel that runs layer functions
+type LayFunChan chan func(ly *Layer)
+
 // leabra.NetworkStru holds the basic structural components of a network (layers)
 type NetworkStru struct {
 	Name   string `desc:"overall name of network -- helps discriminate if there are multiple"`
@@ -27,7 +30,9 @@ type NetworkStru struct {
 
 	NThreads int            `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
 	ThrLay   [][]emer.Layer `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
+	ThrChans []LayFunChan   `view:"-" desc:"layer function channels, per thread"`
 	ThrTimes []timer.Time   `desc:"timers for each thread, so you can see how evenly the workload is being distributed"`
+	wg       sync.WaitGroup
 }
 
 // emer.Network interface methods:
@@ -77,6 +82,7 @@ func (nt *NetworkStru) BuildThreads() {
 	}
 	nt.NThreads = nthr + 1
 	nt.ThrLay = make([][]emer.Layer, nt.NThreads)
+	nt.ThrChans = make([]LayFunChan, nt.NThreads)
 	nt.ThrTimes = make([]timer.Time, nt.NThreads)
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
@@ -89,6 +95,7 @@ func (nt *NetworkStru) BuildThreads() {
 		if len(nt.ThrLay[th]) == 0 {
 			log.Printf("Network BuildThreads: Network %v has no layers for thread: %v\n", nt.Name, th)
 		}
+		nt.ThrChans[th] = make(LayFunChan)
 	}
 }
 
@@ -204,6 +211,7 @@ func (nt *Network) Build() {
 		ly.(*Layer).Build()
 	}
 	nt.BuildThreads()
+	nt.StartThreads()
 }
 
 // SaveWtsJSON saves network weights (and any other state that adapts with learning)
@@ -338,6 +346,41 @@ func (nt *Network) Cycle() {
 	nt.AvgMaxAct()
 }
 
+// StartThreads starts up the threads for computation
+func (nt *Network) StartThreads() {
+	for th := 0; th < nt.NThreads; th++ {
+		go nt.ThrWorker(th) // start the worker thread for this channel
+	}
+}
+
+// todo: stop threads too!
+
+// ThrWorker is the worker function run by the worker threads
+func (nt *Network) ThrWorker(tt int) {
+	for fun := range nt.ThrChans[tt] {
+		// fmt.Printf("worker %v got fun\n", tt)
+		thly := nt.ThrLay[tt]
+		nt.ThrTimes[tt].Start()
+		for _, ly := range thly {
+			if ly.IsOff() {
+				continue
+			}
+			fun(ly.(*Layer))
+		}
+		nt.ThrTimes[tt].Stop()
+		nt.wg.Done()
+	}
+}
+
+// ThrChanLayFun runs given layer computation function on thread worker
+// using the ThrChans channel
+func (nt *Network) ThrChanLayFun(tt int, fun func(ly *Layer)) {
+	nt.wg.Add(1)
+	nt.ThrChans[tt] <- func(ly *Layer) {
+		fun(ly)
+	}
+}
+
 // ThrLayFun calls function on layer, using threaded (go routine) computation if NThreads > 1
 // and otherwise just iterates over layers in the current thread.
 func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
@@ -349,23 +392,11 @@ func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
 			fun(ly.(*Layer))
 		}
 	} else {
-		var wg sync.WaitGroup
 		for th := 0; th < nt.NThreads; th++ {
-			wg.Add(1)
-			go func(tt int) {
-				thly := nt.ThrLay[tt]
-				nt.ThrTimes[tt].Start()
-				for _, ly := range thly {
-					if ly.IsOff() {
-						continue
-					}
-					fun(ly.(*Layer))
-				}
-				nt.ThrTimes[tt].Stop()
-				wg.Done()
-			}(th)
+			// fmt.Printf("calling worker %v\n", th)
+			nt.ThrChanLayFun(th, fun)
 		}
-		wg.Wait()
+		nt.wg.Wait()
 	}
 }
 

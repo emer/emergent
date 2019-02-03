@@ -85,6 +85,7 @@ func ConfigNet(net *leabra.Network, threads, units int) {
 func ConfigPats(dt *dtable.Table, pats, units int) {
 	squn := int(math.Sqrt(float64(units)))
 	shp := []int{squn, squn}
+	fmt.Printf("shape: %v\n", shp)
 
 	dt.SetFromSchema(dtable.Schema{
 		{"Name", etensor.STRING, nil, nil},
@@ -94,7 +95,7 @@ func ConfigPats(dt *dtable.Table, pats, units int) {
 
 	// note: actually can learn if activity is .15 instead of .25
 	// but C++ benchmark is for .25..
-	nOn := int(.25 * float64(units))
+	nOn := int(.15 * float64(units))
 
 	patgen.PermutedBinaryRows(dt.Cols[1], nOn, 1, 0)
 	patgen.PermutedBinaryRows(dt.Cols[2], nOn, 1, 0)
