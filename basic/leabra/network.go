@@ -275,53 +275,6 @@ func (nt *Network) ReadWtsJSON(r io.Reader) error {
 	return nil
 }
 
-// below are all the computational algorithm methods, which generally just call layer
-// methods..
-
-// todo: use goroutines here!
-
-//////////////////////////////////////////////////////////////////////////////////////
-//  Init methods
-
-// InitWts initializes synaptic weights and all other associated long-term state variables
-// including running-average state values (e.g., layer running average activations etc)
-func (nt *Network) InitWts() {
-	nt.WtBalCtr = 0
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).InitWts()
-	}
-	// separate pass to enforce symmetry
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).InitWtSym()
-	}
-}
-
-// InitActs fully initializes activation state -- not automatically called
-func (nt *Network) InitActs() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).InitActs()
-	}
-}
-
-// InitExt initializes external input state -- call prior to applying external inputs to layers
-func (nt *Network) InitExt() {
-	for _, ly := range nt.Layers {
-		if ly.IsOff() {
-			continue
-		}
-		ly.(*Layer).InitExt()
-	}
-}
-
 // TrialInit handles all initialization at start of new input pattern, including computing
 // netinput scaling from running average activation etc.
 func (nt *Network) TrialInit() {
@@ -334,21 +287,7 @@ func (nt *Network) TrialInit() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-//  Act methods
-
-// Cycle runs one cycle of activation updating:
-// * Sends Ge increments from sending to receiving layers
-// * Average and Max Ge stats
-// * Inhibition based on Ge stats and Act Stats (computed at end of Cycle)
-// * Activation from Ge, Gi, and Gl
-// * Average and Max Act stats
-func (nt *Network) Cycle() {
-	nt.SendGeDelta() // also does integ
-	nt.AvgMaxGe()
-	nt.InhibFmGeAct()
-	nt.ActFmG()
-	nt.AvgMaxAct()
-}
+//  Threading infrastructure
 
 // StartThreads starts up the computation threads, which monitor the channels for work
 func (nt *Network) StartThreads() {
@@ -460,6 +399,65 @@ func (nt *Network) FunTimerStart(fun string) {
 func (nt *Network) FunTimerStop(fun string) {
 	ft := nt.FunTimes[fun]
 	ft.Stop()
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Init methods
+
+// InitWts initializes synaptic weights and all other associated long-term state variables
+// including running-average state values (e.g., layer running average activations etc)
+func (nt *Network) InitWts() {
+	nt.WtBalCtr = 0
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).InitWts()
+	}
+	// separate pass to enforce symmetry
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).InitWtSym()
+	}
+}
+
+// InitActs fully initializes activation state -- not automatically called
+func (nt *Network) InitActs() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).InitActs()
+	}
+}
+
+// InitExt initializes external input state -- call prior to applying external inputs to layers
+func (nt *Network) InitExt() {
+	for _, ly := range nt.Layers {
+		if ly.IsOff() {
+			continue
+		}
+		ly.(*Layer).InitExt()
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Act methods
+
+// Cycle runs one cycle of activation updating:
+// * Sends Ge increments from sending to receiving layers
+// * Average and Max Ge stats
+// * Inhibition based on Ge stats and Act Stats (computed at end of Cycle)
+// * Activation from Ge, Gi, and Gl
+// * Average and Max Act stats
+func (nt *Network) Cycle() {
+	nt.SendGeDelta() // also does integ
+	nt.AvgMaxGe()
+	nt.InhibFmGeAct()
+	nt.ActFmG()
+	nt.AvgMaxAct()
 }
 
 // SendGeDelta sends change in activation since last sent, if above thresholds
