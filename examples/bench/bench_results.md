@@ -1,8 +1,10 @@
 # Benchmark results
 
-## C++ Emergent
+5-layer networks, with same # of units per layer: SMALL = 25; MEDIUM = 100; LARGE = 625; HUGE = 1024; GINORM = 2048, doing full learning, with default params, including momentum, dwtnorm, and weight balance.
 
-Results are total time for 1, 2, 4 threads, on my macbook
+Results are total time for 1, 2, 4 threads, on my macbook.
+
+## C++ Emergent
 
 ```
 * SMALL:   2.383   2.248    2.042
@@ -14,8 +16,6 @@ Results are total time for 1, 2, 4 threads, on my macbook
 
 ## Go emergent, per-layer threads, thread pool, optimized range synapse code
 
-Results are total time for 1, 2, 4 threads, on my macbook
-
 ```
 * SMALL:   1.486   4.297   4.644
 * MEDIUM:  2.864   3.312   3.037
@@ -24,11 +24,9 @@ Results are total time for 1, 2, 4 threads, on my macbook
 * GINOR:  42.18   31.29   26.06
 ```
 
-not too much diff for wt bal off!
+also: not too much diff for wt bal off!
 
 ## Go emergent, per-layer threads, thread pool
-
-Results are total time for 1, 2, 4 threads, on my macbook
 
 ```
 * SMALL:  1.2180    4.25328  4.66991
@@ -39,8 +37,6 @@ Results are total time for 1, 2, 4 threads, on my macbook
 ```
 
 ## Go emergent, per-layer threads, no thread pool (de-novo threads)
-
-Results are total time for 1, 2, 4 threads, on my macbook
 
 ```
 * SMALL:  1.2180    3.548349  4.08908
