@@ -1,5 +1,17 @@
 # Benchmark results
 
+## C++ Emergent
+
+Results are total time for 1, 2, 4 threads, on my macbook
+
+```
+* SMALL:   2.383   2.248    2.042
+* MEDIUM:  2.535   1.895    1.263
+* LARGE:  19.627   8.559    8.105
+* HUGE:   24.119  11.803   11.897
+* GINOR:  35.334  24.768   17.794
+```
+
 ## Go emergent, per-layer threads, thread pool, optimized range synapse code
 
 Results are total time for 1, 2, 4 threads, on my macbook
@@ -36,18 +48,6 @@ Results are total time for 1, 2, 4 threads, on my macbook
 * LARGE:  31.27893  22.20344  18.797924
 * HUGE:   42.0238   29.00472  24.53498
 * GINOR:  65.67025  45.09239  36.13568
-```
-
-## C++ Emergent
-
-Results are total time for 1, 2, 4 threads, on my macbook
-
-```
-* SMALL:  2.38307  2.2484   2.04244
-* MEDIUM: 2.53459  1.8954   1.2634
-* LARGE:  19.6275  8.55913  8.10503
-* HUGE:   24.1191  11.8032  11.8969
-* GINOR:  35.3342  24.768   17.7942
 ```
 
 # Per Function 
