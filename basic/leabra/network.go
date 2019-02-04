@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"sync"
 
 	"github.com/emer/emergent/emer"
@@ -28,10 +29,11 @@ type NetworkStru struct {
 	Layers []emer.Layer
 	LayMap map[string]emer.Layer `desc:"map of name to layers -- layer names must be unique"`
 
-	NThreads int            `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
-	ThrLay   [][]emer.Layer `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
-	ThrChans []LayFunChan   `view:"-" desc:"layer function channels, per thread"`
-	ThrTimes []timer.Time   `desc:"timers for each thread, so you can see how evenly the workload is being distributed"`
+	NThreads int                    `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
+	ThrLay   [][]emer.Layer         `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
+	ThrChans []LayFunChan           `view:"-" desc:"layer function channels, per thread"`
+	ThrTimes []timer.Time           `desc:"timers for each thread, so you can see how evenly the workload is being distributed"`
+	FunTimes map[string]*timer.Time `desc:"timers for each major function (step of processing)"`
 	wg       sync.WaitGroup
 }
 
@@ -84,6 +86,7 @@ func (nt *NetworkStru) BuildThreads() {
 	nt.ThrLay = make([][]emer.Layer, nt.NThreads)
 	nt.ThrChans = make([]LayFunChan, nt.NThreads)
 	nt.ThrTimes = make([]timer.Time, nt.NThreads)
+	nt.FunTimes = make(map[string]*timer.Time)
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
@@ -203,6 +206,7 @@ func (nt *Network) ConnectLayers(send, recv *Layer, pat prjn.Pattern) *Prjn {
 // Build constructs the layer and projection state based on the layer shapes and patterns
 // of interconnectivity
 func (nt *Network) Build() {
+	nt.StopThreads() // any existing..
 	for li, ly := range nt.Layers {
 		ly.(*Layer).Index = li
 		if ly.IsOff() {
@@ -346,19 +350,23 @@ func (nt *Network) Cycle() {
 	nt.AvgMaxAct()
 }
 
-// StartThreads starts up the threads for computation
+// StartThreads starts up the computation threads, which monitor the channels for work
 func (nt *Network) StartThreads() {
 	for th := 0; th < nt.NThreads; th++ {
 		go nt.ThrWorker(th) // start the worker thread for this channel
 	}
 }
 
-// todo: stop threads too!
+// StopThreads stops the computation threads
+func (nt *Network) StopThreads() {
+	for th := 0; th < nt.NThreads; th++ {
+		close(nt.ThrChans[th])
+	}
+}
 
 // ThrWorker is the worker function run by the worker threads
 func (nt *Network) ThrWorker(tt int) {
 	for fun := range nt.ThrChans[tt] {
-		// fmt.Printf("worker %v got fun\n", tt)
 		thly := nt.ThrLay[tt]
 		nt.ThrTimes[tt].Start()
 		for _, ly := range thly {
@@ -372,18 +380,10 @@ func (nt *Network) ThrWorker(tt int) {
 	}
 }
 
-// ThrChanLayFun runs given layer computation function on thread worker
-// using the ThrChans channel
-func (nt *Network) ThrChanLayFun(tt int, fun func(ly *Layer)) {
-	nt.wg.Add(1)
-	nt.ThrChans[tt] <- func(ly *Layer) {
-		fun(ly)
-	}
-}
-
-// ThrLayFun calls function on layer, using threaded (go routine) computation if NThreads > 1
+// ThrLayFun calls function on layer, using threaded (go routine worker) computation if NThreads > 1
 // and otherwise just iterates over layers in the current thread.
-func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
+func (nt *Network) ThrLayFun(fun func(ly *Layer), funame string) {
+	nt.FunTimerStart(funame)
 	if nt.NThreads <= 1 {
 		for _, ly := range nt.Layers {
 			if ly.IsOff() {
@@ -393,29 +393,49 @@ func (nt *Network) ThrLayFun(fun func(ly *Layer)) {
 		}
 	} else {
 		for th := 0; th < nt.NThreads; th++ {
-			// fmt.Printf("calling worker %v\n", th)
-			nt.ThrChanLayFun(th, fun)
+			nt.wg.Add(1)
+			nt.ThrChans[th] <- fun
 		}
 		nt.wg.Wait()
 	}
+	nt.FunTimerStop(funame)
 }
 
-// ThrTimerReport reports the amount of time spent in each thread
-func (nt *Network) ThrTimerReport() {
+// TimerReport reports the amount of time spent in each function, and in each thread
+func (nt *Network) TimerReport() {
+	fmt.Printf("TimerReport: %v, NThreads: %v\n", nt.Name, nt.NThreads)
+	fmt.Printf("\tFunction Name\tTotal Secs\tPct\n")
+	nfn := len(nt.FunTimes)
+	fnms := make([]string, nfn)
+	idx := 0
+	for k := range nt.FunTimes {
+		fnms[idx] = k
+		idx++
+	}
+	sort.StringSlice(fnms).Sort()
+	pcts := make([]float64, nfn)
+	tot := 0.0
+	for i, fn := range fnms {
+		pcts[i] = nt.FunTimes[fn].TotalSecs()
+		tot += pcts[i]
+	}
+	for i, fn := range fnms {
+		fmt.Printf("\t%v \t%6.4g\t%6.4g\n", fn, pcts[i], 100*(pcts[i]/tot))
+	}
+	fmt.Printf("\tTotal   \t%6.4g\n", tot)
+
 	if nt.NThreads <= 1 {
-		fmt.Printf("ThrTimerReport: not running multiple threads\n")
 		return
 	}
-	fmt.Printf("ThrTimerReport: %v, NThreads: %v\n", nt.Name, nt.NThreads)
-	fmt.Printf("\tThr\tTotal Secs\tPct\n")
-	pcts := make([]float64, nt.NThreads)
-	tot := 0.0
+	fmt.Printf("\n\tThr\tTotal Secs\tPct\n")
+	pcts = make([]float64, nt.NThreads)
+	tot = 0.0
 	for th := 0; th < nt.NThreads; th++ {
 		pcts[th] = nt.ThrTimes[th].TotalSecs()
 		tot += pcts[th]
 	}
 	for th := 0; th < nt.NThreads; th++ {
-		fmt.Printf("\t%v \t%6g\t%6g\n", th, pcts[th], pcts[th]/tot)
+		fmt.Printf("\t%v \t%6.4g\t%6.4g\n", th, pcts[th], 100*(pcts[th]/tot))
 	}
 }
 
@@ -426,36 +446,52 @@ func (nt *Network) ThrTimerReset() {
 	}
 }
 
+// FunTimerStart starts function timer for given function name -- ensures creation of timer
+func (nt *Network) FunTimerStart(fun string) {
+	ft, ok := nt.FunTimes[fun]
+	if !ok {
+		ft = &timer.Time{}
+		nt.FunTimes[fun] = ft
+	}
+	ft.Start()
+}
+
+// FunTimerStop stops function timer -- timer must already exist
+func (nt *Network) FunTimerStop(fun string) {
+	ft := nt.FunTimes[fun]
+	ft.Stop()
+}
+
 // SendGeDelta sends change in activation since last sent, if above thresholds
 // and integrates sent deltas into GeRaw and time-integrated Ge values
 func (nt *Network) SendGeDelta() {
-	nt.ThrLayFun(func(ly *Layer) { ly.SendGeDelta() })
-	nt.ThrLayFun(func(ly *Layer) { ly.GeFmGeInc() })
+	nt.ThrLayFun(func(ly *Layer) { ly.SendGeDelta() }, "SendGeDelta")
+	nt.ThrLayFun(func(ly *Layer) { ly.GeFmGeInc() }, "GeFmGeInc")
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxGe() {
-	nt.ThrLayFun(func(ly *Layer) { ly.AvgMaxGe() })
+	nt.ThrLayFun(func(ly *Layer) { ly.AvgMaxGe() }, "AvgMaxGe")
 }
 
 // InhibiFmGeAct computes inhibition Gi from Ge and Act stats within relevant Pools
 func (nt *Network) InhibFmGeAct() {
-	nt.ThrLayFun(func(ly *Layer) { ly.InhibFmGeAct() })
+	nt.ThrLayFun(func(ly *Layer) { ly.InhibFmGeAct() }, "InhibFmGeAct")
 }
 
 // ActFmG computes rate-code activation from Ge, Gi, Gl conductances
 func (nt *Network) ActFmG() {
-	nt.ThrLayFun(func(ly *Layer) { ly.ActFmG() })
+	nt.ThrLayFun(func(ly *Layer) { ly.ActFmG() }, "ActFmG   ")
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxAct() {
-	nt.ThrLayFun(func(ly *Layer) { ly.AvgMaxAct() })
+	nt.ThrLayFun(func(ly *Layer) { ly.AvgMaxAct() }, "AvgMaxAct")
 }
 
 // QuarterFinal does updating after end of a quarter
 func (nt *Network) QuarterFinal(ltime *Time) {
-	nt.ThrLayFun(func(ly *Layer) { ly.QuarterFinal(ltime) })
+	nt.ThrLayFun(func(ly *Layer) { ly.QuarterFinal(ltime) }, "QuarterFinal")
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -463,13 +499,13 @@ func (nt *Network) QuarterFinal(ltime *Time) {
 
 // DWt computes the weight change (learning) based on current running-average activation values
 func (nt *Network) DWt() {
-	nt.ThrLayFun(func(ly *Layer) { ly.DWt() })
+	nt.ThrLayFun(func(ly *Layer) { ly.DWt() }, "DWt     ")
 }
 
 // WtFmDWt updates the weights from delta-weight changes.
 // Also calls WtBalFmWt every WtBalInterval times
 func (nt *Network) WtFmDWt() {
-	nt.ThrLayFun(func(ly *Layer) { ly.WtFmDWt() })
+	nt.ThrLayFun(func(ly *Layer) { ly.WtFmDWt() }, "WtFmDWt")
 	nt.WtBalCtr++
 	if nt.WtBalCtr >= nt.WtBalInterval {
 		nt.WtBalCtr = 0
@@ -479,5 +515,5 @@ func (nt *Network) WtFmDWt() {
 
 // WtBalFmWt updates the weight balance factors based on average recv weights
 func (nt *Network) WtBalFmWt() {
-	nt.ThrLayFun(func(ly *Layer) { ly.WtBalFmWt() })
+	nt.ThrLayFun(func(ly *Layer) { ly.WtBalFmWt() }, "WtBalFmWt")
 }

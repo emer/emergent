@@ -436,9 +436,7 @@ func (pj *Prjn) InitWtSym(rpj *Prjn) {
 
 // InitGeInc initializes the per-projection GeInc threadsafe increment
 func (pj *Prjn) InitGeInc() {
-	rlay := pj.Recv.(*Layer)
-	nr := len(rlay.Neurons)
-	for ri := 0; ri < nr; ri++ {
+	for ri := range pj.GeInc {
 		pj.GeInc[ri] = 0
 	}
 }
@@ -447,21 +445,20 @@ func (pj *Prjn) InitGeInc() {
 // to integrate excitatory conductance on receivers
 func (pj *Prjn) SendGeDelta(si int, delta float32) {
 	scdel := delta * pj.GeScale
-	nc := int(pj.SConN[si])
-	st := int(pj.SConIdxSt[si])
-	for ci := 0; ci < nc; ci++ {
-		sy := &pj.Syns[st+ci]
-		ri := pj.SConIdx[st+ci]
-		pj.GeInc[ri] += scdel * sy.Wt
-		// 	fatomic.AddFloat32(&rn.GeInc, scdel*sy.Wt) is very slow
+	nc := pj.SConN[si]
+	st := pj.SConIdxSt[si]
+	syns := pj.Syns[st : st+nc]
+	scons := pj.SConIdx[st : st+nc]
+	for ci := range syns {
+		ri := scons[ci]
+		pj.GeInc[ri] += scdel * syns[ci].Wt
 	}
 }
 
 // RecvGeInc increments the receiver's GeInc from that of all the projections
 func (pj *Prjn) RecvGeInc() {
 	rlay := pj.Recv.(*Layer)
-	nr := len(rlay.Neurons)
-	for ri := 0; ri < nr; ri++ {
+	for ri := range rlay.Neurons {
 		rn := &rlay.Neurons[ri]
 		rn.GeInc += pj.GeInc[ri]
 		pj.GeInc[ri] = 0
@@ -478,17 +475,18 @@ func (pj *Prjn) DWt() {
 	}
 	slay := pj.Send.(*Layer)
 	rlay := pj.Recv.(*Layer)
-	ns := len(slay.Neurons)
-	for si := 0; si < ns; si++ {
+	for si := range slay.Neurons {
 		sn := &slay.Neurons[si]
 		if sn.AvgS < pj.Learn.XCal.LrnThr && sn.AvgM < pj.Learn.XCal.LrnThr {
 			continue
 		}
 		nc := int(pj.SConN[si])
 		st := int(pj.SConIdxSt[si])
-		for ci := 0; ci < nc; ci++ {
-			sy := &pj.Syns[st+ci]
-			ri := pj.SConIdx[st+ci]
+		syns := pj.Syns[st : st+nc]
+		scons := pj.SConIdx[st : st+nc]
+		for ci := range syns {
+			sy := &syns[ci]
+			ri := scons[ci]
 			rn := &rlay.Neurons[ri]
 			err, bcm := pj.Learn.CHLdWt(sn.AvgSLrn, sn.AvgM, rn.AvgSLrn, rn.AvgM, rn.AvgL)
 
@@ -509,14 +507,14 @@ func (pj *Prjn) DWt() {
 		// aggregate max DWtNorm over sending synapses
 		if pj.Learn.Norm.On {
 			maxNorm := float32(0)
-			for ci := 0; ci < nc; ci++ {
-				sy := &pj.Syns[st+ci]
+			for ci := range syns {
+				sy := &syns[ci]
 				if sy.Norm > maxNorm {
 					maxNorm = sy.Norm
 				}
 			}
-			for ci := 0; ci < nc; ci++ {
-				sy := &pj.Syns[st+ci]
+			for ci := range syns {
+				sy := &syns[ci]
 				sy.Norm = maxNorm
 			}
 		}
@@ -528,24 +526,19 @@ func (pj *Prjn) WtFmDWt() {
 	if !pj.Learn.Learn {
 		return
 	}
-	slay := pj.Send.(*Layer)
-	ns := len(slay.Neurons)
-	for si := 0; si < ns; si++ {
-		nc := int(pj.SConN[si])
-		st := int(pj.SConIdxSt[si])
-		for ci := 0; ci < nc; ci++ {
-			sy := &pj.Syns[st+ci]
-			ri := pj.SConIdx[st+ci]
+	if pj.Learn.WtBal.On {
+		for si := range pj.Syns {
+			sy := &pj.Syns[si]
+			ri := pj.SConIdx[si]
 			wb := &pj.WbRecv[ri]
 			pj.Learn.WtFmDWt(wb.Inc, wb.Dec, &sy.DWt, &sy.Wt, &sy.LWt)
 		}
+	} else {
+		for si := range pj.Syns {
+			sy := &pj.Syns[si]
+			pj.Learn.WtFmDWt(1, 1, &sy.DWt, &sy.Wt, &sy.LWt)
+		}
 	}
-
-	// todo: compare vs. putting WbInc / Dec into the synapses!
-	// for si := range pj.Syns {
-	// 	sy := &pj.Syns[si]
-	// 	pj.Learn.WtFmDWt(sy.DWt, sy.WbInc, sy.WbDec, &sy.Wt, &sy.LWt)
-	// }
 }
 
 // WtBalFmWt computes the Weight Balance factors based on average recv weights
@@ -558,8 +551,7 @@ func (pj *Prjn) WtBalFmWt() {
 	if rlay.Type == Target {
 		return
 	}
-	nr := len(rlay.Neurons)
-	for ri := 0; ri < nr; ri++ {
+	for ri := range rlay.Neurons {
 		nc := int(pj.RConN[ri])
 		if nc <= 1 {
 			continue
@@ -570,10 +562,11 @@ func (pj *Prjn) WtBalFmWt() {
 		}
 		wb := &pj.WbRecv[ri]
 		st := int(pj.RConIdxSt[ri])
+		rsidxs := pj.RSynIdx[st : st+nc]
 		sumWt := float32(0)
 		sumN := 0
-		for ci := 0; ci < nc; ci++ {
-			rsi := pj.RSynIdx[st+ci]
+		for ci := range rsidxs {
+			rsi := rsidxs[ci]
 			sy := &pj.Syns[rsi]
 			if sy.Wt >= pj.Learn.WtBal.AvgThr {
 				sumWt += sy.Wt

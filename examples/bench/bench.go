@@ -95,7 +95,7 @@ func ConfigPats(dt *dtable.Table, pats, units int) {
 
 	// note: actually can learn if activity is .15 instead of .25
 	// but C++ benchmark is for .25..
-	nOn := int(.15 * float64(units))
+	nOn := units / 6
 
 	patgen.PermutedBinaryRows(dt.Cols[1], nOn, 1, 0)
 	patgen.PermutedBinaryRows(dt.Cols[2], nOn, 1, 0)
@@ -191,8 +191,8 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 		epcLog.ColByName("Out ActAvg").SetFlatFloat64(epc, float64(outLay.Pools[0].ActAvg.ActPAvgEff))
 	}
 	tmr.Stop()
-	fmt.Printf("Took %6g secs for %v epochs, avg per epc: %6g\n", tmr.TotalSecs(), epcs, tmr.TotalSecs()/float64(epcs))
-	net.ThrTimerReport()
+	fmt.Printf("Took %6.4g secs for %v epochs, avg per epc: %6.4g\n", tmr.TotalSecs(), epcs, tmr.TotalSecs()/float64(epcs))
+	net.TimerReport()
 }
 
 func main() {
