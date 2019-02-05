@@ -22,9 +22,9 @@ func PermutedBinary(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	pord := rand.Perm(ln)
 	for i := 0; i < ln; i++ {
 		if i < nOn {
-			tsr.SetFlatFloat64(pord[i], onVal)
+			tsr.SetFloat1D(pord[i], onVal)
 		} else {
-			tsr.SetFlatFloat64(pord[i], offVal)
+			tsr.SetFloat1D(pord[i], offVal)
 		}
 	}
 }
@@ -42,9 +42,9 @@ func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 		stidx := rw * cells
 		for i := 0; i < cells; i++ {
 			if i < nOn {
-				tsr.SetFlatFloat64(stidx+pord[i], onVal)
+				tsr.SetFloat1D(stidx+pord[i], onVal)
 			} else {
-				tsr.SetFlatFloat64(stidx+pord[i], offVal)
+				tsr.SetFloat1D(stidx+pord[i], offVal)
 			}
 		}
 		erand.PermuteInts(pord)

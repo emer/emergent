@@ -71,11 +71,11 @@ func BoolToFloat64(bv bool) float64 {
 	}
 }
 
-func (tsr *Bits) Float64Val(i []int) float64 {
+func (tsr *Bits) FloatVal(i []int) float64 {
 	j := tsr.Offset(i)
 	return BoolToFloat64(tsr.Values.Index(j))
 }
-func (tsr *Bits) SetFloat64(i []int, val float64) {
+func (tsr *Bits) SetFloat(i []int, val float64) {
 	j := tsr.Offset(i)
 	tsr.Values.Set(j, Float64ToBool(val))
 }
@@ -92,27 +92,27 @@ func (tsr *Bits) SetString(i []int, val string) {
 	}
 }
 
-func (tsr *Bits) FlatFloat64Val(off int) float64 {
+func (tsr *Bits) FloatVal1D(off int) float64 {
 	return BoolToFloat64(tsr.Values.Index(off))
 }
-func (tsr *Bits) SetFlatFloat64(off int, val float64) {
+func (tsr *Bits) SetFloat1D(off int, val float64) {
 	tsr.Values.Set(off, Float64ToBool(val))
 }
 
-func (tsr *Bits) FlatStringVal(off int) string {
+func (tsr *Bits) StringVal1D(off int) string {
 	return kit.ToString(tsr.Values.Index(off))
 }
 
-func (tsr *Bits) SetFlatString(off int, val string) {
+func (tsr *Bits) SetString1D(off int, val string) {
 	if bv, ok := kit.ToBool(val); ok {
 		tsr.Values.Set(off, bv)
 	}
 }
 
-// AggFloat64 applies given aggregation function to each element in the tensor, using float64
+// AggFloat applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
-func (tsr *Bits) AggFloat64(fun func(val float64, agg float64) float64, ini float64) float64 {
+func (tsr *Bits) AggFloat(fun func(val float64, agg float64) float64, ini float64) float64 {
 	ln := tsr.Len()
 	ag := ini
 	for j := 0; j < ln; j++ {
@@ -122,10 +122,10 @@ func (tsr *Bits) AggFloat64(fun func(val float64, agg float64) float64, ini floa
 	return ag
 }
 
-// EvalFloat64 applies given function to each element in the tensor, using float64
+// EvalFloat applies given function to each element in the tensor, using float64
 // conversions of the values, and puts the results into given float64 slice, which is
 // ensured to be of the proper length
-func (tsr *Bits) EvalFloat64(fun func(val float64) float64, res *[]float64) {
+func (tsr *Bits) EvalFloat(fun func(val float64) float64, res *[]float64) {
 	ln := tsr.Len()
 	if len(*res) != ln {
 		*res = make([]float64, ln)
@@ -136,9 +136,9 @@ func (tsr *Bits) EvalFloat64(fun func(val float64) float64, res *[]float64) {
 	}
 }
 
-// UpdtFloat64 applies given function to each element in the tensor, using float64
+// UpdtFloat applies given function to each element in the tensor, using float64
 // conversions of the values, and writes the results back into the same tensor values
-func (tsr *Bits) UpdtFloat64(fun func(val float64) float64) {
+func (tsr *Bits) UpdtFloat(fun func(val float64) float64) {
 	ln := tsr.Len()
 	for j := 0; j < ln; j++ {
 		val := BoolToFloat64(tsr.Values.Index(j))

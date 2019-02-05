@@ -53,11 +53,13 @@ type Tensor interface {
 	// No checking is done on the length or size of the index values relative to the shape of the tensor.
 	Offset(i []int) int
 
-	// Float64Val returns the value of given index as a float64
-	Float64Val(i []int) float64
+	// Generic accessor routines support Float (float64) or String, either full dimensional or 1D
 
-	// SetFloat64 sets the value of given index as a float64
-	SetFloat64(i []int, val float64)
+	// FloatVal returns the value of given index as a float64
+	FloatVal(i []int) float64
+
+	// SetFloat sets the value of given index as a float64
+	SetFloat(i []int, val float64)
 
 	// StringVal returns the value of given index as a string
 	StringVal(i []int) string
@@ -65,31 +67,31 @@ type Tensor interface {
 	// SetString sets the value of given index as a string
 	SetString(i []int, val string)
 
-	// FlatFloat64Val returns the value of given flat index (0-Len()-1) as a float64
-	FlatFloat64Val(off int) float64
+	// FloatVal1D returns the value of given 1-dimensional index (0-Len()-1) as a float64
+	FloatVal1D(off int) float64
 
-	// SetFlatFloat64 sets the value of given flat index (0-Len()-1) as a float64
-	SetFlatFloat64(off int, val float64)
+	// SetFloat1D sets the value of given 1-dimensional index (0-Len()-1) as a float64
+	SetFloat1D(off int, val float64)
 
-	// FlatStringVal returns the value of given flat index (0-Len()-1) as a string
-	FlatStringVal(off int) string
+	// StringVal1D returns the value of given 1-dimensional index (0-Len()-1) as a string
+	StringVal1D(off int) string
 
-	// SetFlatString sets the value of given flat index (0-Len()-1) as a string
-	SetFlatString(off int, val string)
+	// SetString1D sets the value of given 1-dimensional index (0-Len()-1) as a string
+	SetString1D(off int, val string)
 
-	// AggFloat64 applies given aggregation function to each element in the tensor, using float64
+	// AggFloat applies given aggregation function to each element in the tensor, using float64
 	// conversions of the values.  init is the initial value for the agg variable.  returns final
 	// aggregate value
-	AggFloat64(fun func(val float64, agg float64) float64, init float64) float64
+	AggFloat(fun func(val float64, agg float64) float64, init float64) float64
 
-	// EvalFloat64 applies given function to each element in the tensor, using float64
+	// EvalFloat applies given function to each element in the tensor, using float64
 	// conversions of the values, and puts the results into given float64 slice, which is
 	// ensured to be of the proper length
-	EvalFloat64(fun func(val float64) float64, res *[]float64)
+	EvalFloat(fun func(val float64) float64, res *[]float64)
 
-	// UpdtFloat64 applies given function to each element in the tensor, using float64
+	// UpdtFloat applies given function to each element in the tensor, using float64
 	// conversions of the values, and writes the results back into the same tensor values
-	UpdtFloat64(fun func(val float64) float64)
+	UpdtFloat(fun func(val float64) float64)
 
 	// CloneTensor clones this tensor returning a Tensor interface.
 	// There is a type-specific Clone() method as well for each tensor.

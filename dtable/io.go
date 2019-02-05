@@ -99,7 +99,7 @@ rowloop:
 			stoff := ri * cells
 			for cc := 0; cc < cells; cc++ {
 				str := rr[ci]
-				tsr.SetFlatString(stoff+cc, str)
+				tsr.SetString1D(stoff+cc, str)
 				ci++
 				if ci >= len(rr) {
 					continue rowloop
@@ -247,7 +247,7 @@ func (dt *Table) WriteCSV(w io.Writer, delim rune, headers bool) error {
 			tsr := dt.Cols[i]
 			nd := tsr.NumDims()
 			if nd == 1 {
-				vl := tsr.FlatStringVal(ri)
+				vl := tsr.StringVal1D(ri)
 				if len(rec) <= rc {
 					rec = append(rec, vl)
 				} else {
@@ -258,7 +258,7 @@ func (dt *Table) WriteCSV(w io.Writer, delim rune, headers bool) error {
 				csh := etensor.NewShape(tsr.Shapes()[1:], nil, nil) // cell shape
 				tc := csh.Len()
 				for ti := 0; ti < tc; ti++ {
-					vl := tsr.FlatStringVal(ri*tc + ti)
+					vl := tsr.StringVal1D(ri*tc + ti)
 					if len(rec) <= rc {
 						rec = append(rec, vl)
 					} else {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"time"
 
 	"github.com/emer/emergent/basic/leabra"
 	"github.com/emer/emergent/dtable"
@@ -88,7 +89,8 @@ type SimState struct {
 	CntErr     int         `view:"-" inactive:"+" desc:"sum of errs to increment as we go through epoch"`
 	Porder     []int       `view:"-" inactive:"+" desc:"permuted pattern order"`
 	EpcPlotSvg *svg.Editor `view:"-" desc:"the epoch plot svg editor"`
-	StopNow    bool        `view:"-" desc:"the epoch plot svg editor"`
+	StopNow    bool        `view:"-" desc:"flag to stop running"`
+	RndSeed    int64       `view:"-" desc:"the current random seed"`
 }
 
 // Sim is the overall state for this simulation
@@ -100,6 +102,7 @@ func (ss *SimState) New() {
 	ss.Pats = &dtable.Table{}
 	ss.EpcLog = &dtable.Table{}
 	ss.Pars = DefaultPars
+	ss.RndSeed = 1
 }
 
 // Config configures all the elements using the standard functions
@@ -112,6 +115,7 @@ func (ss *SimState) Config() {
 // Init restarts the run, and initializes everything, including network weights
 // and resets the epoch log table
 func (ss *SimState) Init() {
+	rand.Seed(ss.RndSeed)
 	if ss.MaxEpcs == 0 { // allow user override
 		ss.MaxEpcs = 100
 	}
@@ -120,13 +124,17 @@ func (ss *SimState) Init() {
 	ss.StopNow = false
 	ss.Time.Reset()
 	np := ss.Pats.NumRows()
-	if len(ss.Porder) != np {
-		ss.Porder = rand.Perm(np)
-	}
+	ss.Porder = rand.Perm(np) // always start with new one so random order is identical
 	erand.PermuteInts(ss.Porder)
 	ss.Net.StyleParams(ss.Pars, true) // set msg
 	ss.Net.InitWts()
 	ss.EpcLog.SetNumRows(0)
+}
+
+// NewRndSeed gets a new random seed based on current time -- otherwise uses
+// the same random seed for every run
+func (ss *SimState) NewRndSeed() {
+	ss.RndSeed = time.Now().UnixNano()
 }
 
 // RunTrial runs one alpha-trial (100 msec, 4 quarters)			 of processing
@@ -225,15 +233,15 @@ func (ss *SimState) LogEpoch() {
 
 	epc := ss.Epoch
 
-	ss.EpcLog.ColByName("Epoch").SetFlatFloat64(epc, float64(epc))
-	ss.EpcLog.ColByName("SSE").SetFlatFloat64(epc, float64(ss.EpcSSE))
-	ss.EpcLog.ColByName("Avg SSE").SetFlatFloat64(epc, float64(ss.EpcAvgSSE))
-	ss.EpcLog.ColByName("Pct Err").SetFlatFloat64(epc, float64(ss.EpcPctErr))
-	ss.EpcLog.ColByName("Pct Cor").SetFlatFloat64(epc, float64(ss.EpcPctCor))
-	ss.EpcLog.ColByName("CosDiff").SetFlatFloat64(epc, float64(ss.EpcCosDiff))
-	ss.EpcLog.ColByName("Hid1 ActAvg").SetFlatFloat64(epc, float64(hid1Lay.Pools[0].ActAvg.ActPAvgEff))
-	ss.EpcLog.ColByName("Hid2 ActAvg").SetFlatFloat64(epc, float64(hid2Lay.Pools[0].ActAvg.ActPAvgEff))
-	ss.EpcLog.ColByName("Out ActAvg").SetFlatFloat64(epc, float64(outLay.Pools[0].ActAvg.ActPAvgEff))
+	ss.EpcLog.ColByName("Epoch").SetFloat1D(epc, float64(epc))
+	ss.EpcLog.ColByName("SSE").SetFloat1D(epc, float64(ss.EpcSSE))
+	ss.EpcLog.ColByName("Avg SSE").SetFloat1D(epc, float64(ss.EpcAvgSSE))
+	ss.EpcLog.ColByName("Pct Err").SetFloat1D(epc, float64(ss.EpcPctErr))
+	ss.EpcLog.ColByName("Pct Cor").SetFloat1D(epc, float64(ss.EpcPctCor))
+	ss.EpcLog.ColByName("CosDiff").SetFloat1D(epc, float64(ss.EpcCosDiff))
+	ss.EpcLog.ColByName("Hid1 ActAvg").SetFloat1D(epc, float64(hid1Lay.Pools[0].ActAvg.ActPAvgEff))
+	ss.EpcLog.ColByName("Hid2 ActAvg").SetFloat1D(epc, float64(hid2Lay.Pools[0].ActAvg.ActPAvgEff))
+	ss.EpcLog.ColByName("Out ActAvg").SetFloat1D(epc, float64(outLay.Pools[0].ActAvg.ActPAvgEff))
 
 }
 
@@ -458,6 +466,11 @@ func (ss *SimState) ConfigGui() *gi.Window {
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			// todo: need save / load methods for these
 			// ss.EpcLog.SaveCSV("ra25_epc.dat", ',', true)
+		})
+
+	tbar.AddAction(gi.ActOpts{Label: "New Seed", Icon: "new"}, win.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			ss.NewRndSeed()
 		})
 
 	vp.UpdateEndNoSig(updt)

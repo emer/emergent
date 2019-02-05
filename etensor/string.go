@@ -80,12 +80,12 @@ func Float64ToString(val float64) string {
 	return strconv.FormatFloat(val, 'g', -1, 64)
 }
 
-func (tsr *String) Float64Val(i []int) float64 {
+func (tsr *String) FloatVal(i []int) float64 {
 	j := tsr.Offset(i)
 	return StringToFloat64(tsr.Values[j])
 }
 
-func (tsr *String) SetFloat64(i []int, val float64) {
+func (tsr *String) SetFloat(i []int, val float64) {
 	j := tsr.Offset(i)
 	tsr.Values[j] = Float64ToString(val)
 }
@@ -93,21 +93,21 @@ func (tsr *String) SetFloat64(i []int, val float64) {
 func (tsr *String) StringVal(i []int) string      { j := tsr.Offset(i); return tsr.Values[j] }
 func (tsr *String) SetString(i []int, val string) { j := tsr.Offset(i); tsr.Values[j] = val }
 
-func (tsr *String) FlatFloat64Val(off int) float64 {
+func (tsr *String) FloatVal1D(off int) float64 {
 	return StringToFloat64(tsr.Values[off])
 }
 
-func (tsr *String) SetFlatFloat64(off int, val float64) {
+func (tsr *String) SetFloat1D(off int, val float64) {
 	tsr.Values[off] = Float64ToString(val)
 }
 
-func (tsr *String) FlatStringVal(off int) string      { return tsr.Values[off] }
-func (tsr *String) SetFlatString(off int, val string) { tsr.Values[off] = val }
+func (tsr *String) StringVal1D(off int) string      { return tsr.Values[off] }
+func (tsr *String) SetString1D(off int, val string) { tsr.Values[off] = val }
 
-// AggFloat64 applies given aggregation function to each element in the tensor, using float64
+// AggFloat applies given aggregation function to each element in the tensor, using float64
 // conversions of the values.  init is the initial value for the agg variable.  returns final
 // aggregate value
-func (tsr *String) AggFloat64(fun func(val float64, agg float64) float64, ini float64) float64 {
+func (tsr *String) AggFloat(fun func(val float64, agg float64) float64, ini float64) float64 {
 	ln := tsr.Len()
 	ag := ini
 	for j := 0; j < ln; j++ {
@@ -117,10 +117,10 @@ func (tsr *String) AggFloat64(fun func(val float64, agg float64) float64, ini fl
 	return ag
 }
 
-// EvalFloat64 applies given function to each element in the tensor, using float64
+// EvalFloat applies given function to each element in the tensor, using float64
 // conversions of the values, and puts the results into given float64 slice, which is
 // ensured to be of the proper length
-func (tsr *String) EvalFloat64(fun func(val float64) float64, res *[]float64) {
+func (tsr *String) EvalFloat(fun func(val float64) float64, res *[]float64) {
 	ln := tsr.Len()
 	if len(*res) != ln {
 		*res = make([]float64, ln)
@@ -131,9 +131,9 @@ func (tsr *String) EvalFloat64(fun func(val float64) float64, res *[]float64) {
 	}
 }
 
-// UpdtFloat64 applies given function to each element in the tensor, using float64
+// UpdtFloat applies given function to each element in the tensor, using float64
 // conversions of the values, and writes the results back into the same tensor values
-func (tsr *String) UpdtFloat64(fun func(val float64) float64) {
+func (tsr *String) UpdtFloat(fun func(val float64) float64) {
 	ln := tsr.Len()
 	for j := 0; j < ln; j++ {
 		val := StringToFloat64(tsr.Values[j])

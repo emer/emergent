@@ -71,5 +71,5 @@ func (txy *TableXY) XY(row int) (x, y float64) {
 	if txy.Table == nil {
 		return 0, 0
 	}
-	return txy.Table.Cols[txy.XCol].FlatFloat64Val(row), txy.Table.Cols[txy.YCol].FlatFloat64Val(row)
+	return txy.Table.Cols[txy.XCol].FloatVal1D(row), txy.Table.Cols[txy.YCol].FloatVal1D(row)
 }
