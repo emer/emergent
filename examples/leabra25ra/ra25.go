@@ -124,8 +124,7 @@ func (ss *SimState) Init() {
 	ss.StopNow = false
 	ss.Time.Reset()
 	np := ss.Pats.NumRows()
-	ss.Porder = rand.Perm(np) // always start with new one so random order is identical
-	erand.PermuteInts(ss.Porder)
+	ss.Porder = rand.Perm(np)         // always start with new one so random order is identical
 	ss.Net.StyleParams(ss.Pars, true) // set msg
 	ss.Net.InitWts()
 	ss.EpcLog.SetNumRows(0)
