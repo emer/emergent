@@ -14,10 +14,10 @@ import (
 // dtable.Table is the DataTable structure, containing columns of etensor tensors.
 // All tensors MUST have RowMajor stride layout!
 type Table struct {
-	Cols       []etensor.Tensor `desc:"columns of data, as etensor.Tensor tensors"`
+	Cols       []etensor.Tensor `view:"-" desc:"columns of data, as etensor.Tensor tensors"`
 	ColNames   []string         `desc:"the names of the columns"`
-	Rows       int              `desc:"number of rows, which is enforced to be the size of the outer-most dimension of the column tensors"`
-	ColNameMap map[string]int   `desc:"the map of column names to column numbers"`
+	Rows       int              `inactive:"+" desc:"number of rows, which is enforced to be the size of the outer-most dimension of the column tensors"`
+	ColNameMap map[string]int   `view:"-" desc:"the map of column names to column numbers"`
 }
 
 // NumRows returns the number of rows (arrow / dframe api)
@@ -50,12 +50,21 @@ func (dt *Table) Schema() Schema {
 	return sc
 }
 
+// ColNameIndex returns the index of the given column name, along with an error if not found
+func (dt *Table) ColNameIndex(name string) (int, error) {
+	i, ok := dt.ColNameMap[name]
+	if !ok {
+		return 0, fmt.Errorf("dtable.Table ColNameIndex: column named: %v not found", name)
+	}
+	return i, nil
+}
+
 // ColByNameCheck returns the tensor at given column name, checks for not found and returns
 // error if not found
 func (dt *Table) ColByNameCheck(name string) (etensor.Tensor, error) {
-	i, ok := dt.ColNameMap[name]
-	if !ok {
-		return nil, fmt.Errorf("dtable.Table ColByName: column named: %v not found", name)
+	i, err := dt.ColNameIndex(name)
+	if err != nil {
+		return nil, err
 	}
 	return dt.Cols[i], nil
 }

@@ -207,7 +207,8 @@ func (tsr *{{.Name}}) SubSlice(subdim int, offs []int) (*{{.Name}}, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff:stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &{{.Name}}{}
@@ -218,7 +219,8 @@ func (tsr *{{.Name}}) SubSlice(subdim int, offs []int) (*{{.Name}}, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff:stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")

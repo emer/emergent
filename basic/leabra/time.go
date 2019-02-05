@@ -36,6 +36,9 @@ func (tm *Time) Reset() {
 	tm.CycleTot = 0
 	tm.Quarter = 0
 	tm.PlusPhase = false
+	if tm.CycPerQtr == 0 {
+		tm.Defaults()
+	}
 }
 
 // TrialStart starts a new alpha-trial (set of 4 quarters)

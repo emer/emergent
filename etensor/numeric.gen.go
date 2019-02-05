@@ -206,7 +206,8 @@ func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int64{}
@@ -217,7 +218,8 @@ func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -448,7 +450,8 @@ func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint64{}
@@ -459,7 +462,8 @@ func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -690,7 +694,8 @@ func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Float64{}
@@ -701,7 +706,8 @@ func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -932,7 +938,8 @@ func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int32{}
@@ -943,7 +950,8 @@ func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -1174,7 +1182,8 @@ func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint32{}
@@ -1185,7 +1194,8 @@ func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -1416,7 +1426,8 @@ func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Float32{}
@@ -1427,7 +1438,8 @@ func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -1658,7 +1670,8 @@ func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int16{}
@@ -1669,7 +1682,8 @@ func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -1900,7 +1914,8 @@ func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint16{}
@@ -1911,7 +1926,8 @@ func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -2142,7 +2158,8 @@ func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int8{}
@@ -2153,7 +2170,8 @@ func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
@@ -2384,7 +2402,8 @@ func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint8{}
@@ -2395,7 +2414,8 @@ func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
 			sti[i] = offs[i-subdim]
 		}
 		stoff := tsr.Offset(sti)
-		stsr.Values = tsr.Values[stoff:]
+		sln := stsr.Len()
+		stsr.Values = tsr.Values[stoff : stoff+sln]
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")

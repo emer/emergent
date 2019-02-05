@@ -16,8 +16,10 @@ import (
 	"github.com/emer/emergent/prjn"
 	"github.com/emer/emergent/timer"
 	"github.com/goki/gi/gi"
+	"github.com/goki/ki"
 	"github.com/goki/ki/indent"
 	"github.com/goki/ki/ints"
+	"github.com/goki/ki/kit"
 )
 
 // LayFunChan is a channel that runs layer functions
@@ -27,13 +29,13 @@ type LayFunChan chan func(ly *Layer)
 type NetworkStru struct {
 	Name   string `desc:"overall name of network -- helps discriminate if there are multiple"`
 	Layers []emer.Layer
-	LayMap map[string]emer.Layer `desc:"map of name to layers -- layer names must be unique"`
+	LayMap map[string]emer.Layer `view:"-" desc:"map of name to layers -- layer names must be unique"`
 
 	NThreads int                    `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
-	ThrLay   [][]emer.Layer         `inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
+	ThrLay   [][]emer.Layer         `view:"-" inactive:"+" desc:"layers per thread -- outer group is threads and inner is layers operated on by that thread -- based on user-assigned threads, initialized during Build"`
 	ThrChans []LayFunChan           `view:"-" desc:"layer function channels, per thread"`
-	ThrTimes []timer.Time           `desc:"timers for each thread, so you can see how evenly the workload is being distributed"`
-	FunTimes map[string]*timer.Time `desc:"timers for each major function (step of processing)"`
+	ThrTimes []timer.Time           `view:"-" desc:"timers for each thread, so you can see how evenly the workload is being distributed"`
+	FunTimes map[string]*timer.Time `view:"-" desc:"timers for each major function (step of processing)"`
 	wg       sync.WaitGroup
 }
 
@@ -126,6 +128,53 @@ type Network struct {
 	NetworkStru
 	WtBalInterval int `def:"10" desc:"how frequently to update the weight balance average weight factor -- relatively expensive"`
 	WtBalCtr      int `inactive:"+" desc:"counter for how long it has been since last WtBal"`
+}
+
+var KiT_Network = kit.Types.AddType(&Network{}, NetworkProps)
+
+var NetworkProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		// {"Open", ki.Props{
+		// 	"label": "Open",
+		// 	"icon":  "file-open",
+		// 	"desc":  "Open a json-formatted Ki tree structure",
+		// 	"Args": ki.PropSlice{
+		// 		{"File Name", ki.Props{
+		// 			"default-field": "Filename",
+		// 			"ext":           ".json",
+		// 		}},
+		// 	},
+		// }},
+		{"SaveWtsJSON", ki.Props{
+			"label": "Save Wts...",
+			"icon":  "file-save",
+			"desc":  "Save json-formatted weights",
+			"Args": ki.PropSlice{
+				{"Weights File Name", ki.Props{
+					//						"default-field": "ColorFilename",
+					"ext": ".wts",
+				}},
+			},
+		}},
+		{"EditLayer", ki.Props{
+			"label":       "Edit Layer...",
+			"icon":        "edit",
+			"desc":        "edit given layer",
+			"show-return": true,
+			"Args": ki.PropSlice{
+				{"Layer Name", ki.Props{}},
+			},
+		}},
+	},
+}
+
+// EditLayer is gui method for accessing layers
+func (nt *Network) EditLayer(name string) *Layer {
+	ly, err := nt.LayerByNameCheck(name)
+	if err != nil {
+		return nil
+	}
+	return ly.(*Layer)
 }
 
 // Defaults sets all the default parameters for all layers and projections
