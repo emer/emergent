@@ -56,9 +56,9 @@ func (nt *NetworkStru) LayerByName(name string) emer.Layer {
 	return ly
 }
 
-// LayerByNameCheck returns a layer by looking it up by name -- emits a log error message
+// LayerByNameTry returns a layer by looking it up by name -- emits a log error message
 // if layer is not found
-func (nt *NetworkStru) LayerByNameCheck(name string) (emer.Layer, error) {
+func (nt *NetworkStru) LayerByNameTry(name string) (emer.Layer, error) {
 	ly := nt.LayerByName(name)
 	if ly == nil {
 		err := fmt.Errorf("Layer named: %v not found in Network: %v\n", name, nt.Name)
@@ -170,7 +170,7 @@ var NetworkProps = ki.Props{
 
 // EditLayer is gui method for accessing layers
 func (nt *Network) EditLayer(name string) *Layer {
-	ly, err := nt.LayerByNameCheck(name)
+	ly, err := nt.LayerByNameTry(name)
 	if err != nil {
 		return nil
 	}
@@ -226,11 +226,11 @@ func (nt *Network) AddLayer(name string, shape []int, typ LayerType) *Layer {
 // Returns error if not successful.
 // Does not yet actually connect the units within the layers -- that requires Build.
 func (nt *Network) ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay emer.Layer, pj *Prjn, err error) {
-	rlay, err = nt.LayerByNameCheck(recv)
+	rlay, err = nt.LayerByNameTry(recv)
 	if err != nil {
 		return
 	}
-	slay, err = nt.LayerByNameCheck(send)
+	slay, err = nt.LayerByNameTry(send)
 	if err != nil {
 		return
 	}

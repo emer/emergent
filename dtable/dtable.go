@@ -59,24 +59,23 @@ func (dt *Table) ColNameIndex(name string) (int, error) {
 	return i, nil
 }
 
-// ColByNameCheck returns the tensor at given column name, checks for not found and returns
-// error if not found
-func (dt *Table) ColByNameCheck(name string) (etensor.Tensor, error) {
-	i, err := dt.ColNameIndex(name)
-	if err != nil {
-		return nil, err
-	}
-	return dt.Cols[i], nil
-}
-
 // ColByName returns the tensor at given column name without any error messages -- just
-// returns nil if not found and your code will panic..
+// returns nil if not found
 func (dt *Table) ColByName(name string) etensor.Tensor {
 	i, ok := dt.ColNameMap[name]
 	if !ok {
 		return nil
 	}
 	return dt.Cols[i]
+}
+
+// ColByNameTry returns the tensor at given column name, if not found, returns error
+func (dt *Table) ColByNameTry(name string) (etensor.Tensor, error) {
+	i, err := dt.ColNameIndex(name)
+	if err != nil {
+		return nil, err
+	}
+	return dt.Cols[i], nil
 }
 
 // ColName returns the name of given column

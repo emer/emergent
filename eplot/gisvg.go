@@ -38,6 +38,6 @@ func PlotViewSVG(plt *plot.Plot, svge *svg.Editor, xSz, ySz, scale float64) {
 	svge.ReadXML(&buf)
 
 	svge.SetNormXForm()
-	svge.Scale = float32(scale)
+	svge.Scale = float32(scale) * (svge.Viewport.Win.LogicalDPI() / 96.0)
 	svge.SetTransform()
 }
