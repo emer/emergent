@@ -51,11 +51,11 @@ There are methods on the Network that perform initialization and overall computa
 iterating over layers and calling methods there.  This is typically how most users will
 run their models.
 
-The parallelization strategy has yet to be resolved: in C++ emergent everything was allocated
-by thread, at the network level.  That is fairly awkward overall and it would be much nicer to
-keep everything encapsulated at the relevant structural levels.  The lighter-weight goroutines
-might make this more feasible.  And the relative loss in performance may be offset by the
-advantages in clarity, depending on how it stacks up..
+Parallel computation across multiple CPU cores (threading) is achieved through persistent
+worker go routines that listen for functions to run on thread-specific channels.  Each
+layer has a designated thread number, so you can experiment with different ways of
+dividing up the computation.  Timing data is kept for per-thread time use -- see TimeReport()
+on the network.
 
 The Layer methods directly iterate over Neurons, Pools, and Prjns, and there is no
 finer-grained level of computation (e.g., at the individual Neuron level), except for

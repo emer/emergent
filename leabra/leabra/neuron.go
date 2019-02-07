@@ -15,11 +15,12 @@ import (
 // rate-code only and no optional features at all.
 // All variables accessible via Unit interface must be float32 and start at the top, in contiguous order
 type Neuron struct {
-	Act  float32 `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
-	Ge   float32 `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
-	Gi   float32 `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`
-	Inet float32 `desc:"net current produced by all channels -- drives update of Vm"`
-	Vm   float32 `desc:"membrane potential -- integrates Inet current over time"`
+	Flags NeurFlags `desc:"bit flags for binary state variables"`
+	Act   float32   `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
+	Ge    float32   `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
+	Gi    float32   `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`
+	Inet  float32   `desc:"net current produced by all channels -- drives update of Vm"`
+	Vm    float32   `desc:"membrane potential -- integrates Inet current over time"`
 
 	Targ float32 `desc:"target value: drives learning to produce this activation value"`
 	Ext  float32 `desc:"external input: drives activation of unit from outside influences (e.g., sensory input)"`
@@ -43,10 +44,6 @@ type Neuron struct {
 	ActSent float32 `desc:"last activation value sent (only send when diff is over threshold)"`
 	GeRaw   float32 `desc:"raw excitatory conductance (net input) received from sending units (send delta's are added to this value)"`
 	GeInc   float32 `desc:"delta increment in GeRaw sent using SendGeDelta"`
-
-	// non-Unit accessible state variables
-
-	Flags NeurFlags `desc:"bit flags for binary state variables"`
 }
 
 var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "GiSelf", "ActSent", "GeRaw", "GeInc"}
@@ -71,7 +68,7 @@ func (nrn *Neuron) VarByName(varNm string) (float32, bool) {
 	}
 	// todo: would be ideal to avoid having to use reflect here..
 	v := reflect.ValueOf(*nrn)
-	return v.Field(i).Interface().(float32), true
+	return v.Field(i + 1).Interface().(float32), true
 }
 
 func (nrn *Neuron) HasFlag(flag NeurFlags) bool {

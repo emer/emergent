@@ -199,8 +199,8 @@ func (ly *Layer) InitWts() {
 		pl.ActAvg.ActPAvg = ly.Inhib.ActAvg.Init
 		pl.ActAvg.ActPAvgEff = ly.Inhib.ActAvg.EffInit()
 	}
-	ly.InitActAvg()
-	ly.InitActs()
+	ly.LeabraLay.InitActAvg()
+	ly.LeabraLay.InitActs()
 	ly.CosDiff.Init()
 }
 
@@ -250,7 +250,7 @@ func (ly *Layer) InitExt() {
 	}
 }
 
-// ApplyExt applies external input in the form of an arrow tensor.Float32
+// ApplyExt applies external input in the form of an etensor.Float32.
 // If the layer is a Target or Compare layer type, then it goes in Targ
 // otherwise it goes in Ext
 func (ly *Layer) ApplyExt(ext *etensor.Float32) {
@@ -286,20 +286,20 @@ func (ly *Layer) ApplyExt(ext *etensor.Float32) {
 // netinput scaling from running average activation etc.
 // should already have presented the external input to the network at this point.
 func (ly *Layer) TrialInit() {
-	ly.AvgLFmAvgM()
+	ly.LeabraLay.AvgLFmAvgM()
 	for pi := range ly.Pools {
 		pl := &ly.Pools[pi]
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActMAvg, pl.ActM.Avg)
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActPAvg, pl.ActP.Avg)
 		ly.Inhib.ActAvg.EffFmAvg(&pl.ActAvg.ActPAvgEff, pl.ActAvg.ActPAvg)
 	}
-	ly.GeScaleFmAvgAct()
+	ly.LeabraLay.GeScaleFmAvgAct()
 	if ly.Act.Noise.Type != NoNoise && ly.Act.Noise.TrialFixed && ly.Act.Noise.Dist != erand.None {
-		ly.GenNoise()
+		ly.LeabraLay.GenNoise()
 	}
-	ly.DecayState(ly.Act.Init.Decay)
+	ly.LeabraLay.DecayState(ly.Act.Init.Decay)
 	if ly.Act.Clamp.Hard && ly.Type == emer.Input {
-		ly.HardClamp()
+		ly.LeabraLay.HardClamp()
 	}
 }
 
@@ -534,7 +534,7 @@ func (ly *Layer) QuarterFinal(time *Time) {
 		}
 	}
 	if time.Quarter == 3 {
-		ly.CosDiffFmActs()
+		ly.LeabraLay.CosDiffFmActs()
 	}
 }
 

@@ -80,7 +80,7 @@ func (nt *Network) Defaults() {
 	nt.WtBalCtr = 0
 	for li, ly := range nt.Layers {
 		ly.Defaults()
-		ly.(*Layer).Index = li
+		ly.SetIndex(li)
 	}
 }
 
@@ -108,14 +108,14 @@ func (nt *Network) InitWts() {
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).InitWts()
+		ly.(LeabraLayer).InitWts()
 	}
 	// separate pass to enforce symmetry
 	for _, ly := range nt.Layers {
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).InitWtSym()
+		ly.(LeabraLayer).InitWtSym()
 	}
 }
 
@@ -125,7 +125,7 @@ func (nt *Network) InitActs() {
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).InitActs()
+		ly.(LeabraLayer).InitActs()
 	}
 }
 
@@ -135,7 +135,7 @@ func (nt *Network) InitExt() {
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).InitExt()
+		ly.(LeabraLayer).InitExt()
 	}
 }
 
@@ -146,7 +146,7 @@ func (nt *Network) TrialInit() {
 		if ly.IsOff() {
 			continue
 		}
-		ly.(*Layer).TrialInit()
+		ly.(LeabraLayer).TrialInit()
 	}
 }
 
@@ -170,33 +170,33 @@ func (nt *Network) Cycle() {
 // SendGeDelta sends change in activation since last sent, if above thresholds
 // and integrates sent deltas into GeRaw and time-integrated Ge values
 func (nt *Network) SendGeDelta() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).SendGeDelta() }, "SendGeDelta")
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).GeFmGeInc() }, "GeFmGeInc")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).SendGeDelta() }, "SendGeDelta")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).GeFmGeInc() }, "GeFmGeInc")
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxGe() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).AvgMaxGe() }, "AvgMaxGe")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).AvgMaxGe() }, "AvgMaxGe")
 }
 
 // InhibiFmGeAct computes inhibition Gi from Ge and Act stats within relevant Pools
 func (nt *Network) InhibFmGeAct() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).InhibFmGeAct() }, "InhibFmGeAct")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).InhibFmGeAct() }, "InhibFmGeAct")
 }
 
 // ActFmG computes rate-code activation from Ge, Gi, Gl conductances
 func (nt *Network) ActFmG() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).ActFmG() }, "ActFmG   ")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).ActFmG() }, "ActFmG   ")
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
 func (nt *Network) AvgMaxAct() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).AvgMaxAct() }, "AvgMaxAct")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).AvgMaxAct() }, "AvgMaxAct")
 }
 
 // QuarterFinal does updating after end of a quarter
 func (nt *Network) QuarterFinal(ltime *Time) {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).QuarterFinal(ltime) }, "QuarterFinal")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).QuarterFinal(ltime) }, "QuarterFinal")
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -204,13 +204,13 @@ func (nt *Network) QuarterFinal(ltime *Time) {
 
 // DWt computes the weight change (learning) based on current running-average activation values
 func (nt *Network) DWt() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).DWt() }, "DWt     ")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).DWt() }, "DWt     ")
 }
 
 // WtFmDWt updates the weights from delta-weight changes.
 // Also calls WtBalFmWt every WtBalInterval times
 func (nt *Network) WtFmDWt() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).WtFmDWt() }, "WtFmDWt")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).WtFmDWt() }, "WtFmDWt")
 	nt.WtBalCtr++
 	if nt.WtBalCtr >= nt.WtBalInterval {
 		nt.WtBalCtr = 0
@@ -220,5 +220,5 @@ func (nt *Network) WtFmDWt() {
 
 // WtBalFmWt updates the weight balance factors based on average recv weights
 func (nt *Network) WtBalFmWt() {
-	nt.ThrLayFun(func(ly emer.Layer) { ly.(*Layer).WtBalFmWt() }, "WtBalFmWt")
+	nt.ThrLayFun(func(ly emer.Layer) { ly.(LeabraLayer).WtBalFmWt() }, "WtBalFmWt")
 }

@@ -12,7 +12,7 @@ import (
 // leabra.LayerStru manages the structural elements of the layer, which are common
 // to any Layer type
 type LayerStru struct {
-	EmerLay   emer.Layer     `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an emer.Layer, which can always be used to extract the true underlying type of object when layer is embedded in other structs -- function receivers do not have this ability so this is necessary."`
+	LeabraLay LeabraLayer    `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an LeabraLayer (which subsumes emer.Layer), which can always be used to extract the true underlying type of object when layer is embedded in other structs -- function receivers do not have this ability so this is necessary."`
 	Name      string         `desc:"Name of the layer -- this must be unique within the network, which has a map for quick lookup and layers are typically accessed directly by name"`
 	Class     string         `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Off       bool           `desc:"inactivate this layer -- allows for easy experimentation"`
@@ -31,10 +31,11 @@ type LayerStru struct {
 // InitName MUST be called to initialize the layer's pointer to itself as an emer.Layer
 // which enables the proper interface methods to be called.  Also sets the name.
 func (ls *LayerStru) InitName(lay emer.Layer, name string) {
-	ls.EmerLay = lay
+	ls.LeabraLay = lay.(LeabraLayer)
 	ls.Name = name
 }
 
+func (ls *LayerStru) AsLeabra() LeabraLayer        { return ls.LeabraLay }
 func (ls *LayerStru) LayName() string              { return ls.Name }
 func (ls *LayerStru) Label() string                { return ls.Name }
 func (ls *LayerStru) LayClass() string             { return ls.Class }
@@ -103,7 +104,7 @@ func (ls *LayerStru) Config(shape []int, typ emer.LayerType) {
 // it always prints a message if a parameter fails to be set.
 func (ls *LayerStru) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
 	if emer.StyleMatch(sty, ls.Name, ls.Class, "Layer") {
-		if ls.EmerLay.SetParams(pars, setMsg) { // note: going through EmerLay interface is key
+		if ls.LeabraLay.SetParams(pars, setMsg) { // note: going through LeabraLay interface is key
 			return true // done -- otherwise, might be for prjns
 		}
 	}
