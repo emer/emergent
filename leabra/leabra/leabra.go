@@ -69,7 +69,7 @@ type LeabraLayer interface {
 	HardClamp()
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	//  Cycle
+	//  Cycle Methods
 
 	// InitGeInc initializes GeInc Ge increment -- optional
 	InitGeInc()
@@ -94,7 +94,7 @@ type LeabraLayer interface {
 	AvgMaxAct()
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	//  Quarter
+	//  Quarter Methods
 
 	// QuarterFinal does updating after end of a quarter
 	QuarterFinal(time *Time)
