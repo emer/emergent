@@ -23,7 +23,7 @@ type Pattern interface {
 	// recvn and send tensors, each the shape of send and recv respectively.
 	// The same flag should be set to true if the send and recv layers are the same (i.e., a self-connection)
 	// often there are some different options for such connections.
-	Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *etensor.Int32, cons *etensor.Bits)
+	Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits)
 
 	// HasWeights returns true if this projection can provide initial synaptic weights
 	// for connected units, via the Weights method.
@@ -34,13 +34,13 @@ type Pattern interface {
 	// the cons = true bits -- values are in receiver-outer, sender-inner order.
 	// Typically, these weights reflect an overall topographic pattern and do NOT include
 	// random perturbations, which can be added on top.
-	Weights(recvn, sendn *etensor.Int32, cons *etensor.Bits) []float32
+	Weights(sendn, recvn *etensor.Int32, cons *etensor.Bits) []float32
 }
 
 // NewTensors returns the tensors used for Connect method, based on layer sizes
-func NewTensors(recv, send *etensor.Shape) (recvn, sendn *etensor.Int32, cons *etensor.Bits) {
-	recvn = etensor.NewInt32Shape(recv)
+func NewTensors(send, recv *etensor.Shape) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	sendn = etensor.NewInt32Shape(send)
+	recvn = etensor.NewInt32Shape(recv)
 	csh := etensor.AddShapes(recv, send)
 	cons = etensor.NewBitsShape(csh)
 	return

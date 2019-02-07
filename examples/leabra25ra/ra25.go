@@ -11,12 +11,12 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/emer/emergent/basic/leabra"
 	"github.com/emer/emergent/dtable"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/eplot"
 	"github.com/emer/emergent/erand"
 	"github.com/emer/emergent/etensor"
+	"github.com/emer/emergent/leabra/leabra"
 	"github.com/emer/emergent/patgen"
 	"github.com/emer/emergent/prjn"
 	"github.com/emer/emergent/timer"
@@ -291,24 +291,24 @@ func (ss *SimState) Stop() {
 
 func (ss *SimState) ConfigNet() {
 	net := ss.Net
-	net.Name = "RA25"
-	inLay := net.AddLayer("Input", []int{5, 5}, leabra.Input)
-	hid1Lay := net.AddLayer("Hidden1", []int{7, 7}, leabra.Hidden)
-	hid2Lay := net.AddLayer("Hidden2", []int{7, 7}, leabra.Hidden)
-	outLay := net.AddLayer("Output", []int{5, 5}, leabra.Target)
+	net.InitName(net, "RA25")
+	inLay := net.AddLayer("Input", []int{5, 5}, emer.Input)
+	hid1Lay := net.AddLayer("Hidden1", []int{7, 7}, emer.Hidden)
+	hid2Lay := net.AddLayer("Hidden2", []int{7, 7}, emer.Hidden)
+	outLay := net.AddLayer("Output", []int{5, 5}, emer.Target)
 
 	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull())
 	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull())
 	net.ConnectLayers(hid2Lay, outLay, prjn.NewFull())
 
 	outHid2 := net.ConnectLayers(outLay, hid2Lay, prjn.NewFull())
-	outHid2.Class = "TopDown"
+	outHid2.SetClass("TopDown")
 	hid2Hid1 := net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull())
-	hid2Hid1.Class = "TopDown"
+	hid2Hid1.SetClass("TopDown")
 
 	// if Thread {
-	// 	hid2Lay.Thread = 1
-	// 	outLay.Thread = 1
+	// 	hid2Lay.SetThread(1)
+	// 	outLay.SetThread(1)
 	// }
 
 	net.Defaults()

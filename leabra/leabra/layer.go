@@ -5,6 +5,7 @@
 package leabra
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -15,109 +16,7 @@ import (
 	"github.com/goki/ki/bitflag"
 	"github.com/goki/ki/indent"
 	"github.com/goki/ki/ints"
-	"github.com/goki/ki/kit"
 )
-
-// leabra.LayerStru manages the structural elements of the layer, which are common
-// to any Layer type
-type LayerStru struct {
-	Name      string        `desc:"Name of the layer -- this must be unique within the network, which has a map for quick lookup and layers are typically accessed directly by name"`
-	Class     string        `desc:"Class is for applying parameter styles, can be space separated multple tags"`
-	Off       bool          `desc:"inactivate this layer -- allows for easy experimentation"`
-	Shape     etensor.Shape `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns) -- order is outer-to-inner (row major) so Y then X for 2D and for 4D: Y-X unit pools then Y-X units within pools"`
-	Type      LayerType     `desc:"type of layer -- Hidden, Input, Target, Compare"`
-	Thread    int           `desc:"the thread number (go routine) to use in updating this layer. The user is responsible for allocating layers to threads, trying to maintain an even distribution across layers and establishing good break-points."`
-	Rel       emer.Rel      `desc:"Spatial relationship to other layer, determines positioning"`
-	Pos       emer.Vec3i    `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
-	Index     int           `desc:"a 0..n-1 index of the position of the layer within list of layers in the network. For Leabra networks, it only has significance in determining who gets which weights for enforcing initial weight symmetry -- higher layers get weights from lower layers."`
-	RecvPrjns emer.PrjnList `desc:"list of receiving projections into this layer from other layers"`
-	SendPrjns emer.PrjnList `desc:"list of sending projections from this layer to other layers"`
-}
-
-// emer.Layer interface methods
-
-func (ls *LayerStru) LayName() string             { return ls.Name }
-func (ls *LayerStru) Label() string               { return ls.Name }
-func (ls *LayerStru) LayClass() string            { return ls.Class }
-func (ls *LayerStru) IsOff() bool                 { return ls.Off }
-func (ls *LayerStru) LayShape() *etensor.Shape    { return &ls.Shape }
-func (ls *LayerStru) LayThread() int              { return ls.Thread }
-func (ls *LayerStru) LayRel() emer.Rel            { return ls.Rel }
-func (ls *LayerStru) SetLayRel(rel emer.Rel)      { ls.Rel = rel }
-func (ls *LayerStru) LayPos() emer.Vec3i          { return ls.Pos }
-func (ls *LayerStru) LayIndex() int               { return ls.Index }
-func (ls *LayerStru) RecvPrjnList() emer.PrjnList { return ls.RecvPrjns }
-func (ls *LayerStru) NRecvPrjns() int             { return len(ls.RecvPrjns) }
-func (ls *LayerStru) RecvPrjn(idx int) emer.Prjn  { return ls.RecvPrjns[idx] }
-func (ls *LayerStru) SendPrjnList() emer.PrjnList { return ls.SendPrjns }
-func (ls *LayerStru) NSendPrjns() int             { return len(ls.SendPrjns) }
-func (ls *LayerStru) SendPrjn(idx int) emer.Prjn  { return ls.SendPrjns[idx] }
-
-// SetShape sets the layer shape and also uses default dim names
-func (ls *LayerStru) SetShape(shape []int) {
-	var dnms []string
-	if len(shape) == 2 {
-		dnms = []string{"X", "Y"}
-	} else if len(shape) == 4 {
-		dnms = []string{"GX", "GY", "X", "Y"} // group X,Y
-	}
-	ls.Shape.SetShape(shape, nil, dnms) // row major default
-}
-
-// NPools returns the number of unit sub-pools according to the shape parameters.
-// Currently supported for a 4D shape, where the unit pools are the first 2 Y,X dims
-// and then the units within the pools are the 2nd 2 Y,X dims
-func (ls *LayerStru) NPools() int {
-	if ls.Shape.NumDims() != 4 {
-		return 0
-	}
-	sh := ls.Shape.Shape()
-	return int(sh[0] * sh[1])
-}
-
-// RecipToSendPrjn finds the reciprocal projection relative to the given sending projection
-// found within the SendPrjns of this layer.  This is then a recv prjn within this layer:
-//  S=A -> R=B recip: R=A <- S=B -- ly = A -- we are the sender of srj and recv of rpj.
-// returns false if not found.
-func (ls *LayerStru) RecipToSendPrjn(spj emer.Prjn) (emer.Prjn, bool) {
-	for _, rpj := range ls.RecvPrjns {
-		if rpj.SendLay() == spj.RecvLay() {
-			return rpj, true
-		}
-	}
-	return nil, false
-}
-
-// LayerType is the type of the layer: Input, Hidden, Target, Compare
-type LayerType int32
-
-//go:generate stringer -type=LayerType
-
-var KiT_LayerType = kit.Enums.AddEnum(LayerTypeN, false, nil)
-
-func (ev LayerType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *LayerType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
-
-// The layer types
-const (
-	// Hidden is an internal representational layer that does not receive direct input / targets
-	Hidden LayerType = iota
-
-	// Input is a layer that receives direct external input in its Ext inputs
-	Input
-
-	// Target is a layer that receives direct external target inputs used for driving plus-phase learning
-	Target
-
-	// Compare is a layer that receives external comparison inputs, which drive statistics but
-	// do NOT drive activation or learning directly
-	Compare
-
-	LayerTypeN
-)
-
-//////////////////////////////////////////////////////////////////////////////////////
-//  Layer
 
 // leabra.Layer has parameters for running a basic rate-coded Leabra layer
 type Layer struct {
@@ -165,37 +64,6 @@ func (ly *Layer) SetParams(pars emer.Params, setMsg bool) bool {
 	return true
 }
 
-// StyleParam applies a given style to either this layer or the receiving projections in this layer
-// depending on the style specification (.Class, #Name, Type) and target value of params.
-// returns true if applied successfully.
-// If setMsg is true, then a message is printed to confirm each parameter that is set.
-// it always prints a message if a parameter fails to be set.
-func (ly *Layer) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
-	if emer.StyleMatch(sty, ly.Name, ly.Class, "Layer") {
-		if ly.SetParams(pars, setMsg) {
-			return true // done -- otherwise, might be for prjns
-		}
-	}
-	set := false
-	for _, pj := range ly.RecvPrjns {
-		did := pj.(*Prjn).StyleParam(sty, pars, setMsg) // note: could add to emer interface
-		if did {
-			set = true
-		}
-	}
-	return set
-}
-
-// StyleParams applies a given styles to either this layer or the receiving projections in this layer
-// depending on the style specification (.Class, #Name, Type) and target value of params
-// If setMsg is true, then a message is printed to confirm each parameter that is set.
-// it always prints a message if a parameter fails to be set.
-func (ly *Layer) StyleParams(psty emer.ParamStyle, setMsg bool) {
-	for sty, pars := range psty {
-		ly.StyleParam(sty, pars, setMsg)
-	}
-}
-
 // Unit is emer.Layer interface method to get given Unit
 // only possible with Neurons in place
 func (ly *Layer) Unit(idx []int) emer.Unit {
@@ -220,8 +88,11 @@ func (ly *Layer) UnitVals(varNm string) []float32 {
 // Build constructs the layer state, including calling Build on the projections
 // you MUST have properly configured the Inhib.Pool.On setting by this point
 // to properly allocate Pools for the unit groups if necessary.
-func (ly *Layer) Build() {
+func (ly *Layer) Build() error {
 	nu := ly.Shape.Len()
+	if nu == 0 {
+		return fmt.Errorf("Build Layer %v: no units specified in Shape", ly.Name)
+	}
 	ly.Neurons = make([]Neuron, nu)
 	np := 1
 	if ly.Inhib.Pool.On {
@@ -234,13 +105,20 @@ func (ly *Layer) Build() {
 	if np > 1 {
 		ly.BuildPools()
 	}
-	for _, p := range ly.RecvPrjns {
-		if p.IsOff() {
+	emsg := ""
+	for _, pj := range ly.RecvPrjns {
+		if pj.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.Build()
+		err := pj.Build()
+		if err != nil {
+			emsg += err.Error() + "\n"
+		}
 	}
+	if emsg != "" {
+		return errors.New(emsg)
+	}
+	return nil
 }
 
 // WriteWtsJSON writes the weights from this layer from the receiver-side perspective
@@ -252,6 +130,7 @@ func (ly *Layer) WriteWtsJSON(w io.Writer, depth int) {
 	depth++
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", ly.Name)))
+	// todo: save average activity state
 	depth++
 	for _, pj := range ly.RecvPrjns {
 		if pj.IsOff() {
@@ -265,6 +144,12 @@ func (ly *Layer) WriteWtsJSON(w io.Writer, depth int) {
 	depth--
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte("},\n"))
+}
+
+// ReadWtsJSON reads the weights from this layer from the receiver-side perspective
+// in a JSON text format.
+func (ly *Layer) ReadWtsJSON(r io.Reader) error {
+	return nil
 }
 
 // BuildPools initializes neuron start / end indexes for sub-group pools
@@ -293,8 +178,7 @@ func (ly *Layer) BuildPools() {
 	}
 }
 
-// note: all basic computation can be performed on layer-level
-// and prjn level
+// note: all basic computation can be performed on layer-level and prjn level
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
@@ -374,10 +258,10 @@ func (ly *Layer) ApplyExt(ext *etensor.Float32) {
 	clrmsk := bitflag.Mask32(int(NeurHasExt), int(NeurHasTarg), int(NeurHasCmpr))
 	setmsk := int32(0)
 	toTarg := false
-	if ly.Type == Target {
+	if ly.Type == emer.Target {
 		setmsk = bitflag.Mask32(int(NeurHasTarg))
 		toTarg = true
-	} else if ly.Type == Compare {
+	} else if ly.Type == emer.Compare {
 		setmsk = bitflag.Mask32(int(NeurHasCmpr))
 		toTarg = true
 	} else {
@@ -414,7 +298,7 @@ func (ly *Layer) TrialInit() {
 		ly.GenNoise()
 	}
 	ly.DecayState(ly.Act.Init.Decay)
-	if ly.Act.Clamp.Hard && ly.Type == Input {
+	if ly.Act.Clamp.Hard && ly.Type == emer.Input {
 		ly.HardClamp()
 	}
 }
@@ -680,7 +564,7 @@ func (ly *Layer) CosDiffFmActs() {
 
 	ly.Learn.CosDiff.AvgVarFmCos(&ly.CosDiff.Avg, &ly.CosDiff.Var, ly.CosDiff.Cos)
 
-	if ly.Type != Hidden {
+	if ly.Type != emer.Hidden {
 		ly.CosDiff.AvgLrn = 0 // no BCM for non-hidden layers
 		ly.CosDiff.ModAvgLLrn = 0
 	} else {

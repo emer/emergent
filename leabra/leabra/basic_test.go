@@ -69,18 +69,18 @@ var Pars = [NLrnPars]emer.ParamStyle{
 }
 
 func TestMakeNet(t *testing.T) {
-	TestNet.Name = "TestNet"
-	inLay := TestNet.AddLayer("Input", []int{4, 1}, Input)
-	hidLay := TestNet.AddLayer("Hidden", []int{4, 1}, Hidden)
-	outLay := TestNet.AddLayer("Output", []int{4, 1}, Target)
+	TestNet.InitName(&TestNet, "TestNet")
+	inLay := TestNet.AddLayer("Input", []int{4, 1}, emer.Input)
+	hidLay := TestNet.AddLayer("Hidden", []int{4, 1}, emer.Hidden)
+	outLay := TestNet.AddLayer("Output", []int{4, 1}, emer.Target)
 
 	TestNet.ConnectLayers(inLay, hidLay, prjn.NewOneToOne())
 	TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne())
 	outHid := TestNet.ConnectLayers(outLay, hidLay, prjn.NewOneToOne())
-	outHid.Class = "TopDown"
+	outHid.SetClass("TopDown")
 
 	TestNet.Defaults()
-	TestNet.StyleParams(Pars[0], false) // no msg
+	TestNet.StyleParams(Pars[0], false) // true) // no msg
 	TestNet.Build()
 	TestNet.InitWts()
 	TestNet.TrialInit() // get GeScale

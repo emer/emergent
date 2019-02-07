@@ -21,9 +21,9 @@ func (fp *Full) Name() string {
 	return "Full"
 }
 
-func (fp *Full) Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *etensor.Int32, cons *etensor.Bits) {
+func (fp *Full) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	// todo: exclude self!
-	recvn, sendn, cons = NewTensors(recv, send)
+	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()
 	nrecv := recv.Len()
@@ -42,6 +42,6 @@ func (fp *Full) HasWeights() bool {
 	return false
 }
 
-func (fp *Full) Weights(recvn, sendn *etensor.Int32, cons *etensor.Bits) []float32 {
+func (fp *Full) Weights(sendn, recvn *etensor.Int32, cons *etensor.Bits) []float32 {
 	return nil
 }

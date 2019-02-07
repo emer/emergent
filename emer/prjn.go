@@ -4,10 +4,18 @@
 
 package emer
 
-import "github.com/emer/emergent/prjn"
+import (
+	"io"
+
+	"github.com/emer/emergent/prjn"
+)
 
 // Prjn defines the basic interface for a projection which connects two layers
 type Prjn interface {
+	// Init MUST be called to initialize the prjn's pointer to itself as an emer.Prjn
+	// which enables the proper interface methods to be called.
+	Init(prjn Prjn)
+
 	// RecvLay returns the receiving layer for this projection
 	RecvLay() Layer
 
@@ -17,8 +25,14 @@ type Prjn interface {
 	// Pattern returns the pattern of connectivity for interconnecting the layers
 	Pattern() prjn.Pattern
 
+	// Connect sets the basic connection parameters for this projection (send, recv, pattern)
+	Connect(send, recv Layer, pat prjn.Pattern)
+
 	// PrjnClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
 	PrjnClass() string
+
+	// SetClass sets CSS-style class name(s) for this projection (space-separated if multiple)
+	SetClass(cls string)
 
 	// PrjnName is the automatic name of projection: RecvLay().LayName() + "Fm" + SendLay().LayName()
 	PrjnName() string
@@ -47,10 +61,34 @@ type Prjn interface {
 	// based on any other params that might have changed.
 	UpdateParams()
 
+	// SetParams sets given parameters to this prjn, if the target type is Prjn
+	// calls UpdateParams to ensure derived parameters are all updated.
+	// If setMsg is true, then a message is printed to confirm each parameter that is set.
+	// it always prints a message if a parameter fails to be set.
+	SetParams(pars Params, setMsg bool) bool
+
+	// StyleParam applies a given style to this projection
+	// depending on the style specification (.Class, #Name, Type) and target value of params
+	// If setMsg is true, then a message is printed to confirm each parameter that is set.
+	// it always prints a message if a parameter fails to be set.
+	StyleParam(sty string, pars Params, setMsg bool) bool
+
 	// StyleParams applies a given ParamStyle style sheet to the projections
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
 	StyleParams(psty ParamStyle, setMsg bool)
+
+	// WriteWtsJSON writes the weights from this projection from the receiver-side perspective
+	// in a JSON text format.  We build in the indentation logic to make it much faster and
+	// more efficient.
+	WriteWtsJSON(w io.Writer, depth int)
+
+	// ReadWtsJSON reads the weights from this projection from the receiver-side perspective
+	// in a JSON text format.
+	ReadWtsJSON(r io.Reader) error
+
+	// Build constructs the full connectivity among the layers as specified in this projection.
+	Build() error
 }
 
 // PrjnList is a slice of projections

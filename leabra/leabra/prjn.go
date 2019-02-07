@@ -5,207 +5,13 @@
 package leabra
 
 import (
-	"errors"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
-	"github.com/emer/emergent/etensor"
-	"github.com/emer/emergent/prjn"
 	"github.com/goki/ki/indent"
 )
-
-// PrjnStru contains the basic structural information for specifying a projection of synaptic
-// connections between two layers, and maintaining all the synaptic connection-level data.
-// The exact same struct object is added to the Recv and Send layers, and it manages everything
-// about the connectivity, and methods on the Prjn handle all the relevant computation.
-type PrjnStru struct {
-	Off         bool         `desc:"inactivate this projection -- allows for easy experimentation"`
-	Class       string       `desc:"Class is for applying parameter styles, can be space separated multple tags"`
-	Notes       string       `desc:"can record notes about this projection here"`
-	Recv        emer.Layer   `desc:"receiving layer for this projection -- the emer.Layer interface can be converted to the specific Layer type you are using, e.g., rlay := prjn.Recv.(*leabra.Layer)"`
-	Send        emer.Layer   `desc:"sending layer for this projection"`
-	Pat         prjn.Pattern `desc:"pattern of connectivity"`
-	RConN       []int32      `desc:"number of recv connections for each neuron in the receiving layer, as a flat list"`
-	RConNAvgMax emer.AvgMax  `desc:"average and maximum number of recv connections in the receiving layer"`
-	RConIdxSt   []int32      `desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
-	RConIdx     []int32      `desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
-	RSynIdx     []int32      `desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
-	SConN       []int32      `desc:"number of sending connections for each neuron in the sending layer, as a flat list"`
-	SConNAvgMax emer.AvgMax  `desc:"average and maximum number of sending connections in the sending layer"`
-	SConIdxSt   []int32      `desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
-	SConIdx     []int32      `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
-}
-
-// emer.Prjn interface
-
-func (ps *PrjnStru) PrjnClass() string { return ps.Class }
-func (ps *PrjnStru) PrjnName() string {
-	return ps.Recv.LayName() + "Fm" + ps.Send.LayName()
-}
-func (ps *PrjnStru) Label() string         { return ps.PrjnName() }
-func (ps *PrjnStru) RecvLay() emer.Layer   { return ps.Recv }
-func (ps *PrjnStru) SendLay() emer.Layer   { return ps.Send }
-func (ps *PrjnStru) Pattern() prjn.Pattern { return ps.Pat }
-
-func (ps *PrjnStru) IsOff() bool {
-	return ps.Off || ps.Recv.IsOff() || ps.Send.IsOff()
-}
-
-// Connect sets the connectivity between two layers and the pattern to use in interconnecting them
-func (ps *PrjnStru) Connect(rlay, slay emer.Layer, pat prjn.Pattern) {
-	ps.Recv = rlay
-	ps.Send = slay
-	ps.Pat = pat
-}
-
-// Validate tests for non-nil settings for the projection -- returns error
-// message or nil if no problems (and logs them if logmsg = true)
-func (ps *PrjnStru) Validate(logmsg bool) error {
-	emsg := ""
-	if ps.Pat == nil {
-		emsg += "Pat is nil; "
-	}
-	if ps.Recv == nil {
-		emsg += "Recv is nil; "
-	}
-	if ps.Send == nil {
-		emsg += "Send is nil; "
-	}
-	if emsg != "" {
-		err := errors.New(emsg)
-		if logmsg {
-			log.Println(emsg)
-		}
-		return err
-	}
-	return nil
-}
-
-// BuildStru constructs the full connectivity among the layers as specified in this projection.
-// Calls Validate and returns false if invalid.
-// Pat.Connect is called to get the pattern of the connection.
-// Then the connection indexes are configured according to that pattern.
-func (ps *PrjnStru) BuildStru() bool {
-	if ps.Off {
-		return true
-	}
-	err := ps.Validate(true)
-	if err != nil {
-		return false
-	}
-	rsh := ps.Recv.LayShape()
-	ssh := ps.Send.LayShape()
-	recvn, sendn, cons := ps.Pat.Connect(rsh, ssh, ps.Recv == ps.Send)
-	rlen := rsh.Len()
-	slen := ssh.Len()
-	tconr := ps.SetNIdxSt(&ps.RConN, &ps.RConNAvgMax, &ps.RConIdxSt, recvn)
-	tcons := ps.SetNIdxSt(&ps.SConN, &ps.SConNAvgMax, &ps.SConIdxSt, sendn)
-	if tconr != tcons {
-		log.Printf("%v programmer error: total recv cons %v != total send cons %v\n", ps.String(), tconr, tcons)
-	}
-	ps.RConIdx = make([]int32, tconr)
-	ps.RSynIdx = make([]int32, tconr)
-	ps.SConIdx = make([]int32, tcons)
-
-	sconN := make([]int32, slen) // temporary mem needed to tracks cur n of sending cons
-
-	cbits := cons.Values
-	for ri := 0; ri < rlen; ri++ {
-		rbi := ri * slen     // recv bit index
-		rtcn := ps.RConN[ri] // number of cons
-		rst := ps.RConIdxSt[ri]
-		rci := int32(0)
-		for si := 0; si < slen; si++ {
-			if !cbits.Index(rbi + si) { // no connection
-				continue
-			}
-			sst := ps.SConIdxSt[si]
-			if rci >= rtcn {
-				log.Printf("%v programmer error: recv target total con number: %v exceeded at recv idx: %v, send idx: %v\n", ps.String(), rtcn, ri, si)
-				break
-			}
-			ps.RConIdx[rst+rci] = int32(si)
-
-			sci := sconN[si]
-			stcn := ps.SConN[si]
-			if sci >= stcn {
-				log.Printf("%v programmer error: send target total con number: %v exceeded at recv idx: %v, send idx: %v\n", ps.String(), stcn, ri, si)
-				break
-			}
-			ps.SConIdx[sst+sci] = int32(ri)
-			ps.RSynIdx[rst+rci] = sst + sci
-			(sconN[si])++
-			rci++
-		}
-	}
-	return true
-}
-
-// SetNIdxSt sets the *ConN and *ConIdxSt values given n tensor from Pat.
-// Returns total number of connections for this direction.
-func (ps *PrjnStru) SetNIdxSt(n *[]int32, avgmax *emer.AvgMax, idxst *[]int32, tn *etensor.Int32) int32 {
-	ln := tn.Len()
-	tnv := tn.Values
-	*n = make([]int32, ln)
-	*idxst = make([]int32, ln)
-	idx := int32(0)
-	avgmax.Init()
-	for i := 0; i < ln; i++ {
-		nv := tnv[i]
-		(*n)[i] = nv
-		(*idxst)[i] = idx
-		idx += nv
-		avgmax.UpdateVal(float32(nv), i)
-	}
-	avgmax.CalcAvg()
-	return idx
-}
-
-// String satisfies fmt.Stringer for prjn
-func (ps *PrjnStru) String() string {
-	str := ""
-	if ps.Recv == nil {
-		str += "recv=nil; "
-	} else {
-		str += ps.Recv.LayName() + " <- "
-	}
-	if ps.Send == nil {
-		str += "send=nil"
-	} else {
-		str += ps.Send.LayName()
-	}
-	if ps.Pat == nil {
-		str += " Pat=nil"
-	} else {
-		str += " Pat=" + ps.Pat.Name()
-	}
-	return str
-}
-
-///////////////////////////////////////////////////////////////////////
-//  WtBalRecvPrjn
-
-// WtBalRecvPrjn are state variables used in computing the WtBal weight balance function
-// There is one of these for each Recv Neuron participating in the projection.
-type WtBalRecvPrjn struct {
-	Avg  float32 `desc:"average of effective weight values that exceed WtBal.AvgThr across given Recv Neuron's connections for given Prjn"`
-	Fact float32 `desc:"overall weight balance factor that drives changes in WbInc vs. WbDec via a sigmoidal function -- this is the net strength of weight balance changes"`
-	Inc  float32 `desc:"weight balance increment factor -- extra multiplier to add to weight increases to maintain overall weight balance"`
-	Dec  float32 `desc:"weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance"`
-}
-
-func (wb *WtBalRecvPrjn) Init() {
-	wb.Avg = 0
-	wb.Fact = 0
-	wb.Inc = 1
-	wb.Dec = 1
-}
-
-///////////////////////////////////////////////////////////////////////
-//  leabra.Prjn
 
 // leabra.Prjn is a basic Leabra projection with synaptic learning parameters
 type Prjn struct {
@@ -244,27 +50,6 @@ func (pj *Prjn) SetParams(pars emer.Params, setMsg bool) bool {
 	pars.Set(pj, setMsg)
 	pj.UpdateParams()
 	return true
-}
-
-// StyleParam applies a given style to this projection
-// depending on the style specification (.Class, #Name, Type) and target value of params
-// If setMsg is true, then a message is printed to confirm each parameter that is set.
-// it always prints a message if a parameter fails to be set.
-func (pj *Prjn) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
-	if emer.StyleMatch(sty, pj.PrjnName(), pj.Class, "Prjn") {
-		return pj.SetParams(pars, setMsg)
-	}
-	return false
-}
-
-// StyleParams applies a given styles to either this prjn
-// depending on the style specification (.Class, #Name, Type) and target value of params
-// If setMsg is true, then a message is printed to confirm each parameter that is set.
-// it always prints a message if a parameter fails to be set.
-func (pj *Prjn) StyleParams(psty emer.ParamStyle, setMsg bool) {
-	for sty, pars := range psty {
-		pj.StyleParam(sty, pars, setMsg)
-	}
 }
 
 func (pj *Prjn) SynVarNames() []string {
@@ -316,22 +101,7 @@ func (pj *Prjn) SynVal(varnm string, ridx, sidx int) (float32, error) {
 }
 
 ///////////////////////////////////////////////////////////////////////
-//  Build, Save Weights
-
-// Build constructs the full connectivity among the layers as specified in this projection.
-// Calls PrjnStru.BuildStru and then allocates the synaptic values in Syns accordingly.
-func (pj *Prjn) Build() bool {
-	if !pj.BuildStru() {
-		return false
-	}
-	pj.Syns = make([]Synapse, len(pj.SConIdx))
-	rsh := pj.Recv.LayShape()
-	//	ssh := pj.Send.LayShape()
-	rlen := rsh.Len()
-	pj.GeInc = make([]float32, rlen)
-	pj.WbRecv = make([]WtBalRecvPrjn, rlen)
-	return true
-}
+//  Weights File
 
 // WriteWtsJSON writes the weights from this projection from the receiver-side perspective
 // in a JSON text format.  We build in the indentation logic to make it much faster and
@@ -385,6 +155,27 @@ func (pj *Prjn) WriteWtsJSON(w io.Writer, depth int) {
 	depth--
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte("}\n"))
+}
+
+// ReadWtsJSON reads the weights for this projection from the receiver-side perspective
+// in a JSON text format.
+func (pj *Prjn) ReadWtsJSON(r io.Reader) error {
+	return nil
+}
+
+// Build constructs the full connectivity among the layers as specified in this projection.
+// Calls PrjnStru.BuildStru and then allocates the synaptic values in Syns accordingly.
+func (pj *Prjn) Build() error {
+	if err := pj.BuildStru(); err != nil {
+		return err
+	}
+	pj.Syns = make([]Synapse, len(pj.SConIdx))
+	rsh := pj.Recv.LayShape()
+	//	ssh := pj.Send.LayShape()
+	rlen := rsh.Len()
+	pj.GeInc = make([]float32, rlen)
+	pj.WbRecv = make([]WtBalRecvPrjn, rlen)
+	return nil
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -548,7 +339,7 @@ func (pj *Prjn) WtBalFmWt() {
 	}
 
 	rlay := pj.Recv.(*Layer)
-	if rlay.Type == Target {
+	if rlay.Type == emer.Target {
 		return
 	}
 	for ri := range rlay.Neurons {
@@ -581,4 +372,23 @@ func (pj *Prjn) WtBalFmWt() {
 		wb.Avg = sumWt
 		wb.Fact, wb.Inc, wb.Dec = pj.Learn.WtBal.WtBal(sumWt, rn.ActAvg)
 	}
+}
+
+///////////////////////////////////////////////////////////////////////
+//  WtBalRecvPrjn
+
+// WtBalRecvPrjn are state variables used in computing the WtBal weight balance function
+// There is one of these for each Recv Neuron participating in the projection.
+type WtBalRecvPrjn struct {
+	Avg  float32 `desc:"average of effective weight values that exceed WtBal.AvgThr across given Recv Neuron's connections for given Prjn"`
+	Fact float32 `desc:"overall weight balance factor that drives changes in WbInc vs. WbDec via a sigmoidal function -- this is the net strength of weight balance changes"`
+	Inc  float32 `desc:"weight balance increment factor -- extra multiplier to add to weight increases to maintain overall weight balance"`
+	Dec  float32 `desc:"weight balance decrement factor -- extra multiplier to add to weight decreases to maintain overall weight balance"`
+}
+
+func (wb *WtBalRecvPrjn) Init() {
+	wb.Avg = 0
+	wb.Fact = 0
+	wb.Inc = 1
+	wb.Dec = 1
 }

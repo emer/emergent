@@ -7,12 +7,17 @@ package emer
 import (
 	"io"
 
+	"github.com/emer/emergent/prjn"
 	"github.com/goki/gi/gi"
 )
 
 // Network defines the basic interface for a neural network, used for managing the structural
 // elements of a network, and for visualization, I/O, etc
 type Network interface {
+	// InitName MUST be called to initialize the network's pointer to itself as an emer.Network
+	// which enables the proper interface methods to be called.  Also sets the name.
+	InitName(net Network, name string)
+
 	// NetName returns the name of this network
 	NetName() string
 
@@ -29,8 +34,9 @@ type Network interface {
 	// LayerByName returns layer of given name, nil if not found
 	LayerByName(name string) Layer
 
-	// LayerByNameErrMsg returns layer of given name, emits a log error message and returns false if not found
-	LayerByNameErrMsg(name string) (Layer, bool)
+	// LayerByNameTry returns layer of given name, returns error and emits a log message
+	// if not found
+	LayerByNameTry(name string) (Layer, error)
 
 	// Defaults sets default parameter values for everything in the Network
 	Defaults()
@@ -45,18 +51,36 @@ type Network interface {
 	StyleParams(psty ParamStyle, setMsg bool)
 
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
-	// to JSON-formatted output
+	// to JSON-formatted output.
 	WriteWtsJSON(w io.Writer)
 
 	// ReadWtsJSON reads network weights (and any other state that adapts with learning)
-	// from JSON-formatted input
+	// from JSON-formatted input.
 	ReadWtsJSON(r io.Reader) error
 
 	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
-	// to a JSON-formatted file
+	// to a JSON-formatted file.
 	SaveWtsJSON(filename gi.FileName) error
 
 	// OpenWtsJSON opens network weights (and any other state that adapts with learning)
-	// from a JSON-formatted file
+	// from a JSON-formatted file.
 	OpenWtsJSON(filename gi.FileName) error
+
+	// NewLayer creates a new concrete layer of appropriate type for this network
+	NewLayer() Layer
+
+	// NewPrjn creates a new concrete projection of appropriate type for this network
+	NewPrjn() Prjn
+
+	// ConnectLayerNames establishes a projection between two layers, referenced by name
+	// adding to the recv and send projection lists on each side of the connection.
+	// Returns error if not successful.
+	// Does not yet actually connect the units within the layers -- that requires Build.
+	ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay Layer, pj Prjn, err error)
+
+	// ConnectLayers establishes a projection between two layers,
+	// adding to the recv and send projection lists on each side of the connection.
+	// Returns false if not successful. Does not yet actually connect the units within the layers -- that
+	// requires Build.
+	ConnectLayers(send, recv Layer, pat prjn.Pattern) Prjn
 }

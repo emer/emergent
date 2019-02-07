@@ -16,11 +16,11 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/emer/emergent/basic/leabra"
 	"github.com/emer/emergent/dtable"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/erand"
 	"github.com/emer/emergent/etensor"
+	"github.com/emer/emergent/leabra/leabra"
 	"github.com/emer/emergent/patgen"
 	"github.com/emer/emergent/prjn"
 	"github.com/emer/emergent/timer"
@@ -43,16 +43,16 @@ var Pars = emer.ParamStyle{
 }
 
 func ConfigNet(net *leabra.Network, threads, units int) {
-	net.Name = "BenchNet"
+	net.InitName(net, "BenchNet")
 
 	squn := int(math.Sqrt(float64(units)))
 	shp := []int{squn, squn}
 
-	inLay := net.AddLayer("Input", shp, leabra.Input)
-	hid1Lay := net.AddLayer("Hidden1", shp, leabra.Hidden)
-	hid2Lay := net.AddLayer("Hidden2", shp, leabra.Hidden)
-	hid3Lay := net.AddLayer("Hidden3", shp, leabra.Hidden)
-	outLay := net.AddLayer("Output", shp, leabra.Target)
+	inLay := net.AddLayer("Input", shp, emer.Input)
+	hid1Lay := net.AddLayer("Hidden1", shp, emer.Hidden)
+	hid2Lay := net.AddLayer("Hidden2", shp, emer.Hidden)
+	hid3Lay := net.AddLayer("Hidden3", shp, emer.Hidden)
+	outLay := net.AddLayer("Output", shp, emer.Target)
 
 	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull())
 	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull())
@@ -60,20 +60,20 @@ func ConfigNet(net *leabra.Network, threads, units int) {
 	net.ConnectLayers(hid3Lay, outLay, prjn.NewFull())
 
 	outHid3 := net.ConnectLayers(outLay, hid3Lay, prjn.NewFull())
-	outHid3.Class = "TopDown"
+	outHid3.SetClass("TopDown")
 	hid3Hid2 := net.ConnectLayers(hid3Lay, hid2Lay, prjn.NewFull())
-	hid3Hid2.Class = "TopDown"
+	hid3Hid2.SetClass("TopDown")
 	hid2Hid1 := net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull())
-	hid2Hid1.Class = "TopDown"
+	hid2Hid1.SetClass("TopDown")
 
 	switch threads {
 	case 2:
-		hid3Lay.Thread = 1
-		outLay.Thread = 1
+		hid3Lay.SetThread(1)
+		outLay.SetThread(1)
 	case 4:
-		hid2Lay.Thread = 1
-		hid3Lay.Thread = 2
-		outLay.Thread = 3
+		hid2Lay.SetThread(1)
+		hid3Lay.SetThread(2)
+		outLay.SetThread(3)
 	}
 
 	net.Defaults()

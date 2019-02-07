@@ -12,8 +12,8 @@ import (
 // OneToOne implements point-to-point one-to-one pattern of connectivity between two layers
 type OneToOne struct {
 	NCons     int `desc:"number of recv connections to make (0 for entire size of recv layer)"`
-	RecvStart int `desc:"starting unit index for recv connections"`
 	SendStart int `desc:"starting unit index for sending connections"`
+	RecvStart int `desc:"starting unit index for recv connections"`
 }
 
 func NewOneToOne() *OneToOne {
@@ -24,8 +24,8 @@ func (ot *OneToOne) Name() string {
 	return "OneToOne"
 }
 
-func (ot *OneToOne) Connect(recv, send *etensor.Shape, same bool) (recvn, sendn *etensor.Int32, cons *etensor.Bits) {
-	recvn, sendn, cons = NewTensors(recv, send)
+func (ot *OneToOne) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+	sendn, recvn, cons = NewTensors(send, recv)
 	nsend := send.Len()
 	nrecv := recv.Len()
 	rnv := recvn.Values
@@ -52,6 +52,6 @@ func (ot *OneToOne) HasWeights() bool {
 	return false
 }
 
-func (ot *OneToOne) Weights(recvn, sendn *etensor.Int32, cons *etensor.Bits) []float32 {
+func (ot *OneToOne) Weights(sendn, recvn *etensor.Int32, cons *etensor.Bits) []float32 {
 	return nil
 }
