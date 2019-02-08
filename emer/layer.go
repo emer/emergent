@@ -81,12 +81,21 @@ type Layer interface {
 	// SetIndex sets the layer index
 	SetIndex(idx int)
 
-	// Unit returns the unit at given index, which must be valid according to shape
-	// otherwise a nil is returned
-	Unit(index []int) Unit
+	// UnitVarNames returns a list of variable names available on the units in this layer.
+	// this is a global list so do not modify!
+	UnitVarNames() []string
 
-	// UnitVals returns values of given variable name on unit for each unit in the layer, as a float32 slice
-	UnitVals(varnm string) []float32
+	// UnitVals returns values of given variable name on unit for each unit in the layer,
+	// as a float32 slice (which is created de-novo)
+	UnitVals(varnm string) ([]float32, error)
+
+	// UnitVal returns value of given variable name on given unit,
+	// using shape-based dimensional index.
+	UnitVal(varnm string, idx []int) (float32, error)
+
+	// UnitVal1D returns value of given variable name on given unit,
+	// using 1-dimensional index.
+	UnitVal1D(varnm string, idx int) (float32, error)
 
 	// RecvPrjnList returns the full list of receiving projections
 	RecvPrjnList() *PrjnList

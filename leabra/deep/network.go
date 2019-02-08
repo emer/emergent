@@ -40,13 +40,13 @@ func (nt *Network) EditLayer(name string) *Layer {
 
 // Defaults sets all the default parameters for all layers and projections
 func (nt *Network) Defaults() {
-	leabra.Network.Defaults()
+	nt.Network.Defaults()
 }
 
 // UpdateParams updates all the derived parameters if any have changed, for all layers
 // and projections
 func (nt *Network) UpdateParams() {
-	leabra.Network.UpdateParams()
+	nt.Network.UpdateParams()
 }
 
 // Layer returns the deep.Layer version of the layer

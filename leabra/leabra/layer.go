@@ -29,6 +29,13 @@ type Layer struct {
 	CosDiff CosDiffStats    `desc:"cosine difference between ActM, ActP stats"`
 }
 
+// AsLeabra returns this layer as a leabra.Layer -- all derived layers must redefine
+// this to return the base Layer type, so that the LeabraLayer interface does not
+// need to include accessors to all the basic stuff
+func (ly *Layer) AsLeabra() *Layer {
+	return ly
+}
+
 func (ly *Layer) Defaults() {
 	ly.Act.Defaults()
 	ly.Inhib.Defaults()
@@ -64,96 +71,53 @@ func (ly *Layer) SetParams(pars emer.Params, setMsg bool) bool {
 	return true
 }
 
-// Unit is emer.Layer interface method to get given Unit
-// only possible with Neurons in place
-func (ly *Layer) Unit(idx []int) emer.Unit {
-	fidx := ly.Shape.Offset(idx)
-	if int(fidx) < len(ly.Neurons) {
-		return &ly.Neurons[fidx]
-	}
-	return nil
+// UnitVarNames returns a list of variable names available on the units in this layer
+func (ly *Layer) UnitVarNames() []string {
+	return NeuronVars
 }
 
 // UnitVals is emer.Layer interface method to return values of given variable
-func (ly *Layer) UnitVals(varNm string) []float32 {
+func (ly *Layer) UnitVals(varNm string) ([]float32, error) {
+	vidx, err := NeuronVarByName(varNm)
+	if err != nil {
+		return nil, err
+	}
 	vs := make([]float32, len(ly.Neurons))
 	for i := range ly.Neurons {
 		nrn := &ly.Neurons[i]
-		vl, _ := nrn.VarByName(varNm)
-		vs[i] = vl
+		vs[i] = nrn.VarByIndex(vidx)
 	}
-	return vs
+	return vs, nil
 }
 
-// Build constructs the layer state, including calling Build on the projections
-// you MUST have properly configured the Inhib.Pool.On setting by this point
-// to properly allocate Pools for the unit groups if necessary.
-func (ly *Layer) Build() error {
-	nu := ly.Shape.Len()
-	if nu == 0 {
-		return fmt.Errorf("Build Layer %v: no units specified in Shape", ly.Name)
+// UnitVal returns value of given variable name on given unit,
+// using shape-based dimensional index
+func (ly *Layer) UnitVal(varNm string, idx []int) (float32, error) {
+	fidx := ly.Shape.Offset(idx)
+	nn := len(ly.Neurons)
+	if fidx < 0 || fidx >= nn {
+		return 0, fmt.Errorf("Layer UnitVal index: %v out of range, N = %v", fidx, nn)
 	}
-	ly.Neurons = make([]Neuron, nu)
-	np := 1
-	if ly.Inhib.Pool.On {
-		np += ly.NPools()
-	}
-	ly.Pools = make([]Pool, np)
-	lpl := &ly.Pools[0]
-	lpl.StIdx = 0
-	lpl.EdIdx = nu
-	if np > 1 {
-		ly.BuildPools()
-	}
-	emsg := ""
-	for _, pj := range ly.RecvPrjns {
-		if pj.IsOff() {
-			continue
-		}
-		err := pj.Build()
-		if err != nil {
-			emsg += err.Error() + "\n"
-		}
-	}
-	if emsg != "" {
-		return errors.New(emsg)
-	}
-	return nil
+	nrn := &ly.Neurons[fidx]
+	return nrn.VarByName(varNm)
 }
 
-// WriteWtsJSON writes the weights from this layer from the receiver-side perspective
-// in a JSON text format.  We build in the indentation logic to make it much faster and
-// more efficient.
-func (ly *Layer) WriteWtsJSON(w io.Writer, depth int) {
-	w.Write(indent.TabBytes(depth))
-	w.Write([]byte("{\n"))
-	depth++
-	w.Write(indent.TabBytes(depth))
-	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", ly.Name)))
-	// todo: save average activity state
-	depth++
-	for _, pj := range ly.RecvPrjns {
-		if pj.IsOff() {
-			continue
-		}
-		pj.(*Prjn).WriteWtsJSON(w, depth)
+// UnitVal1D returns value of given variable name on given unit,
+// using 1-dimensional index.
+func (ly *Layer) UnitVal1D(varNm string, idx int) (float32, error) {
+	nn := len(ly.Neurons)
+	if idx < 0 || idx >= nn {
+		return 0, fmt.Errorf("Layer UnitVal1D index: %v out of range, N = %v", idx, nn)
 	}
-	depth--
-	w.Write(indent.TabBytes(depth))
-	w.Write([]byte("],\n"))
-	depth--
-	w.Write(indent.TabBytes(depth))
-	w.Write([]byte("},\n"))
+	nrn := &ly.Neurons[idx]
+	return nrn.VarByName(varNm)
 }
 
-// ReadWtsJSON reads the weights from this layer from the receiver-side perspective
-// in a JSON text format.
-func (ly *Layer) ReadWtsJSON(r io.Reader) error {
-	return nil
-}
+//////////////////////////////////////////////////////////////////////////////////////
+//  Build
 
-// BuildPools initializes neuron start / end indexes for sub-group pools
-func (ly *Layer) BuildPools() {
+// BuildSubPools initializes neuron start / end indexes for sub-group pools
+func (ly *Layer) BuildSubPools() {
 	if ly.Shape.NumDims() != 4 {
 		return
 	}
@@ -178,6 +142,88 @@ func (ly *Layer) BuildPools() {
 	}
 }
 
+// BuildPools builds the inhibitory pools structures -- nu = number of units in layer
+func (ly *Layer) BuildPools(nu int) error {
+	np := 1
+	if ly.Inhib.Pool.On {
+		np += ly.NPools()
+	}
+	ly.Pools = make([]Pool, np)
+	lpl := &ly.Pools[0]
+	lpl.StIdx = 0
+	lpl.EdIdx = nu
+	if np > 1 {
+		ly.BuildSubPools()
+	}
+	return nil
+}
+
+// BuildPrjns builds the projections, recv-side
+func (ly *Layer) BuildPrjns() error {
+	emsg := ""
+	for _, pj := range ly.RecvPrjns {
+		if pj.IsOff() {
+			continue
+		}
+		err := pj.Build()
+		if err != nil {
+			emsg += err.Error() + "\n"
+		}
+	}
+	if emsg != "" {
+		return errors.New(emsg)
+	}
+	return nil
+}
+
+// Build constructs the layer state, including calling Build on the projections
+// you MUST have properly configured the Inhib.Pool.On setting by this point
+// to properly allocate Pools for the unit groups if necessary.
+func (ly *Layer) Build() error {
+	nu := ly.Shape.Len()
+	if nu == 0 {
+		return fmt.Errorf("Build Layer %v: no units specified in Shape", ly.Name)
+	}
+	ly.Neurons = make([]Neuron, nu)
+	err := ly.BuildPools(nu)
+	if err != nil {
+		return err
+	}
+	err = ly.BuildPrjns()
+	return err
+}
+
+// WriteWtsJSON writes the weights from this layer from the receiver-side perspective
+// in a JSON text format.  We build in the indentation logic to make it much faster and
+// more efficient.
+func (ly *Layer) WriteWtsJSON(w io.Writer, depth int) {
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("{\n"))
+	depth++
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", ly.Name)))
+	// todo: save average activity state
+	depth++
+	for _, pj := range ly.RecvPrjns {
+		if pj.IsOff() {
+			continue
+		}
+		pj.WriteWtsJSON(w, depth)
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("],\n"))
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("},\n"))
+}
+
+// ReadWtsJSON reads the weights from this layer from the receiver-side perspective
+// in a JSON text format.
+func (ly *Layer) ReadWtsJSON(r io.Reader) error {
+	return nil
+}
+
 // note: all basic computation can be performed on layer-level and prjn level
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -190,8 +236,7 @@ func (ly *Layer) InitWts() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.InitWts()
+		p.(LeabraPrjn).InitWts()
 	}
 	for pi := range ly.Pools {
 		pl := &ly.Pools[pi]
@@ -234,8 +279,7 @@ func (ly *Layer) InitWtSym() {
 		if !has {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.InitWtSym(rpj.(*Prjn))
+		p.(LeabraPrjn).InitWtSym(rpj.(LeabraPrjn))
 	}
 }
 
@@ -324,8 +368,8 @@ func (ly *Layer) GeScaleFmAvgAct() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		slay := pj.Send.(*Layer)
+		pj := p.(LeabraPrjn).AsLeabra()
+		slay := p.SendLay().(LeabraLayer).AsLeabra()
 		slpl := slay.Pools[0]
 		savg := slpl.ActAvg.ActPAvgEff
 		snu := len(slay.Neurons)
@@ -338,7 +382,7 @@ func (ly *Layer) GeScaleFmAvgAct() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
+		pj := p.(LeabraPrjn).AsLeabra()
 		if totRel > 0 {
 			pj.GeScale /= totRel
 			// slay := pj.Send.(*Layer)
@@ -394,8 +438,7 @@ func (ly *Layer) InitGeInc() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.InitGeInc()
+		p.(LeabraPrjn).InitGeInc()
 	}
 }
 
@@ -411,7 +454,7 @@ func (ly *Layer) SendGeDelta() {
 					if sp.IsOff() {
 						continue
 					}
-					sp.(*Prjn).SendGeDelta(ni, delta)
+					sp.(LeabraPrjn).SendGeDelta(ni, delta)
 				}
 				nrn.ActSent = nrn.Act
 			}
@@ -422,7 +465,7 @@ func (ly *Layer) SendGeDelta() {
 				if sp.IsOff() {
 					continue
 				}
-				sp.(*Prjn).SendGeDelta(ni, delta)
+				sp.(LeabraPrjn).SendGeDelta(ni, delta)
 			}
 			nrn.ActSent = 0
 		}
@@ -435,8 +478,7 @@ func (ly *Layer) GeFmGeInc() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.RecvGeInc()
+		p.(LeabraPrjn).RecvGeInc()
 	}
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
@@ -579,8 +621,7 @@ func (ly *Layer) DWt() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.DWt()
+		p.(LeabraPrjn).DWt()
 	}
 }
 
@@ -590,8 +631,7 @@ func (ly *Layer) WtFmDWt() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.WtFmDWt()
+		p.(LeabraPrjn).WtFmDWt()
 	}
 }
 
@@ -601,8 +641,7 @@ func (ly *Layer) WtBalFmWt() {
 		if p.IsOff() {
 			continue
 		}
-		pj := p.(*Prjn)
-		pj.WtBalFmWt()
+		p.(LeabraPrjn).WtBalFmWt()
 	}
 }
 

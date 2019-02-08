@@ -5,22 +5,28 @@
 package leabra
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/goki/ki/bitflag"
 	"github.com/goki/ki/kit"
 )
 
+// NeuronVarStart is the index of fields in the Neuron structure where the float32 named variables start.
+// Note: all non-float32 infrastructure variables must be at the start!
+const NeuronVarStart = 2
+
 // leabra.Neuron holds all of the neuron (unit) level variables -- this is the most basic version with
 // rate-code only and no optional features at all.
 // All variables accessible via Unit interface must be float32 and start at the top, in contiguous order
 type Neuron struct {
-	Flags NeurFlags `desc:"bit flags for binary state variables"`
-	Act   float32   `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
-	Ge    float32   `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
-	Gi    float32   `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`
-	Inet  float32   `desc:"net current produced by all channels -- drives update of Vm"`
-	Vm    float32   `desc:"membrane potential -- integrates Inet current over time"`
+	Flags   NeurFlags `desc:"bit flags for binary state variables"`
+	SubPool int32     `desc:"index of the sub-level inhibitory pool that this neuron is in (only for 4D shapes, the unit-group / hypercolumn structure level)"`
+	Act     float32   `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
+	Ge      float32   `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
+	Gi      float32   `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`
+	Inet    float32   `desc:"net current produced by all channels -- drives update of Vm"`
+	Vm      float32   `desc:"membrane potential -- integrates Inet current over time"`
 
 	Targ float32 `desc:"target value: drives learning to produce this activation value"`
 	Ext  float32 `desc:"external input: drives activation of unit from outside influences (e.g., sensory input)"`
@@ -61,14 +67,29 @@ func (nrn *Neuron) VarNames() []string {
 	return NeuronVars
 }
 
-func (nrn *Neuron) VarByName(varNm string) (float32, bool) {
+// NeuronVarByName returns the index of the variable in the Neuron, or error
+func NeuronVarByName(varNm string) (int, error) {
 	i, ok := NeuronVarsMap[varNm]
 	if !ok {
-		return 0, false
+		return 0, fmt.Errorf("Neuron VarByName: variable name: %v not valid", varNm)
 	}
+	return i, nil
+}
+
+// VarByIndex returns variable using index (0 = first variable in NeuronVars list)
+func (nrn *Neuron) VarByIndex(idx int) float32 {
 	// todo: would be ideal to avoid having to use reflect here..
 	v := reflect.ValueOf(*nrn)
-	return v.Field(i + 1).Interface().(float32), true
+	return v.Field(idx + NeuronVarStart).Interface().(float32)
+}
+
+// VarByName returns variable by name, or error
+func (nrn *Neuron) VarByName(varNm string) (float32, error) {
+	i, err := NeuronVarByName(varNm)
+	if err != nil {
+		return 0, err
+	}
+	return nrn.VarByIndex(i), nil
 }
 
 func (nrn *Neuron) HasFlag(flag NeurFlags) bool {

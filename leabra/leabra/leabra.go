@@ -11,7 +11,7 @@ import (
 
 // LeabraLayer defines the essential algorithmic API for Leabra, at the layer level.
 // These are the methods that the leabra.Network calls on its layers at each step
-// of processing.  Other layer types can selectively re-implement (override) these methods
+// of processing.  Other Layer types can selectively re-implement (override) these methods
 // to modify the computation, while inheriting the basic behavior for non-overridden methods.
 //
 // All of the structural API is in emer.Layer, which this interface also inherits for
@@ -19,9 +19,10 @@ import (
 type LeabraLayer interface {
 	emer.Layer
 
-	// AsLeabra returns the current layer as a LeabraLayer interface -- this is stored
-	// on the concrete Layer
-	AsLeabra() LeabraLayer
+	// AsLeabra returns this layer as a leabra.Layer -- all derived layers must redefine
+	// this to return the base Layer type, so that the LeabraLayer interface does not
+	// need to include accessors to all the basic stuff
+	AsLeabra() *Layer
 
 	// InitWts initializes the weight values in the network, i.e., resetting learning
 	// Also calls InitActs
@@ -107,6 +108,49 @@ type LeabraLayer interface {
 	DWt()
 
 	// WtFmDWt updates the weights from delta-weight changes -- on the sending projections
+	WtFmDWt()
+
+	// WtBalFmWt computes the Weight Balance factors based on average recv weights
+	WtBalFmWt()
+}
+
+// LeabraPrjn defines the essential algorithmic API for Leabra, at the projection level.
+// These are the methods that the leabra.Layer calls on its prjns at each step
+// of processing.  Other Prjn types can selectively re-implement (override) these methods
+// to modify the computation, while inheriting the basic behavior for non-overridden methods.
+//
+// All of the structural API is in emer.Prjn, which this interface also inherits for
+// convenience.
+type LeabraPrjn interface {
+	emer.Prjn
+
+	// AsLeabra returns this prjn as a leabra.Prjn -- all derived prjns must redefine
+	// this to return the base Prjn type, so that the LeabraPrjn interface does not
+	// need to include accessors to all the basic stuff.
+	AsLeabra() *Prjn
+
+	// InitWts initializes weight values according to Learn.WtInit params
+	InitWts()
+
+	// InitWtSym initializes weight symmetry -- is given the reciprocal projection where
+	// the Send and Recv layers are reversed.
+	InitWtSym(rpj LeabraPrjn)
+
+	// InitGeInc initializes the per-projection GeInc threadsafe increment -- not
+	// typically needed (called during InitWts only) but can be called when needed
+	InitGeInc()
+
+	// SendGeDelta sends the delta-activation from sending neuron index si,
+	// to integrate excitatory conductance on receivers
+	SendGeDelta(si int, delta float32)
+
+	// RecvGeInc increments the receiver's GeInc from that of all the projections
+	RecvGeInc()
+
+	// DWt computes the weight change (learning) -- on sending projections
+	DWt()
+
+	// WtFmDWt updates the synaptic weight values from delta-weight changes -- on sending projections
 	WtFmDWt()
 
 	// WtBalFmWt computes the Weight Balance factors based on average recv weights

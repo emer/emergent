@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package leabra
+package deep
 
 import (
 	"bytes"
@@ -13,11 +13,15 @@ import (
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etensor"
+	"github.com/emer/emergent/leabra/leabra"
 	"github.com/emer/emergent/prjn"
 )
 
 // Note: this test project exactly reproduces the configuration and behavior of
 // C++ emergent/demo/leabra/basic_leabra_test.proj  in version 8.5.6 svn 11492
+
+// difTol is the numerical difference tolerance for comparing vs. target values
+const difTol = float32(1.0e-10)
 
 var TestNet Network
 var InPats *etensor.Float32
@@ -121,7 +125,7 @@ func TestNetAct(t *testing.T) {
 	hidLay := TestNet.LayerByName("Hidden").(*Layer)
 	outLay := TestNet.LayerByName("Output").(*Layer)
 
-	time := NewTime()
+	time := leabra.NewTime()
 
 	printCycs := false
 	printQtrs := false
@@ -283,7 +287,7 @@ func TestNetLearn(t *testing.T) {
 		TestNet.InitWts()
 		TestNet.InitExt()
 
-		time := NewTime()
+		time := leabra.NewTime()
 
 		for pi := 0; pi < 4; pi++ {
 			inpat, err := InPats.SubSlice(2, []int{pi})

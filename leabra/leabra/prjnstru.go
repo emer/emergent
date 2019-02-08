@@ -18,7 +18,7 @@ import (
 // The exact same struct object is added to the Recv and Send layers, and it manages everything
 // about the connectivity, and methods on the Prjn handle all the relevant computation.
 type PrjnStru struct {
-	EmerPrjn    emer.Prjn     `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an emer.Prjn, which can always be used to extract the true underlying type of object when prjn is embedded in other structs -- function receivers do not have this ability so this is necessary."`
+	LeabraPrj   LeabraPrjn    `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an LeabraPrjn, which can always be used to extract the true underlying type of object when prjn is embedded in other structs -- function receivers do not have this ability so this is necessary."`
 	Off         bool          `desc:"inactivate this projection -- allows for easy experimentation"`
 	Class       string        `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Notes       string        `desc:"can record notes about this projection here"`
@@ -42,7 +42,7 @@ type PrjnStru struct {
 // Init MUST be called to initialize the prjn's pointer to itself as an emer.Prjn
 // which enables the proper interface methods to be called.
 func (ps *PrjnStru) Init(prjn emer.Prjn) {
-	ps.EmerPrjn = prjn
+	ps.LeabraPrj = prjn.(LeabraPrjn)
 }
 
 func (ps *PrjnStru) PrjnClass() string   { return ps.Class }
@@ -201,7 +201,7 @@ func (ps *PrjnStru) String() string {
 func (ps *PrjnStru) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
 	cls := ps.Class + " " + ps.Type.String()
 	if emer.StyleMatch(sty, ps.PrjnName(), cls, "Prjn") {
-		return ps.EmerPrjn.SetParams(pars, setMsg) // note: going through EmerPrjn interface ensures correct method called
+		return ps.LeabraPrj.SetParams(pars, setMsg) // note: going through LeabraPrj interface ensures correct method called
 	}
 	return false
 }

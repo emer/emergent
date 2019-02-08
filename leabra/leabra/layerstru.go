@@ -36,7 +36,6 @@ func (ls *LayerStru) InitName(lay emer.Layer, name string) {
 	ls.Name = name
 }
 
-func (ls *LayerStru) AsLeabra() LeabraLayer        { return ls.LeabraLay }
 func (ls *LayerStru) LayName() string              { return ls.Name }
 func (ls *LayerStru) Label() string                { return ls.Name }
 func (ls *LayerStru) LayClass() string             { return ls.Class }

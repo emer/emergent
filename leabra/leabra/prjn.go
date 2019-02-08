@@ -26,6 +26,13 @@ type Prjn struct {
 	WbRecv  []WtBalRecvPrjn `desc:"weight balance state variables for this projection, one per recv neuron"`
 }
 
+// AsLeabra returns this prjn as a leabra.Prjn -- all derived prjns must redefine
+// this to return the base Prjn type, so that the LeabraPrjn interface does not
+// need to include accessors to all the basic stuff.
+func (pj *Prjn) AsLeabra() *Prjn {
+	return pj
+}
+
 func (pj *Prjn) Defaults() {
 	pj.WtScale.Defaults()
 	pj.Learn.Defaults()
@@ -73,8 +80,8 @@ func (pj *Prjn) SynVals(varnm string) []float32 {
 // SynVal returns value of given variable name on the synapse between given recv unit index
 // and send unit index -- returns error for access errors.
 func (pj *Prjn) SynVal(varnm string, ridx, sidx int) (float32, error) {
-	slay := pj.Send.(*Layer)
-	rlay := pj.Recv.(*Layer)
+	slay := pj.Send.(LeabraLayer).AsLeabra()
+	rlay := pj.Recv.(LeabraLayer).AsLeabra()
 	nr := len(rlay.Neurons)
 	ns := len(slay.Neurons)
 	if ridx >= nr {
@@ -107,8 +114,8 @@ func (pj *Prjn) SynVal(varnm string, ridx, sidx int) (float32, error) {
 // in a JSON text format.  We build in the indentation logic to make it much faster and
 // more efficient.
 func (pj *Prjn) WriteWtsJSON(w io.Writer, depth int) {
-	slay := pj.Send.(*Layer)
-	rlay := pj.Recv.(*Layer)
+	slay := pj.Send.(LeabraLayer).AsLeabra()
+	rlay := pj.Recv.(LeabraLayer).AsLeabra()
 	nr := len(rlay.Neurons)
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte("{\n"))
@@ -191,12 +198,14 @@ func (pj *Prjn) InitWts() {
 		wb := &pj.WbRecv[wi]
 		wb.Init()
 	}
+	pj.LeabraPrj.InitGeInc()
 }
 
 // InitWtSym initializes weight symmetry -- is given the reciprocal projection where
 // the Send and Recv layers are reversed.
-func (pj *Prjn) InitWtSym(rpj *Prjn) {
-	slay := pj.Send.(*Layer)
+func (pj *Prjn) InitWtSym(rpjp LeabraPrjn) {
+	rpj := rpjp.AsLeabra()
+	slay := pj.Send.(LeabraLayer).AsLeabra()
 	ns := len(slay.Neurons)
 	for si := 0; si < ns; si++ {
 		nc := int(pj.SConN[si])
@@ -222,15 +231,16 @@ func (pj *Prjn) InitWtSym(rpj *Prjn) {
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////////////////
-//  Act methods
-
-// InitGeInc initializes the per-projection GeInc threadsafe increment
+// InitGeInc initializes the per-projection GeInc threadsafe increment -- not
+// typically needed (called during InitWts only) but can be called when needed
 func (pj *Prjn) InitGeInc() {
 	for ri := range pj.GeInc {
 		pj.GeInc[ri] = 0
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Act methods
 
 // SendGeDelta sends the delta-activation from sending neuron index si,
 // to integrate excitatory conductance on receivers
@@ -248,7 +258,7 @@ func (pj *Prjn) SendGeDelta(si int, delta float32) {
 
 // RecvGeInc increments the receiver's GeInc from that of all the projections
 func (pj *Prjn) RecvGeInc() {
-	rlay := pj.Recv.(*Layer)
+	rlay := pj.Recv.(LeabraLayer).AsLeabra()
 	for ri := range rlay.Neurons {
 		rn := &rlay.Neurons[ri]
 		rn.GeInc += pj.GeInc[ri]
@@ -264,8 +274,8 @@ func (pj *Prjn) DWt() {
 	if !pj.Learn.Learn {
 		return
 	}
-	slay := pj.Send.(*Layer)
-	rlay := pj.Recv.(*Layer)
+	slay := pj.Send.(LeabraLayer).AsLeabra()
+	rlay := pj.Recv.(LeabraLayer).AsLeabra()
 	for si := range slay.Neurons {
 		sn := &slay.Neurons[si]
 		if sn.AvgS < pj.Learn.XCal.LrnThr && sn.AvgM < pj.Learn.XCal.LrnThr {
@@ -338,7 +348,7 @@ func (pj *Prjn) WtBalFmWt() {
 		return
 	}
 
-	rlay := pj.Recv.(*Layer)
+	rlay := pj.Recv.(LeabraLayer).AsLeabra()
 	if rlay.Type == emer.Target {
 		return
 	}
