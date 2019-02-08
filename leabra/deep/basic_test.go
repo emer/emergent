@@ -86,7 +86,7 @@ func TestMakeNet(t *testing.T) {
 	TestNet.StyleParams(Pars[0], false) // false) // true) // no msg
 	TestNet.Build()
 	TestNet.InitWts()
-	TestNet.TrialInit() // get GeScale
+	TestNet.TrialInit() // get GScale
 
 	var buf bytes.Buffer
 	TestNet.WriteWtsJSON(&buf)
@@ -125,7 +125,7 @@ func TestNetAct(t *testing.T) {
 	hidLay := TestNet.LayerByName("Hidden").(*Layer)
 	outLay := TestNet.LayerByName("Output").(*Layer)
 
-	time := leabra.NewTime()
+	ltime := leabra.NewTime()
 
 	printCycs := false
 	printQtrs := false
@@ -153,11 +153,11 @@ func TestNetAct(t *testing.T) {
 		outLay.ApplyExt(inpat)
 
 		TestNet.TrialInit()
-		time.TrialStart()
+		ltime.TrialStart()
 		for qtr := 0; qtr < 4; qtr++ {
-			for cyc := 0; cyc < time.CycPerQtr; cyc++ {
-				TestNet.Cycle()
-				time.CycleInc()
+			for cyc := 0; cyc < ltime.CycPerQtr; cyc++ {
+				TestNet.Cycle(ltime)
+				ltime.CycleInc()
 
 				if printCycs {
 					inActs, _ := inLay.UnitVals("Act")
@@ -171,7 +171,7 @@ func TestNetAct(t *testing.T) {
 				}
 			}
 			TestNet.QuarterFinal(time)
-			time.QuarterInc()
+			ltime.QuarterInc()
 
 			if printCycs && printQtrs {
 				fmt.Printf("=============================\n")
@@ -186,7 +186,7 @@ func TestNetAct(t *testing.T) {
 			outGis, _ := outLay.UnitVals("Gi")
 
 			if printQtrs {
-				fmt.Printf("pat: %v qtr: %v cyc: %v\nin acts: %v\nhid acts: %v ges: %v gis: %v\nout acts: %v ges: %v gis: %v\n", pi, qtr, time.Cycle, inActs, hidActs, hidGes, hidGis, outActs, outGes, outGis)
+				fmt.Printf("pat: %v qtr: %v cyc: %v\nin acts: %v\nhid acts: %v ges: %v gis: %v\nout acts: %v ges: %v gis: %v\n", pi, qtr, ltime.Cycle, inActs, hidActs, hidGes, hidGis, outActs, outGes, outGis)
 			}
 
 			if printCycs && printQtrs {
@@ -287,7 +287,7 @@ func TestNetLearn(t *testing.T) {
 		TestNet.InitWts()
 		TestNet.InitExt()
 
-		time := leabra.NewTime()
+		ltime := leabra.NewTime()
 
 		for pi := 0; pi < 4; pi++ {
 			inpat, err := InPats.SubSlice(2, []int{pi})
@@ -298,11 +298,11 @@ func TestNetLearn(t *testing.T) {
 			outLay.ApplyExt(inpat)
 
 			TestNet.TrialInit()
-			time.TrialStart()
+			ltime.TrialStart()
 			for qtr := 0; qtr < 4; qtr++ {
-				for cyc := 0; cyc < time.CycPerQtr; cyc++ {
-					TestNet.Cycle()
-					time.CycleInc()
+				for cyc := 0; cyc < ltime.CycPerQtr; cyc++ {
+					TestNet.Cycle(ltime)
+					ltime.CycleInc()
 
 					hidAct, _ := hidLay.UnitVals("Act")
 					hidGes, _ := hidLay.UnitVals("Ge")
@@ -315,12 +315,12 @@ func TestNetLearn(t *testing.T) {
 					outAvgM, _ := outLay.UnitVals("AvgM")
 
 					if printCycs {
-						fmt.Printf("pat: %v qtr: %v cyc: %v\nhid act: %v ges: %v gis: %v\nhid avgss: %v avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAct, hidGes, hidGis, hidAvgSS, hidAvgS, hidAvgM, outAvgS, outAvgM)
+						fmt.Printf("pat: %v qtr: %v cyc: %v\nhid act: %v ges: %v gis: %v\nhid avgss: %v avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, ltime.Cycle, hidAct, hidGes, hidGis, hidAvgSS, hidAvgS, hidAvgM, outAvgS, outAvgM)
 					}
 
 				}
 				TestNet.QuarterFinal(time)
-				time.QuarterInc()
+				ltime.QuarterInc()
 
 				hidAvgS, _ := hidLay.UnitVals("AvgS")
 				hidAvgM, _ := hidLay.UnitVals("AvgM")
@@ -329,7 +329,7 @@ func TestNetLearn(t *testing.T) {
 				outAvgM, _ := outLay.UnitVals("AvgM")
 
 				if printQtrs {
-					fmt.Printf("pat: %v qtr: %v cyc: %v\nhid avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, time.Cycle, hidAvgS, hidAvgM, outAvgS, outAvgM)
+					fmt.Printf("pat: %v qtr: %v cyc: %v\nhid avgs: %v avgm: %v\nout avgs: %v avgm: %v\n", pi, qtr, ltime.Cycle, hidAvgS, hidAvgM, outAvgS, outAvgM)
 				}
 
 				if pi == 0 && qtr == 0 {

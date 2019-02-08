@@ -61,11 +61,14 @@ func (ac *ActParams) Update() {
 ///////////////////////////////////////////////////////////////////////
 //  Init
 
-// InitGe initializes the Ge excitatory conductance accumulation state -- called at start of trial always
-func (ac *ActParams) InitGe(nrn *Neuron) {
+// InitGe initializes the Ge excitatory and Gi inhibitory conductance accumulation states
+// called at start of trial always
+func (ac *ActParams) InitGeGi(nrn *Neuron) {
 	nrn.ActSent = 0
 	nrn.GeRaw = 0
 	nrn.GeInc = 0
+	nrn.GiRaw = 0
+	nrn.GiInc = 0
 }
 
 // DecayState decays the activation state toward initial values in proportion to given decay parameter
@@ -80,7 +83,7 @@ func (ac *ActParams) DecayState(nrn *Neuron, decay float32) {
 	}
 	nrn.ActDel = 0
 	nrn.Inet = 0
-	ac.InitGe(nrn)
+	ac.InitGeGi(nrn)
 }
 
 // InitActs initializes activation state in neuron -- called during InitWts but otherwise not
@@ -96,16 +99,20 @@ func (ac *ActParams) InitActs(nrn *Neuron) {
 	nrn.Ext = 0
 	nrn.ActDel = 0
 
-	ac.InitGe(nrn)
+	ac.InitGeGi(nrn)
 }
 
 ///////////////////////////////////////////////////////////////////////
 //  Cycle
 
-// GeFmGeInc integrates Ge excitatory conductance from GeInc delta-increment sent
-func (ac *ActParams) GeFmGeInc(nrn *Neuron) {
+// GeGiFmInc integrates Ge excitatory conductance from GeInc delta-increment sent
+// and also GiRaw and GiSyn from GiInc.
+func (ac *ActParams) GeGiFmInc(nrn *Neuron) {
 	nrn.GeRaw += nrn.GeInc
 	nrn.GeInc = 0
+
+	nrn.GiRaw += nrn.GiInc
+	nrn.GiInc = 0
 
 	geEff := nrn.GeRaw
 	if !ac.Clamp.Hard && nrn.HasFlag(NeurHasExt) {
@@ -117,6 +124,8 @@ func (ac *ActParams) GeFmGeInc(nrn *Neuron) {
 	}
 
 	nrn.Ge += ac.Dt.Integ * ac.Dt.GeDt * (geEff - nrn.Ge)
+	nrn.GiSyn += ac.Dt.Integ * ac.Dt.GeDt * (nrn.GiRaw - nrn.GiSyn)
+	nrn.GiSyn = math32.Max(nrn.GiSyn, 0) // negative inhib G doesn't make any sense
 
 	// first place noise is required -- generate here!
 	if ac.Noise.Type != NoNoise && !ac.Noise.TrialFixed && ac.Noise.Dist != erand.None {

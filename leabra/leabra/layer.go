@@ -337,7 +337,7 @@ func (ly *Layer) TrialInit() {
 		ly.Inhib.ActAvg.AvgFmAct(&pl.ActAvg.ActPAvg, pl.ActP.Avg)
 		ly.Inhib.ActAvg.EffFmAvg(&pl.ActAvg.ActPAvgEff, pl.ActAvg.ActPAvg)
 	}
-	ly.LeabraLay.GeScaleFmAvgAct()
+	ly.LeabraLay.GScaleFmAvgAct()
 	if ly.Act.Noise.Type != NoNoise && ly.Act.Noise.TrialFixed && ly.Act.Noise.Dist != erand.None {
 		ly.LeabraLay.GenNoise()
 	}
@@ -358,12 +358,13 @@ func (ly *Layer) AvgLFmAvgM() {
 	}
 }
 
-// GeScaleFmAvgAct computes the scaling factor for Ge excitatory conductance input
+// GScaleFmAvgAct computes the scaling factor for synaptic input conductances G,
 // based on sending layer average activation.
 // This attempts to automatically adjust for overall differences in raw activity coming into the units
 // to achieve a general target of around .5 to 1 for the integrated Ge value.
-func (ly *Layer) GeScaleFmAvgAct() {
-	totRel := float32(0)
+func (ly *Layer) GScaleFmAvgAct() {
+	totGeRel := float32(0)
+	totGiRel := float32(0)
 	for _, p := range ly.RecvPrjns {
 		if p.IsOff() {
 			continue
@@ -374,8 +375,12 @@ func (ly *Layer) GeScaleFmAvgAct() {
 		savg := slpl.ActAvg.ActPAvgEff
 		snu := len(slay.Neurons)
 		ncon := pj.RConNAvgMax.Avg
-		pj.GeScale = pj.WtScale.FullScale(savg, float32(snu), ncon)
-		totRel += pj.WtScale.Rel
+		pj.GScale = pj.WtScale.FullScale(savg, float32(snu), ncon)
+		if pj.Type == emer.Inhib {
+			totGiRel += pj.WtScale.Rel
+		} else {
+			totGeRel += pj.WtScale.Rel
+		}
 	}
 
 	for _, p := range ly.RecvPrjns {
@@ -383,12 +388,14 @@ func (ly *Layer) GeScaleFmAvgAct() {
 			continue
 		}
 		pj := p.(LeabraPrjn).AsLeabra()
-		if totRel > 0 {
-			pj.GeScale /= totRel
-			// slay := pj.Send.(*Layer)
-			// slpl := slay.Pools[0]
-			// savg := slpl.ActAvg.ActPAvgEff
-			// fmt.Printf("GeScale: %v  savg: %v  savg raw: %v  actP.avg: %v\n", pj.GeScale, savg, slpl.ActAvg.ActPAvg, slpl.ActP.Avg)
+		if pj.Type == emer.Inhib {
+			if totGiRel > 0 {
+				pj.GScale /= totGiRel
+			}
+		} else {
+			if totGeRel > 0 {
+				pj.GScale /= totGeRel
+			}
 		}
 	}
 }
@@ -428,22 +435,24 @@ func (ly *Layer) HardClamp() {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Cycle
 
-// InitGeInc initializes GeInc Ge increment -- optional
-func (ly *Layer) InitGeInc() {
+// InitGInc initializes GeInc and GiIn increment -- optional
+func (ly *Layer) InitGInc() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		nrn.GeInc = 0
+		nrn.GiInc = 0
 	}
 	for _, p := range ly.RecvPrjns {
 		if p.IsOff() {
 			continue
 		}
-		p.(LeabraPrjn).InitGeInc()
+		p.(LeabraPrjn).InitGInc()
 	}
 }
 
-// SendGeDelta sends change in activation since last sent, if above thresholds
-func (ly *Layer) SendGeDelta() {
+// SendGDelta sends change in activation since last sent, to increment recv
+// synaptic conductances G, if above thresholds
+func (ly *Layer) SendGDelta() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		if nrn.Act > ly.Act.OptThresh.Send {
@@ -454,7 +463,7 @@ func (ly *Layer) SendGeDelta() {
 					if sp.IsOff() {
 						continue
 					}
-					sp.(LeabraPrjn).SendGeDelta(ni, delta)
+					sp.(LeabraPrjn).SendGDelta(ni, delta)
 				}
 				nrn.ActSent = nrn.Act
 			}
@@ -465,24 +474,24 @@ func (ly *Layer) SendGeDelta() {
 				if sp.IsOff() {
 					continue
 				}
-				sp.(LeabraPrjn).SendGeDelta(ni, delta)
+				sp.(LeabraPrjn).SendGDelta(ni, delta)
 			}
 			nrn.ActSent = 0
 		}
 	}
 }
 
-// GeFmGeInc integrates new excitatory conductance from GeInc increments sent during last SendGeDelta
-func (ly *Layer) GeFmGeInc() {
+// GFmInc integrates new synaptic conductances from increments sent during last SendGDelta.
+func (ly *Layer) GFmInc() {
 	for _, p := range ly.RecvPrjns {
 		if p.IsOff() {
 			continue
 		}
-		p.(LeabraPrjn).RecvGeInc()
+		p.(LeabraPrjn).RecvGInc()
 	}
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
-		ly.Act.GeFmGeInc(nrn)
+		ly.Act.GeGiFmInc(nrn)
 	}
 }
 
@@ -512,14 +521,14 @@ func (ly *Layer) InhibFmGeAct() {
 			for ni := pl.StIdx; ni < pl.EdIdx; ni++ {
 				nrn := &ly.Neurons[ni]
 				ly.Inhib.Self.Inhib(&nrn.GiSelf, nrn.Act)
-				nrn.Gi = pl.Inhib.Gi + nrn.GiSelf
+				nrn.Gi = pl.Inhib.Gi + nrn.GiSelf + nrn.GiSyn
 			}
 		}
 	} else {
 		for ni := lpl.StIdx; ni < lpl.EdIdx; ni++ {
 			nrn := &ly.Neurons[ni]
 			ly.Inhib.Self.Inhib(&nrn.GiSelf, nrn.Act)
-			nrn.Gi = lpl.Inhib.Gi + nrn.GiSelf
+			nrn.Gi = lpl.Inhib.Gi + nrn.GiSelf + nrn.GiSyn
 		}
 	}
 }

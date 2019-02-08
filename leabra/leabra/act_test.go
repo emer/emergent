@@ -52,7 +52,7 @@ func TestActUpdt(t *testing.T) {
 
 	for i := range geinc {
 		nrn.GeInc = geinc[i]
-		ac.GeFmGeInc(nrn)
+		ac.GeGiFmInc(nrn)
 		ac.VmFmG(nrn)
 		ac.ActFmG(nrn)
 		ge[i] = nrn.Ge

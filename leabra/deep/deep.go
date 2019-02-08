@@ -49,6 +49,12 @@ func (db *DeepCtxtParams) Defaults() {
 	db.Update()
 }
 
+// DeepCtxtFmGe computes the new DeepCtxt value based on current excitatory conductance of
+// DeepBurst signals received, and current (now previous) DeepCtxt value.
+func (db *DeepCtxtParams) DeepCtxtFmGe(ge, dctxt float32) float32 {
+	return db.FmPrv*dctxt + db.FmNew*ge
+}
+
 // DeepTRCParams provides parameters for how the plus-phase (outcome) state of thalamic relay cell
 // (e.g., Pulvinar) neurons is computed from the BurstTRC projections that drive TRCBurstGe
 // excitatory conductance.

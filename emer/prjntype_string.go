@@ -9,9 +9,9 @@ import (
 
 var _ = errors.New("dummy error")
 
-const _PrjnType_name = "ForwardBackLateralPrjnTypeN"
+const _PrjnType_name = "ForwardBackLateralInhibPrjnTypeN"
 
-var _PrjnType_index = [...]uint8{0, 7, 11, 18, 27}
+var _PrjnType_index = [...]uint8{0, 7, 11, 18, 23, 32}
 
 func (i PrjnType) String() string {
 	if i < 0 || i >= PrjnType(len(_PrjnType_index)-1) {

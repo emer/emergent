@@ -160,6 +160,8 @@ type Layer interface {
 
 // LayerType is the type of the layer: Input, Hidden, Target, Compare.
 // Class parameter styles automatically key off of these types.
+// Specialized algorithms can extend this to other types, but these types encompass
+// most standard neural network models.
 type LayerType int32
 
 //go:generate stringer -type=LayerType

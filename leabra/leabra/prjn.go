@@ -21,9 +21,9 @@ type Prjn struct {
 	Syns    []Synapse      `desc:"synaptic state values, ordered by the sending layer units which owns them -- one-to-one with SConIdx array"`
 
 	// misc state variables below:
-	GeScale float32         `desc:"scaling factor for integrating excitatory synaptic input conductance Ge -- computed in TrialInit, incorporates running-average activity levels"`
-	GeInc   []float32       `desc:"local increment accumulator for Ge excitatory conductance from sending units -- this will be thread-safe"`
-	WbRecv  []WtBalRecvPrjn `desc:"weight balance state variables for this projection, one per recv neuron"`
+	GScale float32         `desc:"scaling factor for integrating synaptic input conductances (G's) -- computed in TrialInit, incorporates running-average activity levels"`
+	GInc   []float32       `desc:"local increment accumulator for synaptic conductance from sending units -- goes to either GeInc or GiInc on neuron depending on projection type -- this will be thread-safe"`
+	WbRecv []WtBalRecvPrjn `desc:"weight balance state variables for this projection, one per recv neuron"`
 }
 
 // AsLeabra returns this prjn as a leabra.Prjn -- all derived prjns must redefine
@@ -36,7 +36,7 @@ func (pj *Prjn) AsLeabra() *Prjn {
 func (pj *Prjn) Defaults() {
 	pj.WtScale.Defaults()
 	pj.Learn.Defaults()
-	pj.GeScale = 1
+	pj.GScale = 1
 }
 
 // UpdateParams updates all params given any changes that might have been made to individual values
@@ -121,7 +121,7 @@ func (pj *Prjn) WriteWtsJSON(w io.Writer, depth int) {
 	w.Write([]byte("{\n"))
 	depth++
 	w.Write(indent.TabBytes(depth))
-	w.Write([]byte(fmt.Sprintf("\"GeScale\": %v\n", pj.GeScale)))
+	w.Write([]byte(fmt.Sprintf("\"GScale\": %v\n", pj.GScale)))
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte(fmt.Sprintf("\"%v\": [\n", slay.Name)))
 	depth++
@@ -180,7 +180,7 @@ func (pj *Prjn) Build() error {
 	rsh := pj.Recv.LayShape()
 	//	ssh := pj.Send.LayShape()
 	rlen := rsh.Len()
-	pj.GeInc = make([]float32, rlen)
+	pj.GInc = make([]float32, rlen)
 	pj.WbRecv = make([]WtBalRecvPrjn, rlen)
 	return nil
 }
@@ -198,7 +198,7 @@ func (pj *Prjn) InitWts() {
 		wb := &pj.WbRecv[wi]
 		wb.Init()
 	}
-	pj.LeabraPrj.InitGeInc()
+	pj.LeabraPrj.InitGInc()
 }
 
 // InitWtSym initializes weight symmetry -- is given the reciprocal projection where
@@ -231,38 +231,46 @@ func (pj *Prjn) InitWtSym(rpjp LeabraPrjn) {
 	}
 }
 
-// InitGeInc initializes the per-projection GeInc threadsafe increment -- not
+// IniteGInc initializes the per-projection GInc threadsafe increment -- not
 // typically needed (called during InitWts only) but can be called when needed
-func (pj *Prjn) InitGeInc() {
-	for ri := range pj.GeInc {
-		pj.GeInc[ri] = 0
+func (pj *Prjn) InitGInc() {
+	for ri := range pj.GInc {
+		pj.GInc[ri] = 0
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Act methods
 
-// SendGeDelta sends the delta-activation from sending neuron index si,
-// to integrate excitatory conductance on receivers
-func (pj *Prjn) SendGeDelta(si int, delta float32) {
-	scdel := delta * pj.GeScale
+// SendGDelta sends the delta-activation from sending neuron index si,
+// to integrate synaptic conductances on receivers
+func (pj *Prjn) SendGDelta(si int, delta float32) {
+	scdel := delta * pj.GScale
 	nc := pj.SConN[si]
 	st := pj.SConIdxSt[si]
 	syns := pj.Syns[st : st+nc]
 	scons := pj.SConIdx[st : st+nc]
 	for ci := range syns {
 		ri := scons[ci]
-		pj.GeInc[ri] += scdel * syns[ci].Wt
+		pj.GInc[ri] += scdel * syns[ci].Wt
 	}
 }
 
-// RecvGeInc increments the receiver's GeInc from that of all the projections
-func (pj *Prjn) RecvGeInc() {
+// RecvGInc increments the receiver's GeInc or GiInc from that of all the projections.
+func (pj *Prjn) RecvGInc() {
 	rlay := pj.Recv.(LeabraLayer).AsLeabra()
-	for ri := range rlay.Neurons {
-		rn := &rlay.Neurons[ri]
-		rn.GeInc += pj.GeInc[ri]
-		pj.GeInc[ri] = 0
+	if pj.Type == emer.Inhib {
+		for ri := range rlay.Neurons {
+			rn := &rlay.Neurons[ri]
+			rn.GiInc += pj.GInc[ri]
+			pj.GInc[ri] = 0
+		}
+	} else {
+		for ri := range rlay.Neurons {
+			rn := &rlay.Neurons[ri]
+			rn.GeInc += pj.GInc[ri]
+			pj.GInc[ri] = 0
+		}
 	}
 }
 

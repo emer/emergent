@@ -159,7 +159,7 @@ func (ss *SimState) RunTrial() {
 	ss.Time.TrialStart()
 	for qtr := 0; qtr < 4; qtr++ {
 		for cyc := 0; cyc < ss.Time.CycPerQtr; cyc++ {
-			ss.Net.Cycle()
+			ss.Net.Cycle(&ss.Time)
 			ss.Time.CycleInc()
 		}
 		ss.Net.QuarterFinal(&ss.Time)

@@ -53,11 +53,11 @@ type LeabraLayer interface {
 	// AvgLFmAvgM updates AvgL long-term running average activation that drives BCM Hebbian learning
 	AvgLFmAvgM()
 
-	// GeScaleFmAvgAct computes the scaling factor for Ge excitatory conductance input
+	// GScaleFmAvgAct computes the scaling factor for synaptic conductance input
 	// based on sending layer average activation.
 	// This attempts to automatically adjust for overall differences in raw activity coming into the units
-	// to achieve a general target of around .5 to 1 for the integrated Ge value.
-	GeScaleFmAvgAct()
+	// to achieve a general target of around .5 to 1 for the integrated G values.
+	GScaleFmAvgAct()
 
 	// GenNoise generates random noise for all neurons
 	GenNoise()
@@ -72,14 +72,15 @@ type LeabraLayer interface {
 	//////////////////////////////////////////////////////////////////////////////////////
 	//  Cycle Methods
 
-	// InitGeInc initializes GeInc Ge increment -- optional
-	InitGeInc()
+	// InitGInc initializes synaptic conductance increments -- optional
+	InitGInc()
 
-	// SendGeDelta sends change in activation since last sent, if above thresholds
-	SendGeDelta()
+	// SendGDelta sends change in activation since last sent, to increment recv
+	// synaptic conductances G, if above thresholds
+	SendGDelta()
 
-	// GeFmGeInc integrates new excitatory conductance from GeInc increments sent during last SendGeDelta
-	GeFmGeInc()
+	// GFmInc integrates new synaptic conductances from increments sent during last SendGDelta
+	GFmInc()
 
 	// AvgMaxGe computes the average and max Ge stats, used in inhibition
 	AvgMaxGe()
@@ -136,16 +137,16 @@ type LeabraPrjn interface {
 	// the Send and Recv layers are reversed.
 	InitWtSym(rpj LeabraPrjn)
 
-	// InitGeInc initializes the per-projection GeInc threadsafe increment -- not
-	// typically needed (called during InitWts only) but can be called when needed
-	InitGeInc()
+	// InitGInc initializes the per-projection synaptic conductance threadsafe increments.
+	// This is not typically needed (called during InitWts only) but can be called when needed
+	InitGInc()
 
-	// SendGeDelta sends the delta-activation from sending neuron index si,
-	// to integrate excitatory conductance on receivers
-	SendGeDelta(si int, delta float32)
+	// SendGDelta sends the delta-activation from sending neuron index si,
+	// to integrate synaptic conductances on receivers
+	SendGDelta(si int, delta float32)
 
-	// RecvGeInc increments the receiver's GeInc from that of all the projections
-	RecvGeInc()
+	// RecvGInc increments the receiver's synaptic conductances from those of all the projections.
+	RecvGInc()
 
 	// DWt computes the weight change (learning) -- on sending projections
 	DWt()

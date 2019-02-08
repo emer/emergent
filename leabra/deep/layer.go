@@ -15,12 +15,12 @@ import (
 
 // deep.Layer is the DeepLeabra layer, based on basic rate-coded leabra.Layer
 type Layer struct {
-	leabra.Layer
-	DeepBurst DeepBurstParams `desc:"parameters for computing DeepBurst from act, in Superficial layers (but also needed in Deep layers for deep self connections)"`
-	DeepCtxt  DeepCtxtParams  `desc:"parameters for computing DeepCtxt in Deep layers, from BurstCtxt inputs from Super senders"`
-	DeepTRC   DeepTRCParams   `desc:"parameters for computing TRC plus-phase (outcome) activations based on TRCBurstGe excitatory input from BurstTRC projections"`
-	DeepAttn  DeepAttnParams  `desc:"parameters for computing DeepAttn and DeepLrn attentional modulation signals based on DeepAttn projection inputs integrated into AttnGe excitatory conductances"`
-	DeepNeurs []Neuron        `desc:"slice of extra deep.Neuron state for this layer -- flat list of len = Shape.Len(). You must iterate over index and use pointer to modify values."`
+	leabra.Layer                 // access as .Layer
+	DeepBurst    DeepBurstParams `desc:"parameters for computing DeepBurst from act, in Superficial layers (but also needed in Deep layers for deep self connections)"`
+	DeepCtxt     DeepCtxtParams  `desc:"parameters for computing DeepCtxt in Deep layers, from BurstCtxt inputs from Super senders"`
+	DeepTRC      DeepTRCParams   `desc:"parameters for computing TRC plus-phase (outcome) activations based on TRCBurstGe excitatory input from BurstTRC projections"`
+	DeepAttn     DeepAttnParams  `desc:"parameters for computing DeepAttn and DeepLrn attentional modulation signals based on DeepAttn projection inputs integrated into AttnGe excitatory conductances"`
+	DeepNeurs    []Neuron        `desc:"slice of extra deep.Neuron state for this layer -- flat list of len = Shape.Len(). You must iterate over index and use pointer to modify values."`
 }
 
 // AsLeabra returns this layer as a leabra.Layer -- all derived layers must redefine
@@ -31,24 +31,21 @@ func (ly *Layer) AsLeabra() *leabra.Layer {
 }
 
 func (ly *Layer) Defaults() {
-	ly.Act.Defaults()
-	ly.Inhib.Defaults()
-	ly.Learn.Defaults()
-	ly.Inhib.Layer.On = true
-	for _, pj := range ly.RecvPrjns {
-		pj.Defaults()
-	}
+	ly.Layer.Defaults()
+	ly.DeepBurst.Defaults()
+	ly.DeepCtxt.Defaults()
+	ly.DeepTRC.Defaults()
+	ly.DeepAttn.Defaults()
 }
 
 // UpdateParams updates all params given any changes that might have been made to individual values
 // including those in the receiving projections of this layer
 func (ly *Layer) UpdateParams() {
-	ly.Act.Update()
-	ly.Inhib.Update()
-	ly.Learn.Update()
-	for _, pj := range ly.RecvPrjns {
-		pj.UpdateParams()
-	}
+	ly.Layer.UpdateParams()
+	ly.DeepBurst.Update()
+	ly.DeepCtxt.Update()
+	ly.DeepTRC.Update()
+	ly.DeepAttn.Update()
 }
 
 // SetParams sets given parameters to this layer, if the target type is Layer
@@ -151,17 +148,81 @@ func (ly *Layer) InitActs() {
 	}
 }
 
+// GScaleFmAvgAct computes the scaling factor for synaptic input conductances G,
+// based on sending layer average activation.
+// This attempts to automatically adjust for overall differences in raw activity coming into the units
+// to achieve a general target of around .5 to 1 for the integrated G values.
+// DeepLeabra version separately normalizes the Deep projection types.
+func (ly *Layer) GScaleFmAvgAct() {
+	totGeRel := float32(0)
+	totGiRel := float32(0)
+	totTrcRel := float32(0)
+	totAttnRel := float32(0)
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(LeabraPrjn).AsLeabra()
+		slay := p.SendLay().(LeabraLayer).AsLeabra()
+		slpl := slay.Pools[0]
+		savg := slpl.ActAvg.ActPAvgEff
+		snu := len(slay.Neurons)
+		ncon := pj.RConNAvgMax.Avg
+		pj.GScale = pj.WtScale.FullScale(savg, float32(snu), ncon)
+		switch pj.Type {
+		case emer.Inhib:
+			totGiRel += pj.WtScale.Rel
+		case BurstTRC:
+			totTrcRel += pj.WtScale.Rel
+		case DeepAttn:
+			totAttnRel += pj.WtScale.Rel
+		default:
+			// note: BurstCtxt is added in here!
+			totGeRel += pj.WtScale.Rel
+		}
+	}
+
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
+			continue
+		}
+		pj := p.(LeabraPrjn).AsLeabra()
+		switch pj.Type {
+		case emer.Inhib:
+			if totGiRel > 0 {
+				pj.GScale /= totGiRel
+			}
+		case BurstTRC:
+			if totTrcRel > 0 {
+				pj.GScale /= totTrcRel
+			}
+		case DeepAttn:
+			if totAttnRel > 0 {
+				pj.GScale /= totAttnRel
+			}
+		default:
+			if totGeRel > 0 {
+				pj.GScale /= totGeRel
+			}
+		}
+	}
+}
+
 func (ly *Layer) DecayState(decay float32) {
 	ly.Layer.DecayState(decay)
 	for ni := range ly.DeepNeurs {
 		nrn := &ly.DeepNeurs[ni]
+		nrn.ActNoAttn -= decay * (nrn.ActNoAttn - ac.Init.Act)
 		nrn.DeepBurstSent = 0
 	}
 }
 
-// SendGeDelta sends change in activation since last sent, if above thresholds.
+//////////////////////////////////////////////////////////////////////////////////////
+//  Cycle
+
+// SendGDelta sends change in activation since last sent, if above thresholds.
 // Deep version sends either to standard Ge or AttnGe for DeepAttn projections.
-func (ly *Layer) SendGeDelta() {
+func (ly *Layer) SendGDelta() {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		if nrn.Act > ly.Act.OptThresh.Send {
@@ -179,7 +240,7 @@ func (ly *Layer) SendGeDelta() {
 					if pj.Type == DeepAttn {
 						pj.SendAttnGeDelta(ni, delta)
 					} else {
-						pj.SendGeDelta(ni, delta)
+						pj.SendGDelta(ni, delta)
 					}
 				}
 				nrn.ActSent = nrn.Act
@@ -198,7 +259,7 @@ func (ly *Layer) SendGeDelta() {
 				if pj.Type == DeepAttn {
 					pj.SendAttnGeDelta(ni, delta)
 				} else {
-					pj.SendGeDelta(ni, delta)
+					pj.SendGDelta(ni, delta)
 				}
 			}
 			nrn.ActSent = 0
@@ -242,6 +303,66 @@ func (ly *Layer) SendTRCBurstGeDelta() {
 			}
 			nrn.DeepBurstSent = 0
 		}
+	}
+}
+
+// GFmInc integrates new synaptic conductances from increments sent during last SendGDelta.
+func (ly *Layer) GFmInc() {
+	ly.Layer.GFmInc()
+	// for _, p := range ly.RecvPrjns {
+	// 	if p.IsOff() {
+	// 		continue
+	// 	}
+	// 	p.(LeabraPrjn).RecvGInc()
+	// }
+	// for ni := range ly.Neurons {
+	// 	nrn := &ly.Neurons[ni]
+	// 	ly.Act.GeGiFmInc(nrn)
+	// }
+}
+
+// SendDeepCtxtGe sends full DeepBurst activation over BurstCtxt projections to integrate
+// DeepCtxtGe excitatory conductance on deep layers.
+// This must be called at the end of the DeepBurst quarter for this layer.
+func (ly *Layer) SendDeepCtxtGe() {
+	for ni := range ly.DeepNeurs {
+		nrn := &ly.DeepNeurs[ni]
+		if nrn.DeepBurst > ly.Act.OptThresh.Send {
+			for si := range ly.SendPrjns {
+				sp := ly.SendPrjns[si]
+				if sp.IsOff() {
+					continue
+				}
+				pj := sp.(*Prjn)
+				if pj.Type != BurstCtxt {
+					continue
+				}
+				pj.SendDeepCtxtGe(ni, nrn.DeepBurst)
+			}
+		}
+	}
+}
+
+// DeepCtxtFmGe integrates new DeepCtxtGe excitatory conductance from projections, and computes
+// overall DeepCtxt value.  This must be called at the end of the DeepBurst quarter for this layer,
+// after SendDeepCtxtGe.
+func (ly *Layer) DeepCtxtFmGe() {
+	for ni := range ly.DeepNeurs {
+		nrn := &ly.DeepNeurs[ni]
+		nrn.DeepCtxtGe = 0
+	}
+	for _, p := range ly.RecvPrjns {
+		if p.IsOff() {
+			continue
+		}
+		if pj.Type != BurstCtxt {
+			continue
+		}
+		p.(LeabraPrjn).RecvDeepCtxtGeInc()
+	}
+	for ni := range ly.DeepNeurs {
+		nrn := &ly.DeepNeurs[ni]
+		nrn.DeepCtxt = ly.DeepCtxt.DeepCtxtFmGe(nrn.DeepCtxtGe, nrn.DeepCtxt)
 	}
 }
 

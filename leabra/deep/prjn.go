@@ -12,9 +12,10 @@ import (
 
 // deep.Prjn is the DeepLeabra projection, based on basic rate-coded leabra.Prjn
 type Prjn struct {
-	leabra.Prjn
-	AttnGeInc     []float32 `desc:"local increment accumulator for AttnGe excitatory conductance from sending units -- this will be thread-safe"`
+	leabra.Prjn             // access as .Prjn
+	DeepCtxtGeInc []float32 `desc:"local accumulator for DeepCtxt excitatory conductance from sending units -- not a delta -- the full value"`
 	TRCBurstGeInc []float32 `desc:"local increment accumulator for TRCBurstGe excitatory conductance from sending units -- this will be thread-safe"`
+	AttnGeInc     []float32 `desc:"local increment accumulator for AttnGe excitatory conductance from sending units -- this will be thread-safe"`
 }
 
 // AsLeabra returns this prjn as a leabra.Prjn -- all derived prjns must redefine
@@ -39,48 +40,45 @@ func (pj *Prjn) Build() error {
 	}
 	rsh := pj.Recv.LayShape()
 	rlen := rsh.Len()
-	pj.AttnGeInc = make([]float32, rlen)
+	pj.DeepCtxtGeInc = make([]float32, rlen)
 	pj.TRCBurstGeInc = make([]float32, rlen)
+	pj.AttnGeInc = make([]float32, rlen)
 	return nil
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Init methods
 
-func (pj *Prjn) InitWts() {
-	pj.Prjn.InitWts()
-	pj.InitGeInc()
-}
-
-func (pj *Prjn) InitGeInc() {
-	pj.Prjn.InitGeInc()
-	for ri := range pj.AttnGeInc {
-		pj.AttnGeInc[ri] = 0
+func (pj *Prjn) InitGInc() {
+	pj.Prjn.InitGInc()
+	for ri := range pj.DeepCtxtGeInc {
+		pj.DeepCtxtGeInc[ri] = 0
 		pj.TRCBurstGeInc[ri] = 0
+		pj.AttnGeInc[ri] = 0
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Act methods
 
-// SendAttnGeDelta sends the delta-activation from sending neuron index si,
-// to integrate into AttnGeInc excitatory conductance on receivers
-func (pj *Prjn) SendAttnGeDelta(si int, delta float32) {
-	scdel := delta * pj.GeScale
+// SendDeepCtxtGe sends the full DeepBurst activation from sending neuron index si,
+// to integrate DeepCtxtGe excitatory conductance on receivers
+func (pj *Prjn) SendDeepCtxtGe(si int, dburst float32) {
+	scdb := dburst * pj.GScale
 	nc := pj.SConN[si]
 	st := pj.SConIdxSt[si]
 	syns := pj.Syns[st : st+nc]
 	scons := pj.SConIdx[st : st+nc]
 	for ci := range syns {
 		ri := scons[ci]
-		pj.AttnGeInc[ri] += scdel * syns[ci].Wt
+		pj.DeepCtxtGeInc[ri] += scdb * syns[ci].Wt
 	}
 }
 
 // SendTRCBurstGeDelta sends the delta-DeepBurst activation from sending neuron index si,
 // to integrate TRCBurstGe excitatory conductance on receivers
 func (pj *Prjn) SendTRCBurstGeDelta(si int, delta float32) {
-	scdel := delta * pj.GeScale
+	scdel := delta * pj.GScale
 	nc := pj.SConN[si]
 	st := pj.SConIdxSt[si]
 	syns := pj.Syns[st : st+nc]
@@ -91,13 +89,27 @@ func (pj *Prjn) SendTRCBurstGeDelta(si int, delta float32) {
 	}
 }
 
-// RecvAttnGeInc increments the receiver's AttnGe from that of all the projections
-func (pj *Prjn) RecvAttnGeInc() {
+// SendAttnGeDelta sends the delta-activation from sending neuron index si,
+// to integrate into AttnGeInc excitatory conductance on receivers
+func (pj *Prjn) SendAttnGeDelta(si int, delta float32) {
+	scdel := delta * pj.GScale
+	nc := pj.SConN[si]
+	st := pj.SConIdxSt[si]
+	syns := pj.Syns[st : st+nc]
+	scons := pj.SConIdx[st : st+nc]
+	for ci := range syns {
+		ri := scons[ci]
+		pj.AttnGeInc[ri] += scdel * syns[ci].Wt
+	}
+}
+
+// RecvDeepCtxtGeInc increments the receiver's DeepCtxtGe from that of all the projections
+func (pj *Prjn) RecvDeepCtxtGeInc() {
 	rlay := pj.Recv.(*Layer)
 	for ri := range rlay.DeepNeurs {
 		rn := &rlay.DeepNeurs[ri]
-		rn.AttnGe += pj.AttnGeInc[ri]
-		pj.AttnGeInc[ri] = 0
+		pj.DeepCtxtGe += pj.DeepCtxtGeInc[ri]
+		pj.DeepCtxtGeInc[ri] = 0
 	}
 }
 
@@ -108,6 +120,16 @@ func (pj *Prjn) RecvTRCBurstGeInc() {
 		rn := &rlay.DeepNeurs[ri]
 		rn.TRCBurstGe += pj.TRCBurstGeInc[ri]
 		pj.TRCBurstGeInc[ri] = 0
+	}
+}
+
+// RecvAttnGeInc increments the receiver's AttnGe from that of all the projections
+func (pj *Prjn) RecvAttnGeInc() {
+	rlay := pj.Recv.(*Layer)
+	for ri := range rlay.DeepNeurs {
+		rn := &rlay.DeepNeurs[ri]
+		rn.AttnGe += pj.AttnGeInc[ri]
+		pj.AttnGeInc[ri] = 0
 	}
 }
 

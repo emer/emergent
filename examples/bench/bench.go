@@ -153,7 +153,7 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 			ltime.TrialStart()
 			for qtr := 0; qtr < 4; qtr++ {
 				for cyc := 0; cyc < ltime.CycPerQtr; cyc++ {
-					net.Cycle()
+					net.Cycle(ltime)
 					ltime.CycleInc()
 				}
 				net.QuarterFinal(ltime)

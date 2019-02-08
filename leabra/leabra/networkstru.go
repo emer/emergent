@@ -22,8 +22,8 @@ import (
 	"github.com/goki/ki/ints"
 )
 
-// LayFunChan is a channel that runs layer functions
-type LayFunChan chan func(ly emer.Layer)
+// LayFunChan is a channel that runs LeabraLayer functions
+type LayFunChan chan func(ly LeabraLayer)
 
 // leabra.NetworkStru holds the basic structural components of a network (layers)
 type NetworkStru struct {
@@ -291,7 +291,7 @@ func (nt *NetworkStru) ThrWorker(tt int) {
 			if ly.IsOff() {
 				continue
 			}
-			fun(ly)
+			fun(ly.(LeabraLayer))
 		}
 		nt.ThrTimes[tt].Stop()
 		nt.WaitGp.Done()
@@ -300,14 +300,14 @@ func (nt *NetworkStru) ThrWorker(tt int) {
 
 // ThrLayFun calls function on layer, using threaded (go routine worker) computation if NThreads > 1
 // and otherwise just iterates over layers in the current thread.
-func (nt *NetworkStru) ThrLayFun(fun func(ly emer.Layer), funame string) {
+func (nt *NetworkStru) ThrLayFun(fun func(ly LeabraLayer), funame string) {
 	nt.FunTimerStart(funame)
 	if nt.NThreads <= 1 {
 		for _, ly := range nt.Layers {
 			if ly.IsOff() {
 				continue
 			}
-			fun(ly)
+			fun(ly.(LeabraLayer))
 		}
 	} else {
 		for th := 0; th < nt.NThreads; th++ {

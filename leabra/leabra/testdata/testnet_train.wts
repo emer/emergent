@@ -7,7 +7,7 @@
 		{
 			"Hidden": [
 				{
-					"GeScale": 0.8333333
+					"GScale": 0.8333333
 					"Input": [
 						"0": {
 							"n": 1,
@@ -32,7 +32,7 @@
 					]
 				}
 				{
-					"GeScale": 0.16666666
+					"GScale": 0.16666666
 					"Output": [
 						"0": {
 							"n": 1,
@@ -61,7 +61,7 @@
 		{
 			"Output": [
 				{
-					"GeScale": 1
+					"GScale": 1
 					"Hidden": [
 						"0": {
 							"n": 1,

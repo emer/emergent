@@ -45,14 +45,17 @@ type Neuron struct {
 	ActAvg float32 `desc:"average activation (of final plus phase activation state) over long time intervals (time constant = DtPars.AvgTau -- typically 200) -- useful for finding hog units and seeing overall distribution of activation"`
 
 	Noise  float32 `desc:"noise value added to unit (ActNoisePars determines distribution, and when / where it is added)"`
+	GiSyn  float32 `desc:"aggregated synaptic inhibition (from Inhib projections) -- time integral of GiRaw -- this is added with computed FFFB inhibition to get the full inhibition in Gi"`
 	GiSelf float32 `desc:"total amount of self-inhibition -- time-integrated to avoid oscillations"`
 
 	ActSent float32 `desc:"last activation value sent (only send when diff is over threshold)"`
 	GeRaw   float32 `desc:"raw excitatory conductance (net input) received from sending units (send delta's are added to this value)"`
 	GeInc   float32 `desc:"delta increment in GeRaw sent using SendGeDelta"`
+	GiRaw   float32 `desc:"raw inhibitory conductance (net input) received from sending units (send delta's are added to this value)"`
+	GiInc   float32 `desc:"delta increment in GiRaw sent using SendGeDelta"`
 }
 
-var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "GiSelf", "ActSent", "GeRaw", "GeInc"}
+var NeuronVars = []string{"Act", "Ge", "Gi", "Inet", "Vm", "Targ", "Ext", "AvgSS", "AvgS", "AvgM", "AvgL", "AvgLLrn", "AvgSLrn", "ActM", "ActP", "ActDif", "ActDel", "ActAvg", "Noise", "GiSyn", "GiSelf", "ActSent", "GeRaw", "GeInc", "GiRaw", "GiInc"}
 
 var NeuronVarsMap map[string]int
 

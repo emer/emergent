@@ -178,5 +178,8 @@ const (
 	// Lateral is a lateral projection within the same layer / area
 	Lateral
 
+	// Inhib is an inhibitory projection that drives inhibitory synaptic inputs instead of excitatory
+	Inhib
+
 	PrjnTypeN
 )
