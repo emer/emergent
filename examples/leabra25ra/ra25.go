@@ -51,7 +51,7 @@ var DefaultPars = emer.ParamStyle{
 	"#Output": {
 		"Layer.Inhib.Layer.Gi": 1.4, // this turns out to be critical for small output layer
 	},
-	".TopDown": {
+	".Back": {
 		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
 	},
 }
@@ -297,14 +297,12 @@ func (ss *SimState) ConfigNet() {
 	hid2Lay := net.AddLayer("Hidden2", []int{7, 7}, emer.Hidden)
 	outLay := net.AddLayer("Output", []int{5, 5}, emer.Target)
 
-	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull())
-	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull())
-	net.ConnectLayers(hid2Lay, outLay, prjn.NewFull())
+	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull(), emer.Forward)
+	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull(), emer.Forward)
+	net.ConnectLayers(hid2Lay, outLay, prjn.NewFull(), emer.Forward)
 
-	outHid2 := net.ConnectLayers(outLay, hid2Lay, prjn.NewFull())
-	outHid2.SetClass("TopDown")
-	hid2Hid1 := net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull())
-	hid2Hid1.SetClass("TopDown")
+	net.ConnectLayers(outLay, hid2Lay, prjn.NewFull(), emer.Back)
+	net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull(), emer.Back)
 
 	// if Thread {
 	// 	hid2Lay.SetThread(1)

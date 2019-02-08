@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package emer
+package relpos
 
 import "github.com/goki/ki/kit"
 
-type Vec3i struct {
+// Pos3D is a position in 3D space coordinates, using float32 values
+type Pos3D struct {
 	X, Y, Z float32
 }
 

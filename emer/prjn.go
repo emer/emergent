@@ -8,6 +8,7 @@ import (
 	"io"
 
 	"github.com/emer/emergent/prjn"
+	"github.com/goki/ki/kit"
 )
 
 // Prjn defines the basic interface for a projection which connects two layers
@@ -25,8 +26,15 @@ type Prjn interface {
 	// Pattern returns the pattern of connectivity for interconnecting the layers
 	Pattern() prjn.Pattern
 
-	// Connect sets the basic connection parameters for this projection (send, recv, pattern)
-	Connect(send, recv Layer, pat prjn.Pattern)
+	// PrjType returns the functional type of projection according to PrjnType (extensible in
+	// more specialized versions of Leabra)
+	PrjType() PrjnType
+
+	// SetType sets the functional type of projection according to PrjnType
+	SetType(typ PrjnType)
+
+	// Connect sets the basic connection parameters for this projection (send, recv, pattern, and type)
+	Connect(send, recv Layer, pat prjn.Pattern, typ PrjnType)
 
 	// PrjnClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
 	PrjnClass() string
@@ -42,6 +50,9 @@ type Prjn interface {
 
 	// IsOff returns true if projection or either send or recv layer has been turned Off -- for experimentation
 	IsOff() bool
+
+	// SetOff sets the projection Off status (i.e., lesioned)
+	SetOff(off bool)
 
 	// SynVarNames returns the names of all the variables on the synapse
 	SynVarNames() []string
@@ -68,12 +79,15 @@ type Prjn interface {
 	SetParams(pars Params, setMsg bool) bool
 
 	// StyleParam applies a given style to this projection
-	// depending on the style specification (.Class, #Name, Type) and target value of params
+	// depending on the style specification (.Class, #Name, Type) and target value of params.
+	// .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
 	StyleParam(sty string, pars Params, setMsg bool) bool
 
 	// StyleParams applies a given ParamStyle style sheet to the projections
+	// depending on the style specification (.Class, #Name, Type) and target value of params.
+	// .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
 	StyleParams(psty ParamStyle, setMsg bool)
@@ -138,3 +152,31 @@ func (pl *PrjnList) FindRecvName(recv string) (Prjn, bool) {
 	}
 	return nil, false
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  PrjnType
+
+// PrjnType is the type of the projection (extensible for more specialized algorithms).
+// Class parameter styles automatically key off of these types.
+type PrjnType int32
+
+//go:generate stringer -type=PrjnType
+
+var KiT_PrjnType = kit.Enums.AddEnum(PrjnTypeN, false, nil)
+
+func (ev PrjnType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
+func (ev *PrjnType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+
+// The projection types
+const (
+	// Forward is a feedforward, bottom-up projection from sensory inputs to higher layers
+	Forward PrjnType = iota
+
+	// Back is a feedback, top-down projection from higher layers back to lower layers
+	Back
+
+	// Lateral is a lateral projection within the same layer / area
+	Lateral
+
+	PrjnTypeN
+)

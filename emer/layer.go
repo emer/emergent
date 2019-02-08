@@ -8,6 +8,7 @@ import (
 	"io"
 
 	"github.com/emer/emergent/etensor"
+	"github.com/emer/emergent/relpos"
 	"github.com/goki/ki/kit"
 )
 
@@ -33,13 +34,23 @@ type Layer interface {
 	// SetClass sets CSS-style class name(s) for this layer (space-separated if multiple)
 	SetClass(cls string)
 
-	// IsOff returns true if layer has been turned Off -- for experimentation
+	// IsOff returns true if layer has been turned Off (lesioned) -- for experimentation
 	IsOff() bool
+
+	// SetOff sets the "off" (lesioned) status of layer
+	SetOff(off bool)
 
 	// Shape returns the organization of units in the layer, in terms of an array of dimensions.
 	// if 2D, then it is a simple X,Y layer with no sub-structure (unit groups).
 	// If 4D, then it is standard unit group X,Y units X,Y.
 	LayShape() *etensor.Shape
+
+	// LayType returns the functional type of layer according to LayerType (extensible in
+	// more specialized versions of Leabra)
+	LayType() LayerType
+
+	// SetType sets the functional type of layer
+	SetType(typ LayerType)
 
 	// Config configures the basic parameters of the layer
 	Config(shape []int, typ LayerType)
@@ -53,13 +64,13 @@ type Layer interface {
 	SetThread(thr int)
 
 	// LayRel returns the relative 3D position specification for this layer
-	LayRel() Rel
+	LayRel() relpos.Rel
 
 	// SetLayRel sets the the relative 3D position specification for this layer
-	SetLayRel(rel Rel)
+	SetLayRel(r relpos.Rel)
 
 	// LayPos returns the 3D position of the lower-left-hand corner of the layer
-	LayPos() Vec3i
+	LayPos() relpos.Pos3D
 
 	// LayIndex returns a 0..n-1 index of the position of the layer within list of layers
 	// in the network.  For backprop networks, index position has computational significance.
@@ -110,7 +121,8 @@ type Layer interface {
 
 	// StyleParam applies a given style to either this layer or the receiving projections in this layer
 	// depending on the style specification (.Class, #Name, Type) and target value of params.
-	// returns true if applied successfully.
+	// .LayerType is automatically recognized as a .Class type (e.g., .Hidden vs. .Input etc)
+	// Returns true if applied successfully.
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
 	StyleParam(sty string, pars Params, setMsg bool) bool
@@ -137,7 +149,8 @@ type Layer interface {
 //////////////////////////////////////////////////////////////////////////////////////
 //  LayerType
 
-// LayerType is the type of the layer: Input, Hidden, Target, Compare
+// LayerType is the type of the layer: Input, Hidden, Target, Compare.
+// Class parameter styles automatically key off of these types.
 type LayerType int32
 
 //go:generate stringer -type=LayerType

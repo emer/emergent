@@ -32,7 +32,7 @@ var Pars = [NLrnPars]emer.ParamStyle{
 			"Prjn.Learn.Norm.On":     0,
 			"Prjn.Learn.Momentum.On": 0,
 		},
-		".TopDown": {
+		".Back": {
 			"Prjn.WtScale.Rel": 0.2,
 		},
 	},
@@ -42,7 +42,7 @@ var Pars = [NLrnPars]emer.ParamStyle{
 			"Prjn.Learn.Norm.On":     1,
 			"Prjn.Learn.Momentum.On": 0,
 		},
-		".TopDown": {
+		".Back": {
 			"Prjn.WtScale.Rel": 0.2,
 		},
 	},
@@ -52,7 +52,7 @@ var Pars = [NLrnPars]emer.ParamStyle{
 			"Prjn.Learn.Norm.On":     0,
 			"Prjn.Learn.Momentum.On": 1,
 		},
-		".TopDown": {
+		".Back": {
 			"Prjn.WtScale.Rel": 0.2,
 		},
 	},
@@ -62,7 +62,7 @@ var Pars = [NLrnPars]emer.ParamStyle{
 			"Prjn.Learn.Norm.On":     1,
 			"Prjn.Learn.Momentum.On": 1,
 		},
-		".TopDown": {
+		".Back": {
 			"Prjn.WtScale.Rel": 0.2,
 		},
 	},
@@ -74,13 +74,12 @@ func TestMakeNet(t *testing.T) {
 	hidLay := TestNet.AddLayer("Hidden", []int{4, 1}, emer.Hidden)
 	outLay := TestNet.AddLayer("Output", []int{4, 1}, emer.Target)
 
-	TestNet.ConnectLayers(inLay, hidLay, prjn.NewOneToOne())
-	TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne())
-	outHid := TestNet.ConnectLayers(outLay, hidLay, prjn.NewOneToOne())
-	outHid.SetClass("TopDown")
+	TestNet.ConnectLayers(inLay, hidLay, prjn.NewOneToOne(), emer.Forward)
+	TestNet.ConnectLayers(hidLay, outLay, prjn.NewOneToOne(), emer.Forward)
+	TestNet.ConnectLayers(outLay, hidLay, prjn.NewOneToOne(), emer.Back)
 
 	TestNet.Defaults()
-	TestNet.StyleParams(Pars[0], false) // true) // no msg
+	TestNet.StyleParams(Pars[0], false) // false) // true) // no msg
 	TestNet.Build()
 	TestNet.InitWts()
 	TestNet.TrialInit() // get GeScale

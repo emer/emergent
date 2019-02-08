@@ -143,7 +143,7 @@ func StyleMatch(sty string, name, class, typ string) bool {
 }
 
 // ClassMatch returns true if given class names -- handles space-separated multiple class names
-func ClassMatch(class, sty string) bool {
+func ClassMatch(sty, class string) bool {
 	cls := strings.Split(class, " ")
 	for _, cl := range cls {
 		if strings.TrimSpace(cl) == sty {

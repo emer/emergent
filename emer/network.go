@@ -76,11 +76,11 @@ type Network interface {
 	// adding to the recv and send projection lists on each side of the connection.
 	// Returns error if not successful.
 	// Does not yet actually connect the units within the layers -- that requires Build.
-	ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay Layer, pj Prjn, err error)
+	ConnectLayersNames(send, recv string, pat prjn.Pattern, typ PrjnType) (rlay, slay Layer, pj Prjn, err error)
 
 	// ConnectLayers establishes a projection between two layers,
 	// adding to the recv and send projection lists on each side of the connection.
 	// Returns false if not successful. Does not yet actually connect the units within the layers -- that
 	// requires Build.
-	ConnectLayers(send, recv Layer, pat prjn.Pattern) Prjn
+	ConnectLayers(send, recv Layer, pat prjn.Pattern, typ PrjnType) Prjn
 }

@@ -18,22 +18,23 @@ import (
 // The exact same struct object is added to the Recv and Send layers, and it manages everything
 // about the connectivity, and methods on the Prjn handle all the relevant computation.
 type PrjnStru struct {
-	EmerPrjn    emer.Prjn    `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an emer.Prjn, which can always be used to extract the true underlying type of object when prjn is embedded in other structs -- function receivers do not have this ability so this is necessary."`
-	Off         bool         `desc:"inactivate this projection -- allows for easy experimentation"`
-	Class       string       `desc:"Class is for applying parameter styles, can be space separated multple tags"`
-	Notes       string       `desc:"can record notes about this projection here"`
-	Recv        emer.Layer   `desc:"receiving layer for this projection -- the emer.Layer interface can be converted to the specific Layer type you are using, e.g., rlay := prjn.Recv.(*leabra.Layer)"`
-	Send        emer.Layer   `desc:"sending layer for this projection"`
-	Pat         prjn.Pattern `desc:"pattern of connectivity"`
-	RConN       []int32      `desc:"number of recv connections for each neuron in the receiving layer, as a flat list"`
-	RConNAvgMax emer.AvgMax  `desc:"average and maximum number of recv connections in the receiving layer"`
-	RConIdxSt   []int32      `desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
-	RConIdx     []int32      `desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
-	RSynIdx     []int32      `desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
-	SConN       []int32      `desc:"number of sending connections for each neuron in the sending layer, as a flat list"`
-	SConNAvgMax emer.AvgMax  `desc:"average and maximum number of sending connections in the sending layer"`
-	SConIdxSt   []int32      `desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
-	SConIdx     []int32      `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
+	EmerPrjn    emer.Prjn     `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an emer.Prjn, which can always be used to extract the true underlying type of object when prjn is embedded in other structs -- function receivers do not have this ability so this is necessary."`
+	Off         bool          `desc:"inactivate this projection -- allows for easy experimentation"`
+	Class       string        `desc:"Class is for applying parameter styles, can be space separated multple tags"`
+	Notes       string        `desc:"can record notes about this projection here"`
+	Recv        emer.Layer    `desc:"receiving layer for this projection -- the emer.Layer interface can be converted to the specific Layer type you are using, e.g., rlay := prjn.Recv.(*leabra.Layer)"`
+	Send        emer.Layer    `desc:"sending layer for this projection"`
+	Pat         prjn.Pattern  `desc:"pattern of connectivity"`
+	Type        emer.PrjnType `desc:"type of projection -- Forward, Back, Lateral, or extended type in specialized algorithms -- matches against .Class parameter styles (e.g., .Back etc)"`
+	RConN       []int32       `desc:"number of recv connections for each neuron in the receiving layer, as a flat list"`
+	RConNAvgMax emer.AvgMax   `desc:"average and maximum number of recv connections in the receiving layer"`
+	RConIdxSt   []int32       `desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
+	RConIdx     []int32       `desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
+	RSynIdx     []int32       `desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
+	SConN       []int32       `desc:"number of sending connections for each neuron in the sending layer, as a flat list"`
+	SConNAvgMax emer.AvgMax   `desc:"average and maximum number of sending connections in the sending layer"`
+	SConIdxSt   []int32       `desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
+	SConIdx     []int32       `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
 }
 
 // emer.Prjn interface
@@ -49,20 +50,23 @@ func (ps *PrjnStru) SetClass(cls string) { ps.Class = cls }
 func (ps *PrjnStru) PrjnName() string {
 	return ps.Recv.LayName() + "Fm" + ps.Send.LayName()
 }
-func (ps *PrjnStru) Label() string         { return ps.PrjnName() }
-func (ps *PrjnStru) RecvLay() emer.Layer   { return ps.Recv }
-func (ps *PrjnStru) SendLay() emer.Layer   { return ps.Send }
-func (ps *PrjnStru) Pattern() prjn.Pattern { return ps.Pat }
-
+func (ps *PrjnStru) Label() string             { return ps.PrjnName() }
+func (ps *PrjnStru) RecvLay() emer.Layer       { return ps.Recv }
+func (ps *PrjnStru) SendLay() emer.Layer       { return ps.Send }
+func (ps *PrjnStru) Pattern() prjn.Pattern     { return ps.Pat }
+func (ps *PrjnStru) PrjType() emer.PrjnType    { return ps.Type }
+func (ps *PrjnStru) SetType(typ emer.PrjnType) { ps.Type = typ }
 func (ps *PrjnStru) IsOff() bool {
 	return ps.Off || ps.Recv.IsOff() || ps.Send.IsOff()
 }
+func (ps *PrjnStru) SetOff(off bool) { ps.Off = off }
 
 // Connect sets the connectivity between two layers and the pattern to use in interconnecting them
-func (ps *PrjnStru) Connect(slay, rlay emer.Layer, pat prjn.Pattern) {
+func (ps *PrjnStru) Connect(slay, rlay emer.Layer, pat prjn.Pattern, typ emer.PrjnType) {
 	ps.Send = slay
 	ps.Recv = rlay
 	ps.Pat = pat
+	ps.Type = typ
 }
 
 // Validate tests for non-nil settings for the projection -- returns error
@@ -190,18 +194,21 @@ func (ps *PrjnStru) String() string {
 }
 
 // StyleParam applies a given style to this projection
-// depending on the style specification (.Class, #Name, Type) and target value of params
+// depending on the style specification (.Class, #Name, Type) and target value of params.
+// .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // it always prints a message if a parameter fails to be set.
 func (ps *PrjnStru) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
-	if emer.StyleMatch(sty, ps.PrjnName(), ps.Class, "Prjn") {
+	cls := ps.Class + " " + ps.Type.String()
+	if emer.StyleMatch(sty, ps.PrjnName(), cls, "Prjn") {
 		return ps.EmerPrjn.SetParams(pars, setMsg) // note: going through EmerPrjn interface ensures correct method called
 	}
 	return false
 }
 
 // StyleParams applies a given styles to either this prjn
-// depending on the style specification (.Class, #Name, Type) and target value of params
+// depending on the style specification (.Class, #Name, Type) and target value of params.
+// .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // it always prints a message if a parameter fails to be set.
 func (ps *PrjnStru) StyleParams(psty emer.ParamStyle, setMsg bool) {

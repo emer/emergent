@@ -37,7 +37,7 @@ var Pars = emer.ParamStyle{
 		"Prjn.Learn.Momentum.On": 1,
 		"Prjn.Learn.WtBal.On":    1,
 	},
-	".TopDown": {
+	".Back": {
 		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
 	},
 }
@@ -54,17 +54,14 @@ func ConfigNet(net *leabra.Network, threads, units int) {
 	hid3Lay := net.AddLayer("Hidden3", shp, emer.Hidden)
 	outLay := net.AddLayer("Output", shp, emer.Target)
 
-	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull())
-	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull())
-	net.ConnectLayers(hid2Lay, hid3Lay, prjn.NewFull())
-	net.ConnectLayers(hid3Lay, outLay, prjn.NewFull())
+	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull(), emer.Forward)
+	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull(), emer.Forward)
+	net.ConnectLayers(hid2Lay, hid3Lay, prjn.NewFull(), emer.Forward)
+	net.ConnectLayers(hid3Lay, outLay, prjn.NewFull(), emer.Forward)
 
-	outHid3 := net.ConnectLayers(outLay, hid3Lay, prjn.NewFull())
-	outHid3.SetClass("TopDown")
-	hid3Hid2 := net.ConnectLayers(hid3Lay, hid2Lay, prjn.NewFull())
-	hid3Hid2.SetClass("TopDown")
-	hid2Hid1 := net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull())
-	hid2Hid1.SetClass("TopDown")
+	net.ConnectLayers(outLay, hid3Lay, prjn.NewFull(), emer.Back)
+	net.ConnectLayers(hid3Lay, hid2Lay, prjn.NewFull(), emer.Back)
+	net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull(), emer.Back)
 
 	switch threads {
 	case 2:

@@ -7,6 +7,7 @@ package leabra
 import (
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etensor"
+	"github.com/emer/emergent/relpos"
 )
 
 // leabra.LayerStru manages the structural elements of the layer, which are common
@@ -17,10 +18,10 @@ type LayerStru struct {
 	Class     string         `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Off       bool           `desc:"inactivate this layer -- allows for easy experimentation"`
 	Shape     etensor.Shape  `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns) -- order is outer-to-inner (row major) so Y then X for 2D and for 4D: Y-X unit pools then Y-X units within pools"`
-	Type      emer.LayerType `desc:"type of layer -- Hidden, Input, Target, Compare"`
+	Type      emer.LayerType `desc:"type of layer -- Hidden, Input, Target, Compare, or extended type in specialized algorithms -- matches against .Class parameter styles (e.g., .Hidden etc)"`
 	Thread    int            `desc:"the thread number (go routine) to use in updating this layer. The user is responsible for allocating layers to threads, trying to maintain an even distribution across layers and establishing good break-points."`
-	Rel       emer.Rel       `desc:"Spatial relationship to other layer, determines positioning"`
-	Pos       emer.Vec3i     `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
+	Rel       relpos.Rel     `desc:"Spatial relationship to other layer, determines positioning"`
+	Pos       relpos.Pos3D   `desc:"position of lower-left-hand corner of layer in 3D space, computed from Rel"`
 	Index     int            `desc:"a 0..n-1 index of the position of the layer within list of layers in the network. For Leabra networks, it only has significance in determining who gets which weights for enforcing initial weight symmetry -- higher layers get weights from lower layers."`
 	RecvPrjns emer.PrjnList  `desc:"list of receiving projections into this layer from other layers"`
 	SendPrjns emer.PrjnList  `desc:"list of sending projections from this layer to other layers"`
@@ -40,13 +41,16 @@ func (ls *LayerStru) LayName() string              { return ls.Name }
 func (ls *LayerStru) Label() string                { return ls.Name }
 func (ls *LayerStru) LayClass() string             { return ls.Class }
 func (ls *LayerStru) SetClass(cls string)          { ls.Class = cls }
+func (ls *LayerStru) LayType() emer.LayerType      { return ls.Type }
+func (ls *LayerStru) SetType(typ emer.LayerType)   { ls.Type = typ }
 func (ls *LayerStru) IsOff() bool                  { return ls.Off }
+func (ls *LayerStru) SetOff(off bool)              { ls.Off = off }
 func (ls *LayerStru) LayShape() *etensor.Shape     { return &ls.Shape }
 func (ls *LayerStru) LayThread() int               { return ls.Thread }
 func (ls *LayerStru) SetThread(thr int)            { ls.Thread = thr }
-func (ls *LayerStru) LayRel() emer.Rel             { return ls.Rel }
-func (ls *LayerStru) SetLayRel(rel emer.Rel)       { ls.Rel = rel }
-func (ls *LayerStru) LayPos() emer.Vec3i           { return ls.Pos }
+func (ls *LayerStru) LayRel() relpos.Rel           { return ls.Rel }
+func (ls *LayerStru) SetLayRel(rel relpos.Rel)     { ls.Rel = rel }
+func (ls *LayerStru) LayPos() relpos.Pos3D         { return ls.Pos }
 func (ls *LayerStru) LayIndex() int                { return ls.Index }
 func (ls *LayerStru) SetIndex(idx int)             { ls.Index = idx }
 func (ls *LayerStru) RecvPrjnList() *emer.PrjnList { return &ls.RecvPrjns }
@@ -103,7 +107,8 @@ func (ls *LayerStru) Config(shape []int, typ emer.LayerType) {
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // it always prints a message if a parameter fails to be set.
 func (ls *LayerStru) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
-	if emer.StyleMatch(sty, ls.Name, ls.Class, "Layer") {
+	cls := ls.Class + " " + ls.Type.String()
+	if emer.StyleMatch(sty, ls.Name, cls, "Layer") {
 		if ls.LeabraLay.SetParams(pars, setMsg) { // note: going through LeabraLay interface is key
 			return true // done -- otherwise, might be for prjns
 		}

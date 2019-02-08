@@ -15,6 +15,7 @@ import (
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/prjn"
+	"github.com/emer/emergent/relpos"
 	"github.com/emer/emergent/timer"
 	"github.com/goki/gi/gi"
 	"github.com/goki/ki/indent"
@@ -118,10 +119,10 @@ func (nt *NetworkStru) StdVertLayout() {
 	lstnm := ""
 	for li, ly := range nt.Layers {
 		if li == 0 {
-			ly.SetLayRel(emer.Rel{Rel: emer.NoRel})
+			ly.SetLayRel(relpos.Rel{Rel: relpos.NoRel})
 			lstnm = ly.LayName()
 		} else {
-			ly.SetLayRel(emer.Rel{Rel: emer.Above, Other: lstnm, XAlign: emer.Middle, YAlign: emer.Front})
+			ly.SetLayRel(relpos.Rel{Rel: relpos.Above, Other: lstnm, XAlign: relpos.Middle, YAlign: relpos.Front})
 		}
 	}
 }
@@ -156,7 +157,7 @@ func (nt *NetworkStru) AddLayer(name string, shape []int, typ emer.LayerType) em
 // adding to the recv and send projection lists on each side of the connection.
 // Returns error if not successful.
 // Does not yet actually connect the units within the layers -- that requires Build.
-func (nt *NetworkStru) ConnectLayersNames(send, recv string, pat prjn.Pattern) (rlay, slay emer.Layer, pj emer.Prjn, err error) {
+func (nt *NetworkStru) ConnectLayersNames(send, recv string, pat prjn.Pattern, typ emer.PrjnType) (rlay, slay emer.Layer, pj emer.Prjn, err error) {
 	rlay, err = nt.LayerByNameTry(recv)
 	if err != nil {
 		return
@@ -165,7 +166,7 @@ func (nt *NetworkStru) ConnectLayersNames(send, recv string, pat prjn.Pattern) (
 	if err != nil {
 		return
 	}
-	pj = nt.ConnectLayers(rlay, slay, pat)
+	pj = nt.ConnectLayers(rlay, slay, pat, typ)
 	return
 }
 
@@ -173,10 +174,10 @@ func (nt *NetworkStru) ConnectLayersNames(send, recv string, pat prjn.Pattern) (
 // adding to the recv and send projection lists on each side of the connection.
 // Returns false if not successful. Does not yet actually connect the units within the layers -- that
 // requires Build.
-func (nt *NetworkStru) ConnectLayers(send, recv emer.Layer, pat prjn.Pattern) emer.Prjn {
+func (nt *NetworkStru) ConnectLayers(send, recv emer.Layer, pat prjn.Pattern, typ emer.PrjnType) emer.Prjn {
 	pj := nt.EmerNet.NewPrjn() // essential to use EmerNet interface here!
 	pj.Init(pj)
-	pj.Connect(send, recv, pat)
+	pj.Connect(send, recv, pat, typ)
 	recv.RecvPrjnList().Add(pj)
 	send.SendPrjnList().Add(pj)
 	return pj
