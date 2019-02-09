@@ -170,7 +170,7 @@ func TestNetAct(t *testing.T) {
 					fmt.Printf("pat: %v qtr: %v cyc: %v\nin acts: %v\nhid acts: %v ges: %v gis: %v\nout acts: %v ges: %v gis: %v\n", pi, qtr, cyc, inActs, hidActs, hidGes, hidGis, outActs, outGes, outGis)
 				}
 			}
-			TestNet.QuarterFinal(time)
+			TestNet.QuarterFinal(ltime)
 			ltime.QuarterInc()
 
 			if printCycs && printQtrs {
@@ -319,7 +319,7 @@ func TestNetLearn(t *testing.T) {
 					}
 
 				}
-				TestNet.QuarterFinal(time)
+				TestNet.QuarterFinal(ltime)
 				ltime.QuarterInc()
 
 				hidAvgS, _ := hidLay.UnitVals("AvgS")

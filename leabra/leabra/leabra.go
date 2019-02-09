@@ -77,29 +77,29 @@ type LeabraLayer interface {
 
 	// SendGDelta sends change in activation since last sent, to increment recv
 	// synaptic conductances G, if above thresholds
-	SendGDelta()
+	SendGDelta(ltime *Time)
 
 	// GFmInc integrates new synaptic conductances from increments sent during last SendGDelta
-	GFmInc()
+	GFmInc(ltime *Time)
 
 	// AvgMaxGe computes the average and max Ge stats, used in inhibition
-	AvgMaxGe()
+	AvgMaxGe(ltime *Time)
 
 	// InhibiFmGeAct computes inhibition Gi from Ge and Act averages within relevant Pools
-	InhibFmGeAct()
+	InhibFmGeAct(ltime *Time)
 
 	// ActFmG computes rate-code activation from Ge, Gi, Gl conductances
 	// and updates learning running-average activations from that Act
-	ActFmG()
+	ActFmG(ltime *Time)
 
 	// AvgMaxAct computes the average and max Act stats, used in inhibition
-	AvgMaxAct()
+	AvgMaxAct(ltime *Time)
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	//  Quarter Methods
 
 	// QuarterFinal does updating after end of a quarter
-	QuarterFinal(time *Time)
+	QuarterFinal(ltime *Time)
 
 	// CosDiffFmActs computes the cosine difference in activation state between minus and plus phases.
 	// this is also used for modulating the amount of BCM hebbian learning

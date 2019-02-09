@@ -105,33 +105,37 @@ func (ac *ActParams) InitActs(nrn *Neuron) {
 ///////////////////////////////////////////////////////////////////////
 //  Cycle
 
-// GeGiFmInc integrates Ge excitatory conductance from GeInc delta-increment sent
-// and also GiRaw and GiSyn from GiInc.
-func (ac *ActParams) GeGiFmInc(nrn *Neuron) {
+// GRawFmInc integrates G conductance from Inc delta-increment sent.
+func (ac *ActParams) GRawFmInc(nrn *Neuron) {
 	nrn.GeRaw += nrn.GeInc
 	nrn.GeInc = 0
 
 	nrn.GiRaw += nrn.GiInc
 	nrn.GiInc = 0
+}
 
-	geEff := nrn.GeRaw
+// GeGiFmInc integrates Ge excitatory conductance from GeInc delta-increment sent
+// and also GiRaw and GiSyn from GiInc.
+func (ac *ActParams) GeGiFmInc(nrn *Neuron) {
+	ac.GRawFmInc(nrn)
+
+	geRaw := nrn.GeRaw
 	if !ac.Clamp.Hard && nrn.HasFlag(NeurHasExt) {
 		if ac.Clamp.Avg {
-			geEff = ac.Clamp.AvgGe(nrn.Ext, geEff)
+			geRaw = ac.Clamp.AvgGe(nrn.Ext, geRaw)
 		} else {
-			geEff += nrn.Ext * ac.Clamp.Gain
+			geRaw += nrn.Ext * ac.Clamp.Gain
 		}
 	}
 
-	nrn.Ge += ac.Dt.Integ * ac.Dt.GeDt * (geEff - nrn.Ge)
-	nrn.GiSyn += ac.Dt.Integ * ac.Dt.GeDt * (nrn.GiRaw - nrn.GiSyn)
+	ac.Dt.GFmRaw(geRaw, &nrn.Ge)
+	ac.Dt.GFmRaw(nrn.GiRaw, &nrn.GiSyn)
 	nrn.GiSyn = math32.Max(nrn.GiSyn, 0) // negative inhib G doesn't make any sense
 
 	// first place noise is required -- generate here!
 	if ac.Noise.Type != NoNoise && !ac.Noise.TrialFixed && ac.Noise.Dist != erand.None {
 		nrn.Noise = float32(ac.Noise.Gen(-1))
 	}
-
 	if ac.Noise.Type == GeNoise {
 		nrn.Ge += nrn.Noise
 	}
@@ -149,7 +153,7 @@ func (ac *ActParams) VmFmG(nrn *Neuron) {
 	ge := nrn.Ge * ac.Gbar.E
 	gi := nrn.Gi * ac.Gbar.I
 	nrn.Inet = ac.InetFmG(nrn.Vm, ge, gi, 0)
-	nwVm := nrn.Vm + ac.Dt.Integ*ac.Dt.VmDt*nrn.Inet
+	nwVm := nrn.Vm + ac.Dt.VmDt*nrn.Inet
 
 	if ac.Noise.Type == VmNoise {
 		nwVm += nrn.Noise
@@ -180,7 +184,7 @@ func (ac *ActParams) ActFmG(nrn *Neuron) {
 		nwAct = ac.XX1.NoisyXX1(nrn.Ge*ac.Gbar.E - geThr)
 	}
 	curAct := nrn.Act
-	nwAct = curAct + ac.Dt.Integ*ac.Dt.VmDt*(nwAct-curAct)
+	nwAct = curAct + ac.Dt.VmDt*(nwAct-curAct)
 
 	nrn.ActDel = nwAct - curAct
 	if ac.Noise.Type == ActNoise {
@@ -355,26 +359,30 @@ func (ai *ActInitParams) Defaults() {
 type DtParams struct {
 	Integ  float32 `def:"1;0.5" min:"0" desc:"overall rate constant for numerical integration, for all equations at the unit level -- all time constants are specified in millisecond units, with one cycle = 1 msec -- if you instead want to make one cycle = 2 msec, you can do this globally by setting this integ value to 2 (etc).  However, stability issues will likely arise if you go too high.  For improved numerical stability, you may even need to reduce this value to 0.5 or possibly even lower (typically however this is not necessary).  MUST also coordinate this with network.time_inc variable to ensure that global network.time reflects simulated time accurately"`
 	VmTau  float32 `def:"2.81:10" min:"1" desc:"[3.3 std for rate code, 2.81 for spiking] membrane potential and rate-code activation time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- reflects the capacitance of the neuron in principle -- biological default for AeEx spiking model C = 281 pF = 2.81 normalized -- for rate-code activation, this also determines how fast to integrate computed activation values over time"`
-	GeTau  float32 `def:"1.4;3;5" min:"1" desc:"net input time constant in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- this is important for damping oscillations -- generally reflects time constants associated with synaptic channels which are not modeled in the most abstract rate code models (set to 1 for detailed spiking models with more realistic synaptic currents) -- larger values (e.g., 3) can be important for models with higher netinputs that otherwise might be more prone to oscillation, and is default for GPiInvUnitSpec"`
+	GTau   float32 `def:"1.4;3;5" min:"1" desc:"time constant for integrating synaptic conductances, in cycles, which should be milliseconds typically (roughly, how long it takes for value to change significantly -- 1.4x the half-life) -- this is important for damping oscillations -- generally reflects time constants associated with synaptic channels which are not modeled in the most abstract rate code models (set to 1 for detailed spiking models with more realistic synaptic currents) -- larger values (e.g., 3) can be important for models with higher conductances that otherwise might be more prone to oscillation."`
 	AvgTau float32 `def:"200" desc:"for integrating activation average (ActAvg), time constant in trials (roughly, how long it takes for value to change significantly) -- used mostly for visualization and tracking *hog* units"`
 
-	VmDt  float32 `view:"-" desc:"nominal rate = 1 / tau"`
-	GeDt  float32 `view:"-" desc:"rate = 1 / tau"`
+	VmDt  float32 `view:"-" desc:"nominal rate = Integ / tau"`
+	GDt   float32 `view:"-" desc:"rate = Integ / tau"`
 	AvgDt float32 `view:"-" desc:"rate = 1 / tau"`
 }
 
 func (dp *DtParams) Update() {
-	dp.VmDt = 1 / dp.VmTau
-	dp.GeDt = 1 / dp.GeTau
+	dp.VmDt = dp.Integ / dp.VmTau
+	dp.GDt = dp.Integ / dp.GTau
 	dp.AvgDt = 1 / dp.AvgTau
 }
 
 func (dp *DtParams) Defaults() {
 	dp.Integ = 1
 	dp.VmTau = 3.3
-	dp.GeTau = 1.4
+	dp.GTau = 1.4
 	dp.AvgTau = 200
 	dp.Update()
+}
+
+func (dp *DtParams) GFmRaw(geRaw float32, ge *float32) {
+	*ge += dp.GDt * (geRaw - *ge)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

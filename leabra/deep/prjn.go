@@ -5,6 +5,7 @@
 package deep
 
 import (
+	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/leabra/leabra"
 	"github.com/goki/ki/kit"
@@ -108,7 +109,7 @@ func (pj *Prjn) RecvDeepCtxtGeInc() {
 	rlay := pj.Recv.(*Layer)
 	for ri := range rlay.DeepNeurs {
 		rn := &rlay.DeepNeurs[ri]
-		pj.DeepCtxtGe += pj.DeepCtxtGeInc[ri]
+		rn.DeepCtxtGe += pj.DeepCtxtGeInc[ri]
 		pj.DeepCtxtGeInc[ri] = 0
 	}
 }
@@ -135,6 +136,66 @@ func (pj *Prjn) RecvAttnGeInc() {
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Learn methods
+
+// DWt computes the weight change (learning) -- on sending projections
+// Deep version supports DeepCtxt temporal learning option
+func (pj *Prjn) DWt() {
+	if !pj.Learn.Learn {
+		return
+	}
+	if pj.Type == BurstCtxt {
+		pj.LeabraPrj.(DeepPrjn).DWtDeepCtxt()
+	} else {
+		pj.Prjn.DWt()
+	}
+}
+
+// DWtDeepCtxt computes the weight change (learning) -- for DeepCtxt projections
+func (pj *Prjn) DWtDeepCtxt() {
+	slay := pj.Send.(DeepLayer).AsDeep()
+	rlay := pj.Recv.(DeepLayer).AsDeep()
+	for si := range slay.Neurons {
+		dsn := &slay.DeepNeurs[si]
+		nc := int(pj.SConN[si])
+		st := int(pj.SConIdxSt[si])
+		syns := pj.Syns[st : st+nc]
+		scons := pj.SConIdx[st : st+nc]
+		for ci := range syns {
+			sy := &syns[ci]
+			ri := scons[ci]
+			rn := &rlay.Neurons[ri]
+			err, bcm := pj.Learn.CHLdWt(dsn.DeepBurstPrv, dsn.DeepBurstPrv, rn.AvgSLrn, rn.AvgM, rn.AvgL)
+
+			bcm *= pj.Learn.XCal.LongLrate(rn.AvgLLrn)
+			err *= pj.Learn.XCal.MLrn
+			dwt := bcm + err
+			norm := float32(1)
+			if pj.Learn.Norm.On {
+				norm = pj.Learn.Norm.NormFmAbsDWt(&sy.Norm, math32.Abs(dwt))
+			}
+			if pj.Learn.Momentum.On {
+				dwt = norm * pj.Learn.Momentum.MomentFmDWt(&sy.Moment, dwt)
+			} else {
+				dwt *= norm
+			}
+			sy.DWt += pj.Learn.Lrate * dwt
+		}
+		// aggregate max DWtNorm over sending synapses
+		if pj.Learn.Norm.On {
+			maxNorm := float32(0)
+			for ci := range syns {
+				sy := &syns[ci]
+				if sy.Norm > maxNorm {
+					maxNorm = sy.Norm
+				}
+			}
+			for ci := range syns {
+				sy := &syns[ci]
+				sy.Norm = maxNorm
+			}
+		}
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  PrjnType

@@ -60,16 +60,29 @@ func (nt *Network) Layer(idx int) *Layer {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Act methods
 
-// Cycle runs one cycle of activation updating:
-// * Sends Ge increments from sending to receiving layers
-// * Average and Max Ge stats
-// * Inhibition based on Ge stats and Act Stats (computed at end of Cycle)
-// * Activation from Ge, Gi, and Gl
-// * Average and Max Act stats
-func (nt *Network) Cycle() {
-	nt.SendGeDelta() // also does integ
-	nt.AvgMaxGe()
-	nt.InhibFmGeAct()
-	nt.ActFmG()
-	nt.AvgMaxAct()
+// Cycle runs one cycle of activation updating
+// Deep version adds call to update DeepBurst at end
+func (nt *Network) Cycle(ltime *leabra.Time) {
+	nt.Network.Cycle(ltime)
+	nt.DeepBurst(ltime)
+}
+
+// DeepBurst is called at end of Cycle, computes DeepBurst and sends it to other layers
+func (nt *Network) DeepBurst(ltime *leabra.Time) {
+	nt.ThrLayFun(func(ly leabra.LeabraLayer) { ly.(DeepLayer).DeepBurstFmAct(ltime) }, "DeepBurstFmAct")
+	nt.ThrLayFun(func(ly leabra.LeabraLayer) { ly.(DeepLayer).SendTRCBurstGeDelta(ltime) }, "SendTRCBurstGeDelta")
+	nt.ThrLayFun(func(ly leabra.LeabraLayer) { ly.(DeepLayer).TRCBurstGeFmInc(ltime) }, "TRCBurstGeFmInc")
+	nt.ThrLayFun(func(ly leabra.LeabraLayer) { ly.(DeepLayer).AvgMaxTRCBurstGe(ltime) }, "AvgMaxTRCBurstGe")
+}
+
+// QuarterFinal does updating after end of a quarter
+func (nt *Network) QuarterFinal(ltime *leabra.Time) {
+	nt.Network.QuarterFinal(ltime)
+	nt.DeepCtxt(ltime)
+}
+
+// DeepCtxt sends DeepBurst to Deep layers and integrates DeepCtxt on Deep layers
+func (nt *Network) DeepCtxt(ltime *leabra.Time) {
+	nt.ThrLayFun(func(ly leabra.LeabraLayer) { ly.(DeepLayer).SendDeepCtxtGe(ltime) }, "SendDeepCtxtGe")
+	nt.ThrLayFun(func(ly leabra.LeabraLayer) { ly.(DeepLayer).DeepCtxtFmGe(ltime) }, "DeepCtxtFmGe")
 }

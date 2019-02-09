@@ -21,7 +21,7 @@ const NeuronVarStart = 2
 // All variables accessible via Unit interface must be float32 and start at the top, in contiguous order
 type Neuron struct {
 	Flags   NeurFlags `desc:"bit flags for binary state variables"`
-	SubPool int32     `desc:"index of the sub-level inhibitory pool that this neuron is in (only for 4D shapes, the unit-group / hypercolumn structure level)"`
+	SubPool int32     `desc:"index of the sub-level inhibitory pool that this neuron is in (only for 4D shapes, the unit-group / hypercolumn structure level) -- indicies start at 1 -- 0 is layer-level pool."`
 	Act     float32   `desc:"overall rate coded activation value -- what is sent to other neurons -- typically in range 0-1"`
 	Ge      float32   `desc:"total excitatory synaptic conductance -- the net excitatory input to the neuron -- does *not* include Gbar.E"`
 	Gi      float32   `desc:"total inhibitory synaptic conductance -- the net inhibitory input to the neuron -- does *not* include Gbar.I"`

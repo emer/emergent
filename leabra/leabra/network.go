@@ -162,38 +162,38 @@ func (nt *Network) TrialInit() {
 // This basic version doesn't use the time info, but more specialized types do, and we
 // want to keep a consistent API for end-user code.
 func (nt *Network) Cycle(ltime *Time) {
-	nt.SendGDelta() // also does integ
-	nt.AvgMaxGe()
-	nt.InhibFmGeAct()
-	nt.ActFmG()
-	nt.AvgMaxAct()
+	nt.SendGDelta(ltime) // also does integ
+	nt.AvgMaxGe(ltime)
+	nt.InhibFmGeAct(ltime)
+	nt.ActFmG(ltime)
+	nt.AvgMaxAct(ltime)
 }
 
 // SendGeDelta sends change in activation since last sent, if above thresholds
 // and integrates sent deltas into GeRaw and time-integrated Ge values
-func (nt *Network) SendGDelta() {
-	nt.ThrLayFun(func(ly LeabraLayer) { ly.SendGDelta() }, "SendGDelta")
-	nt.ThrLayFun(func(ly LeabraLayer) { ly.GFmInc() }, "GFmInc   ")
+func (nt *Network) SendGDelta(ltime *Time) {
+	nt.ThrLayFun(func(ly LeabraLayer) { ly.SendGDelta(ltime) }, "SendGDelta")
+	nt.ThrLayFun(func(ly LeabraLayer) { ly.GFmInc(ltime) }, "GFmInc   ")
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
-func (nt *Network) AvgMaxGe() {
-	nt.ThrLayFun(func(ly LeabraLayer) { ly.AvgMaxGe() }, "AvgMaxGe")
+func (nt *Network) AvgMaxGe(ltime *Time) {
+	nt.ThrLayFun(func(ly LeabraLayer) { ly.AvgMaxGe(ltime) }, "AvgMaxGe")
 }
 
 // InhibiFmGeAct computes inhibition Gi from Ge and Act stats within relevant Pools
-func (nt *Network) InhibFmGeAct() {
-	nt.ThrLayFun(func(ly LeabraLayer) { ly.InhibFmGeAct() }, "InhibFmGeAct")
+func (nt *Network) InhibFmGeAct(ltime *Time) {
+	nt.ThrLayFun(func(ly LeabraLayer) { ly.InhibFmGeAct(ltime) }, "InhibFmGeAct")
 }
 
 // ActFmG computes rate-code activation from Ge, Gi, Gl conductances
-func (nt *Network) ActFmG() {
-	nt.ThrLayFun(func(ly LeabraLayer) { ly.ActFmG() }, "ActFmG   ")
+func (nt *Network) ActFmG(ltime *Time) {
+	nt.ThrLayFun(func(ly LeabraLayer) { ly.ActFmG(ltime) }, "ActFmG   ")
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
-func (nt *Network) AvgMaxAct() {
-	nt.ThrLayFun(func(ly LeabraLayer) { ly.AvgMaxAct() }, "AvgMaxAct")
+func (nt *Network) AvgMaxAct(ltime *Time) {
+	nt.ThrLayFun(func(ly LeabraLayer) { ly.AvgMaxAct(ltime) }, "AvgMaxAct")
 }
 
 // QuarterFinal does updating after end of a quarter

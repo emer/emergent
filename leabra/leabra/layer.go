@@ -25,7 +25,7 @@ type Layer struct {
 	Inhib   InhibParams     `desc:"Inhibition parameters and methods for computing layer-level inhibition"`
 	Learn   LearnNeurParams `desc:"Learning parameters and methods that operate at the neuron level"`
 	Neurons []Neuron        `desc:"slice of neurons for this layer -- flat list of len = Shape.Len(). You must iterate over index and use pointer to modify values."`
-	Pools   []Pool          `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each unit group if shape supports that (4D).  You must iterate over index and use pointer to modify values."`
+	Pools   []Pool          `desc:"inhibition and other pooled, aggregate state variables -- flat list has at least of 1 for layer, and one for each sub-pool (unit group) if shape supports that (4D).  You must iterate over index and use pointer to modify values."`
 	CosDiff CosDiffStats    `desc:"cosine difference between ActM, ActP stats"`
 }
 
@@ -125,7 +125,7 @@ func (ly *Layer) BuildSubPools() {
 	spy := sh[0]
 	spx := sh[1]
 	lastOff := 0
-	pi := 0
+	pi := 0 // will incr to 1 by time used, for first pool
 	for py := 0; py < spy; py++ {
 		for px := 0; px < spx; px++ {
 			idx := []int{py, px, 0, 0}
@@ -136,6 +136,10 @@ func (ly *Layer) BuildSubPools() {
 			pl := &ly.Pools[pi]
 			pl.StIdx = lastOff
 			pl.EdIdx = off
+			for ni := pl.StIdx; ni < pl.EdIdx; ni++ {
+				nrn := &ly.Neurons[ni]
+				nrn.SubPool = int32(pi)
+			}
 			pi++
 			lastOff = off
 		}
@@ -452,7 +456,7 @@ func (ly *Layer) InitGInc() {
 
 // SendGDelta sends change in activation since last sent, to increment recv
 // synaptic conductances G, if above thresholds
-func (ly *Layer) SendGDelta() {
+func (ly *Layer) SendGDelta(ltime *Time) {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		if nrn.Act > ly.Act.OptThresh.Send {
@@ -482,7 +486,7 @@ func (ly *Layer) SendGDelta() {
 }
 
 // GFmInc integrates new synaptic conductances from increments sent during last SendGDelta.
-func (ly *Layer) GFmInc() {
+func (ly *Layer) GFmInc(ltime *Time) {
 	for _, p := range ly.RecvPrjns {
 		if p.IsOff() {
 			continue
@@ -496,7 +500,7 @@ func (ly *Layer) GFmInc() {
 }
 
 // AvgMaxGe computes the average and max Ge stats, used in inhibition
-func (ly *Layer) AvgMaxGe() {
+func (ly *Layer) AvgMaxGe(ltime *Time) {
 	for pi := range ly.Pools {
 		pl := &ly.Pools[pi]
 		pl.Ge.Init()
@@ -509,7 +513,7 @@ func (ly *Layer) AvgMaxGe() {
 }
 
 // InhibiFmGeAct computes inhibition Gi from Ge and Act averages within relevant Pools
-func (ly *Layer) InhibFmGeAct() {
+func (ly *Layer) InhibFmGeAct(ltime *Time) {
 	lpl := &ly.Pools[0]
 	ly.Inhib.Layer.Inhib(lpl.Ge.Avg, lpl.Ge.Max, lpl.Act.Avg, &lpl.Inhib)
 	np := len(ly.Pools)
@@ -535,7 +539,7 @@ func (ly *Layer) InhibFmGeAct() {
 
 // ActFmG computes rate-code activation from Ge, Gi, Gl conductances
 // and updates learning running-average activations from that Act
-func (ly *Layer) ActFmG() {
+func (ly *Layer) ActFmG(ltime *Time) {
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
 		ly.Act.VmFmG(nrn)
@@ -545,7 +549,7 @@ func (ly *Layer) ActFmG() {
 }
 
 // AvgMaxAct computes the average and max Act stats, used in inhibition
-func (ly *Layer) AvgMaxAct() {
+func (ly *Layer) AvgMaxAct(ltime *Time) {
 	for pi := range ly.Pools {
 		pl := &ly.Pools[pi]
 		pl.Act.Init()
@@ -561,30 +565,30 @@ func (ly *Layer) AvgMaxAct() {
 //  Quarter
 
 // QuarterFinal does updating after end of a quarter
-func (ly *Layer) QuarterFinal(time *Time) {
+func (ly *Layer) QuarterFinal(ltime *Time) {
 	for pi := range ly.Pools {
 		pl := &ly.Pools[pi]
-		if time.Quarter == 2 {
+		if ltime.Quarter == 2 {
 			pl.ActM = pl.Act
-		} else if time.Quarter == 3 {
+		} else if ltime.Quarter == 3 {
 			pl.ActP = pl.Act
 		}
 	}
 	for ni := range ly.Neurons {
 		nrn := &ly.Neurons[ni]
-		if time.Quarter == 2 { // end of minus phase
+		if ltime.Quarter == 2 { // end of minus phase
 			nrn.ActM = nrn.Act
 			if nrn.HasFlag(NeurHasTarg) { // will be clamped in plus phase
 				nrn.Ext = nrn.Targ
 				nrn.SetFlag(NeurHasExt)
 			}
-		} else if time.Quarter == 3 {
+		} else if ltime.Quarter == 3 {
 			nrn.ActP = nrn.Act
 			nrn.ActDif = nrn.ActP - nrn.ActM
 			nrn.ActAvg += ly.Act.Dt.AvgDt * (nrn.Act - nrn.ActAvg)
 		}
 	}
-	if time.Quarter == 3 {
+	if ltime.Quarter == 3 {
 		ly.LeabraLay.CosDiffFmActs()
 	}
 }
@@ -623,6 +627,9 @@ func (ly *Layer) CosDiffFmActs() {
 		ly.CosDiff.ModAvgLLrn = ly.Learn.AvgL.ErrModFmLayErr(ly.CosDiff.AvgLrn)
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Learning
 
 // DWt computes the weight change (learning) -- calls DWt method on sending projections
 func (ly *Layer) DWt() {

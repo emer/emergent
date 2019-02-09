@@ -65,7 +65,7 @@ AttnGe then drives the computation of DeepAttn and DeepLrn values that modulate
 (i.e., multiply) the activation (DeepAttn) or learning rate (DeepLrn) of these
 superficial neurons.
 
-All of the relevant parameters are in the deep.go file, in the Deep*Params classes,
+All of the relevant parameters are in the params.go file, in the Deep*Params classes,
 which are then fields in the deep.Layer.
 
 * DeepBurstParams (layer DeepBurst) has the BurstQtr when DeepBurst is updated,
