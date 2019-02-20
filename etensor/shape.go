@@ -77,8 +77,8 @@ func (sh *Shape) CopyShape(cp *Shape) {
 // AddShapes returns a new shape by adding two shapes one after the other.
 // uses Row / Col order of the first shape for resulting shape
 func AddShapes(shape1, shape2 *Shape) *Shape {
-	sh1 := shape1.Shape()
-	sh2 := shape2.Shape()
+	sh1 := shape1.Shapes()
+	sh2 := shape2.Shapes()
 	nsh := make([]int, len(sh1)+len(sh2))
 	copy(nsh, sh1)
 	copy(nsh[len(sh1):], sh2)
@@ -105,7 +105,6 @@ func (sh *Shape) Len() int {
 	return int(o)
 }
 
-func (sh *Shape) Shape() []int       { return sh.shape }
 func (sh *Shape) Shapes() []int      { return sh.shape }
 func (sh *Shape) Strides() []int     { return sh.strides }
 func (sh *Shape) Shape64() []int64   { return IntTo64(sh.shape) }

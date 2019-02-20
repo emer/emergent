@@ -77,7 +77,7 @@ func (ls *LayerStru) NPools() int {
 	if ls.Shape.NumDims() != 4 {
 		return 0
 	}
-	sh := ls.Shape.Shape()
+	sh := ls.Shape.Shapes()
 	return int(sh[0] * sh[1])
 }
 

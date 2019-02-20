@@ -129,12 +129,12 @@ func (pr *Params) Set(obj interface{}, setMsg bool) {
 
 // StyleMatch returns true if given style specifier matches the target object properties
 // (name, class, type name).  Class can be space separated list of names.
-func StyleMatch(sty string, name, class, typ string) bool {
+func StyleMatch(sty string, name, cls, typ string) bool {
 	if sty == "" {
 		return false
 	}
 	if sty[0] == '.' { // class
-		return ClassMatch(sty[1:], class)
+		return ClassMatch(sty[1:], cls)
 	}
 	if sty[0] == '#' { // name
 		return name == sty[1:]
@@ -143,9 +143,9 @@ func StyleMatch(sty string, name, class, typ string) bool {
 }
 
 // ClassMatch returns true if given class names -- handles space-separated multiple class names
-func ClassMatch(sty, class string) bool {
-	cls := strings.Split(class, " ")
-	for _, cl := range cls {
+func ClassMatch(sty, cls string) bool {
+	clss := strings.Split(cls, " ")
+	for _, cl := range clss {
 		if strings.TrimSpace(cl) == sty {
 			return true
 		}

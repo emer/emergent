@@ -121,7 +121,7 @@ func (ly *Layer) BuildSubPools() {
 	if ly.Shape.NumDims() != 4 {
 		return
 	}
-	sh := ly.Shape.Shape()
+	sh := ly.Shape.Shapes()
 	spy := sh[0]
 	spx := sh[1]
 	lastOff := 0
