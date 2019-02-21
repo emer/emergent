@@ -292,10 +292,10 @@ func (ss *SimState) Stop() {
 func (ss *SimState) ConfigNet() {
 	net := ss.Net
 	net.InitName(net, "RA25")
-	inLay := net.AddLayer("Input", []int{5, 5}, emer.Input)
-	hid1Lay := net.AddLayer("Hidden1", []int{7, 7}, emer.Hidden)
-	hid2Lay := net.AddLayer("Hidden2", []int{7, 7}, emer.Hidden)
-	outLay := net.AddLayer("Output", []int{5, 5}, emer.Target)
+	inLay := net.AddLayer2D("Input", 5, 5, emer.Input)
+	hid1Lay := net.AddLayer2D("Hidden1", 7, 7, emer.Hidden)
+	hid2Lay := net.AddLayer2D("Hidden2", 7, 7, emer.Hidden)
+	outLay := net.AddLayer2D("Output", 5, 5, emer.Target)
 
 	net.ConnectLayers(inLay, hid1Lay, prjn.NewFull(), emer.Forward)
 	net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull(), emer.Forward)
