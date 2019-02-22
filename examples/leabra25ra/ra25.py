@@ -3,12 +3,13 @@
 # license that can be found in the LICENSE file.
 
 # labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
-from emergent.leabra.leabra import leabra
-from emergent.emer import emer
-from emergent.eplot import eplot
-from emergent.patgen import patgen
-from emergent.prjn import prjn
-from emergent.dtable import dtable
+from emergent import leabra
+from emergent import emer
+from emergent import eplot
+from emergent import patgen
+from emergent import prjn
+from emergent import dtable
+from emergent import etensor
 
 # DefaultPars are the initial default parameters for this simulation
 # DefaultPars = emer.ParamStyle{
@@ -28,7 +29,7 @@ from emergent.dtable import dtable
 #     },
 # }
 
-class nil(object):
+class nil(leabra.GoClass):
     def __init__(self):
         self.handle = 0
 
@@ -66,7 +67,7 @@ class SimState(object):
         self.SumAvgSSE  = 0.0
         self.SumCosDiff = 0.0
         self.CntErr     = 0
-        self.Porder     = leabra.SliceOf_int([])
+        self.Porder     = dtable.SliceOf_int([])
 #        self.EpcPlotSvg *svg.Editor
         self.StopNow    = False
         self.RndSeed    = 0
@@ -85,7 +86,7 @@ class SimState(object):
             self.MaxEpcs = 100
         self.Epoch = 0
         self.Trial = 0
-        self.StopNow = false
+        self.StopNow = False
         self.Time.Reset()
         np = self.Pats.NumRows()
         # self.Porder = rand.Perm(np)         # always start with new one so random order is identical
@@ -215,7 +216,7 @@ class SimState(object):
 
     def Train(self):
         """Train runs the full training from this point onward"""
-        self.StopNow = false
+        self.StopNow = False
         # tmr = timer.Time{}
         # tmr.Start()
         while True:
@@ -228,17 +229,17 @@ class SimState(object):
 
     def Stop(self):
         """Stop tells the sim to stop running"""
-        self.StopNow = true
+        self.StopNow = True
 
     # --------- Config methods -----------
 
     def ConfigNet(self):
         net = self.Net
         net.InitName(net, "RA25")
-        inLay = net.AddLayer("Input", leabra.SliceOf_int([5, 5]), emer.Input)
-        hid1Lay = net.AddLayer("Hidden1", leabra.SliceOf_int([7, 7]), emer.Hidden)
-        hid2Lay = net.AddLayer("Hidden2", leabra.SliceOf_int([7, 7]), emer.Hidden)
-        outLay = net.AddLayer("Output", leabra.SliceOf_int([5, 5]), emer.Target)
+        inLay = net.AddLayer2D("Input", 5, 5, emer.Input)
+        hid1Lay = net.AddLayer2D("Hidden1", 7, 7, emer.Hidden)
+        hid2Lay = net.AddLayer2D("Hidden2", 7, 7, emer.Hidden)
+        outLay = net.AddLayer2D("Output", 5, 5, emer.Target)
         
         net.ConnectLayers(inLay, hid1Lay, prjn.NewFull(), emer.Forward)
         net.ConnectLayers(hid1Lay, hid2Lay, prjn.NewFull(), emer.Forward)
@@ -266,26 +267,26 @@ class SimState(object):
 
     def OpenPats(self):
         dt = self.Pats
-        dt.OpenCSV("random_5x5_25.dat", '\t')
+        dt.OpenCSV("random_5x5_25.dat", ord('\t'))
         # if err != nil:
         #     log.Println(err)
 
     def ConfigEpcLog(self):
         dt = self.EpcLog
         schema = dtable.Schema()
-        schema.append(dtable.Column("Epoch", etensor.INT64, nil, nil)),
-        schema.append(dtable.Column("SSE", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("Avg SSE", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("Pct Err", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("Pct Cor", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("CosDiff", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("Hid1 ActAvg", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("Hid2 ActAvg", etensor.FLOAT32, nil, nil)),
-        schema.append(dtable.Column("Out ActAvg", etensor.FLOAT32, nil, nil)),
+        schema.append(dtable.Column("Epoch", etensor.INT64))
+        schema.append(dtable.Column("SSE", etensor.FLOAT32))
+        schema.append(dtable.Column("Avg SSE", etensor.FLOAT32))
+        schema.append(dtable.Column("Pct Err", etensor.FLOAT32))
+        schema.append(dtable.Column("Pct Cor", etensor.FLOAT32))
+        schema.append(dtable.Column("CosDiff", etensor.FLOAT32))
+        schema.append(dtable.Column("Hid1 ActAvg", etensor.FLOAT32))
+        schema.append(dtable.Column("Hid2 ActAvg", etensor.FLOAT32))
+        schema.append(dtable.Column("Out ActAvg", etensor.FLOAT32))
         dt.SetFromSchema(schema, 0)
             
-        self.PlotVals = dtable.SliceOf_string(["SSE", "Pct Err"])
-        self.Plot = true
+        self.PlotVals = leabra.SliceOf_string(["SSE", "Pct Err"])
+        self.Plot = True
 
     def PlotEpcLog(self):
         """PlotEpcLog plots given epoch log using given Y axis columns into EpcPlotSvg"""
@@ -447,5 +448,5 @@ Sim = SimState()
 Sim.Config()
 Sim.Init()
 #win = Sim.ConfigGui()
-Sim.Run()
+Sim.Train()
 

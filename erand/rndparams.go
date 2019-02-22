@@ -77,8 +77,8 @@ const (
 	// Beta with var = a and par = b shape parameters
 	Beta
 
-	// None is just the constant mean
-	None
+	// Mean is just the constant mean, no randomness
+	Mean
 
 	RndDistsN
 )
@@ -177,8 +177,8 @@ func Binom(n int, p float64, thr int) float64 {
 	return 0
 }
 
-// Poiss returns poisson variable, as number of events in interval, with event rate (lambda = Var) plus mean
-func Poiss(lambda float64, thr int) float64 {
+// Poiss returns poisson variable, as number of events in interval, with event rate (lmb = Var) plus mean
+func Poiss(lmb float64, thr int) float64 {
 	/*  static double sq,alxm,g,oldm=(-1.0);
 	    double em,t,y;
 
@@ -272,7 +272,7 @@ func Bet(a, b float64, thr int) float64 {
 //   static double PoissonDen(int j, double l);
 //   // #CAT_Float poisson density with parameter l (var)
 //   static double GammaDen(int j, double l, double t);
-//   // #CAT_Float gamma density at time t with given number of stages (par), lambda (var)
+//   // #CAT_Float gamma density at time t with given number of stages (par), lmb (var)
 //   static double GaussDen(double x, double stdev);
 //   // #CAT_Float gaussian (normal) density for given standard deviation (0 mean)
 //   static double BetaDen(double x, double a, double b);

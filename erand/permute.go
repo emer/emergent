@@ -10,9 +10,9 @@ import "math/rand"
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func PermuteInts(is []int) {
-	rand.Shuffle(len(is), func(i, j int) {
-		is[i], is[j] = is[j], is[i]
+func PermuteInts(ins []int) {
+	rand.Shuffle(len(ins), func(i, j int) {
+		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
 
@@ -20,9 +20,9 @@ func PermuteInts(is []int) {
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func PermuteStrings(is []string) {
-	rand.Shuffle(len(is), func(i, j int) {
-		is[i], is[j] = is[j], is[i]
+func PermuteStrings(ins []string) {
+	rand.Shuffle(len(ins), func(i, j int) {
+		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
 
@@ -30,9 +30,9 @@ func PermuteStrings(is []string) {
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func Permutefloat32s(is []float32) {
-	rand.Shuffle(len(is), func(i, j int) {
-		is[i], is[j] = is[j], is[i]
+func Permutefloat32s(ins []float32) {
+	rand.Shuffle(len(ins), func(i, j int) {
+		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
 
@@ -40,8 +40,8 @@ func Permutefloat32s(is []float32) {
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func Permutefloat64s(is []float64) {
-	rand.Shuffle(len(is), func(i, j int) {
-		is[i], is[j] = is[j], is[i]
+func Permutefloat64s(ins []float64) {
+	rand.Shuffle(len(ins), func(i, j int) {
+		ins[i], ins[j] = ins[j], ins[i]
 	})
 }

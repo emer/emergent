@@ -342,7 +342,7 @@ func (ly *Layer) TrialInit() {
 		ly.Inhib.ActAvg.EffFmAvg(&pl.ActAvg.ActPAvgEff, pl.ActAvg.ActPAvg)
 	}
 	ly.LeabraLay.GScaleFmAvgAct()
-	if ly.Act.Noise.Type != NoNoise && ly.Act.Noise.TrialFixed && ly.Act.Noise.Dist != erand.None {
+	if ly.Act.Noise.Type != NoNoise && ly.Act.Noise.TrialFixed && ly.Act.Noise.Dist != erand.Mean {
 		ly.LeabraLay.GenNoise()
 	}
 	ly.LeabraLay.DecayState(ly.Act.Init.Decay)

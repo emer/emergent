@@ -133,7 +133,7 @@ func (ac *ActParams) GeGiFmInc(nrn *Neuron) {
 	nrn.GiSyn = math32.Max(nrn.GiSyn, 0) // negative inhib G doesn't make any sense
 
 	// first place noise is required -- generate here!
-	if ac.Noise.Type != NoNoise && !ac.Noise.TrialFixed && ac.Noise.Dist != erand.None {
+	if ac.Noise.Type != NoNoise && !ac.Noise.TrialFixed && ac.Noise.Dist != erand.Mean {
 		nrn.Noise = float32(ac.Noise.Gen(-1))
 	}
 	if ac.Noise.Type == GeNoise {
