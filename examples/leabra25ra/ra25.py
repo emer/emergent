@@ -15,22 +15,19 @@ from emergent import rand
 from emergent import erand
 
 # DefaultPars are the initial default parameters for this simulation
-# DefaultPars = emer.ParamStyle{
-#     "Prjn": {
-#     "Prjn.Learn.Norm.On":     1,
-#     "Prjn.Learn.Momentum.On": 1,
-#     "Prjn.Learn.WtBal.On":    0,
-#     },
-#     # "Layer": {
-#     #     "Layer.Inhib.Layer.Gi": 1.8, # this is the default
-#     # },
-#     "#Output": {
-#     "Layer.Inhib.Layer.Gi": 1.4, # this turns out to be critical for small output layer
-#     },
-#     ".Back": {
-#     "Prjn.WtScale.Rel": 0.2, # this is generally quite important
-#     },
-# }
+DefaultPars = emer.ParamStyle({
+    "Prjn": emer.Params({
+        "Prjn.Learn.Norm.On":     1,
+        "Prjn.Learn.Momentum.On": 1,
+        "Prjn.Learn.WtBal.On":    0,
+        }).handle,
+    "#Output": emer.Params({
+        "Layer.Inhib.Layer.Gi": 1.4, # this turns out to be critical for small output layer
+    }).handle,
+    ".Back": emer.Params({
+        "Prjn.WtScale.Rel": 0.2, # this is generally quite important
+    }).handle,
+})
 
 class SimState(object):
     """
@@ -44,7 +41,7 @@ class SimState(object):
         self.Net = leabra.Network()
         self.Pats     = dtable.Table()
         self.EpcLog   = dtable.Table()
-        # self.Pars     = emer.ParamStyle()
+        self.Pars     = DefaultPars
         self.MaxEpcs  =  100
         self.Epoch    = 0
         self.Trial    = 0
@@ -80,7 +77,7 @@ class SimState(object):
 
     def Init(self):
         """Init restarts the run, and initializes everything, including network weights and resets the epoch log table"""
-        # rand.Seed(self.RndSeed)
+        rand.Seed(self.RndSeed)
         if self.MaxEpcs == 0: # allow user override
             self.MaxEpcs = 100
         self.Epoch = 0
@@ -89,7 +86,7 @@ class SimState(object):
         self.Time.Reset()
         np = self.Pats.NumRows()
         self.Porder = rand.Perm(np)         # always start with new one so random order is identical
-        # self.Net.StyleParams(self.Pars, true) # set msg
+        self.Net.StyleParams(self.Pars, True) # set msg
         self.Net.InitWts()
         self.EpcLog.SetNumRows(0)
 

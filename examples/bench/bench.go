@@ -162,7 +162,7 @@ func TrainNet(net *leabra.Network, pats, epcLog *dtable.Table, epcs int) {
 			net.DWt()
 			net.WtFmDWt()
 			outCosDiff += outLay.CosDiff.Cos
-			pSSE, pAvgSSE := outLay.SSE(0.5)
+			pSSE, pAvgSSE := outLay.MSE(0.5)
 			sse += pSSE
 			avgSSE += pAvgSSE
 			if pSSE != 0 {
