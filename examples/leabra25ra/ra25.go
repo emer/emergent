@@ -190,7 +190,7 @@ func (ss *SimState) TrialInc() {
 func (ss *SimState) TrialStats(accum bool) (sse, avgsse, cosdiff float32) {
 	outLay := ss.Net.LayerByName("Output").(*leabra.Layer)
 	cosdiff = outLay.CosDiff.Cos
-	sse, avgsse = outLay.SSE(0.5) // 0.5 = per-unit tolerance -- right side of .5
+	sse, avgsse = outLay.MSE(0.5) // 0.5 = per-unit tolerance -- right side of .5
 	if accum {
 		ss.SumSSE += sse
 		ss.SumAvgSSE += avgsse

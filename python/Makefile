@@ -8,7 +8,7 @@ PIP=$(PYTHON) -m pip
 all: gen
 
 gen:
-	gopy pkg -vm=python3 github.com/emer/emergent
+	gopy pkg -vm=python3 github.com/emer/emergent math/rand
 
 install:
 	# this does a local install of the package, building the sdist and then directly installing it

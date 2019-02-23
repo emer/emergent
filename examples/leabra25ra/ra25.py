@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 # labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
+from emergent import go
 from emergent import leabra
 from emergent import emer
 from emergent import eplot
@@ -10,6 +11,8 @@ from emergent import patgen
 from emergent import prjn
 from emergent import dtable
 from emergent import etensor
+from emergent import rand
+from emergent import erand
 
 # DefaultPars are the initial default parameters for this simulation
 # DefaultPars = emer.ParamStyle{
@@ -28,10 +31,6 @@ from emergent import etensor
 #     "Prjn.WtScale.Rel": 0.2, # this is generally quite important
 #     },
 # }
-
-class nil(leabra.GoClass):
-    def __init__(self):
-        self.handle = 0
 
 class SimState(object):
     """
@@ -67,7 +66,7 @@ class SimState(object):
         self.SumAvgSSE  = 0.0
         self.SumCosDiff = 0.0
         self.CntErr     = 0
-        self.Porder     = dtable.SliceOf_int([])
+        self.Porder     = go.Slice_int()
 #        self.EpcPlotSvg *svg.Editor
         self.StopNow    = False
         self.RndSeed    = 0
@@ -89,7 +88,7 @@ class SimState(object):
         self.StopNow = False
         self.Time.Reset()
         np = self.Pats.NumRows()
-        # self.Porder = rand.Perm(np)         # always start with new one so random order is identical
+        self.Porder = rand.Perm(np)         # always start with new one so random order is identical
         # self.Net.StyleParams(self.Pars, true) # set msg
         self.Net.InitWts()
         self.EpcLog.SetNumRows(0)
@@ -103,16 +102,16 @@ class SimState(object):
         this does NOT call TrialInc (so it can be used flexibly)
         but it does use the Trial counter to determine which pattern to present."""
     
-        inLay = self.Net.LayerByName("Input")
-        outLay = self.Net.LayerByName("Output")
-        inPats = self.Pats.ColByName("Input")
-        outPats = self.Pats.ColByName("Output")
+        inLay = leabra.Layer(self.Net.LayerByName("Input"))
+        outLay = leabra.Layer(self.Net.LayerByName("Output"))
+        inPats = etensor.Float32(self.Pats.ColByName("Input"))
+        outPats = etensor.Float32(self.Pats.ColByName("Output"))
         
         pidx = self.Trial
         if not self.Sequential:
             pidx = self.Porder[self.Trial]
             
-        pslc = leabra.SliceOf_int([pidx])
+        pslc = go.Slice_int([pidx])
         
         inp = inPats.SubSlice(2, pslc)
         outp = outPats.SubSlice(2, pslc)
@@ -146,14 +145,12 @@ class SimState(object):
     def TrialStats(self, accum):
         """TrialStats computes the trial-level statistics and adds them to the
         epoch accumulators if accum is true"""
-        outLay = self.Net.LayerByName("Output")
+        outLay = leabra.Layer(self.Net.LayerByName("Output"))
         cosdiff = outLay.CosDiff.Cos
-        # todo: multi-return val not there:
-        # sse, avgsse = outLay.SSE(0.5) # 0.5 = per-unit tolerance -- right side of .5
-        # todo: this whole method returns multiple values..
+        sse = outLay.SSE(0.5) # 0.5 = per-unit tolerance -- right side of .5
         if accum:
             self.SumSSE += sse
-            self.SumAvgSSE += avgsse
+            self.SumAvgSSE += sse # not accurate
             self.SumCosDiff += cosdiff
             if sse != 0:
                 self.CntErr+= 1
@@ -170,9 +167,9 @@ class SimState(object):
         averages prior to logging.
         Epoch counter is assumed to not have yet been incremented."""
         self.EpcLog.SetNumRows(self.Epoch + 1)
-        hid1Lay = self.Net.LayerByName("Hidden1")
-        hid2Lay = self.Net.LayerByName("Hidden2")
-        outLay = self.Net.LayerByName("Output")
+        hid1Lay = leabra.Layer(self.Net.LayerByName("Hidden1"))
+        hid2Lay = leabra.Layer(self.Net.LayerByName("Hidden2"))
+        outLay = leabra.Layer(self.Net.LayerByName("Output"))
         
         np = self.Pats.NumRows()
         self.EpcSSE = self.SumSSE / np
@@ -193,9 +190,9 @@ class SimState(object):
         self.EpcLog.ColByName("Pct Err").SetFloat1D(epc, self.EpcPctErr)
         self.EpcLog.ColByName("Pct Cor").SetFloat1D(epc, self.EpcPctCor)
         self.EpcLog.ColByName("CosDiff").SetFloat1D(epc, self.EpcCosDiff)
-        self.EpcLog.ColByName("Hid1 ActAvg").SetFloat1D(epc, hid1Lay.Pools[0].ActAvg.ActPAvgEff)
-        self.EpcLog.ColByName("Hid2 ActAvg").SetFloat1D(epc, hid2Lay.Pools[0].ActAvg.ActPAvgEff)
-        self.EpcLog.ColByName("Out ActAvg").SetFloat1D(epc, outLay.Pools[0].ActAvg.ActPAvgEff)
+        # self.EpcLog.ColByName("Hid1 ActAvg").SetFloat1D(epc, hid1Lay.Pools[0].ActAvg.ActPAvgEff)
+        # self.EpcLog.ColByName("Hid2 ActAvg").SetFloat1D(epc, hid2Lay.Pools[0].ActAvg.ActPAvgEff)
+        # self.EpcLog.ColByName("Out ActAvg").SetFloat1D(epc, outLay.Pools[0].ActAvg.ActPAvgEff)
 
     def StepTrial(self):
         """StepTrial does one alpha trial of processing and increments everything etc
@@ -257,8 +254,8 @@ class SimState(object):
         dt = self.Pats
         schema = dtable.Schema()
         schema.append(dtable.Column("Name", etensor.STRING, nil, nil))
-        schema.append(dtable.Column("Input", etensor.FLOAT32, dtable.SliceOf_int([5, 5]), dtable.SliceOf_string(["Y", "X"])))
-        schema.append(dtable.Column("Output", etensor.FLOAT32, dtable.SliceOf_int([5, 5]), dtable.SliceOf_string(["Y", "X"])))
+        schema.append(dtable.Column("Input", etensor.FLOAT32, go.Slice_int([5, 5]), go.Slice_string(["Y", "X"])))
+        schema.append(dtable.Column("Output", etensor.FLOAT32, go.Slice_int([5, 5]), go.Slice_string(["Y", "X"])))
         dt.SetFromSchema(schema, 25)
             
         patgen.PermutedBinaryRows(dt.Cols[1], 6, 1, 0)
@@ -285,7 +282,7 @@ class SimState(object):
         schema.append(dtable.Column("Out ActAvg", etensor.FLOAT32))
         dt.SetFromSchema(schema, 0)
             
-        self.PlotVals = leabra.SliceOf_string(["SSE", "Pct Err"])
+        self.PlotVals = leabra.Slice_string(["SSE", "Pct Err"])
         self.Plot = True
 
     def PlotEpcLog(self):
@@ -449,4 +446,5 @@ Sim.Config()
 Sim.Init()
 #win = Sim.ConfigGui()
 Sim.Train()
+Sim.EpcLog.SaveCSV("ra25_epc.dat", ord(','), True)
 
