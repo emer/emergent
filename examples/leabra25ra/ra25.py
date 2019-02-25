@@ -279,7 +279,7 @@ class SimState(object):
         schema.append(dtable.Column("Out ActAvg", etensor.FLOAT32))
         dt.SetFromSchema(schema, 0)
             
-        self.PlotVals = leabra.Slice_string(["SSE", "Pct Err"])
+        self.PlotVals = go.Slice_string(["SSE", "Pct Err"])
         self.Plot = True
 
     def PlotEpcLog(self):

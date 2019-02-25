@@ -6,7 +6,7 @@ package leabra
 
 import (
 	"github.com/emer/emergent/emer"
-	"github.com/goki/ki"
+	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 

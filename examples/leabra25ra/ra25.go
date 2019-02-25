@@ -26,7 +26,7 @@ import (
 	"github.com/goki/gi/oswin"
 	"github.com/goki/gi/svg"
 	"github.com/goki/gi/units"
-	"github.com/goki/ki"
+	"github.com/goki/ki/ki"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotutil"
 )
