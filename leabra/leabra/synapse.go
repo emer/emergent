@@ -13,8 +13,6 @@ type Synapse struct {
 	DWt    float32 `desc:"change in synaptic weight, from learning"`
 	Norm   float32 `desc:"dwt normalization factor -- reset to max of abs value of dwt, decays slowly down over time -- serves as an estimate of variance in weight changes over time"`
 	Moment float32 `desc:"momentum -- time-integrated dwt changes, to accumulate a consistent direction of weight change and cancel out dithering contradictory changes"`
-	// WbInc   float32 `desc:"rate of weight increase from adaptive weight balance -- computed receiver based and so needs to be stored in the connection to optimize speed"`
-	// WbDec   float32 `desc:"rate of weight decrease from adaptive weight balance -- computed receiver based and so needs to be stored in the connection to optimize speed"`
 }
 
 var SynapseVars = []string{"Wt", "LWt", "DWt", "Norm", "Moment"}
@@ -38,6 +36,17 @@ func (sy *Synapse) VarByName(varNm string) (float32, bool) {
 		return 0, false
 	}
 	// todo: would be ideal to avoid having to use reflect here..
-	v := reflect.ValueOf(*sy)
-	return v.Field(i).Interface().(float32), true
+	v := reflect.ValueOf(sy)
+	return v.Elem().Field(i).Interface().(float32), true
+}
+
+func (sy *Synapse) SetVarByName(varNm string, val float64) bool {
+	i, ok := SynapseVarsMap[varNm]
+	if !ok {
+		return false
+	}
+	// todo: would be ideal to avoid having to use reflect here..
+	v := reflect.ValueOf(sy)
+	v.Elem().Field(i).SetFloat(val)
+	return true
 }

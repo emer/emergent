@@ -97,6 +97,27 @@ func TestMakeNet(t *testing.T) {
 	fp.Write(wb)
 }
 
+func TestSynVals(t *testing.T) {
+	TestNet.InitWts()
+	hidLay := TestNet.LayerByName("Hidden").(*Layer)
+	fmIn := hidLay.RecvPrjns.FindSendName("Input").(*Prjn)
+
+	bfWt, err := fmIn.SynVal("Wt", 1, 1)
+	if err != nil {
+		t.Error(err)
+	}
+	bfLWt, err := fmIn.SynVal("LWt", 1, 1)
+
+	fmIn.SetSynVal("Wt", 1, 1, .15)
+
+	afWt, _ := fmIn.SynVal("Wt", 1, 1)
+	afLWt, _ := fmIn.SynVal("LWt", 1, 1)
+
+	CmprFloats([]float32{bfWt, bfLWt, afWt, afLWt}, []float32{0.5, 0.5, 0.15, 0.42822415}, "syn val setting test", t)
+
+	// fmt.Printf("SynVals: before wt: %v, lwt: %v  after wt: %v, lwt: %v\n", bfWt, bfLWt, afWt, afLWt)
+}
+
 func TestInPats(t *testing.T) {
 	InPats = etensor.NewFloat32([]int{4, 4, 1}, nil, []string{"pat", "Y", "X"})
 	for pi := 0; pi < 4; pi++ {

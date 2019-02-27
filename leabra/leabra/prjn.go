@@ -107,6 +107,39 @@ func (pj *Prjn) SynVal(varnm string, ridx, sidx int) (float32, error) {
 	return 0, fmt.Errorf("Prjn.SynVal: recv unit index %v does not recv from send unit index %v, or variable name: %v not found in synapse", ridx, sidx, varnm)
 }
 
+// SetSynVal sets value of given variable name on the synapse between given recv unit index
+// and send unit index -- returns error for access errors.
+func (pj *Prjn) SetSynVal(varnm string, ridx, sidx int, val float64) error {
+	slay := pj.Send.(LeabraLayer).AsLeabra()
+	rlay := pj.Recv.(LeabraLayer).AsLeabra()
+	nr := len(rlay.Neurons)
+	ns := len(slay.Neurons)
+	if ridx >= nr {
+		return fmt.Errorf("Prjn.SetSynVal: recv unit index %v is > size of recv layer: %v", ridx, nr)
+	}
+	if sidx >= ns {
+		return fmt.Errorf("Prjn.SetSynVal: send unit index %v is > size of send layer: %v", sidx, ns)
+	}
+	nc := int(pj.RConN[ridx])
+	st := int(pj.RConIdxSt[ridx])
+	for ci := 0; ci < nc; ci++ {
+		si := int(pj.RConIdx[st+ci])
+		if si != sidx {
+			continue
+		}
+		rsi := pj.RSynIdx[st+ci]
+		sy := &pj.Syns[rsi]
+		ok := sy.SetVarByName(varnm, val)
+		if ok {
+			if varnm == "Wt" {
+				pj.Learn.LWtFmWt(sy)
+			}
+			return nil
+		}
+	}
+	return fmt.Errorf("Prjn.SetSynVal: recv unit index %v does not recv from send unit index %v, or variable name: %v not found in synapse", ridx, sidx, varnm)
+}
+
 ///////////////////////////////////////////////////////////////////////
 //  Weights File
 
@@ -223,6 +256,7 @@ func (pj *Prjn) InitWtSym(rpjp LeabraPrjn) {
 				if rri == si {
 					rsy := &rpj.Syns[rsst+rci]
 					rsy.Wt = sy.Wt
+					pj.Learn.LWtFmWt(rsy)
 					// note: if we support SymFmTop then can have option to go other way
 					// also for Scale support, copy scales
 				}

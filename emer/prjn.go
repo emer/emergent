@@ -5,6 +5,7 @@
 package emer
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/emer/emergent/prjn"
@@ -133,24 +134,40 @@ func (pl *PrjnList) FindRecv(recv Layer) (Prjn, bool) {
 	return nil, false
 }
 
-// FindSendName finds the projection with given send layer name
-func (pl *PrjnList) FindSendName(sender string) (Prjn, bool) {
-	for _, pj := range *pl {
-		if pj.SendLay().LayName() == sender {
-			return pj, true
-		}
-	}
-	return nil, false
+// FindSendName finds the projection with given send layer name, nil if not found
+// see Try version for error checking.
+func (pl *PrjnList) FindSendName(sender string) Prjn {
+	pj, _ := pl.FindSendNameTry(sender)
+	return pj
 }
 
-// FindRecvName finds the projection with given recv layer name
-func (pl *PrjnList) FindRecvName(recv string) (Prjn, bool) {
+// FindRecvName finds the projection with given recv layer name, nil if not found
+// see Try version for error checking.
+func (pl *PrjnList) FindRecvName(recv string) Prjn {
+	pj, _ := pl.FindRecvNameTry(recv)
+	return pj
+}
+
+// FindSendNameTry finds the projection with given send layer name.
+// returns error message if not found
+func (pl *PrjnList) FindSendNameTry(sender string) (Prjn, error) {
 	for _, pj := range *pl {
-		if pj.RecvLay().LayName() == recv {
-			return pj, true
+		if pj.SendLay().LayName() == sender {
+			return pj, nil
 		}
 	}
-	return nil, false
+	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+}
+
+// FindRecvNameTry finds the projection with given recv layer name.
+// returns error message if not found
+func (pl *PrjnList) FindRecvNameTry(recv string) (Prjn, error) {
+	for _, pj := range *pl {
+		if pj.RecvLay().LayName() == recv {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("receiving layer: %v not found in list of projections", recv)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

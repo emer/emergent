@@ -92,14 +92,26 @@ func (ls *LearnSynParams) Defaults() {
 	ls.WtBal.Defaults()
 }
 
+// InitWts initializes weight values based on WtInit randomness parameters
+// It also updates the linear weight value based on the sigmoidal weight value
 func (ls *LearnSynParams) InitWts(syn *Synapse) {
 	syn.Wt = float32(ls.WtInit.Gen(-1))
 	syn.LWt = ls.WtSig.LinFmSigWt(syn.Wt)
 	syn.DWt = 0
 	syn.Norm = 0
 	syn.Moment = 0
-	// syn.WbInc = 1
-	// syn.WbDec = 1
+}
+
+// LWtFmWt updates the linear weight value based on the current effective Wt value.
+// effective weight is sigmoidally contrast-enhanced relative to the linear weight.
+func (ls *LearnSynParams) LWtFmWt(syn *Synapse) {
+	syn.LWt = ls.WtSig.LinFmSigWt(syn.Wt)
+}
+
+// WtFmLWt updates the effective weight value based on the current linear Wt value.
+// effective weight is sigmoidally contrast-enhanced relative to the linear weight.
+func (ls *LearnSynParams) WtFmLWt(syn *Synapse) {
+	syn.Wt = ls.WtSig.SigFmLinWt(syn.LWt)
 }
 
 // CHLdWt returns the error-driven and bcm Hebbian weight change components for the
@@ -425,7 +437,7 @@ func SigInvFun(w, gain, off float32) float32 {
 	if w >= 1 {
 		return 1
 	}
-	return 1 / (1 + math32.Pow((1-w)/w, 1/gain)/off)
+	return 1.0 / (1.0 + math32.Pow((1.0-w)/w, 1/gain)/off)
 }
 
 // SigInvFun61 is the inverse of the sigmoid function, with default gain = 6, offset = 1 params
@@ -436,7 +448,8 @@ func SigInvFun61(w float32) float32 {
 	if w >= 1 {
 		return 1
 	}
-	return 1 / (1 + math32.Pow((1-w)/w, 1/6))
+	rval := 1.0 / (1.0 + math32.Pow((1.0-w)/w, 1.0/6.0))
+	return rval
 }
 
 // SigFmLinWt returns sigmoidal contrast-enhanced weight from linear weight
