@@ -256,7 +256,7 @@ func (pj *Prjn) InitWtSym(rpjp LeabraPrjn) {
 				if rri == si {
 					rsy := &rpj.Syns[rsst+rci]
 					rsy.Wt = sy.Wt
-					pj.Learn.LWtFmWt(rsy)
+					rsy.LWt = sy.LWt
 					// note: if we support SymFmTop then can have option to go other way
 					// also for Scale support, copy scales
 				}
