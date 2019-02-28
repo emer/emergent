@@ -49,6 +49,7 @@ func NewInt64Shape(shape *Shape) *Int64 {
 
 func (tsr *Int64) DataType() arrow.DataType { return &arrow.Int64Type{} }
 func (tsr *Int64) Value(i []int) int64      { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Int64) Value1D(i int) int64      { return tsr.Values[i] }
 func (tsr *Int64) Set(i []int, val int64)   { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Int64) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -293,6 +294,7 @@ func NewUint64Shape(shape *Shape) *Uint64 {
 
 func (tsr *Uint64) DataType() arrow.DataType { return &arrow.Uint64Type{} }
 func (tsr *Uint64) Value(i []int) uint64     { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Uint64) Value1D(i int) uint64     { return tsr.Values[i] }
 func (tsr *Uint64) Set(i []int, val uint64)  { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Uint64) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -537,6 +539,7 @@ func NewFloat64Shape(shape *Shape) *Float64 {
 
 func (tsr *Float64) DataType() arrow.DataType { return &arrow.Float64Type{} }
 func (tsr *Float64) Value(i []int) float64    { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Float64) Value1D(i int) float64    { return tsr.Values[i] }
 func (tsr *Float64) Set(i []int, val float64) { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Float64) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -781,6 +784,7 @@ func NewInt32Shape(shape *Shape) *Int32 {
 
 func (tsr *Int32) DataType() arrow.DataType { return &arrow.Int32Type{} }
 func (tsr *Int32) Value(i []int) int32      { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Int32) Value1D(i int) int32      { return tsr.Values[i] }
 func (tsr *Int32) Set(i []int, val int32)   { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Int32) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -1025,6 +1029,7 @@ func NewUint32Shape(shape *Shape) *Uint32 {
 
 func (tsr *Uint32) DataType() arrow.DataType { return &arrow.Uint32Type{} }
 func (tsr *Uint32) Value(i []int) uint32     { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Uint32) Value1D(i int) uint32     { return tsr.Values[i] }
 func (tsr *Uint32) Set(i []int, val uint32)  { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Uint32) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -1269,6 +1274,7 @@ func NewFloat32Shape(shape *Shape) *Float32 {
 
 func (tsr *Float32) DataType() arrow.DataType { return &arrow.Float32Type{} }
 func (tsr *Float32) Value(i []int) float32    { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Float32) Value1D(i int) float32    { return tsr.Values[i] }
 func (tsr *Float32) Set(i []int, val float32) { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Float32) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -1513,6 +1519,7 @@ func NewInt16Shape(shape *Shape) *Int16 {
 
 func (tsr *Int16) DataType() arrow.DataType { return &arrow.Int16Type{} }
 func (tsr *Int16) Value(i []int) int16      { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Int16) Value1D(i int) int16      { return tsr.Values[i] }
 func (tsr *Int16) Set(i []int, val int16)   { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Int16) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -1757,6 +1764,7 @@ func NewUint16Shape(shape *Shape) *Uint16 {
 
 func (tsr *Uint16) DataType() arrow.DataType { return &arrow.Uint16Type{} }
 func (tsr *Uint16) Value(i []int) uint16     { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Uint16) Value1D(i int) uint16     { return tsr.Values[i] }
 func (tsr *Uint16) Set(i []int, val uint16)  { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Uint16) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -2001,6 +2009,7 @@ func NewInt8Shape(shape *Shape) *Int8 {
 
 func (tsr *Int8) DataType() arrow.DataType { return &arrow.Int8Type{} }
 func (tsr *Int8) Value(i []int) int8       { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Int8) Value1D(i int) int8       { return tsr.Values[i] }
 func (tsr *Int8) Set(i []int, val int8)    { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Int8) IsNull(i []int) bool {
 	if tsr.Nulls == nil {
@@ -2245,6 +2254,7 @@ func NewUint8Shape(shape *Shape) *Uint8 {
 
 func (tsr *Uint8) DataType() arrow.DataType { return &arrow.Uint8Type{} }
 func (tsr *Uint8) Value(i []int) uint8      { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *Uint8) Value1D(i int) uint8      { return tsr.Values[i] }
 func (tsr *Uint8) Set(i []int, val uint8)   { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *Uint8) IsNull(i []int) bool {
 	if tsr.Nulls == nil {

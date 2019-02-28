@@ -142,9 +142,9 @@ func (nt *NetworkStru) StyleParams(psty emer.ParamStyle, setMsg bool) {
 // AddLayer adds a new layer with given name and shape to the network.
 // 2D and 4D layer shapes are generally preferred but not essential -- see
 // AddLayer2D and 4D for convenience methods for those.  4D layers enable
-// unit-group level inhibition in Leabra networks, for example.
+// pool (unit-group) level inhibition in Leabra networks, for example.
 // shape is in row-major format with outer-most dimensions first:
-// e.g., 4D 3, 2, 4, 5 = 3 rows (Y) of 2 cols (X) of unit groups, with each unit
+// e.g., 4D 3, 2, 4, 5 = 3 rows (Y) of 2 cols (X) of pools, with each unit
 // group having 4 rows (Y) of 5 (X) units.
 func (nt *NetworkStru) AddLayer(name string, shape []int, typ emer.LayerType) emer.Layer {
 	if nt.EmerNet == nil {
@@ -166,12 +166,12 @@ func (nt *NetworkStru) AddLayer2D(name string, shapeY, shapeX int, typ emer.Laye
 }
 
 // AddLayer4D adds a new layer with given name and 4D shape to the network.
-// 4D layers enable unit-group level inhibition in Leabra networks, for example.
+// 4D layers enable pool (unit-group) level inhibition in Leabra networks, for example.
 // shape is in row-major format with outer-most dimensions first:
-// e.g., 4D 3, 2, 4, 5 = 3 rows (Y) of 2 cols (X) of unit groups, with each unit
-// group having 4 rows (Y) of 5 (X) units.
-func (nt *NetworkStru) AddLayer4D(name string, gpY, gpX, unY, unX int, typ emer.LayerType) emer.Layer {
-	return nt.AddLayer(name, []int{gpY, gpX, unY, unX}, typ)
+// e.g., 4D 3, 2, 4, 5 = 3 rows (Y) of 2 cols (X) of pools, with each pool
+// having 4 rows (Y) of 5 (X) neurons.
+func (nt *NetworkStru) AddLayer4D(name string, nPoolsY, nPoolsX, nNeurY, nNeurX int, typ emer.LayerType) emer.Layer {
+	return nt.AddLayer(name, []int{nPoolsY, nPoolsX, nNeurY, nNeurX}, typ)
 }
 
 // ConnectLayerNames establishes a projection between two layers, referenced by name

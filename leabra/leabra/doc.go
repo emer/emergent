@@ -35,14 +35,14 @@ Params are organized into four major categories, which are more clearly function
 labeled as opposed to just structurally so, to keep things clearer and better organized
 overall:
 * ActParams -- activation params, at the Neuron level (in act.go)
-* InhibParams -- inhibition params, at the Layer / UnitGroup level (in inhib.go)
+* InhibParams -- inhibition params, at the Layer / Pool level (in inhib.go)
 * LearnNeurParams -- learning parameters at the Neuron level (running-averages that drive learning)
 * LearnSynParams -- learning parameters at the Synapse level (both in learn.go)
 
 The levels of structure and state are:
 * Network
 *   .Layers
-*      .Pools: pooled inhibition state -- 1 for layer plus 1 for each unit group with inhibition
+*      .Pools: pooled inhibition state -- 1 for layer plus 1 for each sub-pool (unit group) with inhibition
 *      .RecvPrjns: receiving projections from other sending layers
 *      .SendPrjns: sending projections from other receiving layers
 *      .Neurons: neuron state variables
@@ -70,7 +70,7 @@ conductances G.
 
 The Pools (type Pool, in pool.go) hold state used for computing pooled inhibition, but also are
 used to hold overall aggregate pooled state variables -- the first element in Pools applies
-to the layer itself, and subsequent ones are for each unit-group pool.
+to the layer itself, and subsequent ones are for each sub-pool (4D layers).
 These pools play the same role as the LeabraUnGpState structures in C++ emergent.
 
 Prjns directly support all synapse-level computation, and hold the LearnSynParams and

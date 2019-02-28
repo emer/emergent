@@ -50,9 +50,16 @@ func NewBitsShape(shape *Shape) *Bits {
 
 func (tsr *Bits) DataType() arrow.DataType { return &BoolType{} }
 
-func (tsr *Bits) Value(i []int) bool        { j := int(tsr.Offset(i)); return tsr.Values.Index(j) }
-func (tsr *Bits) Set(i []int, val bool)     { j := int(tsr.Offset(i)); tsr.Values.Set(j, val) }
-func (tsr *Bits) IsNull(i []int) bool       { return false }
+// Value returns value at given tensor index
+func (tsr *Bits) Value(i []int) bool { j := int(tsr.Offset(i)); return tsr.Values.Index(j) }
+
+// Value1D returns value at given tensor 1D (flat) index
+func (tsr *Bits) Value1D(i int) bool { return tsr.Values.Index(i) }
+
+func (tsr *Bits) Set(i []int, val bool) { j := int(tsr.Offset(i)); tsr.Values.Set(j, val) }
+
+func (tsr *Bits) IsNull(i []int) bool { return false }
+
 func (tsr *Bits) SetNull(i []int, nul bool) {}
 
 func Float64ToBool(val float64) bool {

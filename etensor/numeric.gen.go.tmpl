@@ -49,6 +49,7 @@ func New{{.Name}}Shape(shape *Shape) *{{.Name}} {
 
 func (tsr *{{.Name}}) DataType() arrow.DataType { return &arrow.{{.Name}}Type{} }
 func (tsr *{{.Name}}) Value(i []int)  {{or .Type}} { j := tsr.Offset(i); return tsr.Values[j] }
+func (tsr *{{.Name}}) Value1D(i int)  {{or .Type}} { return tsr.Values[i] }
 func (tsr *{{.Name}}) Set(i []int, val {{or .Type}})  { j := tsr.Offset(i); tsr.Values[j] = val }
 func (tsr *{{.Name}}) IsNull(i []int) bool {
 	if tsr.Nulls == nil {

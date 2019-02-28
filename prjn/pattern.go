@@ -45,3 +45,38 @@ func NewTensors(send, recv *etensor.Shape) (sendn, recvn *etensor.Int32, cons *e
 	cons = etensor.NewBitsShape(csh)
 	return
 }
+
+// ConsStringFull returns a []byte string showing the pattern of connectivity.
+// if perRecv is true then it displays the sending connections
+// per each recv unit -- otherwise it shows the entire matrix
+// as a 2D matrix
+func ConsStringFull(send, recv *etensor.Shape, cons *etensor.Bits) []byte {
+	nsend := send.Len()
+	nrecv := recv.Len()
+
+	one := []byte("1 ")
+	zero := []byte("0 ")
+
+	sz := nrecv * (nsend*2 + 1)
+	b := make([]byte, 0, sz)
+
+	for ri := 0; ri < nrecv; ri++ {
+		for si := 0; si < nsend; si++ {
+			off := ri*nsend + si
+			cn := cons.Value1D(off)
+			if cn {
+				b = append(b, one...)
+			} else {
+				b = append(b, zero...)
+			}
+		}
+		b = append(b, byte('\n'))
+	}
+	return b
+}
+
+// ConsStringPerRecv returns a []byte string showing the pattern of connectivity
+// organized by receiving unit, showing the sending connections per each
+func ConsStringPerRecv(send, recv *etensor.Shape, cons *etensor.Bits) []byte {
+	return nil
+}

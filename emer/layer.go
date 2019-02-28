@@ -41,8 +41,9 @@ type Layer interface {
 	SetOff(off bool)
 
 	// Shape returns the organization of units in the layer, in terms of an array of dimensions.
-	// if 2D, then it is a simple X,Y layer with no sub-structure (unit groups).
-	// If 4D, then it is standard unit group X,Y units X,Y.
+	// Row-major ordering is default (Y then X), outer-most to inner-most.
+	// if 2D, then it is a simple Y,X layer with no sub-structure (pools).
+	// If 4D, then it number of pools Y, X and then number of units per pool Y, X
 	LayShape() *etensor.Shape
 
 	// LayType returns the functional type of layer according to LayerType (extensible in

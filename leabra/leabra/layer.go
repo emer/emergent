@@ -116,7 +116,7 @@ func (ly *Layer) UnitVal1D(varNm string, idx int) (float32, error) {
 //////////////////////////////////////////////////////////////////////////////////////
 //  Build
 
-// BuildSubPools initializes neuron start / end indexes for sub-group pools
+// BuildSubPools initializes neuron start / end indexes for sub-pools
 func (ly *Layer) BuildSubPools() {
 	if ly.Shape.NumDims() != 4 {
 		return

@@ -17,7 +17,7 @@ type LayerStru struct {
 	Name      string         `desc:"Name of the layer -- this must be unique within the network, which has a map for quick lookup and layers are typically accessed directly by name"`
 	Class     string         `desc:"Class is for applying parameter styles, can be space separated multple tags"`
 	Off       bool           `desc:"inactivate this layer -- allows for easy experimentation"`
-	Shape     etensor.Shape  `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns) -- order is outer-to-inner (row major) so Y then X for 2D and for 4D: Y-X unit pools then Y-X units within pools"`
+	Shape     etensor.Shape  `desc:"shape of the layer -- can be 2D for basic layers and 4D for layers with sub-groups (hypercolumns) -- order is outer-to-inner (row major) so Y then X for 2D and for 4D: Y-X unit pools then Y-X neurons within pools"`
 	Type      emer.LayerType `desc:"type of layer -- Hidden, Input, Target, Compare, or extended type in specialized algorithms -- matches against .Class parameter styles (e.g., .Hidden etc)"`
 	Thread    int            `desc:"the thread number (go routine) to use in updating this layer. The user is responsible for allocating layers to threads, trying to maintain an even distribution across layers and establishing good break-points."`
 	Rel       relpos.Rel     `desc:"Spatial relationship to other layer, determines positioning"`
@@ -63,9 +63,9 @@ func (ls *LayerStru) SendPrjn(idx int) emer.Prjn   { return ls.SendPrjns[idx] }
 func (ls *LayerStru) SetShape(shape []int) {
 	var dnms []string
 	if len(shape) == 2 {
-		dnms = []string{"X", "Y"}
+		dnms = []string{"Y", "X"}
 	} else if len(shape) == 4 {
-		dnms = []string{"GX", "GY", "X", "Y"} // group X,Y
+		dnms = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
 	}
 	ls.Shape.SetShape(shape, nil, dnms) // row major default
 }

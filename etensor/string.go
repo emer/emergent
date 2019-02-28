@@ -48,6 +48,11 @@ func (tsr *String) Value(i []int) string {
 	return tsr.Values[j]
 }
 
+// Value1D returns value at given 1D (flat) tensor index
+func (tsr *String) Value1D(i int) string {
+	return tsr.Values[i]
+}
+
 // Set sets value at given tensor index
 func (tsr *String) Set(i []int, val string) {
 	j := int(tsr.Offset(i))
