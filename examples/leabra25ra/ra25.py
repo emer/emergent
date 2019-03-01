@@ -3,16 +3,7 @@
 # license that can be found in the LICENSE file.
 
 # labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
-from emergent import go
-from emergent import leabra
-from emergent import emer
-from emergent import eplot
-from emergent import patgen
-from emergent import prjn
-from emergent import dtable
-from emergent import etensor
-from emergent import rand
-from emergent import erand
+from emergent import go, leabra, emer, eplot, patgen, prjn, dtable, etensor, rand, erand, gi, giv, svg
 
 # DefaultPars are the initial default parameters for this simulation
 DefaultPars = emer.ParamStyle({
@@ -28,6 +19,12 @@ DefaultPars = emer.ParamStyle({
         "Prjn.WtScale.Rel": 0.2, # this is generally quite important
     }).handle,
 })
+
+# todo: this works but self. version does not!
+def InitCB(recv, send, sig, data):
+    print("initializing")
+    # self.Init()
+    # self.vp.FullRender2DTree()
 
 class SimState(object):
     """
@@ -141,7 +138,7 @@ class SimState(object):
 
     def TrialStats(self, accum):
         """TrialStats computes the trial-level statistics and adds them to the
-        epoch accumulators if accum is true"""
+        epoch accumulators if accum is True"""
         outLay = leabra.Layer(self.Net.LayerByName("Output"))
         cosdiff = outLay.CosDiff.Cos
         sse = outLay.SSE(0.5) # 0.5 = per-unit tolerance -- right side of .5
@@ -243,7 +240,7 @@ class SimState(object):
         net.ConnectLayers(hid2Lay, hid1Lay, prjn.NewFull(), emer.Back)
         
         net.Defaults()
-        # net.StyleParams(self.Pars, true) # set msg
+        # net.StyleParams(self.Pars, True) # set msg
         net.Build()
         net.InitWts()
 
@@ -257,7 +254,7 @@ class SimState(object):
             
         patgen.PermutedBinaryRows(dt.Cols[1], 6, 1, 0)
         patgen.PermutedBinaryRows(dt.Cols[2], 6, 1, 0)
-        dt.SaveCSV("random_5x5_25_gen.dat", ',', true)
+        dt.SaveCSV("random_5x5_25_gen.dat", ',', True)
 
     def OpenPats(self):
         dt = self.Pats
@@ -296,58 +293,59 @@ class SimState(object):
 
         #eplot.PlotViewSVG(plt, self.EpcPlotSvg, 5, 5, 2)
 
+    def InitCB(self, recv, send, sig, data):
+        print("initializing")
+        # self.Init()
+        # self.vp.FullRender2DTree()
 
-    # def ConfigGui() *gi.Window {
-    #     """ConfigGui configures the GoGi gui interface for this simulation"""
-    #     width = 1600
-    #     height = 1200
-    #     
+    def ConfigGui(self):
+        """ConfigGui configures the GoGi gui interface for this simulation"""
+        width = 1600
+        height = 1200
+
     #     oswin.TheApp.SetName("leabra25ra")
     #     oswin.TheApp.SetAbout(`This demonstrates a basic Leabra model. See <a href="https:#github.com/emer/emergent">emergent on GitHub</a>.</p>`)
-    #     
-    #     win = gi.NewWindow2D("leabra25ra", "Leabra Random Associator", width, height, true)
-    #     
-    #     vp = win.WinViewport2D()
-    #     updt = vp.UpdateStart()
-    #     
-    #     mfr = win.SetMainFrame()
-    #     
-    #     tbar = mfr.AddNewChild(gi.KiT_ToolBar, "tbar").(*gi.ToolBar)
-    #     tbar.Lay = gi.LayoutHoriz
-    #     tbar.SetStretchMaxWidth()
-    #     
-    #     split = mfr.AddNewChild(gi.KiT_SplitView, "split").(*gi.SplitView)
-    #     split.Dim = gi.X
+    
+        win = gi.NewWindow2D("leabra25ra", "Leabra Random Associator", width, height, True)
+        vp = win.WinViewport2D()
+        
+        self.win = win
+        self.vp = vp
+        
+        updt = vp.UpdateStart()
+         
+        mfr = win.SetMainFrame()
+        
+        tbar = gi.ToolBar(mfr.AddNewChild(gi.KiT_ToolBar(), "tbar"))
+        tbar.Lay = gi.LayoutHoriz
+        tbar.SetStretchMaxWidth()
+
+        split = gi.SplitView(mfr.AddNewChild(gi.KiT_SplitView(), "split"))
+        split.Dim = gi.X
     #     # split.SetProp("horizontal-align", "center")
     #     # split.SetProp("margin", 2.0) # raw numbers = px = 96 dpi pixels
-    #     split.SetStretchMaxWidth()
-    #     split.SetStretchMaxHeight()
-    #     
-    #     # todo: add a splitview here
-    #     
-    #     sv = split.AddNewChild(giv.KiT_StructView, "sv").(*giv.StructView)
+        split.SetStretchMaxWidth()
+        split.SetStretchMaxHeight()
+        
+    #    sv = split.AddNewChild(giv.KiT_StructView, "sv").(*giv.StructView)
     #     sv.SetStruct(ss, nil)
     #     # sv.SetStretchMaxWidth()
     #     # sv.SetStretchMaxHeight()
     #     
-    #     svge = split.AddNewChild(svg.KiT_Editor, "svg").(*svg.Editor)
-    #     svge.InitScale()
-    #     svge.Fill = true
-    #     svge.SetProp("background-color", "white")
-    #     svge.SetProp("width", units.NewValue(float32(width/2), units.Px))
+        svge = svg.Editor(split.AddNewChild(svg.KiT_Editor(), "svg"))
+        svge.InitScale()
+        svge.Fill = True
+        svge.SetPropStr("background-color", "white")
+    #     svge.SetPropStr("width", units.NewValue(float32(width/2), units.Px))
     #     svge.SetProp("height", units.NewValue(float32(height-100), units.Px))
-    #     svge.SetStretchMaxWidth()
-    #     svge.SetStretchMaxHeight()
-    #     self.EpcPlotSvg = svge
-    #     
-    #     split.SetSplits(.3, .7)
-    #     
-    #     tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.Init()
-    #         vp.FullRender2DTree()
-    #     })
-    #         
+        svge.SetStretchMaxWidth()
+        svge.SetStretchMaxHeight()
+        self.EpcPlotSvg = svge
+         
+        # split.SetSplits(.3, .7)
+        
+        tbar.AddAction(gi.ActOpts(Label="Init", Icon="update"), win.This(), InitCB)
+
     #     tbar.AddAction(gi.ActOpts{Label: "Train", Icon: "run"}, win.This(),
     #     func(recv, send ki.Ki, sig int64, data interface{}) {
     #         go self.Train()
@@ -385,13 +383,13 @@ class SimState(object):
     #                                 
     #     tbar.AddAction(gi.ActOpts{Label: "Save Log", Icon: "file-save"}, win.This(),
     #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.EpcLog.SaveCSV("ra25_epc.dat", ',', true)
+    #         self.EpcLog.SaveCSV("ra25_epc.dat", ',', True)
     #         })
     #                                     
     #     tbar.AddAction(gi.ActOpts{Label: "Save Pars", Icon: "file-save"}, win.This(),
     #     func(recv, send ki.Ki, sig int64, data interface{}) {
     #         # todo: need save / load methods for these
-    #         # self.EpcLog.SaveCSV("ra25_epc.dat", ',', true)
+    #         # self.EpcLog.SaveCSV("ra25_epc.dat", ',', True)
     #         })
     #                                         
     #     tbar.AddAction(gi.ActOpts{Label: "New Seed", Icon: "new"}, win.This(),
@@ -399,7 +397,7 @@ class SimState(object):
     #         self.NewRndSeed()
     #         })
     #                                             
-    #     vp.UpdateEndNoSig(updt)
+        vp.UpdateEndNoSig(updt)
     #     
     #     # main menu
     #     appnm = oswin.TheApp.Name()
@@ -434,6 +432,7 @@ class SimState(object):
     #         
     #     win.MainMenuUpdated()
     #     return win
+        win.GoStartEventLoop()
 
 
 # Sim is the overall state for this simulation
@@ -441,7 +440,7 @@ Sim = SimState()
 
 Sim.Config()
 Sim.Init()
-#win = Sim.ConfigGui()
-Sim.Train()
-Sim.EpcLog.SaveCSV("ra25_epc.dat", ord(','), True)
+Sim.ConfigGui()
+#Sim.Train()
+#Sim.EpcLog.SaveCSV("ra25_epc.dat", ord(','), True)
 

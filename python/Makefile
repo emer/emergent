@@ -8,7 +8,7 @@ PIP=$(PYTHON) -m pip
 all: gen
 
 gen:
-	gopy pkg -vm=python3 github.com/emer/emergent math/rand
+	gopy pkg -vm=python3 -exclude=driver,oswin -main="runtime.LockOSThread(); gimain.Main(func() {  GoPyInitRunFile() })" github.com/emer/emergent math/rand github.com/goki/gi github.com/goki/ki/ki 
 
 install:
 	# this does a local install of the package, building the sdist and then directly installing it
