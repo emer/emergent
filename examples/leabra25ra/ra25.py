@@ -17,6 +17,14 @@ from emergent import go, leabra, emer, eplot, patgen, prjn, dtable, etensor, ran
 
 import importlib as il  #il.reload(ra25) -- doesn't seem to work for reasons unknown
 import numpy as np
+import matplotlib
+matplotlib.use('SVG')
+import matplotlib.pyplot as plt
+plt.rcParams['svg.fonttype'] = 'none'  # essential for not rendering fonts as paths
+import io
+
+# note: xarray or pytorch TensorDataSet can be used instead of pandas for input / output
+# patterns and recording of "log" data for plotting
 import pandas as pd
 
 # DefaultPars are the initial default parameters for this simulation
@@ -92,7 +100,7 @@ class SimState(object):
         self.Trial    = 0
         self.Time     = leabra.Time()
         self.Plot     = True
-        self.PlotVals  = go.Slice_string(["SSE", "Pct Err"])
+        self.PlotVals  = ["SSE", "Pct Err"]
         self.Sequential = False
         self.Test      = False
         
@@ -327,17 +335,23 @@ class SimState(object):
     def PlotEpcLog(self):
         """PlotEpcLog plots given epoch log using given Y axis columns into EpcPlotSvg"""
         dt = self.EpcLog
-        # plt = plot.New() # todo: keep around?
-        # please.. Title is a sub-struct within.. not supported
-        # plt.Title.Text = "Random Associator Epoch Log"
-        # plt.X.Label.Text = "Epoch"
-        # plt.Y.Label.Text = "Y"
+        epc = dt['Epoch'].values
+        for cl in self.PlotVals:
+            yv = dt[cl].values
+            plt.plot(epc, yv, label=cl)
+
+        plt.xlabel("Epoch")
+        plt.ylabel("Values")
+        plt.legend()
+        plt.title("Random Associator Epoch Log")
         
-        # for cl in self.PlotVals:
-        #     xy = eplot.NewTableXYNames(dt, "Epoch", cl)
-        #     plotutil.AddLines(plt, cl, xy)
- 
-        # eplot.PlotViewSVG(plt, self.EpcPlotSvg, 5, 5, 2)
+        svgstr = io.StringIO()
+        plt.savefig(svgstr, format='svg')
+        eplot.StringViewSVG(svgstr.getvalue(), self.EpcPlotSvg, 2)
+        f = open("ra25_cur_epc_graph.svg","w+")
+        f.write(svgstr.getvalue())
+        f.close()
+        plt.close()
 
     def ConfigGui(self):
         """ConfigGui configures the GoGi gui interface for this simulation"""

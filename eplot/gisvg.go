@@ -41,3 +41,19 @@ func PlotViewSVG(plt *plot.Plot, svge *svg.Editor, xSz, ySz, scale float64) {
 	svge.Scale = float32(scale) * (svge.Viewport.Win.LogicalDPI() / 96.0)
 	svge.SetTransform()
 }
+
+// StringViewSVG shows the given svg string in given GoGi svg editor widget
+// Scale to fit your window -- e.g., 2-3 depending on sizes
+func StringViewSVG(svgstr string, svge *svg.Editor, scale float64) {
+	updt := svge.UpdateStart()
+	defer svge.UpdateEnd(updt)
+	svge.SetFullReRender()
+
+	var buf bytes.Buffer
+	buf.Write([]byte(svgstr))
+	svge.ReadXML(&buf)
+
+	svge.SetNormXForm()
+	svge.Scale = float32(scale) * (svge.Viewport.Win.LogicalDPI() / 96.0)
+	svge.SetTransform()
+}
