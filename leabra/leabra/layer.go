@@ -298,14 +298,11 @@ func (ly *Layer) InitExt() {
 	}
 }
 
-// ApplyExt applies external input in the form of an etensor.Float32.
-// If the layer is a Target or Compare layer type, then it goes in Targ
-// otherwise it goes in Ext
-func (ly *Layer) ApplyExt(ext *etensor.Float32) {
-	// todo: compare shape?
-	clrmsk := bitflag.Mask32(int(NeurHasExt), int(NeurHasTarg), int(NeurHasCmpr))
-	setmsk := int32(0)
-	toTarg := false
+// ApplyExtFlags gets the clear mask and set mask for updating neuron flags
+// based on layer type, and whether input should be applied to Targ (else Ext)
+func (ly *Layer) ApplyExtFlags() (clrmsk, setmsk int32, toTarg bool) {
+	clrmsk = bitflag.Mask32(int(NeurHasExt), int(NeurHasTarg), int(NeurHasCmpr))
+	toTarg = false
 	if ly.Type == emer.Target {
 		setmsk = bitflag.Mask32(int(NeurHasTarg))
 		toTarg = true
@@ -315,11 +312,74 @@ func (ly *Layer) ApplyExt(ext *etensor.Float32) {
 	} else {
 		setmsk = bitflag.Mask32(int(NeurHasExt))
 	}
-	ev := ext.Values
-	mx := ints.MinInt(len(ev), len(ly.Neurons))
+	return
+}
+
+// ApplyExt applies external input in the form of an etensor.Float32.  If
+// dimensionality of tensor matches that of layer, and is 2D or 4D, then each dimension
+// is iterated separately, so any mismatch preserves dimensional structure.
+// If the layer is a Target or Compare layer type, then it goes in Targ
+// otherwise it goes in Ext
+func (ly *Layer) ApplyExt(ext *etensor.Float32) {
+	if ext.NumDims() != ly.Shape.NumDims() || !(ext.NumDims() == 2 || ext.NumDims() == 4) {
+		ly.ApplyExt1D(ext.Values)
+		return
+	}
+	clrmsk, setmsk, toTarg := ly.ApplyExtFlags()
+	if ext.NumDims() == 2 {
+		ymx := ints.MinInt(ext.Dim(0), ly.Shape.Dim(0))
+		xmx := ints.MinInt(ext.Dim(1), ly.Shape.Dim(1))
+		for y := 0; y < ymx; y++ {
+			for x := 0; x < xmx; x++ {
+				idx := []int{y, x}
+				vl := ext.Value(idx)
+				i := ly.Shape.Offset(idx)
+				nrn := &ly.Neurons[i]
+				if toTarg {
+					nrn.Targ = vl
+				} else {
+					nrn.Ext = vl
+				}
+				nrn.ClearMask(clrmsk)
+				nrn.SetMask(setmsk)
+			}
+		}
+		return
+	}
+	ypmx := ints.MinInt(ext.Dim(0), ly.Shape.Dim(0))
+	xpmx := ints.MinInt(ext.Dim(1), ly.Shape.Dim(1))
+	ynmx := ints.MinInt(ext.Dim(2), ly.Shape.Dim(2))
+	xnmx := ints.MinInt(ext.Dim(3), ly.Shape.Dim(3))
+	for yp := 0; yp < ypmx; yp++ {
+		for xp := 0; xp < xpmx; xp++ {
+			for yn := 0; yn < ynmx; yn++ {
+				for xn := 0; xn < xnmx; xn++ {
+					idx := []int{yp, xp, yn, yp}
+					vl := ext.Value(idx)
+					i := ly.Shape.Offset(idx)
+					nrn := &ly.Neurons[i]
+					if toTarg {
+						nrn.Targ = vl
+					} else {
+						nrn.Ext = vl
+					}
+					nrn.ClearMask(clrmsk)
+					nrn.SetMask(setmsk)
+				}
+			}
+		}
+	}
+}
+
+// ApplyExt1D applies external input in the form of a flat 1-dimensional slice of floats
+// If the layer is a Target or Compare layer type, then it goes in Targ
+// otherwise it goes in Ext
+func (ly *Layer) ApplyExt1D(ext []float32) {
+	clrmsk, setmsk, toTarg := ly.ApplyExtFlags()
+	mx := ints.MinInt(len(ext), len(ly.Neurons))
 	for i := 0; i < mx; i++ {
 		nrn := &ly.Neurons[i]
-		vl := ev[i]
+		vl := ext[i]
 		if toTarg {
 			nrn.Targ = vl
 		} else {

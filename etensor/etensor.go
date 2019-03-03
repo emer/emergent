@@ -10,7 +10,7 @@ import "github.com/apache/arrow/go/arrow"
 
 // Tensor is the general interface for n-dimensional tensors
 type Tensor interface {
-	// Len returns the number of elements in the tensor.
+	// Len returns the number of elements in the tensor (product of shape dimensions).
 	Len() int
 
 	// DataType returns the type of data, using arrow.DataType (ID() is the arrow.Type enum value)

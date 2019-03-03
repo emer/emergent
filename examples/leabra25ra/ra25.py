@@ -2,8 +2,22 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+# to run this python version of the demo:
+# * install gopy, currently in fork at https://github.com/goki/gopy
+#   e.g., 'go get github.com/goki/gopy -u ./...' and then cd to that package
+#   and do 'go install'
+# * go to the python directory in this emergent repository and 
+#   type 'make' -- if that works, then type make install
+# * cd back here, and run 'pyemergent' which was installed into /usr/local/bin
+# * then type 'import ra25' and this should run
+# * you'll need various standard packages such as pandas, numpy, matplotlib, etc
+
 # labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
 from emergent import go, leabra, emer, eplot, patgen, prjn, dtable, etensor, rand, erand, gi, giv, svg
+
+import importlib as il  #il.reload(ra25) -- doesn't seem to work for reasons unknown
+import numpy as np
+import pandas as pd
 
 # DefaultPars are the initial default parameters for this simulation
 DefaultPars = emer.ParamStyle({
@@ -20,11 +34,45 @@ DefaultPars = emer.ParamStyle({
     }).handle,
 })
 
-# todo: this works but self. version does not!
+# this will become SimState later.. 
+Sim = 1
+
+# note: callbacks into SimState from GoGi don't work when threaded
 def InitCB(recv, send, sig, data):
-    print("initializing")
-    # self.Init()
-    # self.vp.FullRender2DTree()
+    Sim.Init()
+    Sim.vp.FullRender2DTree()
+
+def TrainCB(recv, send, sig, data):
+    Sim.Train()
+    Sim.vp.FullRender2DTree()
+
+def StopCB(recv, send, sig, data):
+    Sim.Stop()
+    Sim.vp.FullRender2DTree()
+
+def StepTrialCB(recv, send, sig, data):
+    Sim.StepTrial()
+    Sim.vp.FullRender2DTree()
+
+def StepEpochCB(recv, send, sig, data):
+    Sim.StepEpoch()
+    Sim.vp.FullRender2DTree()
+
+def PlotEpcLogCB(recv, send, sig, data):
+    Sim.PlotEpcLog()
+    Sim.vp.FullRender2DTree()
+
+def SaveWtsCB(recv, send, sig, data):
+    Sim.Net.SaveWtsJSON("ra25_net_trained.wts") # todo: call method to prompt
+   
+def SaveLogCB(recv, send, sig, data):
+    Sim.EpcLog.to_csv("ra25_epc.dat", sep="\t")
+
+def SaveParsCB(recv, send, sig, data):
+    print("save params todo")
+
+def NewSeedCB(recv, send, sig, data):
+    Sim.NewRndSeed()
 
 class SimState(object):
     """
@@ -36,15 +84,15 @@ class SimState(object):
     """
     def __init__(self):
         self.Net = leabra.Network()
-        self.Pats     = dtable.Table()
-        self.EpcLog   = dtable.Table()
+        self.Pats     = pd.DataFrame()
+        self.EpcLog   = pd.DataFrame()
         self.Pars     = DefaultPars
         self.MaxEpcs  =  100
         self.Epoch    = 0
         self.Trial    = 0
         self.Time     = leabra.Time()
         self.Plot     = True
-        self.PlotVals  = ["SSE", "Pct Err"]
+        self.PlotVals  = go.Slice_string(["SSE", "Pct Err"])
         self.Sequential = False
         self.Test      = False
         
@@ -60,8 +108,8 @@ class SimState(object):
         self.SumAvgSSE  = 0.0
         self.SumCosDiff = 0.0
         self.CntErr     = 0
-        self.Porder     = go.Slice_int()
-#        self.EpcPlotSvg *svg.Editor
+        self.Porder     = [1]
+        # self.EpcPlotSvg *svg.Editor
         self.StopNow    = False
         self.RndSeed    = 0
 
@@ -81,16 +129,27 @@ class SimState(object):
         self.Trial = 0
         self.StopNow = False
         self.Time.Reset()
-        np = self.Pats.NumRows()
-        self.Porder = rand.Perm(np)         # always start with new one so random order is identical
+        npat = len(self.Pats.index)
+        self.Porder = np.random.permutation(npat)         # always start with new one so random order is identical
         self.Net.StyleParams(self.Pars, True) # set msg
         self.Net.InitWts()
-        self.EpcLog.SetNumRows(0)
+        self.EpcLog = self.EpcLog.iloc[0:] # keep columns, delete rows
 
     def NewRndSeed(self):
         """NewRndSeed gets a new random seed based on current time -- otherwise uses the same random seed for every run"""
         # self.RndSeed = time.Now().UnixNano()
-        
+
+    def ApplyExt(self, lay, nparray):
+        """ApplyExt applies external input to given layer from given numpy array source"""
+        flt = np.ndarray.flatten(nparray, 'C')
+        # print(len(flt))
+        # print(flt)
+        slc = go.Slice_float32(flt)
+        # print(len(slc))
+        # for i in slc:
+        #     print(i)
+        lay.ApplyExt1D(slc)
+    
     def RunTrial(self):
         """RunTrial runs one alpha-trial (100 msec, 4 quarters) of processing
         this does NOT call TrialInc (so it can be used flexibly)
@@ -98,19 +157,19 @@ class SimState(object):
     
         inLay = leabra.Layer(self.Net.LayerByName("Input"))
         outLay = leabra.Layer(self.Net.LayerByName("Output"))
-        inPats = etensor.Float32(self.Pats.ColByName("Input"))
-        outPats = etensor.Float32(self.Pats.ColByName("Output"))
+        # inPats = etensor.Float32(self.Pats.ColByName("Input"))
+        # outPats = etensor.Float32(self.Pats.ColByName("Output"))
         
         pidx = self.Trial
         if not self.Sequential:
             pidx = self.Porder[self.Trial]
-            
-        pslc = go.Slice_int([pidx])
-        
-        inp = inPats.SubSlice(2, pslc)
-        outp = outPats.SubSlice(2, pslc)
-        inLay.ApplyExt(inp)
-        outLay.ApplyExt(outp)
+
+        # note: these indexes must be updated based on columns in patterns..
+        inp = self.Pats.iloc[pidx,1:26].values
+        outp = self.Pats.iloc[pidx,26:26+25].values
+
+        self.ApplyExt(inLay, inp)
+        self.ApplyExt(outLay, outp)
         
         self.Net.TrialInit()
         self.Time.TrialStart()
@@ -129,7 +188,7 @@ class SimState(object):
     def TrialInc(self):
         """TrialInc increments counters after one trial of processing"""
         self.Trial += 1
-        np = self.Pats.NumRows()
+        np = len(self.Pats.index)
         if self.Trial >= np:
             self.LogEpoch()
             if self.Plot:
@@ -154,39 +213,37 @@ class SimState(object):
         order of permuted inputs for the next epoch"""
         self.Trial = 0
         self.Epoch += 1
-        erand.PermuteInts(self.Porder)
+        self.Porder = np.random.permutation(self.Porder)
 
     def LogEpoch(self):
         """LogEpoch adds data from current epoch to the EpochLog table -- computes epoch
         averages prior to logging.
         Epoch counter is assumed to not have yet been incremented."""
-        self.EpcLog.SetNumRows(self.Epoch + 1)
         hid1Lay = leabra.Layer(self.Net.LayerByName("Hidden1"))
         hid2Lay = leabra.Layer(self.Net.LayerByName("Hidden2"))
         outLay = leabra.Layer(self.Net.LayerByName("Output"))
         
-        np = self.Pats.NumRows()
-        self.EpcSSE = self.SumSSE / np
+        npat = len(self.Pats.index)
+        self.EpcSSE = self.SumSSE / npat
         self.SumSSE = 0.0
-        self.EpcAvgSSE = self.SumAvgSSE / np
+        self.EpcAvgSSE = self.SumAvgSSE / npat
         self.SumAvgSSE = 0.0
-        self.EpcPctErr = self.CntErr / np
+        self.EpcPctErr = self.CntErr / npat
         self.CntErr = 0.0
         self.EpcPctCor = 1.0 - self.EpcPctErr
-        self.EpcCosDiff = self.SumCosDiff / np
+        self.EpcCosDiff = self.SumCosDiff / npat
         self.SumCosDiff = 0.0
         
         epc = self.Epoch
         
-        self.EpcLog.ColByName("Epoch").SetFloat1D(epc, epc)
-        self.EpcLog.ColByName("SSE").SetFloat1D(epc, self.EpcSSE)
-        self.EpcLog.ColByName("Avg SSE").SetFloat1D(epc, self.EpcAvgSSE)
-        self.EpcLog.ColByName("Pct Err").SetFloat1D(epc, self.EpcPctErr)
-        self.EpcLog.ColByName("Pct Cor").SetFloat1D(epc, self.EpcPctCor)
-        self.EpcLog.ColByName("CosDiff").SetFloat1D(epc, self.EpcCosDiff)
+        nwdat = [epc, self.EpcSSE, self.EpcAvgSSE, self.EpcPctErr, self.EpcPctCor, self.EpcCosDiff, 0, 0, 0]
         # self.EpcLog.ColByName("Hid1 ActAvg").SetFloat1D(epc, hid1Lay.Pools[0].ActAvg.ActPAvgEff)
         # self.EpcLog.ColByName("Hid2 ActAvg").SetFloat1D(epc, hid2Lay.Pools[0].ActAvg.ActPAvgEff)
         # self.EpcLog.ColByName("Out ActAvg").SetFloat1D(epc, outLay.Pools[0].ActAvg.ActPAvgEff)
+
+        nrow = len(self.EpcLog.index)
+        # note: this is reportedly rather slow
+        self.EpcLog.loc[nrow] = nwdat
 
     def StepTrial(self):
         """StepTrial does one alpha trial of processing and increments everything etc
@@ -245,6 +302,7 @@ class SimState(object):
         net.InitWts()
 
     def ConfigPats(self):
+        # note: this is all go-based for using dtable.Table instead of pandas
         dt = self.Pats
         schema = dtable.Schema()
         schema.append(dtable.Column("Name", etensor.STRING, nil, nil))
@@ -257,54 +315,37 @@ class SimState(object):
         dt.SaveCSV("random_5x5_25_gen.dat", ',', True)
 
     def OpenPats(self):
-        dt = self.Pats
-        dt.OpenCSV("random_5x5_25.dat", ord('\t'))
-        # if err != nil:
-        #     log.Println(err)
+        dt = pd.read_csv("random_5x5_25.dat", sep='\t')
+        dt = dt.drop(columns="_H:")
+        self.Pats = dt
 
     def ConfigEpcLog(self):
-        dt = self.EpcLog
-        schema = dtable.Schema()
-        schema.append(dtable.Column("Epoch", etensor.INT64))
-        schema.append(dtable.Column("SSE", etensor.FLOAT32))
-        schema.append(dtable.Column("Avg SSE", etensor.FLOAT32))
-        schema.append(dtable.Column("Pct Err", etensor.FLOAT32))
-        schema.append(dtable.Column("Pct Cor", etensor.FLOAT32))
-        schema.append(dtable.Column("CosDiff", etensor.FLOAT32))
-        schema.append(dtable.Column("Hid1 ActAvg", etensor.FLOAT32))
-        schema.append(dtable.Column("Hid2 ActAvg", etensor.FLOAT32))
-        schema.append(dtable.Column("Out ActAvg", etensor.FLOAT32))
-        dt.SetFromSchema(schema, 0)
-            
-        self.PlotVals = go.Slice_string(["SSE", "Pct Err"])
+        self.EpcLog = pd.DataFrame(columns=["Epoch", "SSE", "Avg SSE", "Pct Err", "Pct Cor", "CosDiff", "Hid1 ActAvg", "Hid2 ActAvg", "Out ActAvg"])
+        self.PlotVals = ["SSE", "Pct Err"]
         self.Plot = True
 
     def PlotEpcLog(self):
         """PlotEpcLog plots given epoch log using given Y axis columns into EpcPlotSvg"""
         dt = self.EpcLog
         # plt = plot.New() # todo: keep around?
+        # please.. Title is a sub-struct within.. not supported
         # plt.Title.Text = "Random Associator Epoch Log"
         # plt.X.Label.Text = "Epoch"
         # plt.Y.Label.Text = "Y"
         
-        # for cl in range(self.PlotVals):
+        # for cl in self.PlotVals:
         #     xy = eplot.NewTableXYNames(dt, "Epoch", cl)
-            # plotutil.AddLines(plt, cl, xy)
-
-        #eplot.PlotViewSVG(plt, self.EpcPlotSvg, 5, 5, 2)
-
-    def InitCB(self, recv, send, sig, data):
-        print("initializing")
-        # self.Init()
-        # self.vp.FullRender2DTree()
+        #     plotutil.AddLines(plt, cl, xy)
+ 
+        # eplot.PlotViewSVG(plt, self.EpcPlotSvg, 5, 5, 2)
 
     def ConfigGui(self):
         """ConfigGui configures the GoGi gui interface for this simulation"""
         width = 1600
         height = 1200
 
-    #     oswin.TheApp.SetName("leabra25ra")
-    #     oswin.TheApp.SetAbout(`This demonstrates a basic Leabra model. See <a href="https:#github.com/emer/emergent">emergent on GitHub</a>.</p>`)
+        gi.SetAppName("leabra25ra")
+        gi.SetAppAbout('This demonstrates a basic Leabra model. See <a href="https:#github.com/emer/emergent">emergent on GitHub</a>.</p>')
     
         win = gi.NewWindow2D("leabra25ra", "Leabra Random Associator", width, height, True)
         vp = win.WinViewport2D()
@@ -336,71 +377,32 @@ class SimState(object):
         svge.InitScale()
         svge.Fill = True
         svge.SetPropStr("background-color", "white")
-    #     svge.SetPropStr("width", units.NewValue(float32(width/2), units.Px))
-    #     svge.SetProp("height", units.NewValue(float32(height-100), units.Px))
+        svge.SetPropStr("width", "800px")
+        svge.SetPropStr("height", "1100px")
         svge.SetStretchMaxWidth()
         svge.SetStretchMaxHeight()
         self.EpcPlotSvg = svge
          
-        # split.SetSplits(.3, .7)
+        # split.SetSplits(.3, .7)  # not avail due to var-arg
         
         tbar.AddAction(gi.ActOpts(Label="Init", Icon="update"), win.This(), InitCB)
+        tbar.AddAction(gi.ActOpts(Label="Train", Icon="run"), win.This(), TrainCB)
+        tbar.AddAction(gi.ActOpts(Label="Stop", Icon="stop"), win.This(), StopCB)
+        tbar.AddAction(gi.ActOpts(Label="Step Trial", Icon="step-fwd"), win.This(), StepTrialCB)
+        tbar.AddAction(gi.ActOpts(Label="Step Epoch", Icon="fast-fwd"), win.This(), StepEpochCB)
 
-    #     tbar.AddAction(gi.ActOpts{Label: "Train", Icon: "run"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         go self.Train()
-    #      })
-    #         
-    #     tbar.AddAction(gi.ActOpts{Label: "Stop", Icon: "stop"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.Stop()
-    #         vp.FullRender2DTree()
-    #         })
-    #                 
-    #     tbar.AddAction(gi.ActOpts{Label: "Step Trial", Icon: "step-fwd"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.StepTrial()
-    #         vp.FullRender2DTree()
-    #         })
-    #                     
-    #     tbar.AddAction(gi.ActOpts{Label: "Step Epoch", Icon: "fast-fwd"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.StepEpoch()
-    #         vp.FullRender2DTree()
-    #         })
-    #                         
-    #     # tbar.AddSep("file")
-    #                         
-    #     tbar.AddAction(gi.ActOpts{Label: "Epoch Plot", Icon: "update"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.PlotEpcLog()
-    #         })
-    #                             
-    #     tbar.AddAction(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.Net.SaveWtsJSON("ra25_net_trained.wts") # todo: call method to prompt
-    #         })
-    #                                 
-    #     tbar.AddAction(gi.ActOpts{Label: "Save Log", Icon: "file-save"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.EpcLog.SaveCSV("ra25_epc.dat", ',', True)
-    #         })
-    #                                     
-    #     tbar.AddAction(gi.ActOpts{Label: "Save Pars", Icon: "file-save"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         # todo: need save / load methods for these
-    #         # self.EpcLog.SaveCSV("ra25_epc.dat", ',', True)
-    #         })
-    #                                         
-    #     tbar.AddAction(gi.ActOpts{Label: "New Seed", Icon: "new"}, win.This(),
-    #     func(recv, send ki.Ki, sig int64, data interface{}) {
-    #         self.NewRndSeed()
-    #         })
-    #                                             
+        # tbar.AddSep("file")
+
+        tbar.AddAction(gi.ActOpts(Label="Epoch Plot", Icon="update"), win.This(), PlotEpcLogCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Wts", Icon="file-save"), win.This(), SaveWtsCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Log", Icon="file-save"), win.This(), SaveLogCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Pars", Icon="file-save"), win.This(), SaveParsCB)
+        tbar.AddAction(gi.ActOpts(Label="New Seed", Icon="new"), win.This(), NewSeedCB)
+        
         vp.UpdateEndNoSig(updt)
     #     
     #     # main menu
-    #     appnm = oswin.TheApp.Name()
+    #     appnm = gi.AppName()
     #     mmen = win.MainMenu
     #     mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
     #     
@@ -423,11 +425,11 @@ class SimState(object):
     #     # fmen.Menu.AddSeparator("csep")
     #     # fmen.Menu.AddAction(gi.ActOpts{Label: "Close Window", Shortcut: "Command+W"},
     #     #     win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-    #     #     win.OSWin.Close()
+    #     #     win.CloseReq()
     #     #     })
     #     
-    #     win.OSWin.SetCloseCleanFunc(func(w oswin.Window) {
-    #         go oswin.TheApp.Quit() # once main window is closed, quit
+    #     win.SetCloseCleanFunc(func(w *gi.Window) {
+    #         gi.Quit() # once main window is closed, quit
     #     })
     #         
     #     win.MainMenuUpdated()
@@ -441,6 +443,7 @@ Sim = SimState()
 Sim.Config()
 Sim.Init()
 Sim.ConfigGui()
-#Sim.Train()
-#Sim.EpcLog.SaveCSV("ra25_epc.dat", ord(','), True)
+# Sim.Train()
+# Sim.EpcLog.SaveCSV("ra25_epc.dat", ord(','), True)
 
+    
