@@ -114,8 +114,8 @@ func (pl *PrjnList) Add(p Prjn) {
 	(*pl) = append(*pl, p)
 }
 
-// FindSend finds the projection with given send layer
-func (pl *PrjnList) FindSend(send Layer) (Prjn, bool) {
+// Send finds the projection with given send layer
+func (pl *PrjnList) Send(send Layer) (Prjn, bool) {
 	for _, pj := range *pl {
 		if pj.SendLay() == send {
 			return pj, true
@@ -124,8 +124,8 @@ func (pl *PrjnList) FindSend(send Layer) (Prjn, bool) {
 	return nil, false
 }
 
-// FindRecv finds the projection with given recv layer
-func (pl *PrjnList) FindRecv(recv Layer) (Prjn, bool) {
+// Recv finds the projection with given recv layer
+func (pl *PrjnList) Recv(recv Layer) (Prjn, bool) {
 	for _, pj := range *pl {
 		if pj.RecvLay() == recv {
 			return pj, true
@@ -134,23 +134,23 @@ func (pl *PrjnList) FindRecv(recv Layer) (Prjn, bool) {
 	return nil, false
 }
 
-// FindSendName finds the projection with given send layer name, nil if not found
+// SendName finds the projection with given send layer name, nil if not found
 // see Try version for error checking.
-func (pl *PrjnList) FindSendName(sender string) Prjn {
-	pj, _ := pl.FindSendNameTry(sender)
+func (pl *PrjnList) SendName(sender string) Prjn {
+	pj, _ := pl.SendNameTry(sender)
 	return pj
 }
 
-// FindRecvName finds the projection with given recv layer name, nil if not found
+// RecvName finds the projection with given recv layer name, nil if not found
 // see Try version for error checking.
-func (pl *PrjnList) FindRecvName(recv string) Prjn {
-	pj, _ := pl.FindRecvNameTry(recv)
+func (pl *PrjnList) RecvName(recv string) Prjn {
+	pj, _ := pl.RecvNameTry(recv)
 	return pj
 }
 
-// FindSendNameTry finds the projection with given send layer name.
+// SendNameTry finds the projection with given send layer name.
 // returns error message if not found
-func (pl *PrjnList) FindSendNameTry(sender string) (Prjn, error) {
+func (pl *PrjnList) SendNameTry(sender string) (Prjn, error) {
 	for _, pj := range *pl {
 		if pj.SendLay().LayName() == sender {
 			return pj, nil
@@ -159,9 +159,9 @@ func (pl *PrjnList) FindSendNameTry(sender string) (Prjn, error) {
 	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
 }
 
-// FindRecvNameTry finds the projection with given recv layer name.
+// RecvNameTry finds the projection with given recv layer name.
 // returns error message if not found
-func (pl *PrjnList) FindRecvNameTry(recv string) (Prjn, error) {
+func (pl *PrjnList) RecvNameTry(recv string) (Prjn, error) {
 	for _, pj := range *pl {
 		if pj.RecvLay().LayName() == recv {
 			return pj, nil
