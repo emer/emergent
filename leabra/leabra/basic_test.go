@@ -100,7 +100,7 @@ func TestMakeNet(t *testing.T) {
 func TestSynVals(t *testing.T) {
 	TestNet.InitWts()
 	hidLay := TestNet.LayerByName("Hidden").(*Layer)
-	fmIn := hidLay.RecvPrjns.FindSendName("Input").(*Prjn)
+	fmIn := hidLay.RecvPrjns.SendName("Input").(*Prjn)
 
 	bfWt, err := fmIn.SynVal("Wt", 1, 1)
 	if err != nil {
