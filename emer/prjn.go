@@ -62,11 +62,15 @@ type Prjn interface {
 	// using the natural ordering of the synapses (sender based for Leabra)
 	SynVals(varnm string) []float32
 
-	// SynVal returns value of given variable name on the synapse between given send and recv unit indexes
+	// SynVal returns value of given variable name on the synapse
+	// between given send, recv unit indexes (1D, flat indexes)
+	// returns error for access errors.
 	SynVal(varnm string, sidx, ridx int) (float32, error)
 
-	// SetSynVal sets value of given variable name on the synapse between given send, recv unit indexes -- returns error for access errors.
-	SetSynVal(varnm string, sidx, ridx int, val float64) error
+	// SetSynVal sets value of given variable name on the synapse
+	// between given send, recv unit indexes (1D, flat indexes)
+	// returns error for access errors.
+	SetSynVal(varnm string, sidx, ridx int, val float32) error
 
 	// Defaults sets default parameter values for all Prjn parameters
 	Defaults()

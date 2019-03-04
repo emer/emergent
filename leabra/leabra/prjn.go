@@ -77,7 +77,9 @@ func (pj *Prjn) SynVals(varnm string) []float32 {
 	return vl
 }
 
-// SynVal returns value of given variable name on the synapse between given send, recv unit indexes -- returns error for access errors.
+// SynVal returns value of given variable name on the synapse
+// between given send, recv unit indexes (1D, flat indexes)
+// returns error for access errors.
 func (pj *Prjn) SynVal(varnm string, sidx, ridx int) (float32, error) {
 	slay := pj.Send.(LeabraLayer).AsLeabra()
 	rlay := pj.Recv.(LeabraLayer).AsLeabra()
@@ -106,8 +108,10 @@ func (pj *Prjn) SynVal(varnm string, sidx, ridx int) (float32, error) {
 	return 0, fmt.Errorf("Prjn.SynVal: recv unit index %v does not recv from send unit index %v, or variable name: %v not found in synapse", ridx, sidx, varnm)
 }
 
-// SetSynVal sets value of given variable name on the synapse between given send, recv unit indexes -- returns error for access errors.
-func (pj *Prjn) SetSynVal(varnm string, sidx, ridx int, val float64) error {
+// SetSynVal sets value of given variable name on the synapse
+// between given send, recv unit indexes (1D, flat indexes)
+// returns error for access errors.
+func (pj *Prjn) SetSynVal(varnm string, sidx, ridx int, val float32) error {
 	slay := pj.Send.(LeabraLayer).AsLeabra()
 	rlay := pj.Recv.(LeabraLayer).AsLeabra()
 	nr := len(rlay.Neurons)
@@ -127,7 +131,7 @@ func (pj *Prjn) SetSynVal(varnm string, sidx, ridx int, val float64) error {
 		}
 		rsi := pj.RSynIdx[st+ci]
 		sy := &pj.Syns[rsi]
-		ok := sy.SetVarByName(varnm, val)
+		ok := sy.SetVarByName(varnm, float64(val))
 		if ok {
 			if varnm == "Wt" {
 				pj.Learn.LWtFmWt(sy)
