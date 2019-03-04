@@ -353,8 +353,8 @@ func (ss *SimState) ConfigEpcLog() {
 	ss.Plot = true
 }
 
-// PlotEpcLog plots given epoch log using given Y axis columns into EpcPlotSvg
-func (ss *SimState) PlotEpcLog() {
+// PlotEpcLog plots given epoch log using PlotVals Y axis columns into EpcPlotSvg
+func (ss *SimState) PlotEpcLog() *plot.Plot {
 	dt := ss.EpcLog
 	plt, _ := plot.New() // todo: keep around?
 	plt.Title.Text = "Random Associator Epoch Log"
@@ -366,6 +366,13 @@ func (ss *SimState) PlotEpcLog() {
 		plotutil.AddLines(plt, cl, xy)
 	}
 	eplot.PlotViewSVG(plt, ss.EpcPlotSvg, 5, 5, 2)
+	return plt
+}
+
+// SaveEpcPlot plots given epoch log using PlotVals Y axis columns and saves to .svg file
+func (ss *SimState) SaveEpcPlot(fname string) {
+	plt := ss.PlotEpcLog()
+	plt.Save(5, 5, fname)
 }
 
 // ConfigGui configures the GoGi gui interface for this simulation,
@@ -459,6 +466,11 @@ func (ss *SimState) ConfigGui() *gi.Window {
 			ss.EpcLog.SaveCSV("ra25_epc.dat", ',', true)
 		})
 
+	tbar.AddAction(gi.ActOpts{Label: "Save Plot", Icon: "file-save"}, win.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			ss.SaveEpcPlot("ra25_cur_epc_plot.svg")
+		})
+
 	tbar.AddAction(gi.ActOpts{Label: "Save Pars", Icon: "file-save"}, win.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			// todo: need save / load methods for these
@@ -478,17 +490,14 @@ func (ss *SimState) ConfigGui() *gi.Window {
 	mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
 
 	amen := win.MainMenu.ChildByName(appnm, 0).(*gi.Action)
-	amen.Menu = make(gi.Menu, 0, 10)
 	amen.Menu.AddAppMenu(win)
 
 	emen := win.MainMenu.ChildByName("Edit", 1).(*gi.Action)
-	emen.Menu = make(gi.Menu, 0, 10)
 	emen.Menu.AddCopyCutPaste(win)
 
 	// note: Command in shortcuts is automatically translated into Control for
 	// Linux, Windows or Meta for MacOS
 	// fmen := win.MainMenu.ChildByName("File", 0).(*gi.Action)
-	// fmen.Menu = make(gi.Menu, 0, 10)
 	// fmen.Menu.AddAction(gi.ActOpts{Label: "Open", Shortcut: "Command+O"},
 	// 	win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 	// 		FileViewOpenSVG(vp)

@@ -15,6 +15,8 @@
 # labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
 from emergent import go, leabra, emer, eplot, patgen, prjn, dtable, etensor, rand, erand, gi, giv, svg
 
+import pygi
+
 import importlib as il  #il.reload(ra25) -- doesn't seem to work for reasons unknown
 import numpy as np
 import matplotlib
@@ -26,6 +28,54 @@ import io
 # note: xarray or pytorch TensorDataSet can be used instead of pandas for input / output
 # patterns and recording of "log" data for plotting
 import pandas as pd
+
+# this will become SimState later.. 
+Sim = 1
+
+# note: cannot use method callbacks -- must be separate functions
+def InitCB(recv, send, sig, data):
+    Sim.Init()
+    Sim.ClassView.Update()
+    Sim.vp.FullRender2DTree()
+
+def TrainCB(recv, send, sig, data):
+    Sim.Train()
+    Sim.ClassView.Update()
+    Sim.vp.FullRender2DTree()
+
+def StopCB(recv, send, sig, data):
+    Sim.Stop()
+    Sim.vp.FullRender2DTree()
+
+def StepTrialCB(recv, send, sig, data):
+    Sim.StepTrial()
+    Sim.ClassView.Update()
+    Sim.vp.FullRender2DTree()
+
+def StepEpochCB(recv, send, sig, data):
+    Sim.StepEpoch()
+    Sim.ClassView.Update()
+    Sim.vp.FullRender2DTree()
+
+def PlotEpcLogCB(recv, send, sig, data):
+    Sim.PlotEpcLog()
+    Sim.ClassView.Update()
+    Sim.vp.FullRender2DTree()
+
+def SaveEpcPlotCB(recv, send, sig, data):
+    Sim.SaveEpcPlot()
+
+def SaveWtsCB(recv, send, sig, data):
+    Sim.Net.SaveWtsJSON("ra25_net_trained.wts") # todo: call method to prompt
+   
+def SaveLogCB(recv, send, sig, data):
+    Sim.EpcLog.to_csv("ra25_epc.dat", sep="\t")
+
+def SaveParsCB(recv, send, sig, data):
+    print("save params todo")
+
+def NewRndSeedCB(recv, send, sig, data):
+    Sim.NewRndSeed()
 
 # DefaultPars are the initial default parameters for this simulation
 DefaultPars = emer.ParamStyle({
@@ -41,46 +91,6 @@ DefaultPars = emer.ParamStyle({
         "Prjn.WtScale.Rel": 0.2, # this is generally quite important
     }).handle,
 })
-
-# this will become SimState later.. 
-Sim = 1
-
-# note: callbacks into SimState from GoGi don't work when threaded
-def InitCB(recv, send, sig, data):
-    Sim.Init()
-    Sim.vp.FullRender2DTree()
-
-def TrainCB(recv, send, sig, data):
-    Sim.Train()
-    Sim.vp.FullRender2DTree()
-
-def StopCB(recv, send, sig, data):
-    Sim.Stop()
-    Sim.vp.FullRender2DTree()
-
-def StepTrialCB(recv, send, sig, data):
-    Sim.StepTrial()
-    Sim.vp.FullRender2DTree()
-
-def StepEpochCB(recv, send, sig, data):
-    Sim.StepEpoch()
-    Sim.vp.FullRender2DTree()
-
-def PlotEpcLogCB(recv, send, sig, data):
-    Sim.PlotEpcLog()
-    Sim.vp.FullRender2DTree()
-
-def SaveWtsCB(recv, send, sig, data):
-    Sim.Net.SaveWtsJSON("ra25_net_trained.wts") # todo: call method to prompt
-   
-def SaveLogCB(recv, send, sig, data):
-    Sim.EpcLog.to_csv("ra25_epc.dat", sep="\t")
-
-def SaveParsCB(recv, send, sig, data):
-    print("save params todo")
-
-def NewSeedCB(recv, send, sig, data):
-    Sim.NewRndSeed()
 
 class SimState(object):
     """
@@ -115,7 +125,7 @@ class SimState(object):
         self.SumSSE     = 0.0
         self.SumAvgSSE  = 0.0
         self.SumCosDiff = 0.0
-        self.CntErr     = 0
+        self.CntErr     = 0.0
         self.Porder     = [1]
         # self.EpcPlotSvg *svg.Editor
         self.StopNow    = False
@@ -214,7 +224,7 @@ class SimState(object):
             self.SumAvgSSE += sse # not accurate
             self.SumCosDiff += cosdiff
             if sse != 0:
-                self.CntErr+= 1
+                self.CntErr += 1.0
 
     def EpochInc(self):
         """EpochInc increments counters after one epoch of processing and updates a new random
@@ -269,6 +279,7 @@ class SimState(object):
             self.TrialInc()           # does LogEpoch, EpochInc automatically
             if self.StopNow or self.Epoch > curEpc:
                 break
+        self.ClassView.Update()
 
     def Train(self):
         """Train runs the full training from this point onward"""
@@ -333,7 +344,7 @@ class SimState(object):
         self.Plot = True
 
     def PlotEpcLog(self):
-        """PlotEpcLog plots given epoch log using given Y axis columns into EpcPlotSvg"""
+        """PlotEpcLog plots given epoch log using PlotVals Y axis columns into EpcPlotSvg"""
         dt = self.EpcLog
         epc = dt['Epoch'].values
         for cl in self.PlotVals:
@@ -348,19 +359,24 @@ class SimState(object):
         svgstr = io.StringIO()
         plt.savefig(svgstr, format='svg')
         eplot.StringViewSVG(svgstr.getvalue(), self.EpcPlotSvg, 2)
-        f = open("ra25_cur_epc_graph.svg","w+")
+        plt.close()
+        return svgstr
+
+    def SaveEpcPlot(self, fname):
+        """SaveEpcLog plots given epoch log using PlotVals Y axis columns into .svg file"""
+        svgstr = self.PlotEpcLog()
+        f = open(fname,"w+")
         f.write(svgstr.getvalue())
         f.close()
-        plt.close()
 
     def ConfigGui(self):
         """ConfigGui configures the GoGi gui interface for this simulation"""
         width = 1600
         height = 1200
-
+        
         gi.SetAppName("leabra25ra")
         gi.SetAppAbout('This demonstrates a basic Leabra model. See <a href="https:#github.com/emer/emergent">emergent on GitHub</a>.</p>')
-    
+        
         win = gi.NewWindow2D("leabra25ra", "Leabra Random Associator", width, height, True)
         vp = win.WinViewport2D()
         
@@ -374,19 +390,18 @@ class SimState(object):
         tbar = gi.ToolBar(mfr.AddNewChild(gi.KiT_ToolBar(), "tbar"))
         tbar.Lay = gi.LayoutHoriz
         tbar.SetStretchMaxWidth()
-
+        
         split = gi.SplitView(mfr.AddNewChild(gi.KiT_SplitView(), "split"))
         split.Dim = gi.X
-    #     # split.SetProp("horizontal-align", "center")
-    #     # split.SetProp("margin", 2.0) # raw numbers = px = 96 dpi pixels
+        # split.SetProp("horizontal-align", "center")
+        # split.SetProp("margin", 2.0) # raw numbers = px = 96 dpi pixels
         split.SetStretchMaxWidth()
         split.SetStretchMaxHeight()
+         
+        self.ClassView = pygi.ClassView("ra25sv")
+        self.ClassView.AddFrame(split)
+        self.ClassView.SetClass(self)
         
-    #    sv = split.AddNewChild(giv.KiT_StructView, "sv").(*giv.StructView)
-    #     sv.SetStruct(ss, nil)
-    #     # sv.SetStretchMaxWidth()
-    #     # sv.SetStretchMaxHeight()
-    #     
         svge = svg.Editor(split.AddNewChild(svg.KiT_Editor(), "svg"))
         svge.InitScale()
         svge.Fill = True
@@ -399,57 +414,56 @@ class SimState(object):
          
         # split.SetSplits(.3, .7)  # not avail due to var-arg
         
-        tbar.AddAction(gi.ActOpts(Label="Init", Icon="update"), win.This(), InitCB)
-        tbar.AddAction(gi.ActOpts(Label="Train", Icon="run"), win.This(), TrainCB)
-        tbar.AddAction(gi.ActOpts(Label="Stop", Icon="stop"), win.This(), StopCB)
-        tbar.AddAction(gi.ActOpts(Label="Step Trial", Icon="step-fwd"), win.This(), StepTrialCB)
-        tbar.AddAction(gi.ActOpts(Label="Step Epoch", Icon="fast-fwd"), win.This(), StepEpochCB)
-
-        # tbar.AddSep("file")
-
-        tbar.AddAction(gi.ActOpts(Label="Epoch Plot", Icon="update"), win.This(), PlotEpcLogCB)
-        tbar.AddAction(gi.ActOpts(Label="Save Wts", Icon="file-save"), win.This(), SaveWtsCB)
-        tbar.AddAction(gi.ActOpts(Label="Save Log", Icon="file-save"), win.This(), SaveLogCB)
-        tbar.AddAction(gi.ActOpts(Label="Save Pars", Icon="file-save"), win.This(), SaveParsCB)
-        tbar.AddAction(gi.ActOpts(Label="New Seed", Icon="new"), win.This(), NewSeedCB)
+        recv = win.This()
         
+        tbar.AddAction(gi.ActOpts(Label="Init", Icon="update"), recv, InitCB)
+        tbar.AddAction(gi.ActOpts(Label="Train", Icon="run"), recv, TrainCB)
+        tbar.AddAction(gi.ActOpts(Label="Stop", Icon="stop"), recv, StopCB)
+        tbar.AddAction(gi.ActOpts(Label="Step Trial", Icon="step-fwd"), recv, StepTrialCB)
+        tbar.AddAction(gi.ActOpts(Label="Step Epoch", Icon="fast-fwd"), recv, StepEpochCB)
+        
+        # tbar.AddSep("file")
+        
+        tbar.AddAction(gi.ActOpts(Label="Epoch Plot", Icon="update"), recv, PlotEpcLogCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Wts", Icon="file-save"), recv, SaveWtsCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Log", Icon="file-save"), recv, SaveLogCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Plot", Icon="file-save"), recv, SaveEpcPlotCB)
+        tbar.AddAction(gi.ActOpts(Label="Save Pars", Icon="file-save"), recv, SaveParsCB)
+        tbar.AddAction(gi.ActOpts(Label="New Seed", Icon="new"), recv, NewRndSeedCB)
+        
+        # main menu
+        appnm = gi.AppName()
+        mmen = win.MainMenu
+        mmen.ConfigMenus(go.Slice_string([appnm, "File", "Edit", "Window"]))
+        
+        amen = gi.Action(win.MainMenu.ChildByName(appnm, 0))
+        amen.Menu.AddAppMenu(win)
+        
+        emen = gi.Action(win.MainMenu.ChildByName("Edit", 1))
+        emen.Menu.AddCopyCutPaste(win)
+        
+        # note: Command in shortcuts is automatically translated into Control for
+        # Linux, Windows or Meta for MacOS
+        # fmen = win.MainMenu.ChildByName("File", 0).(*gi.Action)
+        # fmen.Menu = make(gi.Menu, 0, 10)
+        # fmen.Menu.AddAction(gi.ActOpts{Label: "Open", Shortcut: "Command+O"},
+        #     recv, func(recv, send ki.Ki, sig int64, data interface{}) {
+        #     FileViewOpenSVG(vp)
+        #     })
+        # fmen.Menu.AddSeparator("csep")
+        # fmen.Menu.AddAction(gi.ActOpts{Label: "Close Window", Shortcut: "Command+W"},
+        #     recv, func(recv, send ki.Ki, sig int64, data interface{}) {
+        #     win.CloseReq()
+        #     })
+                
+        #    win.SetCloseCleanFunc(func(w *gi.Window) {
+        #         gi.Quit() # once main window is closed, quit
+        #     })
+        #         
+        win.MainMenuUpdated()
         vp.UpdateEndNoSig(updt)
-    #     
-    #     # main menu
-    #     appnm = gi.AppName()
-    #     mmen = win.MainMenu
-    #     mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
-    #     
-    #     amen = win.MainMenu.ChildByName(appnm, 0).(*gi.Action)
-    #     amen.Menu = make(gi.Menu, 0, 10)
-    #     amen.Menu.AddAppMenu(win)
-    #     
-    #     emen = win.MainMenu.ChildByName("Edit", 1).(*gi.Action)
-    #     emen.Menu = make(gi.Menu, 0, 10)
-    #     emen.Menu.AddCopyCutPaste(win)
-    #     
-    #     # note: Command in shortcuts is automatically translated into Control for
-    #     # Linux, Windows or Meta for MacOS
-    #     # fmen = win.MainMenu.ChildByName("File", 0).(*gi.Action)
-    #     # fmen.Menu = make(gi.Menu, 0, 10)
-    #     # fmen.Menu.AddAction(gi.ActOpts{Label: "Open", Shortcut: "Command+O"},
-    #     #     win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-    #     #     FileViewOpenSVG(vp)
-    #     #     })
-    #     # fmen.Menu.AddSeparator("csep")
-    #     # fmen.Menu.AddAction(gi.ActOpts{Label: "Close Window", Shortcut: "Command+W"},
-    #     #     win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-    #     #     win.CloseReq()
-    #     #     })
-    #     
-    #     win.SetCloseCleanFunc(func(w *gi.Window) {
-    #         gi.Quit() # once main window is closed, quit
-    #     })
-    #         
-    #     win.MainMenuUpdated()
-    #     return win
         win.GoStartEventLoop()
-
+        
 
 # Sim is the overall state for this simulation
 Sim = SimState()
