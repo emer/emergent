@@ -127,9 +127,30 @@ class SimState(object):
         self.SumCosDiff = 0.0
         self.CntErr     = 0.0
         self.Porder     = [1]
-        # self.EpcPlotSvg *svg.Editor
+        self.EpcPlotSvg = svg.Editor()
         self.StopNow    = False
         self.RndSeed    = 0
+        
+        # ClassView tags for controlling display of fields
+        self.Tags = {
+            'EpcSSE': 'inactive:"+"',
+            'EpcAvgSSE': 'inactive:"+"',
+            'EpcPctErr': 'inactive:"+"',
+            'EpcPctCor': 'inactive:"+"',
+            'EpcCosDiff': 'inactive:"+"',
+            'SumSSE': 'view:"-"',
+            'SumAvgSSE': 'view:"-"',
+            'SumCosDiff': 'view:"-"',
+            'CntErr': 'view:"-"',
+            'Porder': 'view:"-"',
+            'EpcPlotSvg': 'view:"-"',
+            'StopNow': 'view:"-"',
+            'RndSeed': 'view:"-"',
+            'win': 'view:"-"',
+            'vp': 'view:"-"',
+            'ClassView': 'view:"-"',
+            'Tags': 'view:"-"',
+        }
 
 
     def Config(self):
@@ -398,7 +419,7 @@ class SimState(object):
         split.SetStretchMaxWidth()
         split.SetStretchMaxHeight()
          
-        self.ClassView = pygi.ClassView("ra25sv")
+        self.ClassView = pygi.ClassView("ra25sv", self.Tags)
         self.ClassView.AddFrame(split)
         self.ClassView.SetClass(self)
         

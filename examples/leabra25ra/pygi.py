@@ -8,7 +8,6 @@ from emergent import go, gi, giv
 classviews = {}
 
 def SetIntValCB(recv, send, sig, data):
-    print("set int field:", send)
     vw = gi.SpinBox(send)
     nm = vw.Name()
     print("spin name:", nm)
@@ -18,25 +17,42 @@ def SetIntValCB(recv, send, sig, data):
     setattr(cv.Class, nms[1], vw.Value)
 
 def SetStrValCB(recv, send, sig, data):
-    if sig == gi.TextFieldDone:
-        print("set text field:", send)
-        vw = gi.TextField(send)
-        nm = vw.Name()
-        nms = nm.split(':')
-        cv = classviews[nms[0]]
-        flds = cv.Class.__dict__
-        setattr(cv.Class, nms[1], vw.Text())
+    if sig != gi.TextFieldDone:
+        return
+    print("set text field:", send)
+    vw = gi.TextField(send)
+    nm = vw.Name()
+    nms = nm.split(':')
+    cv = classviews[nms[0]]
+    flds = cv.Class.__dict__
+    setattr(cv.Class, nms[1], vw.Text())
+
+def SetBoolValCB(recv, send, sig, data):
+    if sig != gi.ButtonToggled:
+        return
+    vw = gi.CheckBox(send)
+    nm = vw.Name()
+    print("cb name:", nm)
+    nms = nm.split(':')
+    cv = classviews[nms[0]]
+    flds = cv.Class.__dict__
+    setattr(cv.Class, nms[1], vw.IsChecked() != 0)
 
 class ClassView(object):
     """
-    PyGiClassView provides giv.StructView like editor for python class objects under GoGi
+    PyGiClassView provides giv.StructView like editor for python class objects under GoGi.
+    Due to limitations on calling python callbacks across threads, you must pass a unique
+    name to the constructor, along with a dictionary of tags using the same syntax as the struct
+    field tags in Go: https://github.com/goki/gi/wiki/Tags for customizing the view properties.
+    (space separated, name:"value")
     """
-    def __init__(self, name):
+    def __init__(self, name, tags):
         """ note: essential to provide a distinctive name for each view """
         self.Name = name
         classviews[name] = self
         self.Frame = gi.Frame()
         self.Class = None
+        self.Tags = tags
         
     def SetClass(self, cls):
         self.Class = cls
@@ -46,6 +62,26 @@ class ClassView(object):
         """ Add a new gi.Frame for the view to given parent gi object """
         self.Frame = gi.Frame(par.AddNewChild(gi.KiT_Frame(), "classview"))
     
+    def FieldTags(self, nm):
+        """ returns the parsed dictonary of tags for given field """
+        tdict = {}
+        if nm in self.Tags:
+            ts = self.Tags[nm].split(" ")
+            for t in ts:
+                nv = t.split(":")
+                if len(nv) == 2:
+                    tdict[nv[0]] = nv[1].strip('"')
+                else:
+                    print("ClassView: error in tag formatting for field:", nm, 'should be name:"value", is:', t)
+        return tdict
+
+    def HasTagValue(self, tags, tag, value):
+        """ returns true if given tag has given value """
+        if not tag in tags:
+            return False
+        tv = tags[tag]
+        return tv == value
+        
     def Config(self):
         self.Frame.SetStretchMaxWidth()
         self.Frame.SetStretchMaxHeight()
@@ -57,9 +93,17 @@ class ClassView(object):
         flds = self.Class.__dict__
         self.Views = {}
         for nm, val in flds.items():
+            tags = self.FieldTags(nm)
+            if self.HasTagValue(tags, "view", "-"):
+                continue
             lbl = gi.Label(self.Frame.AddNewChild(gi.KiT_Label(), "lbl_" + nm))
             lbl.SetText(nm)
-            if isinstance(val, int):
+            if isinstance(val, bool):
+                vw = gi.CheckBox(self.Frame.AddNewChild(gi.KiT_CheckBox(), self.Name + ":" + nm))
+                vw.SetChecked(val)
+                vw.ButtonSig.Connect(self.Frame, SetBoolValCB)
+                self.Views[nm] = vw
+            elif isinstance(val, (int, float)):
                 vw = gi.SpinBox(self.Frame.AddNewChild(gi.KiT_SpinBox(), self.Name + ":" + nm))
                 vw.SetValue(val)
                 vw.SpinBoxSig.Connect(self.Frame, SetIntValCB)
@@ -76,7 +120,11 @@ class ClassView(object):
         for nm, val in flds.items():
             if nm in self.Views:
                 vw = self.Views[nm]
-                if isinstance(val, int):
+                # print("updating:", nm, "view:", vw)
+                if isinstance(val, bool):
+                    svw = gi.CheckBox(vw)
+                    svw.SetChecked(val)
+                elif isinstance(val, (int, float)):
                     svw = gi.SpinBox(vw)
                     svw.SetValue(val)
                 else:
