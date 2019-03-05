@@ -185,7 +185,7 @@ func (tsr *String) AddRows(n int) {
 	rows := tsr.Dim(0)
 	inln := cln / rows // length of inner dims
 	nln := (rows + n) * inln
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -205,7 +205,7 @@ func (tsr *String) SetNumRows(rows int) {
 	crows := tsr.Dim(0)
 	inln := cln / crows // length of inner dims
 	nln := rows * inln
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -230,7 +230,7 @@ func (tsr *String) SubSlice(subdim int, offs []int) (*String, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &String{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -238,8 +238,8 @@ func (tsr *String) SubSlice(subdim int, offs []int) (*String, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &String{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]

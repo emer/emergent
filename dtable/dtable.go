@@ -9,16 +9,20 @@ import (
 
 	"github.com/emer/emergent/etensor"
 	"github.com/goki/ki/ints"
+	"github.com/goki/ki/ki"
+	"github.com/goki/ki/kit"
 )
 
 // dtable.Table is the DataTable structure, containing columns of etensor tensors.
 // All tensors MUST have RowMajor stride layout!
 type Table struct {
-	Cols       []etensor.Tensor `view:"-" desc:"columns of data, as etensor.Tensor tensors"`
+	Cols       []etensor.Tensor `view:"no-inline" desc:"columns of data, as etensor.Tensor tensors"`
 	ColNames   []string         `desc:"the names of the columns"`
 	Rows       int              `inactive:"+" desc:"number of rows, which is enforced to be the size of the outer-most dimension of the column tensors"`
 	ColNameMap map[string]int   `view:"-" desc:"the map of column names to column numbers"`
 }
+
+var KiT_Table = kit.Types.AddType(&Table{}, TableProps)
 
 // NumRows returns the number of rows (arrow / dframe api)
 func (dt *Table) NumRows() int {
@@ -111,6 +115,7 @@ func (dt *Table) AddRows(n int) {
 	for _, tsr := range dt.Cols {
 		tsr.AddRows(n)
 	}
+	dt.Rows += n
 }
 
 // SetNumRows sets the number of rows in the table, across all columns
@@ -151,4 +156,57 @@ func New(sc Schema, rows int) *Table {
 	dt := &Table{}
 	dt.SetFromSchema(sc, rows)
 	return dt
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Table props for gui
+
+var TableProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"OpenCSV", ki.Props{
+			"label": "Open CSV File...",
+			"icon":  "file-open",
+			"desc":  "Open CSV-formatted data (or any delimeter -- default is tab (9), comma = 44) -- also recognizes emergent-style headers",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{}},
+				{"Delimiter", ki.Props{
+					"default": ',',
+					"desc":    "can use any single-character rune here -- default is tab (9) b/c otherwise hard to type, comma = 44",
+				}},
+			},
+		}},
+		{"SaveCSV", ki.Props{
+			"label": "Save CSV File...",
+			"icon":  "file-save",
+			"desc":  "Save CSV-formatted data (or any delimiter -- default is tab (9), comma = 44) -- header outputs emergent-style header data",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{}},
+				{"Delimiter", ki.Props{
+					"default": '\t',
+					"desc":    "can use any single-character rune here -- default is tab (9) b/c otherwise hard to type, comma = 44",
+				}},
+				{"Headers", ki.Props{
+					"desc": "output C++ emergent-style headers that have type and tensor geometry information",
+				}},
+			},
+		}},
+		{"sep-file", ki.BlankProp{}},
+		{"AddRows", ki.Props{
+			"icon": "new",
+			"Args": ki.PropSlice{
+				{"N Rows", ki.Props{
+					"default": 1,
+				}},
+			},
+		}},
+		{"SetNumRows", ki.Props{
+			"label": "Set N Rows",
+			"icon":  "new",
+			"Args": ki.PropSlice{
+				{"N Rows", ki.Props{
+					"default-field": "Rows",
+				}},
+			},
+		}},
+	},
 }

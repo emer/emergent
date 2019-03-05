@@ -9,10 +9,10 @@ package leabra
 // This also includes other misc layer-level params such as running-average activation in the layer
 // which is used for netinput rescaling and potentially for adapting inhibition over time
 type InhibParams struct {
-	Layer  FFFBParams      `desc:"inhibition across the entire layer"`
-	Pool   FFFBParams      `desc:"inhibition across sub-pools of units, for layers with 4D shape"`
-	Self   SelfInhibParams `desc:"neuron self-inhibition parameters -- can be beneficial for producing more graded, linear response -- not typically used in cortical networks"`
-	ActAvg ActAvgParams    `desc:"running-average activation computation values -- for overall estimates of layer activation levels, used in netinput scaling"`
+	Layer  FFFBParams      `view:"inline" desc:"inhibition across the entire layer"`
+	Pool   FFFBParams      `view:"inline" desc:"inhibition across sub-pools of units, for layers with 4D shape"`
+	Self   SelfInhibParams `view:"inline" desc:"neuron self-inhibition parameters -- can be beneficial for producing more graded, linear response -- not typically used in cortical networks"`
+	ActAvg ActAvgParams    `view:"inline" desc:"running-average activation computation values -- for overall estimates of layer activation levels, used in netinput scaling"`
 }
 
 func (ip *InhibParams) Update() {

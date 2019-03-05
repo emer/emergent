@@ -4,6 +4,8 @@
 
 package etensor
 
+import "fmt"
+
 // Shape manages a tensor's shape information, including strides and dimension names
 // and can compute the flat index into an underlying 1D data storage array based on an
 // n-dimensional index (and vice-versa).
@@ -18,9 +20,9 @@ package etensor
 // In principle, you can organize memory independent of the conceptual order of indexes
 // but for efficiency it is best to organize memory in the way that indexes are accessed.
 type Shape struct {
-	shape   []int
-	strides []int
-	names   []string
+	Shp  []int
+	Strd []int
+	Nms  []string
 }
 
 // NewShape returns a new shape object initialized with params.
@@ -36,16 +38,15 @@ func NewShape(shape, strides []int, names []string) *Shape {
 // If strides is nil, row-major strides will be inferred.
 // If names is nil, a slice of empty strings will be created.
 func (sh *Shape) SetShape(shape, strides []int, names []string) {
-	sh.shape = CopyInts(shape)
+	sh.Shp = CopyInts(shape)
 	if strides == nil {
-		sh.strides = RowMajorStrides(shape)
+		sh.Strd = RowMajorStrides(shape)
 	} else {
-		sh.strides = CopyInts(strides)
+		sh.Strd = CopyInts(strides)
 	}
-	if names == nil {
-		sh.names = make([]string, len(sh.shape))
-	} else {
-		sh.names = CopyStrings(names)
+	sh.Nms = make([]string, len(sh.Shp))
+	if names != nil {
+		copy(sh.Nms, names)
 	}
 }
 
@@ -53,25 +54,24 @@ func (sh *Shape) SetShape(shape, strides []int, names []string) {
 // If strides is nil, row-major strides will be inferred.
 // If names is nil, a slice of empty strings will be created.
 func (sh *Shape) SetShape64(shape, strides []int64, names []string) {
-	sh.shape = CopyInts64(shape)
+	sh.Shp = CopyInts64(shape)
 	if strides == nil {
-		sh.strides = RowMajorStrides(sh.shape)
+		sh.Strd = RowMajorStrides(sh.Shp)
 	} else {
-		sh.strides = CopyInts64(strides)
+		sh.Strd = CopyInts64(strides)
 	}
-	if names == nil {
-		sh.names = make([]string, len(sh.shape))
-	} else {
-		sh.names = CopyStrings(names)
+	sh.Nms = make([]string, len(sh.Shp))
+	if names != nil {
+		copy(sh.Nms, names)
 	}
 }
 
 // CopyShape copies the shape parameters from another Shape struct.
 // copies the data so it is not accidentally subject to updates.
 func (sh *Shape) CopyShape(cp *Shape) {
-	sh.shape = CopyInts(cp.shape)
-	sh.strides = CopyInts(cp.strides)
-	sh.names = CopyStrings(cp.names)
+	sh.Shp = CopyInts(cp.Shp)
+	sh.Strd = CopyInts(cp.Strd)
+	sh.Nms = CopyStrings(cp.Nms)
 }
 
 // AddShapes returns a new shape by adding two shapes one after the other.
@@ -99,42 +99,42 @@ func AddShapes(shape1, shape2 *Shape) *Shape {
 // the shape sizes)
 func (sh *Shape) Len() int {
 	o := int(1)
-	for _, v := range sh.shape {
+	for _, v := range sh.Shp {
 		o *= v
 	}
 	return int(o)
 }
 
-func (sh *Shape) Shapes() []int      { return sh.shape }
-func (sh *Shape) Strides() []int     { return sh.strides }
-func (sh *Shape) Shape64() []int64   { return IntTo64(sh.shape) }
-func (sh *Shape) Strides64() []int64 { return IntTo64(sh.strides) }
+func (sh *Shape) Shapes() []int      { return sh.Shp }
+func (sh *Shape) Strides() []int     { return sh.Strd }
+func (sh *Shape) Shape64() []int64   { return IntTo64(sh.Shp) }
+func (sh *Shape) Strides64() []int64 { return IntTo64(sh.Strd) }
 
-func (sh *Shape) DimNames() []string   { return sh.names }
-func (sh *Shape) NumDims() int         { return len(sh.shape) }
-func (sh *Shape) DimName(i int) string { return sh.names[i] }
-func (sh *Shape) Dim(i int) int        { return sh.shape[i] }
+func (sh *Shape) DimNames() []string   { return sh.Nms }
+func (sh *Shape) NumDims() int         { return len(sh.Shp) }
+func (sh *Shape) DimName(i int) string { return sh.Nms[i] }
+func (sh *Shape) Dim(i int) int        { return sh.Shp[i] }
 
 func (sh *Shape) IsContiguous() bool {
 	return sh.IsRowMajor() || sh.IsColMajor()
 }
 
 func (sh *Shape) IsRowMajor() bool {
-	strides := RowMajorStrides(sh.shape)
-	return EqualInts(strides, sh.strides)
+	strides := RowMajorStrides(sh.Shp)
+	return EqualInts(strides, sh.Strd)
 }
 
 func (sh *Shape) IsColMajor() bool {
-	strides := ColMajorStrides(sh.shape)
-	return EqualInts(strides, sh.strides)
+	strides := ColMajorStrides(sh.Shp)
+	return EqualInts(strides, sh.Strd)
 }
 
 // RowCellSize returns the size of the outer-most Row shape dimension, and the size of all the
 // remaining inner dimensions (the "cell" size) -- e.g., for Tensors that are columns in a
 // data table.  Only valid for RowMajor organization.
 func (sh *Shape) RowCellSize() (rows, cells int) {
-	rows = sh.shape[0]
-	if len(sh.shape) == 1 {
+	rows = sh.Shp[0]
+	if len(sh.Shp) == 1 {
 		cells = 1
 	} else {
 		cells = sh.Len() / rows
@@ -147,7 +147,7 @@ func (sh *Shape) RowCellSize() (rows, cells int) {
 func (sh *Shape) Offset(index []int) int {
 	var offset int
 	for i, v := range index {
-		offset += v * sh.strides[i]
+		offset += v * sh.Strd[i]
 	}
 	return offset
 }
@@ -155,12 +155,12 @@ func (sh *Shape) Offset(index []int) int {
 // Index returns the n-dimensional index from a "flat" 1D array index.  Only works for RowMajor
 // or ColMajor organization.
 func (sh *Shape) Index(offset int) []int {
-	nd := len(sh.shape)
+	nd := len(sh.Shp)
 	index := make([]int, nd)
 	if sh.IsRowMajor() {
 		rem := offset
 		for i := nd - 1; i >= 0; i-- {
-			s := sh.shape[i]
+			s := sh.Shp[i]
 			iv := rem % s
 			rem /= s
 			index[i] = iv
@@ -168,13 +168,30 @@ func (sh *Shape) Index(offset int) []int {
 	} else if sh.IsColMajor() {
 		rem := offset
 		for i := 0; i < nd; i++ {
-			s := sh.shape[i]
+			s := sh.Shp[i]
 			iv := rem % s
 			rem /= s
 			index[i] = iv
 		}
 	}
 	return index
+}
+
+// String satisfies the fmt.Stringer interface
+func (sh *Shape) String() string {
+	str := "["
+	for i := range sh.Shp {
+		nm := sh.Nms[i]
+		if nm != "" {
+			str += nm + ": "
+		}
+		str += fmt.Sprintf("%d", sh.Shp[i])
+		if i < len(sh.Shp)-1 {
+			str += ", "
+		}
+	}
+	str += "]"
+	return str
 }
 
 // RowMajorStrides returns strides for shape where the first dimension is outer-most

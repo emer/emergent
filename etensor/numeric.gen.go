@@ -8,6 +8,7 @@ package etensor
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/apache/arrow/go/arrow"
@@ -161,7 +162,7 @@ func (tsr *Int64) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -179,7 +180,7 @@ func (tsr *Int64) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -203,7 +204,7 @@ func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Int64{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -212,8 +213,8 @@ func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int64{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -224,6 +225,18 @@ func (tsr *Int64) SubSlice(subdim int, offs []int) (*Int64, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Int64) Label() string {
+	return fmt.Sprintf("Int64: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Int64) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -406,7 +419,7 @@ func (tsr *Uint64) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -424,7 +437,7 @@ func (tsr *Uint64) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -448,7 +461,7 @@ func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Uint64{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -457,8 +470,8 @@ func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint64{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -469,6 +482,18 @@ func (tsr *Uint64) SubSlice(subdim int, offs []int) (*Uint64, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Uint64) Label() string {
+	return fmt.Sprintf("Uint64: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Uint64) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -651,7 +676,7 @@ func (tsr *Float64) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -669,7 +694,7 @@ func (tsr *Float64) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -693,7 +718,7 @@ func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Float64{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -702,8 +727,8 @@ func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Float64{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -714,6 +739,18 @@ func (tsr *Float64) SubSlice(subdim int, offs []int) (*Float64, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Float64) Label() string {
+	return fmt.Sprintf("Float64: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Float64) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -896,7 +933,7 @@ func (tsr *Int32) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -914,7 +951,7 @@ func (tsr *Int32) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -938,7 +975,7 @@ func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Int32{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -947,8 +984,8 @@ func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int32{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -959,6 +996,18 @@ func (tsr *Int32) SubSlice(subdim int, offs []int) (*Int32, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Int32) Label() string {
+	return fmt.Sprintf("Int32: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Int32) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -1141,7 +1190,7 @@ func (tsr *Uint32) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1159,7 +1208,7 @@ func (tsr *Uint32) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1183,7 +1232,7 @@ func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Uint32{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -1192,8 +1241,8 @@ func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint32{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -1204,6 +1253,18 @@ func (tsr *Uint32) SubSlice(subdim int, offs []int) (*Uint32, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Uint32) Label() string {
+	return fmt.Sprintf("Uint32: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Uint32) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -1386,7 +1447,7 @@ func (tsr *Float32) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1404,7 +1465,7 @@ func (tsr *Float32) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1428,7 +1489,7 @@ func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Float32{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -1437,8 +1498,8 @@ func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Float32{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -1449,6 +1510,18 @@ func (tsr *Float32) SubSlice(subdim int, offs []int) (*Float32, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Float32) Label() string {
+	return fmt.Sprintf("Float32: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Float32) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -1631,7 +1704,7 @@ func (tsr *Int16) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1649,7 +1722,7 @@ func (tsr *Int16) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1673,7 +1746,7 @@ func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Int16{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -1682,8 +1755,8 @@ func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int16{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -1694,6 +1767,18 @@ func (tsr *Int16) SubSlice(subdim int, offs []int) (*Int16, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Int16) Label() string {
+	return fmt.Sprintf("Int16: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Int16) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -1876,7 +1961,7 @@ func (tsr *Uint16) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1894,7 +1979,7 @@ func (tsr *Uint16) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -1918,7 +2003,7 @@ func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Uint16{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -1927,8 +2012,8 @@ func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint16{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -1939,6 +2024,18 @@ func (tsr *Uint16) SubSlice(subdim int, offs []int) (*Uint16, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Uint16) Label() string {
+	return fmt.Sprintf("Uint16: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Uint16) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -2121,7 +2218,7 @@ func (tsr *Int8) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -2139,7 +2236,7 @@ func (tsr *Int8) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -2163,7 +2260,7 @@ func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Int8{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -2172,8 +2269,8 @@ func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Int8{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -2184,6 +2281,18 @@ func (tsr *Int8) SubSlice(subdim int, offs []int) (*Int8, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Int8) Label() string {
+	return fmt.Sprintf("Int8: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Int8) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor
@@ -2366,7 +2475,7 @@ func (tsr *Uint8) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -2384,7 +2493,7 @@ func (tsr *Uint8) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -2408,7 +2517,7 @@ func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &Uint8{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -2417,8 +2526,8 @@ func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &Uint8{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -2429,6 +2538,18 @@ func (tsr *Uint8) SubSlice(subdim int, offs []int) (*Uint8, error) {
 		return stsr, nil
 	}
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
+}
+
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *Uint8) Label() string {
+	return fmt.Sprintf("Uint8: %s", tsr.Shape.String())
+}
+
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *Uint8) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
 }
 
 // ToArrow returns the apache arrow equivalent of the tensor

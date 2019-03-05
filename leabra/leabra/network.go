@@ -19,42 +19,6 @@ type Network struct {
 
 var KiT_Network = kit.Types.AddType(&Network{}, NetworkProps)
 
-var NetworkProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		// {"Open", ki.Props{
-		// 	"label": "Open",
-		// 	"icon":  "file-open",
-		// 	"desc":  "Open a json-formatted Ki tree structure",
-		// 	"Args": ki.PropSlice{
-		// 		{"File Name", ki.Props{
-		// 			"default-field": "Filename",
-		// 			"ext":           ".json",
-		// 		}},
-		// 	},
-		// }},
-		{"SaveWtsJSON", ki.Props{
-			"label": "Save Wts...",
-			"icon":  "file-save",
-			"desc":  "Save json-formatted weights",
-			"Args": ki.PropSlice{
-				{"Weights File Name", ki.Props{
-					//						"default-field": "ColorFilename",
-					"ext": ".wts",
-				}},
-			},
-		}},
-		{"EditLayer", ki.Props{
-			"label":       "Edit Layer...",
-			"icon":        "edit",
-			"desc":        "edit given layer",
-			"show-return": true,
-			"Args": ki.PropSlice{
-				{"Layer Name", ki.Props{}},
-			},
-		}},
-	},
-}
-
 // NewLayer returns new layer of proper type
 func (nt *Network) NewLayer() emer.Layer {
 	return &Layer{}
@@ -63,15 +27,6 @@ func (nt *Network) NewLayer() emer.Layer {
 // NewPrjn returns new prjn of proper type
 func (nt *Network) NewPrjn() emer.Prjn {
 	return &Prjn{}
-}
-
-// EditLayer is gui method for accessing layers
-func (nt *Network) EditLayer(name string) *Layer {
-	ly, err := nt.LayerByNameTry(name)
-	if err != nil {
-		return nil
-	}
-	return ly.(*Layer)
 }
 
 // Defaults sets all the default parameters for all layers and projections
@@ -223,4 +178,77 @@ func (nt *Network) WtFmDWt() {
 // WtBalFmWt updates the weight balance factors based on average recv weights
 func (nt *Network) WtBalFmWt() {
 	nt.ThrLayFun(func(ly LeabraLayer) { ly.WtBalFmWt() }, "WtBalFmWt")
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//  Network props for gui
+
+var NetworkProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveWtsJSON", ki.Props{
+			"label": "Save Wts...",
+			"icon":  "file-save",
+			"desc":  "Save json-formatted weights",
+			"Args": ki.PropSlice{
+				{"Weights File Name", ki.Props{
+					"default-field": "WtsFile",
+					"ext":           ".wts",
+				}},
+			},
+		}},
+		{"OpenWtsJSON", ki.Props{
+			"label": "Open Wts...",
+			"icon":  "file-open",
+			"desc":  "Open json-formatted weights",
+			"Args": ki.PropSlice{
+				{"Weights File Name", ki.Props{
+					"default-field": "WtsFile",
+					"ext":           ".wts",
+				}},
+			},
+		}},
+		{"sep-file", ki.BlankProp{}},
+		{"Build", ki.Props{
+			"icon": "update",
+			"desc": "build the network's neurons and synapses according to current params",
+		}},
+		{"InitWts", ki.Props{
+			"icon": "update",
+			"desc": "initialize the network weight values according to prjn parameters",
+		}},
+		{"InitActs", ki.Props{
+			"icon": "update",
+			"desc": "initialize the network activation values",
+		}},
+		{"sep-act", ki.BlankProp{}},
+		{"AddLayer", ki.Props{
+			"label": "Add Layer...",
+			"icon":  "new",
+			"desc":  "add a new layer to network",
+			"Args": ki.PropSlice{
+				{"Layer Name", ki.Props{}},
+				{"Layer Shape", ki.Props{
+					"desc": "shape of layer, typically 2D (Y, X) or 4D (Pools Y, Pools X, Units Y, Units X)",
+				}},
+				{"Layer Type", ki.Props{
+					"desc": "type of layer -- used for determining how inputs are applied",
+				}},
+			},
+		}},
+		{"ConnectLayerNames", ki.Props{
+			"label": "Connect Layers...",
+			"icon":  "new",
+			"desc":  "add a new connection between layers in the network",
+			"Args": ki.PropSlice{
+				{"Send Layer Name", ki.Props{}},
+				{"Recv Layer Name", ki.Props{}},
+				{"Pattern", ki.Props{
+					"desc": "pattern to connect with",
+				}},
+				{"Prjn Type", ki.Props{
+					"desc": "type of projection -- direction, or other more specialized factors",
+				}},
+			},
+		}},
+	},
 }

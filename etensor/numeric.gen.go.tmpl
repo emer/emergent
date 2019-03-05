@@ -162,7 +162,7 @@ func (tsr *{{.Name}}) AddRows(n int) {
 	}
 	rows, cells := tsr.RowCellSize()
 	nln := (rows + n) * cells
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -180,7 +180,7 @@ func (tsr *{{.Name}}) SetNumRows(rows int) {
 	rows = ints.MaxInt(1, rows) // must be > 0
 	_, cells := tsr.RowCellSize()
 	nln := rows * cells
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	if cap(tsr.Values) >= nln {
 		tsr.Values = tsr.Values[0:nln]
 	} else {
@@ -204,7 +204,7 @@ func (tsr *{{.Name}}) SubSlice(subdim int, offs []int) (*{{.Name}}, error) {
 	}
 	if tsr.IsRowMajor() {
 		stsr := &{{.Name}}{}
-		stsr.SetShape(tsr.shape[od:], nil, tsr.names[od:]) // row major def
+		stsr.SetShape(tsr.Shp[od:], nil, tsr.Nms[od:]) // row major def
 		sti := make([]int, nd)
 		copy(sti, offs)
 		stoff := tsr.Offset(sti)
@@ -213,8 +213,8 @@ func (tsr *{{.Name}}) SubSlice(subdim int, offs []int) (*{{.Name}}, error) {
 		return stsr, nil
 	} else if tsr.IsColMajor() {
 		stsr := &{{.Name}}{}
-		stsr.SetShape(tsr.shape[:subdim], nil, tsr.names[:subdim])
-		stsr.strides = ColMajorStrides(stsr.shape)
+		stsr.SetShape(tsr.Shp[:subdim], nil, tsr.Nms[:subdim])
+		stsr.Strd = ColMajorStrides(stsr.Shp)
 		sti := make([]int, nd)
 		for i := subdim; i < nd; i++ {
 			sti[i] = offs[i-subdim]
@@ -227,6 +227,18 @@ func (tsr *{{.Name}}) SubSlice(subdim int, offs []int) (*{{.Name}}, error) {
 	return nil, errors.New("SubSlice only valid for RowMajor or ColMajor tensors")
 }
 
+// Label satisfies the gi.Labeler interface for a summary description of the tensor
+func (tsr *{{.Name}}) Label() string {
+	return fmt.Sprintf("{{.Name}}: %s", tsr.Shape.String())
+}
+	
+// String satisfies the fmt.Stringer interface for string of tensor data
+func (tsr *{{.Name}}) String() string {
+	str := tsr.Label() + "\n"
+	// todo: print out values
+	return str
+}
+	
 // ToArrow returns the apache arrow equivalent of the tensor
 func (tsr *{{.Name}}) ToArrow() *tensor.{{.Name}} {
 	bld := array.New{{.Name}}Builder(memory.DefaultAllocator)

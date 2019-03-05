@@ -26,15 +26,15 @@ type PrjnStru struct {
 	Send        emer.Layer    `desc:"sending layer for this projection"`
 	Pat         prjn.Pattern  `desc:"pattern of connectivity"`
 	Type        emer.PrjnType `desc:"type of projection -- Forward, Back, Lateral, or extended type in specialized algorithms -- matches against .Class parameter styles (e.g., .Back etc)"`
-	RConN       []int32       `desc:"number of recv connections for each neuron in the receiving layer, as a flat list"`
-	RConNAvgMax emer.AvgMax   `desc:"average and maximum number of recv connections in the receiving layer"`
-	RConIdxSt   []int32       `desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
-	RConIdx     []int32       `desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
-	RSynIdx     []int32       `desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
-	SConN       []int32       `desc:"number of sending connections for each neuron in the sending layer, as a flat list"`
-	SConNAvgMax emer.AvgMax   `desc:"average and maximum number of sending connections in the sending layer"`
-	SConIdxSt   []int32       `desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
-	SConIdx     []int32       `desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
+	RConN       []int32       `view:"-" desc:"number of recv connections for each neuron in the receiving layer, as a flat list"`
+	RConNAvgMax emer.AvgMax   `inactive:"+" desc:"average and maximum number of recv connections in the receiving layer"`
+	RConIdxSt   []int32       `view:"-" desc:"starting index into ConIdx list for each neuron in receiving layer -- just a list incremented by ConN"`
+	RConIdx     []int32       `view:"-" desc:"index of other neuron on sending side of projection, ordered by the receiving layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
+	RSynIdx     []int32       `view:"-" desc:"index of synaptic state values for each recv unit x connection, for the receiver projection which does not own the synapses, and instead indexes into sender-ordered list"`
+	SConN       []int32       `view:"-" desc:"number of sending connections for each neuron in the sending layer, as a flat list"`
+	SConNAvgMax emer.AvgMax   `inactive:"+" desc:"average and maximum number of sending connections in the sending layer"`
+	SConIdxSt   []int32       `view:"-" desc:"starting index into ConIdx list for each neuron in sending layer -- just a list incremented by ConN"`
+	SConIdx     []int32       `view:"-" desc:"index of other neuron on receiving side of projection, ordered by the sending layer's order of units as the outer loop (each start is in ConIdxSt), and then by the sending layer's units within that"`
 }
 
 // emer.Prjn interface

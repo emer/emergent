@@ -19,15 +19,15 @@ import (
 // at the neuron level.
 // This is included in leabra.Layer to drive the computation.
 type ActParams struct {
-	XX1        XX1Params       `desc:"X/X+1 rate code activation function parameters"`
-	OptThresh  OptThreshParams `desc:"optimization thresholds for faster processing"`
-	Init       ActInitParams   `desc:"initial values for key network state variables -- initialized at start of trial with InitActs or DecayActs"`
-	Dt         DtParams        `desc:"time and rate constants for temporal derivatives / updating of activation state"`
-	Gbar       Chans           `desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
-	Erev       Chans           `desc:"[Defaults: 1, .3, .25, .1] reversal potentials for each channel"`
-	Clamp      ClampParams     `desc:"how external inputs drive neural activations"`
-	Noise      ActNoiseParams  `desc:"how, where, when, and how much noise to add to activations"`
-	VmRange    emer.MinMax     `desc:"range for Vm membrane potential -- [0, 2.0] by default"`
+	XX1        XX1Params       `view:"inline" desc:"X/X+1 rate code activation function parameters"`
+	OptThresh  OptThreshParams `view:"inline" desc:"optimization thresholds for faster processing"`
+	Init       ActInitParams   `view:"inline" desc:"initial values for key network state variables -- initialized at start of trial with InitActs or DecayActs"`
+	Dt         DtParams        `view:"inline" desc:"time and rate constants for temporal derivatives / updating of activation state"`
+	Gbar       Chans           `view:"inline" desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
+	Erev       Chans           `view:"inline" desc:"[Defaults: 1, .3, .25, .1] reversal potentials for each channel"`
+	Clamp      ClampParams     `view:"inline" desc:"how external inputs drive neural activations"`
+	Noise      ActNoiseParams  `view:"inline" desc:"how, where, when, and how much noise to add to activations"`
+	VmRange    emer.MinMax     `view:"inline" desc:"range for Vm membrane potential -- [0, 2.0] by default"`
 	ErevSubThr Chans           `inactive:"+" view:"-" desc:"Erev - Act.Thr for each channel -- used in computing GeThrFmG among others"`
 	ThrSubErev Chans           `inactive:"+" view:"-" desc:"Act.Thr - Erev for each channel -- used in computing GeThrFmG among others"`
 }

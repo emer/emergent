@@ -183,7 +183,7 @@ func (tsr *Bits) AddRows(n int) {
 	rows := tsr.Dim(0)
 	inln := cln / rows // length of inner dims
 	nln := (rows + n) * inln
-	tsr.Shape.shape[0] += n
+	tsr.Shape.Shp[0] += n
 	tsr.Values.SetLen(nln)
 }
 
@@ -197,6 +197,6 @@ func (tsr *Bits) SetNumRows(rows int) {
 	crows := tsr.Dim(0)
 	inln := cln / crows // length of inner dims
 	nln := rows * inln
-	tsr.Shape.shape[0] = rows
+	tsr.Shape.Shp[0] = rows
 	tsr.Values.SetLen(nln)
 }

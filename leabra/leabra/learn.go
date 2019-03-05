@@ -15,9 +15,9 @@ import (
 // leabra.LearnNeurParams manages learning-related parameters at the neuron-level.
 // This is mainly the running average activations that drive learning
 type LearnNeurParams struct {
-	ActAvg  LrnActAvgParams `inline:"+" desc:"parameters for computing running average activations that drive learning"`
-	AvgL    AvgLParams      `inline:"+" desc:"parameters for computing AvgL long-term running average"`
-	CosDiff CosDiffParams   `inline:"+" desc:"parameters for computing cosine diff between minus and plus phase"`
+	ActAvg  LrnActAvgParams `view:"inline" desc:"parameters for computing running average activations that drive learning"`
+	AvgL    AvgLParams      `view:"inline" desc:"parameters for computing AvgL long-term running average"`
+	CosDiff CosDiffParams   `view:"inline" desc:"parameters for computing cosine diff between minus and plus phase"`
 }
 
 func (ln *LearnNeurParams) Update() {
@@ -63,12 +63,12 @@ func (ln *LearnNeurParams) AvgLFmAvgM(nrn *Neuron) {
 type LearnSynParams struct {
 	Learn    bool            `desc:"enable learning for this projection"`
 	Lrate    float32         `desc:"learning rate"`
-	WtInit   erand.RndParams `inline:"+" desc:"initial random weight distribution"`
-	XCal     XCalParams      `inline:"+" desc:"parameters for the XCal learning rule"`
-	WtSig    WtSigParams     `inline:"+" desc:"parameters for the sigmoidal contrast weight enhancement"`
-	Norm     DWtNormParams   `inline:"+" desc:"parameters for normalizing weight changes by abs max dwt"`
-	Momentum MomentumParams  `inline:"+" desc:"parameters for momentum across weight changes"`
-	WtBal    WtBalParams     `inline:"+" desc:"parameters for balancing strength of weight increases vs. decreases"`
+	WtInit   erand.RndParams `view:"inline" desc:"initial random weight distribution"`
+	XCal     XCalParams      `view:"inline" desc:"parameters for the XCal learning rule"`
+	WtSig    WtSigParams     `view:"inline" desc:"parameters for the sigmoidal contrast weight enhancement"`
+	Norm     DWtNormParams   `view:"inline" desc:"parameters for normalizing weight changes by abs max dwt"`
+	Momentum MomentumParams  `view:"inline" desc:"parameters for momentum across weight changes"`
+	WtBal    WtBalParams     `view:"inline" desc:"parameters for balancing strength of weight increases vs. decreases"`
 }
 
 func (ls *LearnSynParams) Update() {

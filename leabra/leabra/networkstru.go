@@ -30,6 +30,7 @@ type NetworkStru struct {
 	EmerNet emer.Network `copy:"-" json:"-" xml:"-" view:"-" desc:"we need a pointer to ourselves as an emer.Network, which can always be used to extract the true underlying type of object when network is embedded in other structs -- function receivers do not have this ability so this is necessary."`
 	Name    string       `desc:"overall name of network -- helps discriminate if there are multiple"`
 	Layers  []emer.Layer
+	WtsFile string                `desc:"filename of last weights file loaded or saved"`
 	LayMap  map[string]emer.Layer `view:"-" desc:"map of name to layers -- layer names must be unique"`
 
 	NThreads int                    `inactive:"+" desc:"number of parallel threads (go routines) to use -- this is computed directly from the Layers which you must explicitly allocate to different threads -- updated during Build of network"`
@@ -178,7 +179,7 @@ func (nt *NetworkStru) AddLayer4D(name string, nPoolsY, nPoolsX, nNeurY, nNeurX 
 // adding to the recv and send projection lists on each side of the connection.
 // Returns error if not successful.
 // Does not yet actually connect the units within the layers -- that requires Build.
-func (nt *NetworkStru) ConnectLayersNames(send, recv string, pat prjn.Pattern, typ emer.PrjnType) (rlay, slay emer.Layer, pj emer.Prjn, err error) {
+func (nt *NetworkStru) ConnectLayerNames(send, recv string, pat prjn.Pattern, typ emer.PrjnType) (rlay, slay emer.Layer, pj emer.Prjn, err error) {
 	rlay, err = nt.LayerByNameTry(recv)
 	if err != nil {
 		return
