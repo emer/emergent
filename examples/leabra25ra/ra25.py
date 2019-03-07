@@ -6,16 +6,18 @@
 # * install gopy, currently in fork at https://github.com/goki/gopy
 #   e.g., 'go get github.com/goki/gopy -u ./...' and then cd to that package
 #   and do 'go install'
-# * go to the python directory in this emergent repository and 
-#   type 'make' -- if that works, then type make install
+# * go to the python directory in this emergent repository, read README.md there, and 
+#   type 'make' -- if that works, then type make install (may need sudo)
 # * cd back here, and run 'pyemergent' which was installed into /usr/local/bin
 # * then type 'import ra25' and this should run
 # * you'll need various standard packages such as pandas, numpy, matplotlib, etc
 
 # labra25ra runs a simple random-associator 5x5 = 25 four-layer leabra network
+
 from emergent import go, leabra, emer, eplot, patgen, prjn, dtable, etensor, rand, erand, gi, giv, svg
 
-import pygi
+# this is in-process and will be an installable module under GoGi later
+import pygiv
 
 import importlib as il  #il.reload(ra25) -- doesn't seem to work for reasons unknown
 import numpy as np
@@ -419,7 +421,7 @@ class SimState(object):
         split.SetStretchMaxWidth()
         split.SetStretchMaxHeight()
          
-        self.ClassView = pygi.ClassView("ra25sv", self.Tags)
+        self.ClassView = pygiv.ClassView("ra25sv", self.Tags)
         self.ClassView.AddFrame(split)
         self.ClassView.SetClass(self)
         

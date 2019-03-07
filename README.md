@@ -9,6 +9,8 @@ See the [Wiki Rationale](https://github.com/emer/emergent/wiki/Rationale) and [H
 
 # Current Status / News
 
+* 3/2019: Python interface is up and running!  See the `python` directory for the [README](https://github.com/emer/emergent/blob/master/python/README.md) status and how to give it a try.  You can run the full `examples/leabra25ra` code using Python, including the GUI etc.
+
 * 2/2019: An initial complete basic-level implementation is now in place, and you can actually run `Leabra` models in the new emergent!  See the `examples/leabra25ra` directory for a runnable, standalone Go program that you can compile use to train a "random associator" test model.  This is definitely the place to start in understanding how everything works.
 
 * 2/2019: Initial benchmarking (see `examples/bench` for details) shows that the Go version is roughly 20-30% slower than C++ emergent for larger-sized models on a single processor, and while it does benefit significantly from multi-CPU processors, it does so less than the C++ version, which can be 2x faster than the Go version for some sizes and numbers of processors.  Nevertheless, we think the massive improvement in code simplicity and flexibility makes these performance tradeoffs worth it for most typical applications.

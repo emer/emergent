@@ -4,13 +4,13 @@
 
 from emergent import go, gi, giv
 
-# classviews is a dictionary of classviews
+# classviews is a dictionary of classviews -- needed for callbacks
 classviews = {}
 
 def SetIntValCB(recv, send, sig, data):
-    vw = gi.SpinBox(send)
+    vw = gi.SpinBox(handle=send)
     nm = vw.Name()
-    print("spin name:", nm)
+    # print("spin name:", nm)
     nms = nm.split(':')
     cv = classviews[nms[0]]
     flds = cv.Class.__dict__
@@ -19,8 +19,7 @@ def SetIntValCB(recv, send, sig, data):
 def SetStrValCB(recv, send, sig, data):
     if sig != gi.TextFieldDone:
         return
-    print("set text field:", send)
-    vw = gi.TextField(send)
+    vw = gi.TextField(handle=send)
     nm = vw.Name()
     nms = nm.split(':')
     cv = classviews[nms[0]]
@@ -30,9 +29,9 @@ def SetStrValCB(recv, send, sig, data):
 def SetBoolValCB(recv, send, sig, data):
     if sig != gi.ButtonToggled:
         return
-    vw = gi.CheckBox(send)
+    vw = gi.CheckBox(handle=send)
     nm = vw.Name()
-    print("cb name:", nm)
+    # print("cb name:", nm)
     nms = nm.split(':')
     cv = classviews[nms[0]]
     flds = cv.Class.__dict__
