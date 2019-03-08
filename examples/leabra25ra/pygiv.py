@@ -4,6 +4,8 @@
 
 from emergent import go, gi, giv
 
+import pandas as pd
+
 # classviews is a dictionary of classviews -- needed for callbacks
 classviews = {}
 
@@ -15,6 +17,25 @@ def SetIntValCB(recv, send, sig, data):
     cv = classviews[nms[0]]
     flds = cv.Class.__dict__
     setattr(cv.Class, nms[1], vw.Value)
+
+def EditGoObjCB(recv, send, sig, data):
+    vw = gi.Action(handle=send)
+    nm = vw.Name()
+    nms = nm.split(':')
+    cv = classviews[nms[0]]
+    flds = cv.Class.__dict__
+    fld = getattr(cv.Class, nms[1])
+    dlg = giv.StructViewDialog(vw.Viewport, fld, giv.DlgOpts(Title=nm), go.nil, go.nil)
+
+def EditObjCB(recv, send, sig, data):
+    vw = gi.Action(handle=send)
+    nm = vw.Name()
+    nms = nm.split(':')
+    cv = classviews[nms[0]]
+    flds = cv.Class.__dict__
+    fld = getattr(cv.Class, nms[1])
+    print("editing object: todo: need a ClassViewDialog")
+    # dlg = giv.StructViewDialog(vw.Vp, fld.opv.Interface(), DlgOpts{Title: tynm, Prompt: desc, TmpSave: vv.TmpSave}, recv, dlgFunc)    
 
 def SetStrValCB(recv, send, sig, data):
     if sig != gi.TextFieldDone:
@@ -101,16 +122,45 @@ class ClassView(object):
                 vw = gi.CheckBox(self.Frame.AddNewChild(gi.KiT_CheckBox(), self.Name + ":" + nm))
                 vw.SetChecked(val)
                 vw.ButtonSig.Connect(self.Frame, SetBoolValCB)
+                if self.HasTagValue(tags, "inactive", "+"):
+                    vw.SetInactive()
+                self.Views[nm] = vw
+            elif isinstance(val, go.GoClass):
+                vw = gi.Action(self.Frame.AddNewChild(gi.KiT_Action(), self.Name + ":" + nm))
+                if hasattr(val, "Label"):
+                    vw.SetText(val.Label())
+                else:
+                    vw.SetText(nm)
+                vw.SetPropStr("padding", "2px")
+                vw.SetPropStr("margin", "2px")
+                vw.SetPropStr("border-radius", "4px")
+                vw.ActionSig.Connect(self.Frame, EditGoObjCB)
+                if self.HasTagValue(tags, "inactive", "+"):
+                    vw.SetInactive()
+                self.Views[nm] = vw
+            elif isinstance(val, pd.DataFrame):
+                vw = gi.Action(self.Frame.AddNewChild(gi.KiT_Action(), self.Name + ":" + nm))
+                vw.SetText(nm)
+                vw.SetPropStr("padding", "2px")
+                vw.SetPropStr("margin", "2px")
+                vw.SetPropStr("border-radius", "4px")
+                vw.ActionSig.Connect(self.Frame, EditObjCB)
+                if self.HasTagValue(tags, "inactive", "+"):
+                    vw.SetInactive()
                 self.Views[nm] = vw
             elif isinstance(val, (int, float)):
                 vw = gi.SpinBox(self.Frame.AddNewChild(gi.KiT_SpinBox(), self.Name + ":" + nm))
                 vw.SetValue(val)
                 vw.SpinBoxSig.Connect(self.Frame, SetIntValCB)
+                if self.HasTagValue(tags, "inactive", "+"):
+                    vw.SetInactive()
                 self.Views[nm] = vw
             else:
                 vw = gi.TextField(self.Frame.AddNewChild(gi.KiT_TextField(), self.Name + ":" + nm))
                 vw.SetText(str(val))
                 vw.TextFieldSig.Connect(self.Frame, SetStrValCB)
+                if self.HasTagValue(tags, "inactive", "+"):
+                    vw.SetInactive()
                 self.Views[nm] = vw
         self.Frame.UpdateEnd(updt)
         
@@ -123,6 +173,10 @@ class ClassView(object):
                 if isinstance(val, bool):
                     svw = gi.CheckBox(vw)
                     svw.SetChecked(val)
+                elif isinstance(val, go.GoClass):
+                    pass
+                elif isinstance(val, pd.DataFrame):
+                    pass
                 elif isinstance(val, (int, float)):
                     svw = gi.SpinBox(vw)
                     svw.SetValue(val)
