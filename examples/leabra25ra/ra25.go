@@ -23,12 +23,12 @@ import (
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/giv"
-	"github.com/goki/gi/oswin"
 	"github.com/goki/gi/svg"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotutil"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 // this is the stub main for gogi that calls our actual mainrun function, at end of file
@@ -55,6 +55,9 @@ var DefaultPars = emer.ParamStyle{
 		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
 	},
 }
+
+// these are the plot color names to use in order for successive lines -- feel free to choose your own!
+var PlotColorNames = []string{"black", "red", "blue", "ForestGreen", "purple", "orange", "brown", "chartreuse", "navy", "cyan", "magenta", "tan", "salmon", "yellow4", "SkyBlue", "pink"}
 
 // SimState maintains everything about this simulation, and we define all the
 // functionality as methods on this type -- this makes it easier to add additional
@@ -117,7 +120,7 @@ func (ss *SimState) Config() {
 func (ss *SimState) Init() {
 	rand.Seed(ss.RndSeed)
 	if ss.MaxEpcs == 0 { // allow user override
-		ss.MaxEpcs = 100
+		ss.MaxEpcs = 50
 	}
 	ss.Epoch = 0
 	ss.Trial = 0
@@ -361,10 +364,18 @@ func (ss *SimState) PlotEpcLog() *plot.Plot {
 	plt.X.Label.Text = "Epoch"
 	plt.Y.Label.Text = "Y"
 
-	for _, cl := range ss.PlotVals {
+	const lineWidth = 1
+
+	for i, cl := range ss.PlotVals {
 		xy, _ := eplot.NewTableXYNames(dt, "Epoch", cl)
-		plotutil.AddLines(plt, cl, xy)
+		l, _ := plotter.NewLine(xy)
+		l.LineStyle.Width = vg.Points(lineWidth)
+		clr, _ := gi.ColorFromString(PlotColorNames[i%len(PlotColorNames)], nil)
+		l.LineStyle.Color = clr
+		plt.Add(l)
+		plt.Legend.Add(cl, l)
 	}
+	plt.Legend.Top = true
 	eplot.PlotViewSVG(plt, ss.EpcPlotSvg, 5, 5, 2)
 	return plt
 }
@@ -380,8 +391,10 @@ func (ss *SimState) ConfigGui() *gi.Window {
 	width := 1600
 	height := 1200
 
-	oswin.TheApp.SetName("leabra25ra")
-	oswin.TheApp.SetAbout(`This demonstrates a basic Leabra model. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
+	gi.SetAppName("leabra25ra")
+	gi.SetAppAbout(`This demonstrates a basic Leabra model. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
+
+	plot.DefaultFont = "Helvetica"
 
 	win := gi.NewWindow2D("leabra25ra", "Leabra Random Associator", width, height, true)
 
@@ -401,14 +414,14 @@ func (ss *SimState) ConfigGui() *gi.Window {
 	split.SetStretchMaxWidth()
 	split.SetStretchMaxHeight()
 
-	// todo: add a splitview here
-
 	sv := split.AddNewChild(giv.KiT_StructView, "sv").(*giv.StructView)
 	sv.SetStruct(ss, nil)
 	// sv.SetStretchMaxWidth()
 	// sv.SetStretchMaxHeight()
 
-	svge := split.AddNewChild(svg.KiT_Editor, "svg").(*svg.Editor)
+	tv := split.AddNewChild(gi.KiT_TabView, "tv").(*gi.TabView)
+	svgen, _ := tv.AddNewTab(svg.KiT_Editor, "Epc Plot")
+	svge := svgen.(*svg.Editor)
 	svge.InitScale()
 	svge.Fill = true
 	svge.SetProp("background-color", "white")
@@ -485,7 +498,7 @@ func (ss *SimState) ConfigGui() *gi.Window {
 	vp.UpdateEndNoSig(updt)
 
 	// main menu
-	appnm := oswin.TheApp.Name()
+	appnm := gi.AppName()
 	mmen := win.MainMenu
 	mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
 
@@ -505,11 +518,11 @@ func (ss *SimState) ConfigGui() *gi.Window {
 	// fmen.Menu.AddSeparator("csep")
 	// fmen.Menu.AddAction(gi.ActOpts{Label: "Close Window", Shortcut: "Command+W"},
 	// 	win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-	// 		win.OSWin.Close()
+	// 		win.Close()
 	// 	})
 
-	win.OSWin.SetCloseCleanFunc(func(w oswin.Window) {
-		go oswin.TheApp.Quit() // once main window is closed, quit
+	win.SetCloseCleanFunc(func(w *gi.Window) {
+		go gi.Quit() // once main window is closed, quit
 	})
 
 	win.MainMenuUpdated()

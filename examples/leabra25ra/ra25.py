@@ -1,3 +1,5 @@
+#!/usr/local/bin/pyemergent -i
+
 # Copyright (c) 2019, The Emergent Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
@@ -107,7 +109,7 @@ class SimState(object):
         self.Pats     = pd.DataFrame()
         self.EpcLog   = pd.DataFrame()
         self.Pars     = DefaultPars
-        self.MaxEpcs  =  100
+        self.MaxEpcs  = 50
         self.Epoch    = 0
         self.Trial    = 0
         self.Time     = leabra.Time()
@@ -424,8 +426,10 @@ class SimState(object):
         self.ClassView = pygiv.ClassView("ra25sv", self.Tags)
         self.ClassView.AddFrame(split)
         self.ClassView.SetClass(self)
-        
-        svge = svg.Editor(split.AddNewChild(svg.KiT_Editor(), "svg"))
+
+        tv = gi.TabView(split.AddNewChild(gi.KiT_TabView(), "tv"))
+        svge = svg.Editor()
+        tv.AddTab(svge, "Epc Plot")
         svge.InitScale()
         svge.Fill = True
         svge.SetPropStr("background-color", "white")
@@ -435,7 +439,7 @@ class SimState(object):
         svge.SetStretchMaxHeight()
         self.EpcPlotSvg = svge
          
-        # split.SetSplits(.3, .7)  # not avail due to var-arg
+        split.SetSplitsList(go.Slice_float32([.3, .7]))
         
         recv = win.This()
         

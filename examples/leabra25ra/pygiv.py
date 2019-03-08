@@ -106,6 +106,7 @@ class ClassView(object):
         self.Frame.SetStretchMaxWidth()
         self.Frame.SetStretchMaxHeight()
         self.Frame.Lay = gi.LayoutGrid
+        self.Frame.Stripes = gi.RowStripes
         self.Frame.SetPropInt("columns", 2)
         updt = self.Frame.UpdateStart()
         self.Frame.SetFullReRender()
