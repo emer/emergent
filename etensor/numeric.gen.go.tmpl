@@ -234,8 +234,29 @@ func (tsr *{{.Name}}) Label() string {
 	
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *{{.Name}}) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 	

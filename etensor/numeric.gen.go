@@ -234,8 +234,29 @@ func (tsr *Int64) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Int64) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -491,8 +512,29 @@ func (tsr *Uint64) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Uint64) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -748,8 +790,29 @@ func (tsr *Float64) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Float64) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -1005,8 +1068,29 @@ func (tsr *Int32) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Int32) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -1262,8 +1346,29 @@ func (tsr *Uint32) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Uint32) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -1519,8 +1624,29 @@ func (tsr *Float32) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Float32) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -1776,8 +1902,29 @@ func (tsr *Int16) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Int16) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -2033,8 +2180,29 @@ func (tsr *Uint16) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Uint16) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -2290,8 +2458,29 @@ func (tsr *Int8) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Int8) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 
@@ -2547,8 +2736,29 @@ func (tsr *Uint8) Label() string {
 
 // String satisfies the fmt.Stringer interface for string of tensor data
 func (tsr *Uint8) String() string {
-	str := tsr.Label() + "\n"
-	// todo: print out values
+	str := tsr.Label()
+	sz := len(tsr.Values)
+	if sz > 1000 {
+		return str
+	}
+	for i := 0; i < sz; i++ {
+		idx := tsr.Index(i)
+		for j := 1; j < len(idx); j++ {
+			if idx[j] == 0 {
+				str += "\n["
+				for k := 0; k < len(idx); k++ {
+					str += fmt.Sprintf("%d", idx[k])
+					if k < len(idx)-1 {
+						str += ","
+					}
+				}
+				str += "]: "
+				break
+			}
+		}
+		str += tsr.StringVal1D(i) + " "
+	}
+	str += "\n"
 	return str
 }
 

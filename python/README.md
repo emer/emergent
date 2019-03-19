@@ -16,6 +16,7 @@ Python version 3 (3.6 has been well tested) is recommended.
 
 ```sh
 $ python3 -m pip install --upgrade pybindgen setuptools wheel pandas matplotlib
+$ go get golang.org/x/tools/cmd/goimports  # gopy needs this -- you should use it too!
 $ go get github.com/goki/gopy   # add -u ./... to ensure dependencies are updated
 $ cd ~/go/src/github.com/goki/gopy  # use $GOPATH instead of ~/go if somewhere else
 $ go install    # do go get -u ./... if this fails and try again
