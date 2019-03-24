@@ -412,11 +412,10 @@ class SimState(object):
          
         mfr = win.SetMainFrame()
         
-        tbar = gi.ToolBar(mfr.AddNewChild(gi.KiT_ToolBar(), "tbar"))
-        tbar.Lay = gi.LayoutHoriz
+        tbar = gi.AddNewToolBar(mfr, "tbar")
         tbar.SetStretchMaxWidth()
         
-        split = gi.SplitView(mfr.AddNewChild(gi.KiT_SplitView(), "split"))
+        split = gi.AddNewSplitView(mfr, "split")
         split.Dim = gi.X
         # split.SetProp("horizontal-align", "center")
         # split.SetProp("margin", 2.0) # raw numbers = px = 96 dpi pixels
@@ -427,7 +426,7 @@ class SimState(object):
         self.ClassView.AddFrame(split)
         self.ClassView.SetClass(self)
 
-        tv = gi.TabView(split.AddNewChild(gi.KiT_TabView(), "tv"))
+        tv = gi.AddNewTabView(split, "tv")
         svge = svg.Editor()
         tv.AddTab(svge, "Epc Plot")
         svge.InitScale()

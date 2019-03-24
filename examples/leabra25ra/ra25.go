@@ -403,25 +403,23 @@ func (ss *SimState) ConfigGui() *gi.Window {
 
 	mfr := win.SetMainFrame()
 
-	tbar := mfr.AddNewChild(gi.KiT_ToolBar, "tbar").(*gi.ToolBar)
-	tbar.Lay = gi.LayoutHoriz
+	tbar := gi.AddNewToolBar(mfr, "tbar")
 	tbar.SetStretchMaxWidth()
 
-	split := mfr.AddNewChild(gi.KiT_SplitView, "split").(*gi.SplitView)
+	split := gi.AddNewSplitView(mfr, "split")
 	split.Dim = gi.X
 	// split.SetProp("horizontal-align", "center")
 	// split.SetProp("margin", 2.0) // raw numbers = px = 96 dpi pixels
 	split.SetStretchMaxWidth()
 	split.SetStretchMaxHeight()
 
-	sv := split.AddNewChild(giv.KiT_StructView, "sv").(*giv.StructView)
+	sv := giv.AddNewStructView(split, "sv")
 	sv.SetStruct(ss, nil)
 	// sv.SetStretchMaxWidth()
 	// sv.SetStretchMaxHeight()
 
-	tv := split.AddNewChild(gi.KiT_TabView, "tv").(*gi.TabView)
-	svgen, _ := tv.AddNewTab(svg.KiT_Editor, "Epc Plot")
-	svge := svgen.(*svg.Editor)
+	tv := gi.AddNewTabView(split, "tv")
+	svge := tv.AddNewTab(svg.KiT_Editor, "Epc Plot").(*svg.Editor)
 	svge.InitScale()
 	svge.Fill = true
 	svge.SetProp("background-color", "white")
