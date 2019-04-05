@@ -12,6 +12,8 @@ Once you edit the Network, etc, you will see the native Go editors of those obje
 
 # Installation
 
+First, you have to install the Go version of emergent: [Wiki Install](https://github.com/emer/emergent/wiki/Install).
+
 Python version 3 (3.6 has been well tested) is recommended.
 
 ```sh
