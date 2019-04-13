@@ -17,9 +17,9 @@ import (
 type DeepBurstParams struct {
 	BurstQtr    leabra.Quarters `desc:"Quarter(s) when bursting occurs -- typically Q4 but can also be Q2 and Q4 for beta-frequency updating.  Note: this is a bitflag and must be accessed using bitflag.Set / Has etc routines, 32 bit versions."`
 	On          bool            `desc:"Enable the computation of DeepBurst from superficial activation state -- if this is off, then DeepBurst is 0 and no Burst* projection signals are sent"`
-	FmActNoAttn bool            `view:"if On" desc:"Use the ActNoAttn activation state to compute DeepBurst activation (otherwise Act) -- if DeepAttn attentional modulation is applied to Act, then this creates a positive feedback loop that can be problematic, so using the non-modulated activation value can be better."`
-	ThrRel      float32         `view:"if On" max:"1" def:"0.1,0.2,0.5" desc:"Relative component of threshold on superficial activation value, below which it does not drive DeepBurst (and above which, DeepBurst = Act).  This is the distance between the average and maximum activation values within layer (e.g., 0 = average, 1 = max).  Overall effective threshold is MAX of relative and absolute thresholds."`
-	ThrAbs      float32         `view:"if On" min:"0" max:"1" def:"0.1,0.2,0.5" desc:"Absolute component of threshold on superficial activation value, below which it does not drive DeepBurst (and above which, DeepBurst = Act).  Overall effective threshold is MAX of relative and absolute thresholds."`
+	FmActNoAttn bool            `viewif:"On" desc:"Use the ActNoAttn activation state to compute DeepBurst activation (otherwise Act) -- if DeepAttn attentional modulation is applied to Act, then this creates a positive feedback loop that can be problematic, so using the non-modulated activation value can be better."`
+	ThrRel      float32         `viewif:"On" max:"1" def:"0.1,0.2,0.5" desc:"Relative component of threshold on superficial activation value, below which it does not drive DeepBurst (and above which, DeepBurst = Act).  This is the distance between the average and maximum activation values within layer (e.g., 0 = average, 1 = max).  Overall effective threshold is MAX of relative and absolute thresholds."`
+	ThrAbs      float32         `viewif:"On" min:"0" max:"1" def:"0.1,0.2,0.5" desc:"Absolute component of threshold on superficial activation value, below which it does not drive DeepBurst (and above which, DeepBurst = Act).  Overall effective threshold is MAX of relative and absolute thresholds."`
 }
 
 func (db *DeepBurstParams) Update() {
@@ -89,9 +89,9 @@ func (db *DeepCtxtParams) DeepCtxtFmGe(ge, dctxt float32) float32 {
 // excitatory conductance.
 type DeepTRCParams struct {
 	Binarize bool    `desc:"Apply threshold to TRCBurstGe input for computing plus-phase activations -- above BinThr, then Act = BinOn, below = BinOff.  Typically used for one-to-one BurstTRC prjns with fixed wts = 1, so threshold is in terms of sending activation."`
-	BinThr   float32 `view:"if Binarize" desc:"Threshold for binarizing -- typically used for one-to-one BurstTRC prjns with fixed wts = 1, so threshold is in terms of sending activation"`
-	BinOn    float32 `def:"0.3" view:"if Binarize" desc:"Effective value for units above threshold -- lower value around 0.3 or so seems best."`
-	BinOff   float32 `def:"0" view:"if Binarize" desc:"Effective value for units below threshold -- typically 0."`
+	BinThr   float32 `viewif:"Binarize" desc:"Threshold for binarizing -- typically used for one-to-one BurstTRC prjns with fixed wts = 1, so threshold is in terms of sending activation"`
+	BinOn    float32 `def:"0.3" viewif:"Binarize" desc:"Effective value for units above threshold -- lower value around 0.3 or so seems best."`
+	BinOff   float32 `def:"0" viewif:"Binarize" desc:"Effective value for units below threshold -- typically 0."`
 	//	POnlyM   bool    `desc:"TRC plus-phase for TRC units only occurs if the minus phase max activation for given unit group Pool is above .1 -- this reduces 'main effect' positive weight changes that can drive hogging."`
 }
 
@@ -123,8 +123,8 @@ func (tp *DeepTRCParams) BurstGe(burstGe float32) float32 {
 // is computed from the AttnGe inputs received via DeepAttn projections
 type DeepAttnParams struct {
 	On  bool    `desc:"Enable the computation of DeepAttn, DeepLrn from AttnGe (otherwise, DeepAttn and DeepLrn = 1"`
-	Min float32 `view:"if On" min:"0" max:"1" def:"0.8" desc:"Minimum DeepAttn value, which can provide a non-zero baseline for attentional modulation (typical biological attentional modulation levels are roughly 30% or so at the neuron-level, e.g., in V4)"`
-	Thr float32 `view:"if On" min:"0" desc:"Threshold on AttnGe before DeepAttn is compute -- if not receiving even this amount of overall input from deep layer senders, then just set DeepAttn and DeepLrn to 1 for all neurons, as there isn't enough of a signal to go on yet"`
+	Min float32 `viewif:"On" min:"0" max:"1" def:"0.8" desc:"Minimum DeepAttn value, which can provide a non-zero baseline for attentional modulation (typical biological attentional modulation levels are roughly 30% or so at the neuron-level, e.g., in V4)"`
+	Thr float32 `viewif:"On" min:"0" desc:"Threshold on AttnGe before DeepAttn is compute -- if not receiving even this amount of overall input from deep layer senders, then just set DeepAttn and DeepLrn to 1 for all neurons, as there isn't enough of a signal to go on yet"`
 
 	Range float32 `view:"-" inactive:"+" desc:"Range = 1 - Min.  This is the range for the AttnGe to modulate value of DeepAttn, between Min and 1"`
 }

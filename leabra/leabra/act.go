@@ -514,10 +514,10 @@ func (ws *WtScaleParams) FullScale(savg, snu, ncon float32) float32 {
 // ClampParams are for specifying how external inputs are clamped onto network activation values
 type ClampParams struct {
 	Hard    bool        `def:"true" desc:"whether to hard clamp inputs where activation is directly set to external input value (Act = Ext) or do soft clamping where Ext is added into Ge excitatory current (Ge += Gain * Ext)"`
-	Range   emer.MinMax `view:"if Hard" desc:"range of external input activation values allowed -- Max is .95 by default due to saturating nature of rate code activation function"`
-	Gain    float32     `view:"if !Hard" def:"0.02:0.5" desc:"soft clamp gain factor (Ge += Gain * Ext)"`
-	Avg     bool        `view:"if !Hard" desc:"compute soft clamp as the average of current and target netins, not the sum -- prevents some of the main effect problems associated with adding external inputs"`
-	AvgGain float32     `view:"if !Hard && Avg" def:"0.2" desc:"gain factor for averaging the Ge -- clamp value Ext contributes with AvgGain and current Ge as (1-AvgGain)"`
+	Range   emer.MinMax `viewif:"Hard" desc:"range of external input activation values allowed -- Max is .95 by default due to saturating nature of rate code activation function"`
+	Gain    float32     `viewif:"!Hard" def:"0.02:0.5" desc:"soft clamp gain factor (Ge += Gain * Ext)"`
+	Avg     bool        `viewif:"!Hard" desc:"compute soft clamp as the average of current and target netins, not the sum -- prevents some of the main effect problems associated with adding external inputs"`
+	AvgGain float32     `viewif:"!Hard && Avg" def:"0.2" desc:"gain factor for averaging the Ge -- clamp value Ext contributes with AvgGain and current Ge as (1-AvgGain)"`
 }
 
 func (cp *ClampParams) Update() {

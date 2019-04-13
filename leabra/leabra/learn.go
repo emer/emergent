@@ -212,7 +212,7 @@ type AvgLParams struct {
 	LrnMax float32 `def:"0.5" min:"0" desc:"maximum AvgLLrn value, which is amount of learning driven by AvgL factor -- when AvgL is at its maximum value (i.e., gain, as act does not exceed 1), then AvgLLrn will be at this maximum value -- by default, strong amounts of this homeostatic Hebbian form of learning can be used when the receiving unit is highly active -- this will then tend to bring down the average activity of units -- the default of 0.5, in combination with the err_mod flag, works well for most models -- use around 0.0004 for a single fixed value (with err_mod flag off)"`
 	LrnMin float32 `def:"0.0001;0.0004" min:"0" desc:"miniumum AvgLLrn value (amount of learning driven by AvgL factor) -- if AvgL is at its minimum value, then AvgLLrn will be at this minimum value -- neurons that are not overly active may not need to increase the contrast of their weights as much -- use around 0.0004 for a single fixed value (with err_mod flag off)"`
 	ErrMod bool    `def:"true" desc:"modulate amount learning by normalized level of error within layer"`
-	ModMin float32 `def:"0.01" view:"if ErrMod=true" desc:"minimum modulation value for ErrMod-- ensures a minimum amount of self-organizing learning even for network / layers that have a very small level of error signal"`
+	ModMin float32 `def:"0.01" viewif:"ErrMod=true" desc:"minimum modulation value for ErrMod-- ensures a minimum amount of self-organizing learning even for network / layers that have a very small level of error signal"`
 
 	Dt      float32 `view:"-" inactive:"+" desc:"rate = 1 / tau"`
 	LrnFact float32 `view:"-" inactive:"+" desc:"(LrnMax - LrnMin) / (Gain - Min)"`
@@ -340,7 +340,7 @@ func (cd *CosDiffStats) Init() {
 type XCalParams struct {
 	MLrn    float32 `def:"1" min:"0" desc:"multiplier on learning based on the medium-term floating average threshold which produces error-driven learning -- this is typically 1 when error-driven learning is being used, and 0 when pure Hebbian learning is used. The long-term floating average threshold is provided by the receiving unit"`
 	SetLLrn bool    `def:"false" desc:"if true, set a fixed AvgLLrn weighting factor that determines how much of the long-term floating average threshold (i.e., BCM, Hebbian) component of learning is used -- this is useful for setting a fully Hebbian learning connection, e.g., by setting MLrn = 0 and LLrn = 1. If false, then the receiving unit's AvgLLrn factor is used, which dynamically modulates the amount of the long-term component as a function of how active overall it is"`
-	LLrn    float32 `view:"if SetLLrn=true" desc:"fixed l_lrn weighting factor that determines how much of the long-term floating average threshold (i.e., BCM, Hebbian) component of learning is used -- this is useful for setting a fully Hebbian learning connection, e.g., by setting MLrn = 0 and LLrn = 1."`
+	LLrn    float32 `viewif:"SetLLrn=true" desc:"fixed l_lrn weighting factor that determines how much of the long-term floating average threshold (i.e., BCM, Hebbian) component of learning is used -- this is useful for setting a fully Hebbian learning connection, e.g., by setting MLrn = 0 and LLrn = 1."`
 	DRev    float32 `def:"0.1" min:"0" max:"0.99" desc:"proportional point within LTD range where magnitude reverses to go back down to zero at zero -- err-driven svm component does better with smaller values, and BCM-like mvl component does better with larger values -- 0.1 is a compromise"`
 	DThr    float32 `def:"0.0001;0.01" min:"0" desc:"minimum LTD threshold value below which no weight change occurs -- this is now *relative* to the threshold"`
 	LrnThr  float32 `def:"0.01" desc:"xcal learning threshold -- don't learn when sending unit activation is below this value in both phases -- due to the nature of the learning function being 0 when the sr coproduct is 0, it should not affect learning in any substantial way -- nonstandard learning algorithms that have different properties should ignore it"`
@@ -483,10 +483,10 @@ func (ws *WtSigParams) LinFmSigWt(sw float32) float32 {
 // Serves as an estimate of the variance in the weight changes, assuming zero net mean overall.
 type DWtNormParams struct {
 	On       bool    `def:"true" desc:"whether to use dwt normalization, only on error-driven dwt component, based on projection-level max_avg value -- slowly decays and instantly resets to any current max"`
-	DecayTau float32 `view:"if On=true" min:"1" def:"1000;10000" desc:"time constant for decay of dwnorm factor -- generally should be long-ish, between 1000-10000 -- integration rate factor is 1/tau"`
-	NormMin  float32 `view:"if On=true" min:"0" def:"0.001" desc:"minimum effective value of the normalization factor -- provides a lower bound to how much normalization can be applied"`
-	LrComp   float32 `view:"if On=true" min:"0" def:"0.15" desc:"overall learning rate multiplier to compensate for changes due to use of normalization -- allows for a common master learning rate to be used between different conditions -- 0.1 for synapse-level, maybe higher for other levels"`
-	Stats    bool    `view:"if On=true" def:"false" desc:"record the avg, max values of err, bcm hebbian, and overall dwt change per con group and per projection"`
+	DecayTau float32 `viewif:"On=true" min:"1" def:"1000;10000" desc:"time constant for decay of dwnorm factor -- generally should be long-ish, between 1000-10000 -- integration rate factor is 1/tau"`
+	NormMin  float32 `viewif:"On=true" min:"0" def:"0.001" desc:"minimum effective value of the normalization factor -- provides a lower bound to how much normalization can be applied"`
+	LrComp   float32 `viewif:"On=true" min:"0" def:"0.15" desc:"overall learning rate multiplier to compensate for changes due to use of normalization -- allows for a common master learning rate to be used between different conditions -- 0.1 for synapse-level, maybe higher for other levels"`
+	Stats    bool    `viewif:"On=true" def:"false" desc:"record the avg, max values of err, bcm hebbian, and overall dwt change per con group and per projection"`
 
 	DecayDt  float32 `inactive:"+" view:"-" desc:"rate constant of decay = 1 / decay_tau"`
 	DecayDtC float32 `inactive:"+" view:"-" desc:"complement rate constant of decay = 1 - (1 / decay_tau)"`
@@ -524,8 +524,8 @@ func (dn *DWtNormParams) Defaults() {
 // cancels out dithering -- biologically captures slower timecourse of longer-term plasticity mechanisms.
 type MomentumParams struct {
 	On     bool    `def:"true" desc:"whether to use standard simple momentum"`
-	MTau   float32 `view:"if On=true" min:"1" def:"10" desc:"time constant factor for integration of momentum -- 1/tau is dt (e.g., .1), and 1-1/tau (e.g., .95 or .9) is traditional momentum time-integration factor"`
-	LrComp float32 `view:"if On=true" min:"0" def:"0.1" desc:"overall learning rate multiplier to compensate for changes due to JUST momentum without normalization -- allows for a common master learning rate to be used between different conditions -- generally should use .1 to compensate for just momentum itself"`
+	MTau   float32 `viewif:"On=true" min:"1" def:"10" desc:"time constant factor for integration of momentum -- 1/tau is dt (e.g., .1), and 1-1/tau (e.g., .95 or .9) is traditional momentum time-integration factor"`
+	LrComp float32 `viewif:"On=true" min:"0" def:"0.1" desc:"overall learning rate multiplier to compensate for changes due to JUST momentum without normalization -- allows for a common master learning rate to be used between different conditions -- generally should use .1 to compensate for just momentum itself"`
 
 	MDt  float32 `inactive:"+" view:"-" desc:"rate constant of momentum integration = 1 / m_tau"`
 	MDtC float32 `inactive:"+" view:"-" desc:"complement rate constant of momentum integration = 1 - (1 / m_tau)"`
@@ -559,13 +559,13 @@ func (mp *MomentumParams) Defaults() {
 // Plugs into soft bounding function.
 type WtBalParams struct {
 	On      bool    `desc:"perform weight balance soft normalization?  if so, maintains overall weight balance across units by progressively penalizing weight increases as a function of amount of averaged receiver weight above a high threshold (hi_thr) and long time-average activation above an act_thr -- this is generally very beneficial for larger models where hog units are a problem, but not as much for smaller models where the additional constraints are not beneficial -- uses a sigmoidal function: WbInc = 1 / (1 + HiGain*(WbAvg - HiThr) + ActGain * (nrn.ActAvg - ActThr)))"`
-	AvgThr  float32 `view:"if On=true" def:"0.25" desc:"threshold on weight value for inclusion into the weight average that is then subject to the further HiThr threshold for then driving a change in weight balance -- this AvgThr allows only stronger weights to contribute so that weakening of lower weights does not dilute sensitivity to number and strength of strong weights"`
-	HiThr   float32 `view:"if On=true" def:"0.4" desc:"high threshold on weight average (subject to AvgThr) before it drives changes in weight increase vs. decrease factors"`
-	HiGain  float32 `view:"if On=true" def:"4" desc:"gain multiplier applied to above-HiThr thresholded weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced"`
-	LoThr   float32 `view:"if On=true" def:"0.4" desc:"low threshold on weight average (subject to AvgThr) before it drives changes in weight increase vs. decrease factors"`
-	LoGain  float32 `view:"if On=true" def:"6;0" desc:"gain multiplier applied to below-lo_thr thresholded weight averages -- higher values turn weight increases up more rapidly as the weights become more imbalanced -- generally beneficial but sometimes not -- worth experimenting with either 6 or 0"`
-	ActThr  float32 `view:"if On=true" def:"0.25" desc:"threshold for long time-average activation (act_avg) contribution to weight balance -- based on act_avg relative to act_thr -- same statistic that we use to measure hogging with default .3 threshold"`
-	ActGain float32 `view:"if On=true" def:"0;2" desc:"gain multiplier applied to above-threshold weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced -- see act_thr for equation"`
+	AvgThr  float32 `viewif:"On=true" def:"0.25" desc:"threshold on weight value for inclusion into the weight average that is then subject to the further HiThr threshold for then driving a change in weight balance -- this AvgThr allows only stronger weights to contribute so that weakening of lower weights does not dilute sensitivity to number and strength of strong weights"`
+	HiThr   float32 `viewif:"On=true" def:"0.4" desc:"high threshold on weight average (subject to AvgThr) before it drives changes in weight increase vs. decrease factors"`
+	HiGain  float32 `viewif:"On=true" def:"4" desc:"gain multiplier applied to above-HiThr thresholded weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced"`
+	LoThr   float32 `viewif:"On=true" def:"0.4" desc:"low threshold on weight average (subject to AvgThr) before it drives changes in weight increase vs. decrease factors"`
+	LoGain  float32 `viewif:"On=true" def:"6;0" desc:"gain multiplier applied to below-lo_thr thresholded weight averages -- higher values turn weight increases up more rapidly as the weights become more imbalanced -- generally beneficial but sometimes not -- worth experimenting with either 6 or 0"`
+	ActThr  float32 `viewif:"On=true" def:"0.25" desc:"threshold for long time-average activation (act_avg) contribution to weight balance -- based on act_avg relative to act_thr -- same statistic that we use to measure hogging with default .3 threshold"`
+	ActGain float32 `viewif:"On=true" def:"0;2" desc:"gain multiplier applied to above-threshold weight averages -- higher values turn weight increases down more rapidly as the weights become more imbalanced -- see act_thr for equation"`
 }
 
 func (wb *WtBalParams) Update() {
