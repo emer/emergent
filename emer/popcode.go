@@ -30,6 +30,7 @@ type PopCode1D struct {
 }
 
 func (pc *PopCode1D) Defaults() {
+	pc.Code = GaussBump
 	pc.Min = -0.5
 	pc.Max = 1.5
 	pc.Sigma = 0.2
@@ -92,8 +93,8 @@ func (pc *PopCode1D) Decode(pat []float32) float32 {
 	return avg
 }
 
-// Values returns the target preferred tuning values for
-// each unit, for a distribution of given size n.
+// Values sets the vals slice to the target preferred tuning values
+// for each unit, for a distribution of given size n.
 // n must be 2 or more.
 // vals slice will be constructed if len != n
 func (pc *PopCode1D) Values(vals *[]float32, n int) {
