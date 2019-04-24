@@ -5,6 +5,7 @@
 package dtable
 
 import (
+	"github.com/emer/emergent/etensor"
 	"os"
 	"strings"
 	"testing"
@@ -24,13 +25,13 @@ func TestEmerHeaders(t *testing.T) {
 	if len(sc) != 3 {
 		t.Errorf("EmerHeaders: len != 3\n")
 	}
-	if sc[0].Type != arrow.STRING {
+	if sc[0].Type != etensor.Type(etensor.STRING) {
 		t.Errorf("EmerHeaders: sc[0] != STRING\n")
 	}
-	if sc[1].Type != arrow.FLOAT32 {
+	if sc[1].Type != etensor.Type(etensor.FLOAT32) {
 		t.Errorf("EmerHeaders: sc[1] != FLOAT32\n")
 	}
-	if sc[2].Type != arrow.FLOAT32 {
+	if sc[2].Type != etensor.Type(etensor.FLOAT32) {
 		t.Errorf("EmerHeaders: sc[2] != FLOAT32\n")
 	}
 	if sc[1].CellShape[0] != 5 {
