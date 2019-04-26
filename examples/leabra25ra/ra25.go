@@ -40,20 +40,20 @@ func main() {
 
 // DefaultPars are the initial default parameters for this simulation
 var DefaultPars = emer.ParamStyle{
-	"Prjn": {
+	{"Prjn", emer.Params{
 		"Prjn.Learn.Norm.On":     1,
 		"Prjn.Learn.Momentum.On": 1,
 		"Prjn.Learn.WtBal.On":    0,
-	},
+	}},
 	// "Layer": {
 	// 	"Layer.Inhib.Layer.Gi": 1.8, // this is the default
 	// },
-	"#Output": {
+	{"#Output", emer.Params{
 		"Layer.Inhib.Layer.Gi": 1.4, // this turns out to be critical for small output layer
-	},
-	".Back": {
+	}},
+	{".Back", emer.Params{
 		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
-	},
+	}},
 }
 
 // these are the plot color names to use in order for successive lines -- feel free to choose your own!

@@ -198,9 +198,9 @@ func (ps *PrjnStru) String() string {
 // .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // it always prints a message if a parameter fails to be set.
-func (ps *PrjnStru) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
+func (ps *PrjnStru) StyleParam(sel string, pars emer.Params, setMsg bool) bool {
 	cls := ps.Class + " " + ps.Type.String()
-	if emer.StyleMatch(sty, ps.PrjnName(), cls, "Prjn") {
+	if emer.StyleMatch(sel, ps.PrjnName(), cls, "Prjn") {
 		return ps.LeabraPrj.SetParams(pars, setMsg) // note: going through LeabraPrj interface ensures correct method called
 	}
 	return false
@@ -212,7 +212,7 @@ func (ps *PrjnStru) StyleParam(sty string, pars emer.Params, setMsg bool) bool {
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // it always prints a message if a parameter fails to be set.
 func (ps *PrjnStru) StyleParams(psty emer.ParamStyle, setMsg bool) {
-	for sty, pars := range psty {
-		ps.StyleParam(sty, pars, setMsg)
+	for _, psl := range psty {
+		ps.StyleParam(psl.Sel, psl.Params, setMsg)
 	}
 }

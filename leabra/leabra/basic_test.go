@@ -27,44 +27,44 @@ const NLrnPars = 4
 
 var Pars = [NLrnPars]emer.ParamStyle{
 	{
-		"Prjn": {
+		{"Prjn", emer.Params{
 			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
 			"Prjn.Learn.Norm.On":     0,
 			"Prjn.Learn.Momentum.On": 0,
-		},
-		".Back": {
+		}},
+		{".Back", emer.Params{
 			"Prjn.WtScale.Rel": 0.2,
-		},
+		}},
 	},
 	{
-		"Prjn": {
+		{"Prjn", emer.Params{
 			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
 			"Prjn.Learn.Norm.On":     1,
 			"Prjn.Learn.Momentum.On": 0,
-		},
-		".Back": {
+		}},
+		{".Back", emer.Params{
 			"Prjn.WtScale.Rel": 0.2,
-		},
+		}},
 	},
 	{
-		"Prjn": {
+		{"Prjn", emer.Params{
 			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
 			"Prjn.Learn.Norm.On":     0,
 			"Prjn.Learn.Momentum.On": 1,
-		},
-		".Back": {
+		}},
+		{".Back", emer.Params{
 			"Prjn.WtScale.Rel": 0.2,
-		},
+		}},
 	},
 	{
-		"Prjn": {
+		{"Prjn", emer.Params{
 			"Prjn.Learn.WtInit.Var":  0, // for reproducibility, identical weights
 			"Prjn.Learn.Norm.On":     1,
 			"Prjn.Learn.Momentum.On": 1,
-		},
-		".Back": {
+		}},
+		{".Back", emer.Params{
 			"Prjn.WtScale.Rel": 0.2,
-		},
+		}},
 	},
 }
 

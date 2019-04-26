@@ -25,17 +25,42 @@ import (
 // All of the params in one map must apply to the same target type.
 type Params map[string]float32
 
+// ParamSel specifies a selector for the scope of application of a set of
+// parameters, using standard css selector syntax (. prefix = class, # prefix = name,
+// and no prefix = type)
+type ParamSel struct {
+	Sel    string `desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example' (e.g., typically Prjn or Layer are the only relevant types)"`
+	Params Params `desc:"parameter values to apply to whatever matches the selector"`
+}
+
 // ParamStyle is a CSS-like collection of Params values, each of which represents a different
-// set of specific parameter values.  The name is a CSS-style .Class #Name or Type
-// where Type is either Prjn or Layer to apply to every instance in the network.
-type ParamStyle map[string]Params
+// set of specific parameter values applied according to the Sel selector.
+// .Class #Name or Type where Type is either Prjn or Layer to apply
+// to every instance of that type in the network.
+//
+// The order of elements in the ParamStyle list is critical, as they are applied
+// in the order given by the list (slice), and thus later ParamSel's can override
+// those applied earlier.  Thus, you generally want to have more general Type-level
+// parameters listed first, and then subsequently more specific ones (.Class and #Name)
+type ParamStyle []ParamSel
 
 // ParamSet is a collection of ParamStyle's that constitute a coherent set of parameters --
 // a particular specific configuration of parameters.
+// Relative to the basic ParamStyle, the ParamSet allows for separately-named subsets
+// of parameters, to organize and manage more complex collections of parameters.
+// Typically the different subsets apply to different parts or aspects of the model.
+// Note that there is NO deterministic ordering of these sets due to the use of
+// a Go map structure, which specifically randomizes order.  Thus, it is important
+// that each subset apply to a different part of the network, or else unpredictable
+// overwriting of parameters can occur.  Alternatively, different subsets can be
+// specifically applied in a programmatically-specified order, instead of using
+// the generic method that applies all of them.
 type ParamSet map[string]ParamStyle
 
-// ParamSets is a collection of ParamSet's that can be chosen among depending on different desired
-// configurations etc -- a collection of different possible specific configurations
+// ParamSets is a collection of ParamSet's that can be chosen among
+// depending on different desired configurations etc.  Thus, each ParamSet
+// represents a collection of different possible specific configurations,
+// and different such configurations can be chosen by name to apply as desired.
 type ParamSets map[string]ParamSet
 
 ///////////////////////////////////////////////////////////////////////
@@ -127,26 +152,26 @@ func (pr *Params) Set(obj interface{}, setMsg bool) {
 ///////////////////////////////////////////////////////////////////////
 //  ParamStyle
 
-// StyleMatch returns true if given style specifier matches the target object properties
+// StyleMatch returns true if given selector matches the target object properties
 // (name, class, type name).  Class can be space separated list of names.
-func StyleMatch(sty string, name, cls, typ string) bool {
-	if sty == "" {
+func StyleMatch(sel string, name, cls, typ string) bool {
+	if sel == "" {
 		return false
 	}
-	if sty[0] == '.' { // class
-		return ClassMatch(sty[1:], cls)
+	if sel[0] == '.' { // class
+		return ClassMatch(sel[1:], cls)
 	}
-	if sty[0] == '#' { // name
-		return name == sty[1:]
+	if sel[0] == '#' { // name
+		return name == sel[1:]
 	}
-	return typ == sty // type
+	return typ == sel // type
 }
 
 // ClassMatch returns true if given class names -- handles space-separated multiple class names
-func ClassMatch(sty, cls string) bool {
+func ClassMatch(sel, cls string) bool {
 	clss := strings.Split(cls, " ")
 	for _, cl := range clss {
-		if strings.TrimSpace(cl) == sty {
+		if strings.TrimSpace(cl) == sel {
 			return true
 		}
 	}

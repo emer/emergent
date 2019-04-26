@@ -50,6 +50,11 @@ type Network interface {
 	// it always prints a message if a parameter fails to be set.
 	StyleParams(psty ParamStyle, setMsg bool)
 
+	// StyleParamSet applies given set of ParamStyles to the layers and projections in network
+	// If setMsg is true, then a message is printed to confirm each parameter that is set.
+	// it always prints a message if a parameter fails to be set.
+	StyleParamSet(pset ParamSet, setMsg bool)
+
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
 	// to JSON-formatted output.
 	WriteWtsJSON(w io.Writer)

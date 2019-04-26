@@ -140,6 +140,15 @@ func (nt *NetworkStru) StyleParams(psty emer.ParamStyle, setMsg bool) {
 	}
 }
 
+// StyleParamSet applies given set of ParamStyles to the layers and projections in network
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+func (nt *NetworkStru) StyleParamSet(pset emer.ParamSet, setMsg bool) {
+	for _, psty := range pset {
+		nt.StyleParams(psty, setMsg)
+	}
+}
+
 // AddLayer adds a new layer with given name and shape to the network.
 // 2D and 4D layer shapes are generally preferred but not essential -- see
 // AddLayer2D and 4D for convenience methods for those.  4D layers enable

@@ -32,14 +32,14 @@ var EpcLog *dtable.Table
 var Thread = false // much slower for small net
 
 var Pars = emer.ParamStyle{
-	"Prjn": {
+	{"Prjn", emer.Params{
 		"Prjn.Learn.Norm.On":     1,
 		"Prjn.Learn.Momentum.On": 1,
 		"Prjn.Learn.WtBal.On":    1,
-	},
-	".Back": {
+	}},
+	{".Back", emer.Params{
 		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
-	},
+	}},
 }
 
 func ConfigNet(net *leabra.Network, threads, units int) {
