@@ -68,13 +68,13 @@ func (dt *Table) ReadCSV(r io.Reader, delim rune) error {
 		cr.Comma = delim
 	}
 	rec, err := cr.ReadAll() // todo: lazy, avoid resizing
-	if err != nil {
+	if err != nil || len(rec) == 0 {
 		return err
 	}
 	rows := len(rec)
 	// cols := len(rec[0])
 	strow := 0
-	if dt.NumCols() == 0 {
+	if dt.NumCols() == 0 || rec[0][0] == "_H:" {
 		sc, err := SchemaFromHeaders(rec[0])
 		if err != nil {
 			log.Println(err.Error())
