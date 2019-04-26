@@ -33,6 +33,9 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 # Design
 
+* In general, *emergent* works by compiling programs into executables which you then run like any other executable. This is very different from the C++ version of emergent which was a single monolithic program attempting to have all functionality built-in. Instead, the new model is the more prevalent approach of writing more specific code to achieve more specific goals, which is more flexible and allows individuals to be more in control of their own destiny..
+    + To make your own simulations, start with e.g., the `examples/leabra25ra/ra25.go` code (or that of a more appropriate example) and copy that to your own repository, and edit accordingly.
+
 * The `emergent` repository contains a collection of packages supporting the implementation of biologically-based neural networks.  The main package is `emer` which specifies a minimal abstract interface for a neural network.  The `dtable` `dtable.Table` data structure (DataTable in C++) is in a separate repository under the overall `emer` project umbrella, as are specific algorithms such as `leabra` which implement the `emer` interface.
 
 * Go uses `interfaces` to represent abstract collections of functionality (i.e., sets of methods).  The `emer` package provides a set of interfaces for each structural level (e.g., `emer.Layer` etc) -- any given specific layer must implement all of these methods, and the structural containers (e.g., the list of layers in a network) are lists of these interfaces.  An interface is implicitly a *pointer* to an actual concrete object that implements the interface.  Thus, we typically need to convert this interface into the pointer to the actual concrete type, as in:
