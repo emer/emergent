@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"github.com/emer/emergent/etensor"
+	"github.com/emer/dtable/etensor"
 )
 
 // Pattern defines a pattern of connectivity between two layers.

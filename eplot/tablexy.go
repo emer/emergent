@@ -8,7 +8,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/emer/emergent/dtable"
+	"github.com/emer/dtable/dtable"
 )
 
 // TableXY selects two 1D columns (i.e., scalar cells) from a dtable.Table

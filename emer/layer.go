@@ -7,7 +7,7 @@ package emer
 import (
 	"io"
 
-	"github.com/emer/emergent/etensor"
+	"github.com/emer/dtable/etensor"
 	"github.com/emer/emergent/relpos"
 	"github.com/goki/ki/kit"
 )

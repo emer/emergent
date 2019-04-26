@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"github.com/emer/emergent/etensor"
+	"github.com/emer/dtable/etensor"
 )
 
 // Full implements full all-to-all pattern of connectivity between two layers

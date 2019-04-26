@@ -7,8 +7,8 @@ package patgen
 import (
 	"math/rand"
 
+	"github.com/emer/dtable/etensor"
 	"github.com/emer/emergent/erand"
-	"github.com/emer/emergent/etensor"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
