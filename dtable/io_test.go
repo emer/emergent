@@ -5,10 +5,11 @@
 package dtable
 
 import (
-	"github.com/emer/emergent/etensor"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/emer/emergent/etensor"
 
 	"github.com/apache/arrow/go/arrow"
 )
@@ -62,45 +63,47 @@ func TestEmerHeaders(t *testing.T) {
 }
 
 func TestReadEmerDat(t *testing.T) {
-	fp, err := os.Open("testdata/emer_simple_lines_5x5.dat")
-	defer fp.Close()
-	if err != nil {
-		t.Error(err)
+	for i := 0; i < 2; i++ {
+		fp, err := os.Open("testdata/emer_simple_lines_5x5.dat")
+		defer fp.Close()
+		if err != nil {
+			t.Error(err)
+		}
+		dt := &Table{}
+		err = dt.ReadCSV(fp, '\t') // tsv
+		if err != nil {
+			t.Error(err)
+		}
+		sc := dt.Cols
+		if len(sc) != 3 {
+			t.Errorf("EmerHeaders: len != 3\n")
+		}
+		if sc[0].DataType().ID() != arrow.STRING {
+			t.Errorf("EmerHeaders: sc[0] != STRING\n")
+		}
+		if sc[1].DataType().ID() != arrow.FLOAT32 {
+			t.Errorf("EmerHeaders: sc[1] != FLOAT32\n")
+		}
+		if sc[2].DataType().ID() != arrow.FLOAT32 {
+			t.Errorf("EmerHeaders: sc[2] != FLOAT32\n")
+		}
+		if sc[1].Dim(0) != 6 {
+			t.Errorf("EmerHeaders: sc[1].Dim[0] != 6 = %v\n", sc[1].Dim(0))
+		}
+		if sc[1].Dim(1) != 5 {
+			t.Errorf("EmerHeaders: sc[1].Dim[1] != 5\n")
+		}
+		if sc[2].Dim(0) != 6 {
+			t.Errorf("EmerHeaders: sc[2].Dim[0] != 6 = %v\n", sc[2].Dim(0))
+		}
+		if sc[2].Dim(1) != 5 {
+			t.Errorf("EmerHeaders: sc[2].Dim[1] != 5\n")
+		}
+		fo, err := os.Create("testdata/emer_simple_lines_5x5_rec.dat")
+		defer fo.Close()
+		if err != nil {
+			t.Error(err)
+		}
+		dt.WriteCSV(fo, '\t', true)
 	}
-	dt := &Table{}
-	err = dt.ReadCSV(fp, '\t') // tsv
-	if err != nil {
-		t.Error(err)
-	}
-	sc := dt.Cols
-	if len(sc) != 3 {
-		t.Errorf("EmerHeaders: len != 3\n")
-	}
-	if sc[0].DataType().ID() != arrow.STRING {
-		t.Errorf("EmerHeaders: sc[0] != STRING\n")
-	}
-	if sc[1].DataType().ID() != arrow.FLOAT32 {
-		t.Errorf("EmerHeaders: sc[1] != FLOAT32\n")
-	}
-	if sc[2].DataType().ID() != arrow.FLOAT32 {
-		t.Errorf("EmerHeaders: sc[2] != FLOAT32\n")
-	}
-	if sc[1].Dim(0) != 6 {
-		t.Errorf("EmerHeaders: sc[1].Dim[0] != 6 = %v\n", sc[1].Dim(0))
-	}
-	if sc[1].Dim(1) != 5 {
-		t.Errorf("EmerHeaders: sc[1].Dim[1] != 5\n")
-	}
-	if sc[2].Dim(0) != 6 {
-		t.Errorf("EmerHeaders: sc[2].Dim[0] != 6 = %v\n", sc[2].Dim(0))
-	}
-	if sc[2].Dim(1) != 5 {
-		t.Errorf("EmerHeaders: sc[2].Dim[1] != 5\n")
-	}
-	fo, err := os.Create("testdata/emer_simple_lines_5x5_rec.dat")
-	defer fo.Close()
-	if err != nil {
-		t.Error(err)
-	}
-	dt.WriteCSV(fo, '\t', true)
 }
