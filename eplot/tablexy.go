@@ -8,26 +8,26 @@ import (
 	"errors"
 	"log"
 
-	"github.com/emer/dtable/dtable"
+	"github.com/emer/etable/etable"
 )
 
-// TableXY selects two 1D columns (i.e., scalar cells) from a dtable.Table
+// TableXY selects two 1D columns (i.e., scalar cells) from a etable.Table
 // data table to plot in a gonum plot, satisfying the plotter.XYer interface
 type TableXY struct {
-	Table      *dtable.Table `desc:"the data table to plot from"`
+	Table      *etable.Table `desc:"the data table to plot from"`
 	XCol, YCol int           `desc:"the indexes of the 1D tensor columns to use for the X and Y data, respectively"`
 }
 
-// NewTableXY returns a new XY plot view onto the given dtable.Table, from given column indexes.
+// NewTableXY returns a new XY plot view onto the given etable.Table, from given column indexes.
 // Column indexes are enforced to be valid, with an error message if they are not.
-func NewTableXY(dt *dtable.Table, xcol, ycol int) (*TableXY, error) {
+func NewTableXY(dt *etable.Table, xcol, ycol int) (*TableXY, error) {
 	txy := &TableXY{Table: dt, XCol: xcol, YCol: ycol}
 	return txy, txy.Validate()
 }
 
-// NewTableXYNames returns a new XY plot view onto the given dtable.Table, from given column names
+// NewTableXYNames returns a new XY plot view onto the given etable.Table, from given column names
 // Column indexes are enforced to be valid, with an error message if they are not.
-func NewTableXYNames(dt *dtable.Table, xcol, ycol string) (*TableXY, error) {
+func NewTableXYNames(dt *etable.Table, xcol, ycol string) (*TableXY, error) {
 	xi, err := dt.ColNameIndex(xcol)
 	if err != nil {
 		log.Println(err)

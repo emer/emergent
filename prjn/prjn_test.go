@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/emer/dtable/etensor"
+	"github.com/emer/etable/etensor"
 )
 
 func CheckAllN(ns *etensor.Int32, trg int, t *testing.T) {

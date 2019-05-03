@@ -3,5 +3,5 @@
 // license that can be found in the LICENSE file.
 
 // Package eplot provides various utilities to simplify the plotting of data from
-// dtable.Table data tables, using the gonum/plot package
+// etable.Table data tables, using the gonum/plot package
 package eplot

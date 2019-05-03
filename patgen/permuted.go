@@ -7,8 +7,8 @@ package patgen
 import (
 	"math/rand"
 
-	"github.com/emer/dtable/etensor"
 	"github.com/emer/emergent/erand"
+	"github.com/emer/etable/etensor"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
@@ -29,7 +29,7 @@ func PermutedBinary(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	}
 }
 
-// PermutedBinaryRows treats the tensor as a column of rows as in a dtable.Table
+// PermutedBinaryRows treats the tensor as a column of rows as in a etable.Table
 // and sets each row to contain nOn onVal values and the remainder are offVal values,
 // using a permuted order of tensor elements (i.e., randomly shuffled or permuted).
 func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
