@@ -16,18 +16,18 @@ import (
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
 // 3D framework.
 type NetView struct {
-	gi.Frame
-	Net       emer.Network `desc:"the network that we're viewing"`
-	Var       string       `desc:"current variable that we're viewing"`
-	Vars      []string     `desc:"the list of variables to view"`
-	UnitWidth float32      `desc:"width of a single unit, where 1 = full width and no space.. .9 default"`
+	gi.Layout
+	Net      emer.Network `desc:"the network that we're viewing"`
+	Var      string       `desc:"current variable that we're viewing"`
+	Vars     []string     `desc:"the list of variables to view"`
+	UnitSize float32      `desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	// todo: need a scalebar construct here..
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, nil) // todo props
 
 func (nv *NetView) Defaults() {
-	nv.UnitWidth = .9
+	nv.UnitSize = .9
 }
 
 // SetNet sets the network to view and updates view
@@ -65,7 +65,7 @@ func (nv *NetView) Update() {
 // Config configures the overall view widget
 func (nv *NetView) Config() {
 	nv.Lay = gi.LayoutHoriz
-	if nv.UnitWidth == 0 {
+	if nv.UnitSize == 0 {
 		nv.Defaults()
 	}
 	// nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
@@ -174,6 +174,7 @@ func (nv *NetView) ViewConfig() {
 		lo.Pose.Pos.Y = float32(li) / float32(nlay)
 		lo.Pose.Scale.Y = yht
 		lo.Mat.Color.SetUInt8(255, 100, 255, 128)
+		lo.Mat.Specular.SetUInt8(128, 128, 128, 255)
 	}
 	vs.UpdateEnd(updt)
 }
@@ -188,7 +189,8 @@ func (nv *NetView) ViewDefaults() {
 	vs.Camera.LookAt(mat32.Vec3{.1, .3, 0}, mat32.Vec3{0, 1, 0})
 	vs.BgColor.SetUInt8(255, 255, 255, 255) // white
 	gi3d.AddNewAmbientLight(vs, "ambient", 0.2, gi3d.DirectSun)
-	gi3d.AddNewDirLight(vs, "dir", 1, gi3d.DirectSun)
+	dir := gi3d.AddNewDirLight(vs, "dir", 1, gi3d.DirectSun)
+	dir.Pos.Set(0, 0, 1)
 }
 
 // UnitVal returns the raw value, scaled value, and color representation for given unit of given layer

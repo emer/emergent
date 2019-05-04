@@ -67,10 +67,10 @@ func (lm *LayMesh) Make2D() {
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	xw := lm.View.UnitWidth / fnx
-	xo := (1.0 - lm.View.UnitWidth) / fnx
-	zw := lm.View.UnitWidth / fnz
-	zo := (1.0 - lm.View.UnitWidth) / fnz
+	xw := lm.View.UnitSize / fnx
+	xo := (1.0 - lm.View.UnitSize) / fnx
+	zw := lm.View.UnitSize / fnz
+	zo := (1.0 - lm.View.UnitSize) / fnz
 
 	segs := 1
 
