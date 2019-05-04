@@ -82,13 +82,13 @@ func (nv *NetView) Config() {
 // StdFrameConfig returns a TypeAndNameList for configuring a standard Frame
 func (nv *NetView) StdFrameConfig() kit.TypeAndNameList {
 	config := kit.TypeAndNameList{}
-	config.Add(gi.KiT_Layout, "vars-lay")
+	config.Add(gi.KiT_Frame, "vars-lay")
 	config.Add(gi3d.KiT_Scene, "view-scene")
 	return config
 }
 
-func (nv *NetView) VarsLay() *gi.Layout {
-	return nv.ChildByName("vars-lay", 0).(*gi.Layout)
+func (nv *NetView) VarsLay() *gi.Frame {
+	return nv.ChildByName("vars-lay", 0).(*gi.Frame)
 }
 
 func (nv *NetView) ViewScene() *gi3d.Scene {
@@ -111,6 +111,7 @@ func (nv *NetView) VarsListUpdate() {
 // VarsConfig configures the variables
 func (nv *NetView) VarsConfig() {
 	vl := nv.VarsLay()
+	vl.SetReRenderAnchor()
 	vl.Lay = gi.LayoutVert
 	nv.VarsListUpdate()
 	if len(nv.Vars) == 0 {
@@ -123,7 +124,7 @@ func (nv *NetView) VarsConfig() {
 	}
 	mods, updt := vl.ConfigChildren(config, false)
 	if !mods {
-		updt = nv.UpdateStart()
+		updt = vl.UpdateStart()
 	}
 	for i, vbi := range *vl.Children() {
 		vb := vbi.(*gi.Button)
@@ -137,7 +138,7 @@ func (nv *NetView) VarsConfig() {
 			}
 		})
 	}
-	nv.UpdateEnd(updt)
+	vl.UpdateEnd(updt)
 }
 
 // ViewConfig configures the 3D view
