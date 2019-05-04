@@ -18,8 +18,8 @@ type Network interface {
 	// which enables the proper interface methods to be called.  Also sets the name.
 	InitName(net Network, name string)
 
-	// NetName returns the name of this network
-	NetName() string
+	// Name returns the name of this network
+	Name() string
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
@@ -27,9 +27,9 @@ type Network interface {
 	// NLayers returns the number of layers in the network
 	NLayers() int
 
-	// LayerIndex returns layer (as emer.Layer interface) at given index -- does not
+	// Layer returns layer (as emer.Layer interface) at given index -- does not
 	// do extra bounds checking
-	LayerIndex(idx int) Layer
+	Layer(idx int) Layer
 
 	// LayerByName returns layer of given name, nil if not found
 	LayerByName(name string) Layer

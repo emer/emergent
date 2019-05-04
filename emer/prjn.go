@@ -43,7 +43,7 @@ type Prjn interface {
 	// SetClass sets CSS-style class name(s) for this projection (space-separated if multiple)
 	SetClass(cls string)
 
-	// PrjnName is the automatic name of projection: RecvLay().LayName() + "Fm" + SendLay().LayName()
+	// PrjnName is the automatic name of projection: RecvLay().Name() + "Fm" + SendLay().Name()
 	PrjnName() string
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
@@ -158,7 +158,7 @@ func (pl *PrjnList) RecvName(recv string) Prjn {
 // returns error message if not found
 func (pl *PrjnList) SendNameTry(sender string) (Prjn, error) {
 	for _, pj := range *pl {
-		if pj.SendLay().LayName() == sender {
+		if pj.SendLay().Name() == sender {
 			return pj, nil
 		}
 	}
@@ -169,7 +169,7 @@ func (pl *PrjnList) SendNameTry(sender string) (Prjn, error) {
 // returns error message if not found
 func (pl *PrjnList) RecvNameTry(recv string) (Prjn, error) {
 	for _, pj := range *pl {
-		if pj.RecvLay().LayName() == recv {
+		if pj.RecvLay().Name() == recv {
 			return pj, nil
 		}
 	}

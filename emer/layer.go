@@ -22,8 +22,8 @@ type Layer interface {
 	// which enables the proper interface methods to be called.  Also sets the name.
 	InitName(lay Layer, name string)
 
-	// LayName returns the name of this layer
-	LayName() string
+	// Name returns the name of this layer
+	Name() string
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
