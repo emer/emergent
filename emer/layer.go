@@ -9,6 +9,7 @@ import (
 
 	"github.com/emer/emergent/relpos"
 	"github.com/emer/etable/etensor"
+	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/kit"
 )
 
@@ -28,8 +29,8 @@ type Layer interface {
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
 
-	// LayClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
-	LayClass() string
+	// Class is for applying parameter styles, CSS-style -- can be space-separated multple tags
+	Class() string
 
 	// SetClass sets CSS-style class name(s) for this layer (space-separated if multiple)
 	SetClass(cls string)
@@ -44,11 +45,17 @@ type Layer interface {
 	// Row-major ordering is default (Y then X), outer-most to inner-most.
 	// if 2D, then it is a simple Y,X layer with no sub-structure (pools).
 	// If 4D, then it number of pools Y, X and then number of units per pool Y, X
-	LayShape() *etensor.Shape
+	Shape() *etensor.Shape
 
-	// LayType returns the functional type of layer according to LayerType (extensible in
-	// more specialized versions of Leabra)
-	LayType() LayerType
+	// Is2D() returns true if this is a 2D layer (no Pools)
+	Is2D() bool
+
+	// Is4D() returns true if this is a 4D layer (has Pools as inner 2 dimensions)
+	Is4D() bool
+
+	// Type returns the functional type of layer according to LayerType (extensible in
+	// more specialized algorithms)
+	Type() LayerType
 
 	// SetType sets the functional type of layer
 	SetType(typ LayerType)
@@ -56,28 +63,43 @@ type Layer interface {
 	// Config configures the basic parameters of the layer
 	Config(shape []int, typ LayerType)
 
-	// LayThread() returns the thread number (go worker thread) to use in updating this layer.
+	// Thread() returns the thread number (go worker thread) to use in updating this layer.
 	// The user is responsible for allocating layers to threads, trying to maintain an even
 	// distribution across layers and establishing good break-points.
-	LayThread() int
+	Thread() int
 
 	// SetThread sets the thread number (go worker thread) to use in updating this layer.
 	SetThread(thr int)
 
-	// LayRel returns the relative 3D position specification for this layer
-	LayRel() relpos.Rel
+	// RelPos returns the relative 3D position specification for this layer
+	// for display in the 3D NetView -- see Pos() for display conventions.
+	RelPos() relpos.Rel
 
-	// SetLayRel sets the the relative 3D position specification for this layer
-	SetLayRel(r relpos.Rel)
+	// SetRelPos sets the the relative 3D position specification for this layer
+	SetRelPos(r relpos.Rel)
 
-	// LayPos returns the 3D position of the lower-left-hand corner of the layer
-	LayPos() relpos.Pos3D
+	// Pos returns the 3D position of the lower-left-hand corner of the layer.
+	// The 3D view has layers arranged in X-Y planes stacked vertically along the Z axis.
+	// Somewhat confusingly, this differs from the standard 3D graphics convention,
+	// where the vertical dimension is Y and Z is the depth dimension.  However, in the
+	// more "layer-centric" way of thinking about it, it is natural for the width & height
+	// to map onto X and Y, and then Z is left over for stacking vertically.
+	Pos() mat32.Vec3
 
-	// LayIndex returns a 0..n-1 index of the position of the layer within list of layers
+	// SetPos sets the 3D position of this layer -- will generally be overwritten by
+	// automatic RelPos setting, unless that doesn't specify a valid relative position.
+	SetPos(pos mat32.Vec3)
+
+	// Size returns the display size of this layer for the 3D view -- see Pos() for general info.
+	// This is multiplied by the RelPos.Scale factor to rescale layer sizes, and takes
+	// into account 2D and 4D layer structures.
+	Size() mat32.Vec2
+
+	// Index returns a 0..n-1 index of the position of the layer within list of layers
 	// in the network.  For backprop networks, index position has computational significance.
 	// For Leabra networks, it only has significance in determining who gets which weights for
 	// enforcing initial weight symmetry -- higher layers get weights from lower layers.
-	LayIndex() int
+	Index() int
 
 	// SetIndex sets the layer index
 	SetIndex(idx int)

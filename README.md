@@ -11,9 +11,9 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 * 4/2019: separated the `leabra` and `etable` repositories from the overall `emergent` repository, to make it easier to fork and save / modify just the algorithm components of the system independent of the overall emergent infrastructure, and because `etable` (and associated `etensor` and `bitslice`) packages are fully independent and useful more generally.  This means that `emergent` is just a toolkit library with no runnable `examples` executables etc -- all of that has moved over to the `leabra` repository including the `python` wrapper.  You just need to replace "github.com/emer/emergent/leabra/leabra" -> "github.com/emer/leabra/leabra" in your imports, and likewise "github.com/emer/emergent/etable" -> "github.com/emer/etable/etable", "github.com/emer/emergent/etensor" -> "github.com/emer/etable/etensor".
 
-* 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/leabra25ra` code using Python, including the GUI etc.
+* 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
 
-* 2/2019: An initial complete basic-level implementation is now in place, and you can actually run `Leabra` models in the new emergent!  See the `examples/leabra25ra` directory for a runnable, standalone Go program that you can compile use to train a "random associator" test model.  This is definitely the place to start in understanding how everything works.
+* 2/2019: An initial complete basic-level implementation is now in place, and you can actually run `Leabra` models in the new emergent!  See the `examples/ra25` directory for a runnable, standalone Go program that you can compile use to train a "random associator" test model.  This is definitely the place to start in understanding how everything works.
 
 * 2/2019: Initial benchmarking (see `examples/bench` for details) shows that the Go version is roughly 20-30% slower than C++ emergent for larger-sized models on a single processor, and while it does benefit significantly from multi-CPU processors, it does so less than the C++ version, which can be 2x faster than the Go version for some sizes and numbers of processors.  Nevertheless, we think the massive improvement in code simplicity and flexibility makes these performance tradeoffs worth it for most typical applications.
 
@@ -34,7 +34,7 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 # Design
 
 * In general, *emergent* works by compiling programs into executables which you then run like any other executable. This is very different from the C++ version of emergent which was a single monolithic program attempting to have all functionality built-in. Instead, the new model is the more prevalent approach of writing more specific code to achieve more specific goals, which is more flexible and allows individuals to be more in control of their own destiny..
-    + To make your own simulations, start with e.g., the `examples/leabra25ra/ra25.go` code (or that of a more appropriate example) and copy that to your own repository, and edit accordingly.
+    + To make your own simulations, start with e.g., the `examples/ra25/ra25.go` code (or that of a more appropriate example) and copy that to your own repository, and edit accordingly.
 
 * The `emergent` repository contains a collection of packages supporting the implementation of biologically-based neural networks.  The main package is `emer` which specifies a minimal abstract interface for a neural network.  The `etable` `etable.Table` data structure (DataTable in C++) is in a separate repository under the overall `emer` project umbrella, as are specific algorithms such as `leabra` which implement the `emer` interface.
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/emer/emergent/prjn"
 	"github.com/goki/gi/gi"
+	"github.com/goki/gi/mat32"
 )
 
 // Network defines the basic interface for a neural network, used for managing the structural
@@ -88,4 +89,7 @@ type Network interface {
 	// Returns false if not successful. Does not yet actually connect the units within the layers -- that
 	// requires Build.
 	ConnectLayers(send, recv Layer, pat prjn.Pattern, typ PrjnType) Prjn
+
+	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
+	Bounds() (min, max mat32.Vec3)
 }

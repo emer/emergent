@@ -27,9 +27,9 @@ type Prjn interface {
 	// Pattern returns the pattern of connectivity for interconnecting the layers
 	Pattern() prjn.Pattern
 
-	// PrjType returns the functional type of projection according to PrjnType (extensible in
-	// more specialized versions of Leabra)
-	PrjType() PrjnType
+	// Type returns the functional type of projection according to PrjnType (extensible in
+	// more specialized algorithms)
+	Type() PrjnType
 
 	// SetType sets the functional type of projection according to PrjnType
 	SetType(typ PrjnType)
@@ -37,14 +37,14 @@ type Prjn interface {
 	// Connect sets the basic connection parameters for this projection (send, recv, pattern, and type)
 	Connect(send, recv Layer, pat prjn.Pattern, typ PrjnType)
 
-	// PrjnClass is for applying parameter styles, CSS-style -- can be space-separated multple tags
-	PrjnClass() string
+	// Class is for applying parameter styles, CSS-style -- can be space-separated multple tags
+	Class() string
 
 	// SetClass sets CSS-style class name(s) for this projection (space-separated if multiple)
 	SetClass(cls string)
 
-	// PrjnName is the automatic name of projection: RecvLay().Name() + "Fm" + SendLay().Name()
-	PrjnName() string
+	// Name is the automatic name of projection: RecvLay().Name() + "Fm" + SendLay().Name()
+	Name() string
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string

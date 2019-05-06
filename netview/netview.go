@@ -24,7 +24,7 @@ type NetView struct {
 	// todo: need a scalebar construct here..
 }
 
-var KiT_NetView = kit.Types.AddType(&NetView{}, nil) // todo props
+var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
 
 func (nv *NetView) Defaults() {
 	nv.UnitSize = .9
@@ -52,14 +52,15 @@ func (nv *NetView) HasLayers() bool {
 
 // Update updates the display based on current state of network
 func (nv *NetView) Update() {
-	if !nv.HasLayers() {
+	if !nv.IsVisible() || nv.Net == nil || nv.Net.NLayers() == 0 {
 		return
 	}
 	vs := nv.ViewScene()
-	vs.UpdateMeshes() // todo: actually call Update() on all layermesh
-	vs.Render()
-	vs.Win.DirectUpdate(vs)
-	vs.Win.Publish()
+	if len(vs.Kids) != nv.Net.NLayers() {
+		nv.Config()
+	}
+	vs.UpdateMeshes()
+	vs.UpdateSig()
 }
 
 // Config configures the overall view widget
@@ -113,6 +114,8 @@ func (nv *NetView) VarsConfig() {
 	vl := nv.VarsLay()
 	vl.SetReRenderAnchor()
 	vl.Lay = gi.LayoutVert
+	vl.SetProp("spacing", 0)
+	vl.SetProp("vertical-align", gi.AlignTop)
 	nv.VarsListUpdate()
 	if len(nv.Vars) == 0 {
 		vl.DeleteChildren(true)
@@ -120,22 +123,22 @@ func (nv *NetView) VarsConfig() {
 	}
 	config := kit.TypeAndNameList{}
 	for _, vn := range nv.Vars {
-		config.Add(gi.KiT_Button, vn)
+		config.Add(gi.KiT_Action, vn)
 	}
 	mods, updt := vl.ConfigChildren(config, false)
 	if !mods {
 		updt = vl.UpdateStart()
 	}
 	for i, vbi := range *vl.Children() {
-		vb := vbi.(*gi.Button)
+		vb := vbi.(*gi.Action)
+		vb.SetProp("margin", 0)
+		vb.SetProp("max-width", -1)
 		vn := nv.Vars[i]
 		vb.SetText(vn)
-		vb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-			if sig == int64(gi.ButtonClicked) {
-				nvv := recv.Embed(KiT_NetView).(*NetView)
-				vbv := send.(*gi.Button)
-				nvv.SetVar(vbv.Text)
-			}
+		vb.ActionSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			vbv := send.(*gi.Action)
+			nvv.SetVar(vbv.Text)
 		})
 	}
 	vl.UpdateEnd(updt)
@@ -166,16 +169,28 @@ func (nv *NetView) ViewConfig() {
 	if !mods {
 		updt = vs.UpdateStart()
 	}
-	yht := 1.0 / float32(nlay+1)
+	nmin, nmax := nv.Net.Bounds()
+	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
+	nsc := mat32.Vec3{1.0 / nsz.X, 1.0 / nsz.Y, 1.0 / nsz.Z}
+	szc := mat32.Max(nsc.X, nsc.Y)
+	poff := mat32.NewVec3Scalar(0.5)
+	poff.Y = -0.5
 	for li, loi := range *vs.Children() {
-		lay := nv.Net.Layer(li)
+		ly := nv.Net.Layer(li)
 		lo := loi.(*gi3d.Object)
 		lo.Defaults()
-		lo.SetMesh(vs, lay.Name())
-		lo.Pose.Pos.Y = float32(li) / float32(nlay)
-		lo.Pose.Scale.Y = yht
+		lo.SetMesh(vs, ly.Name())
+		lp := ly.Pos().Sub(nmin).Mul(nsc).Sub(poff)
+		rp := ly.RelPos()
+		lo.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
+		lo.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
 		lo.Mat.Color.SetUInt8(255, 100, 255, 128)
 		lo.Mat.Specular.SetUInt8(128, 128, 128, 255)
+		lo.Mat.CullBack = true
+		lo.Mat.CullFront = false
+		// note: would actually be better to NOT cull back so you can view underneath
+		// but then the front and back fight against each other, causing flickering
+		// really you ned
 	}
 	vs.UpdateEnd(updt)
 }
@@ -186,30 +201,36 @@ func (nv *NetView) ViewDefaults() {
 	vs.SetStretchMaxWidth()
 	vs.SetStretchMaxHeight()
 	vs.Defaults()
-	vs.Camera.Pose.Pos.Set(-.2, 1, 3)
-	vs.Camera.LookAt(mat32.Vec3{.1, .3, 0}, mat32.Vec3{0, 1, 0})
+	vs.Camera.Pose.Pos.Set(0, 1, 2.75)
+	vs.Camera.Near = 0.1
+	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
 	vs.BgColor.SetUInt8(255, 255, 255, 255) // white
-	gi3d.AddNewAmbientLight(vs, "ambient", 0.2, gi3d.DirectSun)
+	gi3d.AddNewAmbientLight(vs, "ambient", 0.3, gi3d.DirectSun)
 	dir := gi3d.AddNewDirLight(vs, "dir", 1, gi3d.DirectSun)
-	dir.Pos.Set(0, 0, 1)
+	dir.Pos.Set(0, 2, 1)
+	// point := gi3d.AddNewPointLight(vs, "point", 1, gi3d.DirectSun)
+	// point.Pos.Set(0, 2, 5)
+	// spot := gi3d.AddNewSpotLight(vs, "spot", 1, gi3d.DirectSun)
+	// spot.Pose.Pos.Set(0, 2, 5)
+	// spot.LookAtOrigin()
 }
 
 // UnitVal returns the raw value, scaled value, and color representation for given unit of given layer
-// scaled is in range -0.5..0.5
+// scaled is in range -1..1
 // todo: could incorporate history etc..
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
 	raw, _ = lay.UnitVal(nv.Var, idx)
-	scaled = mat32.Clamp(0.5*raw, -0.5, 0.5)
+	scaled = mat32.Clamp(raw, -1, 1)
 	if scaled < 0 {
 		clr.R = uint8(50.0)
 		clr.G = uint8(50.0)
-		clr.B = uint8(50.0 - 2*scaled*205.0)
-		clr.A = uint8(128.0 - 2*scaled*127.0)
+		clr.B = uint8(50.0 - scaled*205.0)
+		clr.A = uint8(128.0 - scaled*127.0)
 	} else {
-		clr.R = uint8(50.0 + 2*scaled*205.0)
+		clr.R = uint8(50.0 + scaled*205.0)
 		clr.G = uint8(50.0)
 		clr.B = uint8(50.0)
-		clr.A = uint8(128.0 + 2*scaled*127.0)
+		clr.A = uint8(128.0 + scaled*127.0)
 	}
 	return
 }
@@ -219,10 +240,16 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 // 		return
 // 	}
 // 	if nv.PushBounds() {
-// 		nv.Frame.Render2D()
-// 		updt := nv.UpdateStart()
-// 		nv.Update()
-// 		nv.UpdateEndNoSig(updt)
+// 		nv.This().(gi.Node2D).ConnectEvents2D()
+// 		nv.RenderScrolls()
+// 		nv.Render2DChildren()
 // 		nv.PopBounds()
+// 	} else {
+// 		nv.DisconnectAllEvents(gi.AllPris) // uses both Low and Hi
 // 	}
 // }
+
+var NetViewProps = ki.Props{
+	"max-width":  -1,
+	"max-height": -1,
+}
