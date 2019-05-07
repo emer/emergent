@@ -29,9 +29,12 @@ type Rel struct {
 // Defaults sets default scale, space, offset values -- rel, align must be set specifically
 // These are automatically applied if Scale = 0
 func (rp *Rel) Defaults() {
-	rp.Scale = 1
-	rp.Space = 5
-	rp.Offset = 0
+	if rp.Scale == 0 {
+		rp.Scale = 1
+	}
+	if rp.Space == 0 {
+		rp.Space = 5
+	}
 }
 
 // Pos returns the relative position compared to other position and size, based on settings
