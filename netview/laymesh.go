@@ -52,16 +52,14 @@ func (lm *LayMesh) Make(sc *gi3d.Scene) {
 }
 
 func (lm *LayMesh) Update(sc *gi3d.Scene) {
-	lm.Make(sc)
-	// todo: something is wrong with this Update2D method!
-	// if lm.Shape.Len() == 0 {
-	// 	return // nothing
-	// }
-	// if lm.Shape.NumDims() == 4 {
-	// 	lm.Update4D()
-	// } else {
-	// 	lm.Update2D()
-	// }
+	if lm.Shape.Len() == 0 {
+		return // nothing
+	}
+	if lm.Shape.NumDims() == 4 {
+		lm.Update4D()
+	} else {
+		lm.Update2D()
+	}
 	lm.Activate(sc)
 	lm.SetVtxData(sc)
 	lm.SetColorData(sc)

@@ -59,7 +59,9 @@ func (nv *NetView) Update() {
 	if len(vs.Kids) != nv.Net.NLayers() {
 		nv.Config()
 	}
-	vs.UpdateMeshes()
+	// vs.UpdateMeshes()
+	// note: something wrong about update still -- not rendering the lighting -- norms seem wrong.
+	vs.InitMeshes()
 	vs.UpdateSig()
 }
 
