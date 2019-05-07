@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package relpos defines a position relationship among layers, in terms of X,Y width and height of layer
+and associated position within a given X-Y plane, and Z vertical stacking of layers above and below each other.
+*/
 package relpos
 
 import (

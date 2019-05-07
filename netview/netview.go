@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package netview provides the NetView interactive 3D network viewer, implemented in the GoGi 3D framework.
+*/
 package netview
 
 import (
@@ -60,7 +63,7 @@ func (nv *NetView) Update() {
 		nv.Config()
 	}
 	// vs.UpdateMeshes()
-	// note: something wrong about update still -- not rendering the lighting -- norms seem wrong.
+	// todo: something wrong about update still -- not rendering the lighting -- norms seem wrong.
 	vs.InitMeshes()
 	vs.UpdateSig()
 }
