@@ -184,7 +184,7 @@ func (nv *NetView) ViewConfig() {
 		ly := nv.Net.Layer(li)
 		lo := loi.(*gi3d.Object)
 		lo.Defaults()
-		lo.SetMesh(vs, ly.Name())
+		lo.SetMeshName(vs, ly.Name())
 		lp := ly.Pos().Sub(nmin).Mul(nsc).Sub(poff)
 		rp := ly.RelPos()
 		lo.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
