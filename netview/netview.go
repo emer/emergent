@@ -62,9 +62,13 @@ func (nv *NetView) Update() {
 	if len(vs.Kids) != nv.Net.NLayers() {
 		nv.Config()
 	}
-	// vs.UpdateMeshes()
+	vs.UpdateMeshes()
 	// todo: something wrong about update still -- not rendering the lighting -- norms seem wrong.
-	vs.InitMeshes()
+	// vs.InitMeshes()
+	// lm := vs.Meshes["Input"].(*LayMesh)
+	// vb := lm.Buff.VectorsBuffer()
+	// ad := vb.AllData()
+	// fmt.Printf("lm Vtx:\n%v\nNorm:\n%v\nAll:\n%v\n", lm.Vtx, lm.Norm, ad)
 	vs.UpdateSig()
 }
 
