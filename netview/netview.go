@@ -20,10 +20,11 @@ import (
 // 3D framework.
 type NetView struct {
 	gi.Layout
-	Net      emer.Network `desc:"the network that we're viewing"`
-	Var      string       `desc:"current variable that we're viewing"`
-	Vars     []string     `desc:"the list of variables to view"`
-	UnitSize float32      `desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
+	Net       emer.Network `desc:"the network that we're viewing"`
+	Var       string       `desc:"current variable that we're viewing"`
+	Vars      []string     `desc:"the list of variables to view"`
+	UnitSize  float32      `desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
+	LayNmSize float32      `def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
 	// todo: need a scalebar construct here..
 }
 
@@ -31,6 +32,7 @@ var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
 
 func (nv *NetView) Defaults() {
 	nv.UnitSize = .9
+	nv.LayNmSize = .05
 }
 
 // SetNet sets the network to view and updates view
@@ -172,8 +174,12 @@ func (nv *NetView) ViewConfig() {
 	for li := 0; li < nlay; li++ {
 		lay := nv.Net.Layer(li)
 		AddNewLayMesh(vs, nv, lay)
-		layConfig.Add(gi3d.KiT_Object, lay.Name())
+		layConfig.Add(gi3d.KiT_Group, lay.Name())
 	}
+	gpConfig := kit.TypeAndNameList{}
+	gpConfig.Add(gi3d.KiT_Object, "layer")
+	gpConfig.Add(gi3d.KiT_Text2D, "name")
+
 	mods, updt := vs.ConfigChildren(layConfig, false)
 	if !mods {
 		updt = vs.UpdateStart()
@@ -184,15 +190,22 @@ func (nv *NetView) ViewConfig() {
 	szc := mat32.Max(nsc.X, nsc.Y)
 	poff := mat32.NewVec3Scalar(0.5)
 	poff.Y = -0.5
-	for li, loi := range *vs.Children() {
+	for li, lgi := range *vs.Children() {
 		ly := nv.Net.Layer(li)
-		lo := loi.(*gi3d.Object)
-		lo.Defaults()
-		lo.SetMeshName(vs, ly.Name())
+		lg := lgi.(*gi3d.Group)
+		gmod, gupdt := lg.ConfigChildren(gpConfig, false)
+		if gmod {
+			lg.UpdateEnd(gupdt)
+		}
+
 		lp := ly.Pos().Sub(nmin).Mul(nsc).Sub(poff)
 		rp := ly.RelPos()
-		lo.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
-		lo.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
+		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
+		lg.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
+
+		lo := lg.Child(0).(*gi3d.Object)
+		lo.Defaults()
+		lo.SetMeshName(vs, ly.Name())
 		lo.Mat.Color.SetUInt8(255, 100, 255, 128)
 		lo.Mat.Specular.SetUInt8(128, 128, 128, 255)
 		lo.Mat.CullBack = true
@@ -200,6 +213,13 @@ func (nv *NetView) ViewConfig() {
 		// note: would actually be better to NOT cull back so you can view underneath
 		// but then the front and back fight against each other, causing flickering
 		// really you ned
+
+		txt := lg.Child(1).(*gi3d.Text2D)
+		txt.Defaults(vs)
+		txt.SetText(vs, ly.Name())
+		txt.Pose.Scale = mat32.NewVec3Scalar(nv.LayNmSize).Div(lg.Pose.Scale)
+		txt.SetProp("text-align", gi.AlignLeft)
+		txt.SetProp("vertical-align", gi.AlignTop)
 	}
 	vs.UpdateEnd(updt)
 }
