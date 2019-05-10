@@ -81,8 +81,8 @@ func (lm *LayMesh) Make2D(init bool) {
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	uw := lm.View.UnitSize
-	uo := (1.0 - lm.View.UnitSize)
+	uw := lm.View.Params.UnitSize
+	uo := (1.0 - uw)
 	segs := 1
 
 	vtxSz, idxSz := lm.PlaneSize(segs, segs)
@@ -133,15 +133,16 @@ func (lm *LayMesh) Make4D(init bool) {
 	fnuz := float32(nuz)
 	fnux := float32(nux)
 
-	uo := (1.0 - lm.View.UnitSize) // offset = space
+	usz := lm.View.Params.UnitSize
+	uo := (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer
 	// by shrinking the spacing of each unit according to the spaces we introduce
 	xsc := (fnpx * fnux) / ((fnpx-1)*uo + (fnpx * fnux))
 	zsc := (fnpz * fnuz) / ((fnpz-1)*uo + (fnpz * fnuz))
 
-	xuw := xsc * lm.View.UnitSize
-	zuw := zsc * lm.View.UnitSize
+	xuw := xsc * usz
+	zuw := zsc * usz
 
 	segs := 1
 

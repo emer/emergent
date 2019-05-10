@@ -8,31 +8,43 @@ Package netview provides the NetView interactive 3D network viewer, implemented 
 package netview
 
 import (
+	"fmt"
+
 	"github.com/emer/emergent/emer"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
+	"github.com/goki/gi/giv"
 	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 
+// NetViewParams holds parameters controlling how the view is rendered
+type NetViewParams struct {
+	UnitSize  float32 `min:"0.1" max:"1" step:"0.1" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
+	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
+}
+
+func (nv *NetViewParams) Defaults() {
+	nv.UnitSize = .9
+	nv.LayNmSize = .05
+}
+
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
 // 3D framework.
 type NetView struct {
 	gi.Layout
-	Net       emer.Network `desc:"the network that we're viewing"`
-	Var       string       `desc:"current variable that we're viewing"`
-	Vars      []string     `desc:"the list of variables to view"`
-	UnitSize  float32      `desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
-	LayNmSize float32      `def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
+	Net    emer.Network  `desc:"the network that we're viewing"`
+	Var    string        `desc:"current variable that we're viewing"`
+	Vars   []string      `desc:"the list of variables to view"`
+	Params NetViewParams `desc:"parameters controlling how the view is rendered"`
 	// todo: need a scalebar construct here..
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
 
 func (nv *NetView) Defaults() {
-	nv.UnitSize = .9
-	nv.LayNmSize = .05
+	nv.Params.Defaults()
 }
 
 // SetNet sets the network to view and updates view
@@ -45,7 +57,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 // SetVar sets the variable to view and updates the display
 func (nv *NetView) SetVar(vr string) {
 	nv.Var = vr
-	nv.Update()
+	nv.Update("")
 }
 
 func (nv *NetView) HasLayers() bool {
@@ -56,55 +68,84 @@ func (nv *NetView) HasLayers() bool {
 }
 
 // Update updates the display based on current state of network
-func (nv *NetView) Update() {
+// counters string, if non-empty, will be displayed at bottom of view, showing current
+// counter state
+func (nv *NetView) Update(counters string) {
 	if !nv.IsVisible() || nv.Net == nil || nv.Net.NLayers() == 0 {
 		return
 	}
-	vs := nv.ViewScene()
+	if counters != "" {
+		nv.SetCounters(counters)
+	}
+	vs := nv.Scene()
 	if len(vs.Kids) != nv.Net.NLayers() {
 		nv.Config()
 	}
 	vs.UpdateMeshes()
-	// todo: something wrong about update still -- not rendering the lighting -- norms seem wrong.
-	// vs.InitMeshes()
-	// lm := vs.Meshes["Input"].(*LayMesh)
-	// vb := lm.Buff.VectorsBuffer()
-	// ad := vb.AllData()
-	// fmt.Printf("lm Vtx:\n%v\nNorm:\n%v\nAll:\n%v\n", lm.Vtx, lm.Norm, ad)
 	vs.UpdateSig()
 }
 
 // Config configures the overall view widget
 func (nv *NetView) Config() {
-	nv.Lay = gi.LayoutHoriz
-	if nv.UnitSize == 0 {
+	nv.Lay = gi.LayoutVert
+	if nv.Params.UnitSize == 0 {
 		nv.Defaults()
 	}
 	// nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
-	config := nv.StdFrameConfig()
+	config := kit.TypeAndNameList{}
+	config.Add(gi.KiT_ToolBar, "tbar")
+	config.Add(gi.KiT_Layout, "net")
+	config.Add(gi.KiT_Label, "counters")
 	mods, updt := nv.ConfigChildren(config, false)
 	if !mods {
 		updt = nv.UpdateStart()
 	}
+
+	nlay := nv.NetLay()
+	nlay.Lay = gi.LayoutHoriz
+	nlay.SetProp("max-width", -1)
+	nlay.SetProp("max-height", -1)
+
+	vncfg := kit.TypeAndNameList{}
+	vncfg.Add(gi.KiT_Frame, "vars")
+	vncfg.Add(gi3d.KiT_Scene, "scene")
+	nlay.ConfigChildren(vncfg, false) // won't do update b/c of above updt
+
 	nv.VarsConfig()
 	nv.ViewConfig()
+	nv.ToolbarConfig()
+
+	ctrs := nv.Counters()
+	ctrs.Redrawable = true
+	ctrs.SetText("Counters: ")
 	nv.UpdateEnd(updt)
 }
 
-// StdFrameConfig returns a TypeAndNameList for configuring a standard Frame
-func (nv *NetView) StdFrameConfig() kit.TypeAndNameList {
-	config := kit.TypeAndNameList{}
-	config.Add(gi.KiT_Frame, "vars-lay")
-	config.Add(gi3d.KiT_Scene, "view-scene")
-	return config
+func (nv *NetView) Toolbar() *gi.ToolBar {
+	return nv.ChildByName("tbar", 0).(*gi.ToolBar)
+}
+
+func (nv *NetView) NetLay() *gi.Layout {
+	return nv.ChildByName("net", 1).(*gi.Layout)
+}
+
+func (nv *NetView) Counters() *gi.Label {
+	return nv.ChildByName("counters", 2).(*gi.Label)
+}
+
+func (nv *NetView) Scene() *gi3d.Scene {
+	return nv.NetLay().ChildByName("scene", 1).(*gi3d.Scene)
 }
 
 func (nv *NetView) VarsLay() *gi.Frame {
-	return nv.ChildByName("vars-lay", 0).(*gi.Frame)
+	return nv.NetLay().ChildByName("vars", 0).(*gi.Frame)
 }
 
-func (nv *NetView) ViewScene() *gi3d.Scene {
-	return nv.ChildByName("view-scene", 1).(*gi3d.Scene)
+func (nv *NetView) SetCounters(ctrs string) {
+	ct := nv.Counters()
+	if ct.Text != ctrs {
+		ct.SetText(ctrs)
+	}
 }
 
 // VarsListUpdate updates the list of network variables
@@ -157,7 +198,7 @@ func (nv *NetView) VarsConfig() {
 
 // ViewConfig configures the 3D view
 func (nv *NetView) ViewConfig() {
-	vs := nv.ViewScene()
+	vs := nv.Scene()
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		vs.DeleteChildren(true)
 		vs.Meshes = nil
@@ -167,7 +208,7 @@ func (nv *NetView) ViewConfig() {
 		nv.ViewDefaults()
 	}
 	nlay := nv.Net.NLayers()
-	if len(vs.Meshes) != nlay {
+	if len(vs.Meshes) != nlay+1 { // one extra for the text plane mesh..
 		vs.Meshes = nil
 	}
 	layConfig := kit.TypeAndNameList{}
@@ -193,10 +234,7 @@ func (nv *NetView) ViewConfig() {
 	for li, lgi := range *vs.Children() {
 		ly := nv.Net.Layer(li)
 		lg := lgi.(*gi3d.Group)
-		gmod, gupdt := lg.ConfigChildren(gpConfig, false)
-		if gmod {
-			lg.UpdateEnd(gupdt)
-		}
+		lg.ConfigChildren(gpConfig, false) // won't do update b/c of above
 		lp := ly.Pos().Sub(nmin).Mul(nsc).Sub(poff)
 		rp := ly.RelPos()
 		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
@@ -216,16 +254,17 @@ func (nv *NetView) ViewConfig() {
 		txt := lg.Child(1).(*gi3d.Text2D)
 		txt.Defaults(vs)
 		txt.SetText(vs, ly.Name())
-		txt.Pose.Scale = mat32.NewVec3Scalar(nv.LayNmSize).Div(lg.Pose.Scale)
+		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
 		txt.SetProp("text-align", gi.AlignLeft)
 		txt.SetProp("vertical-align", gi.AlignTop)
 	}
+	vs.InitMeshes()
 	vs.UpdateEnd(updt)
 }
 
 // ViewDefaults are the default 3D view params
 func (nv *NetView) ViewDefaults() {
-	vs := nv.ViewScene()
+	vs := nv.Scene()
 	vs.SetStretchMaxWidth()
 	vs.SetStretchMaxHeight()
 	vs.Defaults()
@@ -261,6 +300,126 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 		clr.A = uint8(128.0 + scaled*127.0)
 	}
 	return
+}
+
+func (nv *NetView) ToolbarConfig() {
+	tbar := nv.Toolbar()
+	if len(tbar.Kids) != 0 {
+		return
+	}
+	tbar.AddAction(gi.ActOpts{Icon: "pan", Tooltip: "return to default pan / orbit mode where mouse drags move camera around (Shift = pan, Alt = pan target)"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			fmt.Printf("this will select pan mode\n")
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "arrow", Tooltip: "turn on select mode for selecting units and layers with mouse clicks"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			fmt.Printf("this will select select mode\n")
+		})
+	tbar.AddSeparator("zoom")
+	tbar.AddAction(gi.ActOpts{Icon: "update", Tooltip: "reset to default initial display"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().SetCamera("default")
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "zoom-in", Tooltip: "zoom in"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Zoom(-.05)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "zoom-out", Tooltip: "zoom out"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Zoom(.05)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddSeparator("rot")
+	gi.AddNewLabel(tbar, "rot", "Rot:")
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-left"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Orbit(5, 0)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-up"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Orbit(0, 5)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-down"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Orbit(0, -5)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-right"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Orbit(-5, 0)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddSeparator("pan")
+	gi.AddNewLabel(tbar, "pan", "Pan:")
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-left"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Pan(-.2, 0)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-up"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Pan(0, .2)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-down"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Pan(0, -.2)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "wedge-right"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Scene().Camera.Pan(.2, 0)
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddSeparator("save")
+	gi.AddNewLabel(tbar, "save", "Save:")
+	tbar.AddAction(gi.ActOpts{Label: "1", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			err := nv.Scene().SetCamera("1")
+			if err != nil {
+				nv.Scene().SaveCamera("1")
+			}
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Label: "2", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			err := nv.Scene().SetCamera("2")
+			if err != nil {
+				nv.Scene().SaveCamera("2")
+			}
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Label: "3", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			err := nv.Scene().SetCamera("3")
+			if err != nil {
+				nv.Scene().SaveCamera("3")
+			}
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddAction(gi.ActOpts{Label: "4", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			err := nv.Scene().SetCamera("4")
+			if err != nil {
+				nv.Scene().SaveCamera("4")
+			}
+			nv.Scene().UpdateSig()
+		})
+	tbar.AddSeparator("ctrl")
+	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully redraw display"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Config()
+			nv.Update("")
+		})
+	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			giv.StructViewDialog(nv.Viewport, &nv.Params, giv.DlgOpts{Title: nv.Nm + " Params"}, nil, nil)
+		})
+	// todo: colorbar
 }
 
 // func (nv *NetView) Render2D() {
