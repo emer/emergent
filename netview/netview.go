@@ -71,7 +71,7 @@ func (nv *NetView) HasLayers() bool {
 // counters string, if non-empty, will be displayed at bottom of view, showing current
 // counter state
 func (nv *NetView) Update(counters string) {
-	if !nv.IsVisible() || nv.Net == nil || nv.Net.NLayers() == 0 {
+	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
 	if counters != "" {
@@ -150,7 +150,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 
 // VarsListUpdate updates the list of network variables
 func (nv *NetView) VarsListUpdate() {
-	if nv.Net == nil || nv.Net.NLayers() == 0 {
+	if !nv.HasLayers() {
 		nv.Vars = nil
 		return
 	}

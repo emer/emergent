@@ -45,7 +45,7 @@ func (lm *LayMesh) Make(sc *gi3d.Scene) {
 	lm.Reset()
 	lm.Shape.CopyShape(shp)
 
-	if lm.Shape.Len() == 0 {
+	if lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
 
@@ -57,7 +57,7 @@ func (lm *LayMesh) Make(sc *gi3d.Scene) {
 }
 
 func (lm *LayMesh) Update(sc *gi3d.Scene) {
-	if lm.Shape.Len() == 0 {
+	if lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
 	if lm.Shape.NumDims() == 4 {
@@ -86,6 +86,10 @@ func (lm *LayMesh) Make2D(init bool) {
 	segs := 1
 
 	vtxSz, idxSz := lm.PlaneSize(segs, segs)
+	nvtx := vtxSz * 5 * nz * nx
+	nidx := idxSz * 5 * nz * nx
+	lm.Alloc(nvtx, nidx, true)
+
 	pidx := 0 // plane index
 
 	setNorm := true // can change -- always set
@@ -147,6 +151,10 @@ func (lm *LayMesh) Make4D(init bool) {
 	segs := 1
 
 	vtxSz, idxSz := lm.PlaneSize(segs, segs)
+	nvtx := vtxSz * 5 * npz * npx * nuz * nux
+	nidx := idxSz * 5 * npz * npx * nuz * nux
+	lm.Alloc(nvtx, nidx, true)
+
 	pidx := 0 // plane index
 
 	setNorm := true // can change -- always set
