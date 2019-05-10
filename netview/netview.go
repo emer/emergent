@@ -197,7 +197,6 @@ func (nv *NetView) ViewConfig() {
 		if gmod {
 			lg.UpdateEnd(gupdt)
 		}
-
 		lp := ly.Pos().Sub(nmin).Mul(nsc).Sub(poff)
 		rp := ly.RelPos()
 		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
