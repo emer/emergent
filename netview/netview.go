@@ -9,42 +9,51 @@ package netview
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/emer/emergent/emer"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/giv"
 	"github.com/goki/gi/mat32"
+	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 
 // NetViewParams holds parameters controlling how the view is rendered
 type NetViewParams struct {
-	UnitSize  float32 `min:"0.1" max:"1" step:"0.1" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
-	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
+	UnitSize  float32          `min:"0.1" max:"1" step:"0.1" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
+	LayNmSize float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
+	ColorMap  giv.ColorMapName `desc:"name of color map to use"`
+	ZeroAlpha float32          `min:"0" max:"1" step:"0.1" def:".5" desc:"opacity (0-1) of zero values"`
 }
 
 func (nv *NetViewParams) Defaults() {
 	nv.UnitSize = .9
 	nv.LayNmSize = .05
+	nv.ZeroAlpha = 0.5
+	nv.ColorMap = giv.ColorMapName("ColdHot")
 }
+
+// todo: need map of vars with eplot.Range values -- can fix either min or max
 
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
 // 3D framework.
 type NetView struct {
 	gi.Layout
-	Net    emer.Network  `desc:"the network that we're viewing"`
-	Var    string        `desc:"current variable that we're viewing"`
-	Vars   []string      `desc:"the list of variables to view"`
-	Params NetViewParams `desc:"parameters controlling how the view is rendered"`
-	// todo: need a scalebar construct here..
+	Net      emer.Network  `desc:"the network that we're viewing"`
+	Var      string        `desc:"current variable that we're viewing"`
+	Vars     []string      `desc:"the list of variables to view"`
+	Params   NetViewParams `desc:"parameters controlling how the view is rendered"`
+	ColorMap *giv.ColorMap `desc:"color map for mapping values to colors -- set by name in Params"`
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
 
 func (nv *NetView) Defaults() {
 	nv.Params.Defaults()
+	nv.ColorMap = giv.AvailColorMaps[string(nv.Params.ColorMap)]
 }
 
 // SetNet sets the network to view and updates view
@@ -90,6 +99,12 @@ func (nv *NetView) Config() {
 	nv.Lay = gi.LayoutVert
 	if nv.Params.UnitSize == 0 {
 		nv.Defaults()
+	}
+	cmap, ok := giv.AvailColorMaps[string(nv.Params.ColorMap)]
+	if ok {
+		nv.ColorMap = cmap
+	} else {
+		log.Printf("NetView: %v  ColorMap named: %v not found in AvailColorMaps\n", nv.Nm, nv.Params.ColorMap)
 	}
 	nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
 	config := kit.TypeAndNameList{}
@@ -289,17 +304,10 @@ func (nv *NetView) ViewDefaults() {
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
 	raw, _ = lay.UnitVal(nv.Var, idx)
 	scaled = mat32.Clamp(raw, -1, 1)
-	if scaled < 0 {
-		clr.R = uint8(50.0)
-		clr.G = uint8(50.0)
-		clr.B = uint8(50.0 - scaled*205.0)
-		clr.A = uint8(128.0 - scaled*127.0)
-	} else {
-		clr.R = uint8(50.0 + scaled*205.0)
-		clr.G = uint8(50.0)
-		clr.B = uint8(50.0)
-		clr.A = uint8(128.0 + scaled*127.0)
-	}
+	cval := (0.5 * scaled) + 0.5
+	clr = nv.ColorMap.Map(float64(cval))
+	op := (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled)) * 255
+	clr.A = uint8(op)
 	return
 }
 
@@ -308,6 +316,7 @@ func (nv *NetView) ToolbarConfig() {
 	if len(tbar.Kids) != 0 {
 		return
 	}
+	tbar.SetStretchMaxWidth()
 	tbar.AddAction(gi.ActOpts{Icon: "pan", Tooltip: "return to default pan / orbit mode where mouse drags move camera around (Shift = pan, Alt = pan target)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			fmt.Printf("this will select pan mode\n")
@@ -420,7 +429,12 @@ func (nv *NetView) ToolbarConfig() {
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			giv.StructViewDialog(nv.Viewport, &nv.Params, giv.DlgOpts{Title: nv.Nm + " Params"}, nil, nil)
 		})
-	// todo: colorbar
+	tbar.AddSeparator("cbar")
+	cmap := giv.AddNewColorMapView(tbar, "cmap", nv.ColorMap)
+	cmap.SetProp("min-width", units.NewEm(4))
+	cmap.SetStretchMaxHeight()
+	cmap.SetStretchMaxWidth()
+	// todo: range vals
 }
 
 // func (nv *NetView) Render2D() {
