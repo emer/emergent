@@ -91,7 +91,7 @@ func (nv *NetView) Config() {
 	if nv.Params.UnitSize == 0 {
 		nv.Defaults()
 	}
-	// nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
+	nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
 	config := kit.TypeAndNameList{}
 	config.Add(gi.KiT_ToolBar, "tbar")
 	config.Add(gi.KiT_Layout, "net")
@@ -105,6 +105,7 @@ func (nv *NetView) Config() {
 	nlay.Lay = gi.LayoutHoriz
 	nlay.SetProp("max-width", -1)
 	nlay.SetProp("max-height", -1)
+	nlay.SetProp("spacing", gi.StdDialogVSpaceUnits)
 
 	vncfg := kit.TypeAndNameList{}
 	vncfg.Add(gi.KiT_Frame, "vars")
@@ -439,4 +440,6 @@ func (nv *NetView) ToolbarConfig() {
 var NetViewProps = ki.Props{
 	"max-width":  -1,
 	"max-height": -1,
+	// "width":      units.NewEm(5), // this gives the entire plot the scrollbars
+	// "height":     units.NewEm(5),
 }
