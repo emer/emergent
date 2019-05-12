@@ -21,32 +21,16 @@ import (
 	"github.com/goki/ki/kit"
 )
 
-// NetViewParams holds parameters controlling how the view is rendered
-type NetViewParams struct {
-	UnitSize  float32          `min:"0.1" max:"1" step:"0.1" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
-	LayNmSize float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
-	ColorMap  giv.ColorMapName `desc:"name of color map to use"`
-	ZeroAlpha float32          `min:"0" max:"1" step:"0.1" def:".5" desc:"opacity (0-1) of zero values"`
-}
-
-func (nv *NetViewParams) Defaults() {
-	nv.UnitSize = .9
-	nv.LayNmSize = .05
-	nv.ZeroAlpha = 0.5
-	nv.ColorMap = giv.ColorMapName("ColdHot")
-}
-
-// todo: need map of vars with eplot.Range values -- can fix either min or max
-
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
 // 3D framework.
 type NetView struct {
 	gi.Layout
-	Net      emer.Network  `desc:"the network that we're viewing"`
-	Var      string        `desc:"current variable that we're viewing"`
-	Vars     []string      `desc:"the list of variables to view"`
-	Params   NetViewParams `desc:"parameters controlling how the view is rendered"`
-	ColorMap *giv.ColorMap `desc:"color map for mapping values to colors -- set by name in Params"`
+	Net       emer.Network          `desc:"the network that we're viewing"`
+	Var       string                `desc:"current variable that we're viewing"`
+	Vars      []string              `desc:"the list of variables to view, along with view-specific params"`
+	VarParams map[string]*VarParams `desc:"parameters for the list of variables to view"`
+	Params    Params                `desc:"parameters controlling how the view is rendered"`
+	ColorMap  *giv.ColorMap         `desc:"color map for mapping values to colors -- set by name in Params"`
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
@@ -66,6 +50,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 // SetVar sets the variable to view and updates the display
 func (nv *NetView) SetVar(vr string) {
 	nv.Var = vr
+	nv.VarsUpdate()
 	nv.Update("")
 }
 
@@ -111,6 +96,7 @@ func (nv *NetView) Config() {
 	config.Add(gi.KiT_ToolBar, "tbar")
 	config.Add(gi.KiT_Layout, "net")
 	config.Add(gi.KiT_Label, "counters")
+	config.Add(gi.KiT_ToolBar, "vbar")
 	mods, updt := nv.ConfigChildren(config, false)
 	if !mods {
 		updt = nv.UpdateStart()
@@ -130,6 +116,7 @@ func (nv *NetView) Config() {
 	nv.VarsConfig()
 	nv.ViewConfig()
 	nv.ToolbarConfig()
+	nv.ViewbarConfig()
 
 	ctrs := nv.Counters()
 	ctrs.Redrawable = true
@@ -147,6 +134,10 @@ func (nv *NetView) NetLay() *gi.Layout {
 
 func (nv *NetView) Counters() *gi.Label {
 	return nv.ChildByName("counters", 2).(*gi.Label)
+}
+
+func (nv *NetView) Viewbar() *gi.ToolBar {
+	return nv.ChildByName("vbar", 3).(*gi.ToolBar)
 }
 
 func (nv *NetView) Scene() *gi3d.Scene {
@@ -172,9 +163,38 @@ func (nv *NetView) VarsListUpdate() {
 	}
 	lay := nv.Net.Layer(0)
 	unvars := lay.UnitVarNames()
+	if len(unvars) == len(nv.Vars) {
+		return
+	}
 	nv.Vars = make([]string, len(unvars))
 	copy(nv.Vars, unvars)
+
+	nv.VarParams = make(map[string]*VarParams, len(nv.Vars))
+	for _, nm := range nv.Vars {
+		vp := &VarParams{Var: nm}
+		vp.Defaults()
+		nv.VarParams[nm] = vp
+	}
 	// todo: get prjn vars
+}
+
+// VarsUpdate updates the selection status of the variables
+func (nv *NetView) VarsUpdate() {
+	vl := nv.VarsLay()
+	updt := vl.UpdateStart()
+	for _, vbi := range *vl.Children() {
+		vb := vbi.(*gi.Action)
+		if vb.Text == nv.Var {
+			vb.SetSelected()
+		} else {
+			vb.ClearSelected()
+		}
+	}
+	tbar := nv.Toolbar()
+	cmap := tbar.ChildByName("cmap", 5).(*giv.ColorMapView)
+	cmap.Map = nv.ColorMap
+	cmap.UpdateSig()
+	vl.UpdateEnd(updt)
 }
 
 // VarsConfig configures the variables
@@ -203,6 +223,11 @@ func (nv *NetView) VarsConfig() {
 		vb.SetProp("max-width", -1)
 		vn := nv.Vars[i]
 		vb.SetText(vn)
+		if vn == nv.Var {
+			vb.SetSelected()
+		} else {
+			vb.ClearSelected()
+		}
 		vb.ActionSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			vbv := send.(*gi.Action)
@@ -263,6 +288,7 @@ func (nv *NetView) ViewConfig() {
 		lo.Mat.Specular.SetUInt8(128, 128, 128, 255)
 		lo.Mat.CullBack = true
 		lo.Mat.CullFront = false
+		// lo.Mat.Shiny = 10
 		// note: would actually be better to NOT cull back so you can view underneath
 		// but then the front and back fight against each other, causing flickering
 		// really you ned
@@ -289,8 +315,10 @@ func (nv *NetView) ViewDefaults() {
 	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
 	vs.BgColor.SetUInt8(255, 255, 255, 255) // white
 	gi3d.AddNewAmbientLight(vs, "ambient", 0.3, gi3d.DirectSun)
-	dir := gi3d.AddNewDirLight(vs, "dir", 1, gi3d.DirectSun)
-	dir.Pos.Set(0, 2, 1)
+	dir := gi3d.AddNewDirLight(vs, "dirUp", 0.3, gi3d.DirectSun)
+	dir.Pos.Set(0, 1, 0)
+	dir = gi3d.AddNewDirLight(vs, "dirBack", 0.6, gi3d.DirectSun)
+	dir.Pos.Set(0, 1, -2.5)
 	// point := gi3d.AddNewPointLight(vs, "point", 1, gi3d.DirectSun)
 	// point.Pos.Set(0, 2, 5)
 	// spot := gi3d.AddNewSpotLight(vs, "spot", 1, gi3d.DirectSun)
@@ -306,13 +334,59 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 	scaled = mat32.Clamp(raw, -1, 1)
 	cval := (0.5 * scaled) + 0.5
 	clr = nv.ColorMap.Map(float64(cval))
-	op := (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled)) * 255
-	clr.A = uint8(op)
+	r, g, b, a := clr.ToNPFloat32()
+	op := (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled))
+	clr.SetNPFloat32(r, g, b, a*op)
 	return
 }
 
 func (nv *NetView) ToolbarConfig() {
 	tbar := nv.Toolbar()
+	if len(tbar.Kids) != 0 {
+		return
+	}
+	tbar.SetStretchMaxWidth()
+	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully redraw display"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.Config()
+			nv.Update("")
+			nv.VarsUpdate()
+		})
+	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			giv.StructViewDialog(nv.Viewport, &nv.Params, giv.DlgOpts{Title: nv.Nm + " Params"}, nil, nil)
+		})
+	tbar.AddSeparator("file")
+	tbar.AddAction(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			giv.CallMethod(nv, "SaveWeights", nv.Viewport) // this auto prompts for filename using file chooser
+		})
+	tbar.AddAction(gi.ActOpts{Label: "Open Wts", Icon: "file-open"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			giv.CallMethod(nv, "OpenWeights", nv.Viewport) // this auto prompts for filename using file chooser
+		})
+
+	vp := nv.VarParams[nv.Var]
+
+	tbar.AddSeparator("cbar")
+	mncb := gi.AddNewCheckBox(tbar, "mncb")
+	mncb.SetChecked(vp.Range.FixMin)
+	mnsb := gi.AddNewSpinBox(tbar, "mnsb")
+	mnsb.SetValue(float32(vp.Range.Min))
+
+	cmap := giv.AddNewColorMapView(tbar, "cmap", nv.ColorMap)
+	cmap.SetProp("min-width", units.NewEm(4))
+	cmap.SetStretchMaxHeight()
+	cmap.SetStretchMaxWidth()
+
+	mxcb := gi.AddNewCheckBox(tbar, "mxcb")
+	mxcb.SetChecked(vp.Range.FixMax)
+	mxsb := gi.AddNewSpinBox(tbar, "mxsb")
+	mxsb.SetValue(float32(vp.Range.Max))
+}
+
+func (nv *NetView) ViewbarConfig() {
+	tbar := nv.Viewbar()
 	if len(tbar.Kids) != 0 {
 		return
 	}
@@ -419,22 +493,6 @@ func (nv *NetView) ToolbarConfig() {
 			}
 			nv.Scene().UpdateSig()
 		})
-	tbar.AddSeparator("ctrl")
-	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully redraw display"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Config()
-			nv.Update("")
-		})
-	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			giv.StructViewDialog(nv.Viewport, &nv.Params, giv.DlgOpts{Title: nv.Nm + " Params"}, nil, nil)
-		})
-	tbar.AddSeparator("cbar")
-	cmap := giv.AddNewColorMapView(tbar, "cmap", nv.ColorMap)
-	cmap.SetProp("min-width", units.NewEm(4))
-	cmap.SetStretchMaxHeight()
-	cmap.SetStretchMaxWidth()
-	// todo: range vals
 }
 
 // func (nv *NetView) Render2D() {
@@ -451,9 +509,41 @@ func (nv *NetView) ToolbarConfig() {
 // 	}
 // }
 
+// SaveWeights saves the network weights -- when called with giv.CallMethod
+// it will auto-prompt for filename
+func (nv *NetView) SaveWeights(filename gi.FileName) {
+	nv.Net.SaveWtsJSON(filename)
+}
+
+// OpenWeights opens the network weights -- when called with giv.CallMethod
+// it will auto-prompt for filename
+func (nv *NetView) OpenWeights(filename gi.FileName) {
+	nv.Net.OpenWtsJSON(filename)
+}
+
 var NetViewProps = ki.Props{
 	"max-width":  -1,
 	"max-height": -1,
 	// "width":      units.NewEm(5), // this gives the entire plot the scrollbars
 	// "height":     units.NewEm(5),
+	"CallMethods": ki.PropSlice{
+		{"SaveWeights", ki.Props{
+			"desc": "save network weights to file",
+			"icon": "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".wts",
+				}},
+			},
+		}},
+		{"OpenWeights", ki.Props{
+			"desc": "open network weights from file",
+			"icon": "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".wts",
+				}},
+			},
+		}},
+	},
 }

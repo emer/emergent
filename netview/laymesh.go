@@ -72,6 +72,10 @@ func (lm *LayMesh) Update(sc *gi3d.Scene) {
 	lm.TransferVectors()
 }
 
+// MinUnitHeight ensures that there is always at least some dimensionality
+// to the unit cubes -- affects transparency rendering etc
+var MinUnitHeight = float32(1.0e-6)
+
 func (lm *LayMesh) Make2D(init bool) {
 	lm.Trans = true
 	lm.Dynamic = true
@@ -104,6 +108,9 @@ func (lm *LayMesh) Make2D(init bool) {
 			x0 := uo + float32(xi)
 			_, scaled, clr := lm.View.UnitVal(lm.Lay, []int{zi, xi})
 			ht := 0.5 * mat32.Abs(scaled)
+			if ht < MinUnitHeight {
+				ht = MinUnitHeight
+			}
 			if scaled >= 0 {
 				lm.SetPlane(poff, ioff, setNorm, setTex, setIdx, mat32.X, mat32.Y, -1, -1, uw, ht, x0, 0, z0, segs, segs, clr)                    // nz
 				lm.SetPlane(poff+1*vtxSz, ioff+1*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, -1, -1, uw, ht, z0, 0, x0+uw, segs, segs, clr) // px
@@ -173,6 +180,9 @@ func (lm *LayMesh) Make4D(init bool) {
 					x0 := xp0 + xsc*(uo+float32(xui))
 					_, scaled, clr := lm.View.UnitVal(lm.Lay, []int{zpi, xpi, zui, xui})
 					ht := 0.5 * mat32.Abs(scaled)
+					if ht < MinUnitHeight {
+						ht = MinUnitHeight
+					}
 					if scaled >= 0 {
 						lm.SetPlane(poff, ioff, setNorm, setTex, setIdx, mat32.X, mat32.Y, -1, -1, xuw, ht, x0, 0, z0, segs, segs, clr)                     // nz
 						lm.SetPlane(poff+1*vtxSz, ioff+1*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, -1, -1, zuw, ht, z0, 0, x0+xuw, segs, segs, clr) // px
