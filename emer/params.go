@@ -5,11 +5,14 @@
 package emer
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"reflect"
 	"strings"
 
 	"github.com/goki/gi/gi"
+	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 
@@ -25,6 +28,8 @@ import (
 // All of the params in one map must apply to the same target type.
 type Params map[string]float32
 
+var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
+
 // ParamSel specifies a selector for the scope of application of a set of
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
@@ -32,6 +37,8 @@ type ParamSel struct {
 	Sel    string `desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example' (e.g., typically Prjn or Layer are the only relevant types)"`
 	Params Params `desc:"parameter values to apply to whatever matches the selector"`
 }
+
+var KiT_ParamSel = kit.Types.AddType(&ParamSel{}, ParamSelProps)
 
 // ParamStyle is a CSS-like collection of Params values, each of which represents a different
 // set of specific parameter values applied according to the Sel selector.
@@ -43,6 +50,8 @@ type ParamSel struct {
 // those applied earlier.  Thus, you generally want to have more general Type-level
 // parameters listed first, and then subsequently more specific ones (.Class and #Name)
 type ParamStyle []ParamSel
+
+var KiT_ParamStyle = kit.Types.AddType(&ParamStyle{}, ParamStyleProps)
 
 // ParamSet is a collection of ParamStyle's that constitute a coherent set of parameters --
 // a particular specific configuration of parameters.
@@ -57,11 +66,15 @@ type ParamStyle []ParamSel
 // the generic method that applies all of them.
 type ParamSet map[string]ParamStyle
 
+var KiT_ParamSet = kit.Types.AddType(&ParamSet{}, ParamSetProps)
+
 // ParamSets is a collection of ParamSet's that can be chosen among
 // depending on different desired configurations etc.  Thus, each ParamSet
 // represents a collection of different possible specific configurations,
 // and different such configurations can be chosen by name to apply as desired.
 type ParamSets map[string]ParamSet
+
+var KiT_ParamSets = kit.Types.AddType(&ParamSets{}, ParamSetsProps)
 
 ///////////////////////////////////////////////////////////////////////
 //  Params
@@ -176,4 +189,266 @@ func ClassMatch(sel, cls string) bool {
 		}
 	}
 	return false
+}
+
+///////////////////////////////////////////////////////////////////////
+//  I/O
+
+// OpenJSON opens params from a JSON-formatted file.
+func (pr *Params) OpenJSON(filename gi.FileName) error {
+	*pr = make(Params) // reset
+	b, err := ioutil.ReadFile(string(filename))
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, pr)
+}
+
+// SaveJSON saves params to a JSON-formatted file.
+func (pr *Params) SaveJSON(filename gi.FileName) error {
+	b, err := json.MarshalIndent(pr, "", "  ")
+	if err != nil {
+		log.Println(err) // unlikely
+		return err
+	}
+	err = ioutil.WriteFile(string(filename), b, 0644)
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+	}
+	return err
+}
+
+// OpenJSON opens params from a JSON-formatted file.
+func (pr *ParamSel) OpenJSON(filename gi.FileName) error {
+	b, err := ioutil.ReadFile(string(filename))
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, pr)
+}
+
+// SaveJSON saves params to a JSON-formatted file.
+func (pr *ParamSel) SaveJSON(filename gi.FileName) error {
+	b, err := json.MarshalIndent(pr, "", "  ")
+	if err != nil {
+		log.Println(err) // unlikely
+		return err
+	}
+	err = ioutil.WriteFile(string(filename), b, 0644)
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+	}
+	return err
+}
+
+// OpenJSON opens params from a JSON-formatted file.
+func (pr *ParamStyle) OpenJSON(filename gi.FileName) error {
+	*pr = make(ParamStyle, 0) // reset
+	b, err := ioutil.ReadFile(string(filename))
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, pr)
+}
+
+// SaveJSON saves params to a JSON-formatted file.
+func (pr *ParamStyle) SaveJSON(filename gi.FileName) error {
+	b, err := json.MarshalIndent(pr, "", "  ")
+	if err != nil {
+		log.Println(err) // unlikely
+		return err
+	}
+	err = ioutil.WriteFile(string(filename), b, 0644)
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+	}
+	return err
+}
+
+// OpenJSON opens params from a JSON-formatted file.
+func (pr *ParamSet) OpenJSON(filename gi.FileName) error {
+	*pr = make(ParamSet) // reset
+	b, err := ioutil.ReadFile(string(filename))
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, pr)
+}
+
+// SaveJSON saves params to a JSON-formatted file.
+func (pr *ParamSet) SaveJSON(filename gi.FileName) error {
+	b, err := json.MarshalIndent(pr, "", "  ")
+	if err != nil {
+		log.Println(err) // unlikely
+		return err
+	}
+	err = ioutil.WriteFile(string(filename), b, 0644)
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+	}
+	return err
+}
+
+// OpenJSON opens params from a JSON-formatted file.
+func (pr *ParamSets) OpenJSON(filename gi.FileName) error {
+	*pr = make(ParamSets) // reset
+	b, err := ioutil.ReadFile(string(filename))
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, pr)
+}
+
+// SaveJSON saves params to a JSON-formatted file.
+func (pr *ParamSets) SaveJSON(filename gi.FileName) error {
+	b, err := json.MarshalIndent(pr, "", "  ")
+	if err != nil {
+		log.Println(err) // unlikely
+		return err
+	}
+	err = ioutil.WriteFile(string(filename), b, 0644)
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+	}
+	return err
+}
+
+var ParamsProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"label": "Save As...",
+			"desc":  "save to JSON formatted file",
+			"icon":  "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"label": "Open...",
+			"desc":  "open from JSON formatted file",
+			"icon":  "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+	},
+}
+
+var ParamSelProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"label": "Save As...",
+			"desc":  "save to JSON formatted file",
+			"icon":  "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"label": "Open...",
+			"desc":  "open from JSON formatted file",
+			"icon":  "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+	},
+}
+
+var ParamStyleProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"label": "Save As...",
+			"desc":  "save to JSON formatted file",
+			"icon":  "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"label": "Open...",
+			"desc":  "open from JSON formatted file",
+			"icon":  "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+	},
+}
+
+var ParamSetProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"label": "Save As...",
+			"desc":  "save to JSON formatted file",
+			"icon":  "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"label": "Open...",
+			"desc":  "open from JSON formatted file",
+			"icon":  "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+	},
+}
+
+var ParamSetsProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"label": "Save As...",
+			"desc":  "save to JSON formatted file",
+			"icon":  "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"label": "Open...",
+			"desc":  "open from JSON formatted file",
+			"icon":  "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+	},
 }

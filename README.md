@@ -83,7 +83,12 @@ Last updated: 5/13/2019
 
 This list is not strictly in order, but roughly so..
 
-- [ ] save / load params including save as code — key
+- [x] save / load params including save as code — key
+    - [ ] json done -- save as code still needed -- methods all on params objs so no need for others.
+    - [ ] add higher-order params levels to ra25 to test and illustrate use.
+    - [ ] network / layer NonDefaultParams() method that returns all the non-default params in the network
+            can use this as way of adding params to param sets.  not sure how to automate that process, 
+            given flexibility of styling.
 
 - [ ] events for 3D and ability to select units.
 
