@@ -9,6 +9,8 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 # Current Status / News
 
+* 5/2019: NetView nearly fully functional. `eplot` package and `Plot2D` widget provides basic dynamic gui for 2d plots.  See [TODO](#todo) section below for current planning roadmap (periodically updated).
+
 * 4/2019: separated the `leabra` and `etable` repositories from the overall `emergent` repository, to make it easier to fork and save / modify just the algorithm components of the system independent of the overall emergent infrastructure, and because `etable` (and associated `etensor` and `bitslice`) packages are fully independent and useful more generally.  This means that `emergent` is just a toolkit library with no runnable `examples` executables etc -- all of that has moved over to the `leabra` repository including the `python` wrapper.  You just need to replace "github.com/emer/emergent/leabra/leabra" -> "github.com/emer/leabra/leabra" in your imports, and likewise "github.com/emer/emergent/etable" -> "github.com/emer/etable/etable", "github.com/emer/emergent/etensor" -> "github.com/emer/etable/etensor".
 
 * 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
@@ -74,4 +76,48 @@ Here are some of the additional packages beyond the Leabra algorithm:
 * `timer` is a simple interval timing struct, used for benchmarking / profiling etc.
 
 * `python` contains a template `Makefile` that uses [GoPy](https://github.com/goki/gopy) to generate python bindings to the entire emergent system.  See the `leabra` package version to actually run an example.
+
+# TODO
+
+Last updated: 5/13/2019
+
+This list is not strictly in order, but roughly so..
+
+- [ ] save / load params including save as code — key
+
+- [ ] events for 3D and ability to select units.
+
+- [ ] logic for displaying recv, send con values — also need con type selector
+
+- [ ] fix gopy for complex tensors (pyobject* ownership in slice elem code) and do all the PR fixes and get that accepted
+
+- [ ] gogi overlay uses sprites exclusively — key perf enhance
+
+- [ ] history for netview — need for cycle-level viewing
+
+- [ ] etable.Table view — colored squares for tensor in main table view (just a tensor widget) — click to get a separate window tensor editor.  start with current “render all” approach, then do windowed scrolling approach — also key for slice view with large N — need to get that logic in place at some point.
+
+- [ ] at this point, gui is first-pass complete
+
+- [ ] impl basic etable group / sort / filter methods, with example proj & tests
+
+- [ ] do basic test of deep leabra
+
+- [ ] v1 filters — just write as separate passes that get called — programming version is so much simpler than declarative version.
+
+- [ ] hippo code
+
+- [ ] at this point, we have most of basic textbook tech.
+
+- [ ] td/rl -- include ability to simulate drugs!a
+
+- [ ] pbwm
+
+- [ ] pvlv
+
+- [ ] virt env -- add as option to gi3d -- requires physics engine which is hard part.. see [VirtEnv Wiki page](https://github.com/emer/emergent/wiki/VirtEnv)
+
+- [ ] MPI -- https://groups.google.com/forum/#!topic/golang-nuts/t7Vjpfu0sjQ
+
+- [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
 
