@@ -12,6 +12,7 @@ import (
 	"log"
 
 	"github.com/emer/emergent/emer"
+	"github.com/emer/etable/minmax"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/giv"
@@ -25,12 +26,13 @@ import (
 // 3D framework.
 type NetView struct {
 	gi.Layout
-	Net       emer.Network          `desc:"the network that we're viewing"`
-	Var       string                `desc:"current variable that we're viewing"`
-	Vars      []string              `desc:"the list of variables to view, along with view-specific params"`
-	VarParams map[string]*VarParams `desc:"parameters for the list of variables to view"`
-	Params    Params                `desc:"parameters controlling how the view is rendered"`
-	ColorMap  *giv.ColorMap         `desc:"color map for mapping values to colors -- set by name in Params"`
+	Net          emer.Network          `desc:"the network that we're viewing"`
+	Var          string                `desc:"current variable that we're viewing"`
+	Vars         []string              `desc:"the list of variables to view, along with view-specific params"`
+	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
+	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
+	Params       Params                `desc:"parameters controlling how the view is rendered"`
+	ColorMap     *giv.ColorMap         `desc:"color map for mapping values to colors -- set by name in Params"`
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
@@ -51,6 +53,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 func (nv *NetView) SetVar(vr string) {
 	nv.Var = vr
 	nv.VarsUpdate()
+	nv.VarScaleUpdate(nv.Var)
 	nv.Update("")
 }
 
@@ -71,6 +74,38 @@ func (nv *NetView) Update(counters string) {
 	if counters != "" {
 		nv.SetCounters(counters)
 	}
+
+	vp, ok := nv.VarParams[nv.Var]
+	if !ok {
+		log.Printf("NetView: %v variable: %v not found\n", nv.Nm, nv.Var)
+		return
+	}
+	nv.CurVarParams = vp
+
+	if !vp.Range.FixMin || !vp.Range.FixMax {
+		needUpdt := false
+		// need to autoscale
+		min, max, _ := nv.Net.VarRange(nv.Var)
+		vp.MinMax.Set(min, max)
+		if !vp.Range.FixMin {
+			nmin := minmax.NiceRoundNumber(float64(min), true) // true = below
+			if vp.Range.Min != nmin {
+				vp.Range.Min = nmin
+				needUpdt = true
+			}
+		}
+		if !vp.Range.FixMax {
+			nmax := minmax.NiceRoundNumber(float64(max), false) // false = above
+			if vp.Range.Max != nmax {
+				vp.Range.Max = nmax
+				needUpdt = true
+			}
+		}
+		if needUpdt {
+			nv.VarScaleUpdate(nv.Var)
+		}
+	}
+
 	vs := nv.Scene()
 	if len(vs.Kids) != nv.Net.NLayers() {
 		nv.Config()
@@ -179,6 +214,7 @@ func (nv *NetView) VarsListUpdate() {
 }
 
 // VarsUpdate updates the selection status of the variables
+// and the view range state too
 func (nv *NetView) VarsUpdate() {
 	vl := nv.VarsLay()
 	updt := vl.UpdateStart()
@@ -195,6 +231,63 @@ func (nv *NetView) VarsUpdate() {
 	cmap.Map = nv.ColorMap
 	cmap.UpdateSig()
 	vl.UpdateEnd(updt)
+}
+
+// VarScaleUpdate updates display of the scaling params
+// for given variable (use nv.Var for current)
+// returns true if any setting changed (update always triggered)
+func (nv *NetView) VarScaleUpdate(varNm string) bool {
+	vp := nv.VarParams[varNm]
+
+	tbar := nv.Toolbar()
+	mncb := tbar.ChildByName("mncb", 4).(*gi.CheckBox)
+	mnsb := tbar.ChildByName("mnsb", 5).(*gi.SpinBox)
+	mxcb := tbar.ChildByName("mxcb", 6).(*gi.CheckBox)
+	mxsb := tbar.ChildByName("mxsb", 7).(*gi.SpinBox)
+	zccb := tbar.ChildByName("zccb", 8).(*gi.CheckBox)
+
+	mod := false
+	updt := false
+	if mncb.IsChecked() != vp.Range.FixMin {
+		updt = tbar.UpdateStart()
+		mod = true
+		mncb.SetChecked(vp.Range.FixMin)
+	}
+	if mxcb.IsChecked() != vp.Range.FixMax {
+		if !mod {
+			updt = tbar.UpdateStart()
+			mod = true
+		}
+		mxcb.SetChecked(vp.Range.FixMax)
+	}
+	mnv := float32(vp.Range.Min)
+	if mnsb.Value != mnv {
+		if !mod {
+			updt = tbar.UpdateStart()
+			mod = true
+		}
+		mnsb.SetValue(mnv)
+	}
+	mxv := float32(vp.Range.Max)
+	if mxsb.Value != mxv {
+		if !mod {
+			updt = tbar.UpdateStart()
+			mod = true
+		}
+		mxsb.SetValue(mxv)
+	}
+	if zccb.IsChecked() != vp.ZeroCtr {
+		if !mod {
+			updt = tbar.UpdateStart()
+			mod = true
+		}
+		zccb.SetChecked(vp.ZeroCtr)
+	}
+	tbar.UpdateEnd(updt)
+	if mod {
+		nv.Update("")
+	}
+	return mod
 }
 
 // VarsConfig configures the variables
@@ -328,14 +421,28 @@ func (nv *NetView) ViewDefaults() {
 
 // UnitVal returns the raw value, scaled value, and color representation for given unit of given layer
 // scaled is in range -1..1
-// todo: could incorporate history etc..
+// todo: incorporate history etc..
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
 	raw, _ = lay.UnitVal(nv.Var, idx)
-	scaled = mat32.Clamp(raw, -1, 1)
-	cval := (0.5 * scaled) + 0.5
-	clr = nv.ColorMap.Map(float64(cval))
+	if nv.CurVarParams == nil || nv.CurVarParams.Var != nv.Var {
+		ok := false
+		nv.CurVarParams, ok = nv.VarParams[nv.Var]
+		if !ok {
+			return
+		}
+	}
+	clp := nv.CurVarParams.Range.ClipVal(float64(raw))
+	norm := nv.CurVarParams.Range.NormVal(clp)
+	var op float32
+	if nv.CurVarParams.ZeroCtr {
+		scaled = float32(2*norm - 1)
+		op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled))
+	} else {
+		scaled = float32(norm)
+		op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
+	}
+	clr = nv.ColorMap.Map(norm)
 	r, g, b, a := clr.ToNPFloat32()
-	op := (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled))
 	clr.SetNPFloat32(r, g, b, a*op)
 	return
 }
@@ -370,19 +477,94 @@ func (nv *NetView) ToolbarConfig() {
 
 	tbar.AddSeparator("cbar")
 	mncb := gi.AddNewCheckBox(tbar, "mncb")
+	mncb.Text = "Min"
+	mncb.Tooltip = "Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors."
 	mncb.SetChecked(vp.Range.FixMin)
+	mncb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			vpp, ok := nvv.VarParams[nvv.Var]
+			if ok {
+				cbb := send.(*gi.CheckBox)
+				vpp.Range.FixMin = cbb.IsChecked()
+			}
+		}
+	})
 	mnsb := gi.AddNewSpinBox(tbar, "mnsb")
 	mnsb.SetValue(float32(vp.Range.Min))
+	mnsb.SpinBoxSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		nvv := recv.Embed(KiT_NetView).(*NetView)
+		vpp, ok := nvv.VarParams[nvv.Var]
+		if ok {
+			sbb := send.(*gi.SpinBox)
+			vpp.Range.SetMin(float64(sbb.Value))
+			if vpp.ZeroCtr && vpp.Range.Min < 0 && vpp.Range.FixMax {
+				vpp.Range.SetMax(-vpp.Range.Min)
+			}
+			nvv.VarScaleUpdate(nvv.Var)
+			nvv.Update("")
+		}
+	})
 
 	cmap := giv.AddNewColorMapView(tbar, "cmap", nv.ColorMap)
 	cmap.SetProp("min-width", units.NewEm(4))
 	cmap.SetStretchMaxHeight()
 	cmap.SetStretchMaxWidth()
+	cmap.Tooltip = "Color map for translating values into colors -- click to select alternative."
+	cmap.ColorMapSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		nvv := recv.Embed(KiT_NetView).(*NetView)
+		cmm := send.(*giv.ColorMapView)
+		if cmm.Map != nil {
+			nvv.Params.ColorMap = giv.ColorMapName(cmm.Map.Name)
+			nvv.ColorMap = cmm.Map
+			nvv.Update("")
+		}
+	})
 
 	mxcb := gi.AddNewCheckBox(tbar, "mxcb")
 	mxcb.SetChecked(vp.Range.FixMax)
+	mxcb.Text = "Max"
+	mxcb.Tooltip = "Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors."
+	mxcb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			vpp, ok := nvv.VarParams[nvv.Var]
+			if ok {
+				cbb := send.(*gi.CheckBox)
+				vpp.Range.FixMax = cbb.IsChecked()
+			}
+		}
+	})
 	mxsb := gi.AddNewSpinBox(tbar, "mxsb")
 	mxsb.SetValue(float32(vp.Range.Max))
+	mxsb.SpinBoxSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		nvv := recv.Embed(KiT_NetView).(*NetView)
+		vpp, ok := nvv.VarParams[nvv.Var]
+		if ok {
+			sbb := send.(*gi.SpinBox)
+			vpp.Range.SetMax(float64(sbb.Value))
+			if vpp.ZeroCtr && vpp.Range.Max > 0 && vpp.Range.FixMin {
+				vpp.Range.SetMin(-vpp.Range.Max)
+			}
+			nvv.VarScaleUpdate(nvv.Var)
+			nvv.Update("")
+		}
+	})
+	zccb := gi.AddNewCheckBox(tbar, "zccb")
+	zccb.SetChecked(vp.ZeroCtr)
+	zccb.Text = "ZeroCtr"
+	zccb.Tooltip = "keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)"
+	zccb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			vpp, ok := nvv.VarParams[nvv.Var]
+			if ok {
+				cbb := send.(*gi.CheckBox)
+				vpp.ZeroCtr = cbb.IsChecked()
+				nvv.Update("")
+			}
+		}
+	})
 }
 
 func (nv *NetView) ViewbarConfig() {

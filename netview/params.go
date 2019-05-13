@@ -5,7 +5,7 @@
 package netview
 
 import (
-	"github.com/emer/etable/eplot"
+	"github.com/emer/etable/minmax"
 	"github.com/goki/gi/giv"
 )
 
@@ -34,13 +34,16 @@ func (nv *Params) Defaults() {
 
 // VarParams holds parameters for display of each variable
 type VarParams struct {
-	Var   string      `desc:"name of the variable"`
-	Range eplot.Range `view:"inline" desc:"range to plot"`
+	Var     string       `desc:"name of the variable"`
+	ZeroCtr bool         `desc:"keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)"`
+	Range   minmax.Range `view:"inline" desc:"range to plot"`
+	MinMax  minmax.F32   `view:"inline" desc:"if not using fixed range, this is the actual range of data"`
 }
 
 // Defaults sets default values if otherwise not set
 func (vp *VarParams) Defaults() {
 	if vp.Range.Max == 0 && vp.Range.Min == 0 {
+		vp.ZeroCtr = true
 		vp.Range.SetMin(-1)
 		vp.Range.SetMax(1)
 	}

@@ -176,6 +176,10 @@ type Layer interface {
 	// Build constructs the layer and projection state based on the layer shapes
 	// and patterns of interconnectivity
 	Build() error
+
+	// VarRange returns the min / max values for given variable
+	// over the layer
+	VarRange(varNm string) (min, max float32, err error)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

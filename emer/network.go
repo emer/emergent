@@ -92,4 +92,7 @@ type Network interface {
 
 	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
 	Bounds() (min, max mat32.Vec3)
+
+	// VarRange returns the min / max values for given variable
+	VarRange(varNm string) (min, max float32, err error)
 }
