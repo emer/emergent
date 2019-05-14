@@ -5,6 +5,7 @@
 package emer
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -238,6 +239,13 @@ func (pr *Params) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte("}"))
 }
 
+// StringGoCode returns Go initializer code as a byte string.
+func (pr *Params) StringGoCode() []byte {
+	var buf bytes.Buffer
+	pr.WriteGoCode(&buf, 0)
+	return buf.Bytes()
+}
+
 // SaveGoCode saves params to corresponding Go initializer code.
 func (pr *Params) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
@@ -250,6 +258,9 @@ func (pr *Params) SaveGoCode(filename gi.FileName) error {
 	pr.WriteGoCode(fp, 0)
 	return nil
 }
+
+/////////////////////////////////////////////////////////
+//   ParamSel
 
 // OpenJSON opens params from a JSON-formatted file.
 func (pr *ParamSel) OpenJSON(filename gi.FileName) error {
@@ -283,6 +294,13 @@ func (pr *ParamSel) WriteGoCode(w io.Writer, depth int) {
 	pr.Params.WriteGoCode(w, depth)
 }
 
+// StringGoCode returns Go initializer code as a byte string.
+func (pr *ParamSel) StringGoCode() []byte {
+	var buf bytes.Buffer
+	pr.WriteGoCode(&buf, 0)
+	return buf.Bytes()
+}
+
 // SaveGoCode saves params to corresponding Go initializer code.
 func (pr *ParamSel) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
@@ -295,6 +313,9 @@ func (pr *ParamSel) SaveGoCode(filename gi.FileName) error {
 	pr.WriteGoCode(fp, 0)
 	return nil
 }
+
+/////////////////////////////////////////////////////////
+//   ParamStyle
 
 // OpenJSON opens params from a JSON-formatted file.
 func (pr *ParamStyle) OpenJSON(filename gi.FileName) error {
@@ -338,6 +359,13 @@ func (pr *ParamStyle) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte("}\n"))
 }
 
+// StringGoCode returns Go initializer code as a byte string.
+func (pr *ParamStyle) StringGoCode() []byte {
+	var buf bytes.Buffer
+	pr.WriteGoCode(&buf, 0)
+	return buf.Bytes()
+}
+
 // SaveGoCode saves params to corresponding Go initializer code.
 func (pr *ParamStyle) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
@@ -350,6 +378,9 @@ func (pr *ParamStyle) SaveGoCode(filename gi.FileName) error {
 	pr.WriteGoCode(fp, 0)
 	return nil
 }
+
+/////////////////////////////////////////////////////////
+//   ParamSet
 
 // OpenJSON opens params from a JSON-formatted file.
 func (pr *ParamSet) OpenJSON(filename gi.FileName) error {
@@ -378,6 +409,44 @@ func (pr *ParamSet) SaveJSON(filename gi.FileName) error {
 	return err
 }
 
+// WriteGoCode writes params to corresponding Go initializer code.
+func (pr *ParamSet) WriteGoCode(w io.Writer, depth int) {
+	w.Write([]byte(fmt.Sprintf("emer.ParamSet{\n")))
+	depth++
+	for nm, pv := range *pr {
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("{\"%v\": ", nm)))
+		pv.WriteGoCode(w, depth)
+		w.Write([]byte("},\n"))
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}\n"))
+}
+
+// StringGoCode returns Go initializer code as a byte string.
+func (pr *ParamSet) StringGoCode() []byte {
+	var buf bytes.Buffer
+	pr.WriteGoCode(&buf, 0)
+	return buf.Bytes()
+}
+
+// SaveGoCode saves params to corresponding Go initializer code.
+func (pr *ParamSet) SaveGoCode(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	pr.WriteGoCode(fp, 0)
+	return nil
+}
+
+/////////////////////////////////////////////////////////
+//   ParamSets
+
 // OpenJSON opens params from a JSON-formatted file.
 func (pr *ParamSets) OpenJSON(filename gi.FileName) error {
 	*pr = make(ParamSets) // reset
@@ -405,6 +474,41 @@ func (pr *ParamSets) SaveJSON(filename gi.FileName) error {
 	return err
 }
 
+// WriteGoCode writes params to corresponding Go initializer code.
+func (pr *ParamSets) WriteGoCode(w io.Writer, depth int) {
+	w.Write([]byte(fmt.Sprintf("emer.ParamSets{\n")))
+	depth++
+	for nm, pv := range *pr {
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("{\"%v\": ", nm)))
+		pv.WriteGoCode(w, depth)
+		w.Write([]byte("},\n"))
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}\n"))
+}
+
+// StringGoCode returns Go initializer code as a byte string.
+func (pr *ParamSets) StringGoCode() []byte {
+	var buf bytes.Buffer
+	pr.WriteGoCode(&buf, 0)
+	return buf.Bytes()
+}
+
+// SaveGoCode saves params to corresponding Go initializer code.
+func (pr *ParamSets) SaveGoCode(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	pr.WriteGoCode(fp, 0)
+	return nil
+}
+
 var ParamsProps = ki.Props{
 	"ToolBar": ki.PropSlice{
 		{"SaveJSON", ki.Props{
@@ -426,6 +530,23 @@ var ParamsProps = ki.Props{
 					"ext": ".params",
 				}},
 			},
+		}},
+		{"sep-gocode", ki.BlankProp{}},
+		{"SaveGoCode", ki.Props{
+			"label": "Save Code As...",
+			"desc":  "save to Go-formatted initializer code in file",
+			"icon":  "go",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".go",
+				}},
+			},
+		}},
+		{"StringGoCode", ki.Props{
+			"label":       "Show Code",
+			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
+			"icon":        "go",
+			"show-return": true,
 		}},
 	},
 }
@@ -452,6 +573,23 @@ var ParamSelProps = ki.Props{
 				}},
 			},
 		}},
+		{"sep-gocode", ki.BlankProp{}},
+		{"SaveGoCode", ki.Props{
+			"label": "Save Code As...",
+			"desc":  "save to Go-formatted initializer code in file",
+			"icon":  "go",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".go",
+				}},
+			},
+		}},
+		{"StringGoCode", ki.Props{
+			"label":       "Show Code",
+			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
+			"icon":        "go",
+			"show-return": true,
+		}},
 	},
 }
 
@@ -476,6 +614,23 @@ var ParamStyleProps = ki.Props{
 					"ext": ".params",
 				}},
 			},
+		}},
+		{"sep-gocode", ki.BlankProp{}},
+		{"SaveGoCode", ki.Props{
+			"label": "Save Code As...",
+			"desc":  "save to Go-formatted initializer code in file",
+			"icon":  "go",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".go",
+				}},
+			},
+		}},
+		{"StringGoCode", ki.Props{
+			"label":       "Show Code",
+			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
+			"icon":        "go",
+			"show-return": true,
 		}},
 	},
 }
@@ -502,6 +657,23 @@ var ParamSetProps = ki.Props{
 				}},
 			},
 		}},
+		{"sep-gocode", ki.BlankProp{}},
+		{"SaveGoCode", ki.Props{
+			"label": "Save Code As...",
+			"desc":  "save to Go-formatted initializer code in file",
+			"icon":  "go",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".go",
+				}},
+			},
+		}},
+		{"StringGoCode", ki.Props{
+			"label":       "Show Code",
+			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
+			"icon":        "go",
+			"show-return": true,
+		}},
 	},
 }
 
@@ -526,6 +698,23 @@ var ParamSetsProps = ki.Props{
 					"ext": ".params",
 				}},
 			},
+		}},
+		{"sep-gocode", ki.BlankProp{}},
+		{"SaveGoCode", ki.Props{
+			"label": "Save Code As...",
+			"desc":  "save to Go-formatted initializer code in file",
+			"icon":  "go",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".go",
+				}},
+			},
+		}},
+		{"StringGoCode", ki.Props{
+			"label":       "Show Code",
+			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
+			"icon":        "go",
+			"show-return": true,
 		}},
 	},
 }
