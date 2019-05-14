@@ -37,6 +37,11 @@ type NetView struct {
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
 
+// AddNewNetView adds a new NetView to given parent node, with given name.
+func AddNewNetView(parent ki.Ki, name string) *NetView {
+	return parent.AddNewChild(KiT_NetView, name).(*NetView)
+}
+
 func (nv *NetView) Defaults() {
 	nv.Params.Defaults()
 	nv.ColorMap = giv.AvailColorMaps[string(nv.Params.ColorMap)]
@@ -473,7 +478,11 @@ func (nv *NetView) ToolbarConfig() {
 			giv.CallMethod(nv, "OpenWeights", nv.Viewport) // this auto prompts for filename using file chooser
 		})
 
-	vp := nv.VarParams[nv.Var]
+	vp, ok := nv.VarParams[nv.Var]
+	if !ok {
+		vp = &VarParams{}
+		vp.Defaults()
+	}
 
 	tbar.AddSeparator("cbar")
 	mncb := gi.AddNewCheckBox(tbar, "mncb")

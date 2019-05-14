@@ -18,8 +18,8 @@ import (
 // and Z vertical stacking of layers above and below each other.
 type Rel struct {
 	Rel    Relations `desc:"spatial relationship between this layer and the other layer"`
-	XAlign XAligns   `viewif:"Rel=FrontOf,Behind,Above,Below" horizontal (x-axis) alignment relative to other"`
-	YAlign YAligns   `viewif:"Rel=LeftOf,RightOf,Above,Below" vertical (y-axis) alignment relative to other"`
+	XAlign XAligns   `viewif:"Rel=FrontOf,Behind,Above,Below" desc:"horizontal (x-axis) alignment relative to other"`
+	YAlign YAligns   `viewif:"Rel=LeftOf,RightOf,Above,Below" desc:"vertical (y-axis) alignment relative to other"`
 	Other  string    `desc:"name of the other layer we are in relationship to"`
 	Scale  float32   `desc:"scaling factor applied to layer size for displaying"`
 	Space  float32   `desc:"number of unit-spaces between us"`
