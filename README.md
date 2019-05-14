@@ -90,6 +90,8 @@ This list is not strictly in order, but roughly so..
     - [x] network / layer NonDefaultParams() method that returns all the non-default params in the network can use this as way of adding params to param sets.  not sure how to automate that process, given flexibility of styling.
     - [ ] above needs a string output viewer that supports copy / paste -- I guess this is a non-interactive textview..
 
+- [x] add travis CI to make sure checkins build..
+    
 - [ ] events for 3D and ability to select units.
 
 - [ ] logic for displaying recv, send con values — also need con type selector
