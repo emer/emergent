@@ -21,5 +21,5 @@ vet:
 	$(GOCMD) vet $(DIRS)
 	
 release:
-	$(MAKE) -C leabra release
+	$(MAKE) -C emergent release
 
