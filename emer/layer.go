@@ -164,6 +164,10 @@ type Layer interface {
 	// it always prints a message if a parameter fails to be set.
 	StyleParams(psty ParamStyle, setMsg bool)
 
+	// NonDefaultParams returns a listing of all parameters in the Layer that
+	// are not at their default values -- useful for setting param styles etc.
+	NonDefaultParams() string
+
 	// WriteWtsJSON writes the weights from this layer from the receiver-side perspective
 	// in a JSON text format.  We build in the indentation logic to make it much faster and
 	// more efficient.

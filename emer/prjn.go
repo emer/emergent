@@ -49,7 +49,8 @@ type Prjn interface {
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
 
-	// IsOff returns true if projection or either send or recv layer has been turned Off -- for experimentation
+	// IsOff returns true if projection or either send or recv layer has been turned Off.
+	// Useful for experimentation
 	IsOff() bool
 
 	// SetOff sets the projection Off status (i.e., lesioned)
@@ -98,6 +99,10 @@ type Prjn interface {
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
 	StyleParams(psty ParamStyle, setMsg bool)
+
+	// NonDefaultParams returns a listing of all parameters in the Projection that
+	// are not at their default values -- useful for setting param styles etc.
+	NonDefaultParams() string
 
 	// WriteWtsJSON writes the weights from this projection from the receiver-side perspective
 	// in a JSON text format.  We build in the indentation logic to make it much faster and

@@ -56,6 +56,10 @@ type Network interface {
 	// it always prints a message if a parameter fails to be set.
 	StyleParamSet(pset ParamSet, setMsg bool)
 
+	// NonDefaultParams returns a listing of all parameters in the Network that
+	// are not at their default values -- useful for setting param styles etc.
+	NonDefaultParams() string
+
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
 	// to JSON-formatted output.
 	WriteWtsJSON(w io.Writer)

@@ -6,12 +6,16 @@ package emer
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
 	"strings"
 
 	"github.com/goki/gi/gi"
+	"github.com/goki/ki/indent"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
@@ -221,6 +225,32 @@ func (pr *Params) SaveJSON(filename gi.FileName) error {
 	return err
 }
 
+// WriteGoCode writes params to corresponding Go initializer code.
+func (pr *Params) WriteGoCode(w io.Writer, depth int) {
+	w.Write([]byte(fmt.Sprintf("emer.Params{\n")))
+	depth++
+	for pt, pv := range *pr {
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("\"%v\": %v,\n", pt, pv)))
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}"))
+}
+
+// SaveGoCode saves params to corresponding Go initializer code.
+func (pr *Params) SaveGoCode(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	pr.WriteGoCode(fp, 0)
+	return nil
+}
+
 // OpenJSON opens params from a JSON-formatted file.
 func (pr *ParamSel) OpenJSON(filename gi.FileName) error {
 	b, err := ioutil.ReadFile(string(filename))
@@ -245,6 +275,25 @@ func (pr *ParamSel) SaveJSON(filename gi.FileName) error {
 		log.Println(err)
 	}
 	return err
+}
+
+// WriteGoCode writes params to corresponding Go initializer code.
+func (pr *ParamSel) WriteGoCode(w io.Writer, depth int) {
+	w.Write([]byte(fmt.Sprintf("\"%v\", ", pr.Sel)))
+	pr.Params.WriteGoCode(w, depth)
+}
+
+// SaveGoCode saves params to corresponding Go initializer code.
+func (pr *ParamSel) SaveGoCode(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	pr.WriteGoCode(fp, 0)
+	return nil
 }
 
 // OpenJSON opens params from a JSON-formatted file.
@@ -272,6 +321,34 @@ func (pr *ParamStyle) SaveJSON(filename gi.FileName) error {
 		log.Println(err)
 	}
 	return err
+}
+
+// WriteGoCode writes params to corresponding Go initializer code.
+func (pr *ParamStyle) WriteGoCode(w io.Writer, depth int) {
+	w.Write([]byte(fmt.Sprintf("emer.ParamStyle{\n")))
+	depth++
+	for _, pv := range *pr {
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte("{"))
+		pv.WriteGoCode(w, depth)
+		w.Write([]byte("},\n"))
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}\n"))
+}
+
+// SaveGoCode saves params to corresponding Go initializer code.
+func (pr *ParamStyle) SaveGoCode(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, true, false, nil, nil)
+		log.Println(err)
+		return err
+	}
+	pr.WriteGoCode(fp, 0)
+	return nil
 }
 
 // OpenJSON opens params from a JSON-formatted file.
