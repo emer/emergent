@@ -164,6 +164,18 @@ func (nv *NetView) Config() {
 	nv.UpdateEnd(updt)
 }
 
+// IsConfiged returns true if widget is fully configured
+func (nv *NetView) IsConfiged() bool {
+	if len(nv.Kids) == 0 {
+		return false
+	}
+	nl := nv.NetLay()
+	if len(nl.Kids) == 0 {
+		return false
+	}
+	return true
+}
+
 func (nv *NetView) Toolbar() *gi.ToolBar {
 	return nv.ChildByName("tbar", 0).(*gi.ToolBar)
 }

@@ -7,6 +7,7 @@ package emer
 import (
 	"io"
 
+	"github.com/emer/emergent/params"
 	"github.com/emer/emergent/relpos"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/gi/mat32"
@@ -19,18 +20,14 @@ import (
 // type, with a very basic interface for accessing general structural properties.  Nothing
 // algorithm-specific is implemented here -- all of that goes in your specific layer struct.
 type Layer interface {
+	params.Styler // TypeName, Name, and Class methods for parameter styling
+
 	// InitName MUST be called to initialize the layer's pointer to itself as an emer.Layer
 	// which enables the proper interface methods to be called.  Also sets the name.
 	InitName(lay Layer, name string)
 
-	// Name returns the name of this layer
-	Name() string
-
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
-
-	// Class is for applying parameter styles, CSS-style -- can be space-separated multple tags
-	Class() string
 
 	// SetClass sets CSS-style class name(s) for this layer (space-separated if multiple)
 	SetClass(cls string)
@@ -145,24 +142,12 @@ type Layer interface {
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// SetParams sets given parameters to this layer, if the target type is Layer
-	// calls UpdateParams to ensure derived parameters are all updated.
+	// ApplyParams applies given parameter style Sheet to this layer and its recv projections.
+	// Calls UpdateParams on anything set to ensure derived parameters are all updated.
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
-	SetParams(pars Params, setMsg bool) bool
-
-	// StyleParam applies a given style to either this layer or the receiving projections in this layer
-	// depending on the style specification (.Class, #Name, Type) and target value of params.
-	// .LayerType is automatically recognized as a .Class type (e.g., .Hidden vs. .Input etc)
-	// Returns true if applied successfully.
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	StyleParam(sty string, pars Params, setMsg bool) bool
-
-	// StyleParams applies a given ParamStyle style sheet to the layer and recv projections
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	StyleParams(psty ParamStyle, setMsg bool)
+	// returns true if any params were set, and error if there were any errors.
+	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
 
 	// NonDefaultParams returns a listing of all parameters in the Layer that
 	// are not at their default values -- useful for setting param styles etc.

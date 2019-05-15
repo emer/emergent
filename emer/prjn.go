@@ -8,12 +8,16 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/emer/emergent/params"
 	"github.com/emer/emergent/prjn"
 	"github.com/goki/ki/kit"
 )
 
-// Prjn defines the basic interface for a projection which connects two layers
+// Prjn defines the basic interface for a projection which connects two layers.
+// Name is set automatically to: SendLay().Name() + "To" + RecvLay().Name()
 type Prjn interface {
+	params.Styler // TypeName, Name, and Class methods for parameter styling
+
 	// Init MUST be called to initialize the prjn's pointer to itself as an emer.Prjn
 	// which enables the proper interface methods to be called.
 	Init(prjn Prjn)
@@ -37,14 +41,8 @@ type Prjn interface {
 	// Connect sets the basic connection parameters for this projection (send, recv, pattern, and type)
 	Connect(send, recv Layer, pat prjn.Pattern, typ PrjnType)
 
-	// Class is for applying parameter styles, CSS-style -- can be space-separated multple tags
-	Class() string
-
 	// SetClass sets CSS-style class name(s) for this projection (space-separated if multiple)
 	SetClass(cls string)
-
-	// Name is the automatic name of projection: RecvLay().Name() + "Fm" + SendLay().Name()
-	Name() string
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
@@ -80,25 +78,12 @@ type Prjn interface {
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// SetParams sets given parameters to this prjn, if the target type is Prjn
-	// calls UpdateParams to ensure derived parameters are all updated.
+	// ApplyParams applies given parameter style Sheet to this projection.
+	// Calls UpdateParams if anything set to ensure derived parameters are all updated.
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
-	SetParams(pars Params, setMsg bool) bool
-
-	// StyleParam applies a given style to this projection
-	// depending on the style specification (.Class, #Name, Type) and target value of params.
-	// .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	StyleParam(sty string, pars Params, setMsg bool) bool
-
-	// StyleParams applies a given ParamStyle style sheet to the projections
-	// depending on the style specification (.Class, #Name, Type) and target value of params.
-	// .PrjType is automatically recognized as a .Class type (e.g., .Forward vs. .Back etc)
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	StyleParams(psty ParamStyle, setMsg bool)
+	// returns true if any params were set, and error if there were any errors.
+	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
 
 	// NonDefaultParams returns a listing of all parameters in the Projection that
 	// are not at their default values -- useful for setting param styles etc.

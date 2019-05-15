@@ -7,6 +7,7 @@ package emer
 import (
 	"io"
 
+	"github.com/emer/emergent/params"
 	"github.com/emer/emergent/prjn"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/mat32"
@@ -19,7 +20,7 @@ type Network interface {
 	// which enables the proper interface methods to be called.  Also sets the name.
 	InitName(net Network, name string)
 
-	// Name returns the name of this network
+	// Name() returns name of the network
 	Name() string
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
@@ -46,15 +47,12 @@ type Network interface {
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// StyleParams applies a given ParamStyle style sheet to the layers and projections in network
+	// ApplyParams applies given parameter style Sheet to layers and prjns in this network.
+	// Calls UpdateParams on anything set to ensure derived parameters are all updated.
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
-	StyleParams(psty ParamStyle, setMsg bool)
-
-	// StyleParamSet applies given set of ParamStyles to the layers and projections in network
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	StyleParamSet(pset ParamSet, setMsg bool)
+	// returns true if any params were set, and error if there were any errors.
+	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
 
 	// NonDefaultParams returns a listing of all parameters in the Network that
 	// are not at their default values -- useful for setting param styles etc.

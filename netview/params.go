@@ -11,10 +11,10 @@ import (
 
 // Params holds parameters controlling how the view is rendered
 type Params struct {
-	UnitSize  float32          `min:"0.1" max:"1" step:"0.1" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
+	UnitSize  float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	LayNmSize float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
 	ColorMap  giv.ColorMapName `desc:"name of color map to use"`
-	ZeroAlpha float32          `min:"0" max:"1" step:"0.1" def:".4" desc:"opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum"`
+	ZeroAlpha float32          `min:"0" max:"1" step:"0.1" def:"0.4" desc:"opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum"`
 }
 
 func (nv *Params) Defaults() {
