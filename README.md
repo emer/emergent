@@ -10,7 +10,7 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 # Current Status / News
 
-* 5/2019: NetView nearly fully functional. `eplot` package and `Plot2D` widget provides basic dynamic gui for 2d plots.  See [TODO](#todo) section below for current planning roadmap (periodically updated).
+* 5/2019: NetView nearly fully functional. `eplot` package and `Plot2D` widget provides basic dynamic gui for 2d plots.  See [TODO](#todo) section below for current planning roadmap for a push to get all the basic functionality in place so people can start using it!
 
 * 4/2019: separated the `leabra` and `etable` repositories from the overall `emergent` repository, to make it easier to fork and save / modify just the algorithm components of the system independent of the overall emergent infrastructure, and because `etable` (and associated `etensor` and `bitslice`) packages are fully independent and useful more generally.  This means that `emergent` is just a toolkit library with no runnable `examples` executables etc -- all of that has moved over to the `leabra` repository including the `python` wrapper.  You just need to replace "github.com/emer/emergent/leabra/leabra" -> "github.com/emer/leabra/leabra" in your imports, and likewise "github.com/emer/emergent/etable" -> "github.com/emer/etable/etable", "github.com/emer/emergent/etensor" -> "github.com/emer/etable/etensor".
 
@@ -62,9 +62,11 @@ func (nt *Network) InitActs() {
 
 # Packages
 
-Here are some of the additional packages beyond the Leabra algorithm:
+Here are some of the additional supporting packages:
 
-* `emer` is intended to hold all the widely-used support classes used in our algorithm-specific code, including things like `MinMax` and `AvgMax`, and also the parameter-styling infrastructure (`emer.Params`, `emer.ParamStyle`, `emer.ParamSet` and `emer.ParamSets`).
+* `emer` *only* has the primary abstract Network interfaces (previously had put other random things in there, but the new policy is to keep everything in separate packages, as that seems to be where things end up eventually as they are better developed).
+
+* `params` has the parameter-styling infrastructure (e.g., `params.Set`, `params.Sheet`, `params.Sel`), which implement a powerful, flexible, and efficient CSS style-sheet approach to parameters.  See the [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for more info.
 
 * `erand` has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
 
@@ -72,11 +74,15 @@ Here are some of the additional packages beyond the Leabra algorithm:
 
 * `prjn` is a separate package for defining patterns of connectivity between layers (i.e., the `ProjectionSpec`s from C++ emergent).  This is done using a fully independent structure that *only* knows about the shapes of the two layers, and it returns a fully general bitmap representation of the pattern of connectivity between them.  The `leabra.Prjn` code then uses these patterns to do all the nitty-gritty of connecting up neurons.  This makes the projection code *much* simpler compared to the ProjectionSpec in C++ emergent, which was involved in both creating the pattern and also all the complexity of setting up the actual connections themselves.  This should be the *last* time any of those projection patterns need to be written (having re-written this code too many times in the C++ version as the details of memory allocations changed).
 
-* `patgen` supports various pattern-generation algorithms, as implemented in `taDataGen` in C++ emergent (e.g., `PermutedBinary` and `FlipBits`).
+* `patgen` supports various general-purpose pattern-generation algorithms, as implemented in `taDataGen` in C++ emergent (e.g., `PermutedBinary` and `FlipBits`).
+
+* `popcode` supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
 
 * `timer` is a simple interval timing struct, used for benchmarking / profiling etc.
 
 * `python` contains a template `Makefile` that uses [GoPy](https://github.com/goki/gopy) to generate python bindings to the entire emergent system.  See the `leabra` package version to actually run an example.
+
+* The [etable](https://github.com/emer/etable) repository holds all of the more general-purpose "DataTable" or DataFrame (`etable.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `etensor` n-dimensional array, `eplot` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`.
 
 # TODO
 

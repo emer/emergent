@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package emer
+package popcode
 
 import (
 	"testing"
@@ -23,7 +23,7 @@ func CmprFloats(out, cor []float32, msg string, t *testing.T) {
 }
 
 func TestPopCode(t *testing.T) {
-	pc := PopCode1D{}
+	pc := OneD{}
 	pc.Defaults()
 	var vals []float32
 	pc.Values(&vals, 11)

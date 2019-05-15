@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package emer
+package popcode
 
 import "github.com/chewxy/math32"
 
@@ -16,10 +16,10 @@ const (
 	Localist
 )
 
-// PopCode1D provides encoding and decoding of population
+// popcode.OneD provides encoding and decoding of population
 // codes, used to represent a single continuous (scalar) value
 // across a population of units / neurons (1 dimensional)
-type PopCode1D struct {
+type OneD struct {
 	Code   PopCodes `desc:"how to encode the value"`
 	Min    float32  `desc:"minimum value representable -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
 	Max    float32  `desc:"maximum value representable -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
@@ -29,7 +29,7 @@ type PopCode1D struct {
 	MinSum float32  `def:"0.2" desc:"minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by"`
 }
 
-func (pc *PopCode1D) Defaults() {
+func (pc *OneD) Defaults() {
 	pc.Code = GaussBump
 	pc.Min = -0.5
 	pc.Max = 1.5
@@ -42,7 +42,7 @@ func (pc *PopCode1D) Defaults() {
 // Encode generates a pattern of activation of given size to encode given value.
 // n must be 2 or more.
 // pat slice will be constructed if len != n
-func (pc *PopCode1D) Encode(pat *[]float32, val float32, n int) {
+func (pc *OneD) Encode(pat *[]float32, val float32, n int) {
 	if len(*pat) != n {
 		*pat = make([]float32, n)
 	}
@@ -71,7 +71,7 @@ func (pc *PopCode1D) Encode(pat *[]float32, val float32, n int) {
 // as the activation-weighted-average of the unit's preferred
 // tuning values.
 // must have 2 or more values in pattern pat.
-func (pc *PopCode1D) Decode(pat []float32) float32 {
+func (pc *OneD) Decode(pat []float32) float32 {
 	n := len(pat)
 	if n < 2 {
 		return 0
@@ -97,7 +97,7 @@ func (pc *PopCode1D) Decode(pat []float32) float32 {
 // for each unit, for a distribution of given size n.
 // n must be 2 or more.
 // vals slice will be constructed if len != n
-func (pc *PopCode1D) Values(vals *[]float32, n int) {
+func (pc *OneD) Values(vals *[]float32, n int) {
 	if len(*vals) != n {
 		*vals = make([]float32, n)
 	}

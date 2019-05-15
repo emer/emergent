@@ -41,7 +41,7 @@ determining over what scope the parameters should be applied:
 * Type = name of a type -- anything having this type name will get these params.
 
 * .Class = anything with a given class label (each object can have multiple Class
-lables and thus receive multiple parameter settings, but again, order matters!)
+labels and thus receive multiple parameter settings, but again, order matters!)
 
 * #Name = a specific named object.
 

@@ -11,11 +11,6 @@ These interfaces are intended to be just sufficient to support visualization and
 analysis kinds of functions, but explicitly avoid exposing ANY of the algorithmic aspects,
 so that those can be purely encoded in the implementation structs.
 
-To avoid naming conflicts between the interface methods and the implementation fields, which
-are considered more primary and will typically be referenced more often, we use somewhat
-verbose names for the interface methods (e.g., NetName instead of just Name, which is presumably
-the name of the field).
-
 At this point, given the extra complexity it would require, these interfaces do not support
 the ability to build or modify networks.
 
