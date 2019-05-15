@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 
 	"github.com/goki/gi/gi"
 	"github.com/goki/ki/indent"
@@ -58,7 +59,15 @@ func (pr *Params) SaveJSON(filename gi.FileName) error {
 func (pr *Params) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte(fmt.Sprintf("params.Params{\n")))
 	depth++
-	for pt, pv := range *pr {
+	paths := make([]string, len(*pr)) // alpha-sort paths for consistent output
+	ctr := 0
+	for pt := range *pr {
+		paths[ctr] = pt
+		ctr++
+	}
+	sort.StringSlice(paths).Sort()
+	for _, pt := range paths {
+		pv := (*pr)[pt]
 		w.Write(indent.TabBytes(depth))
 		w.Write([]byte(fmt.Sprintf("%q: %v,\n", pt, pv)))
 	}
@@ -247,7 +256,15 @@ func (pr *Sheets) SaveJSON(filename gi.FileName) error {
 func (pr *Sheets) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte(fmt.Sprintf("params.Sheets{\n")))
 	depth++
-	for nm, pv := range *pr {
+	nms := make([]string, len(*pr)) // alpha-sort names for consistent output
+	ctr := 0
+	for nm := range *pr {
+		nms[ctr] = nm
+		ctr++
+	}
+	sort.StringSlice(nms).Sort()
+	for _, nm := range nms {
+		pv := (*pr)[nm]
 		w.Write(indent.TabBytes(depth))
 		w.Write([]byte(fmt.Sprintf("%q: &", nm)))
 		pv.WriteGoCode(w, depth)
@@ -565,6 +582,12 @@ var SheetsProps = ki.Props{
 			"icon":        "go",
 			"show-return": true,
 		}},
+		{"sep-diffs", ki.BlankProp{}},
+		{"DiffsWithin", ki.Props{
+			"desc":        "reports where the same param path is being set to different values within this set (both within the same Sheet and betwen sheets)",
+			"icon":        "search",
+			"show-return": true,
+		}},
 	},
 }
 
@@ -605,6 +628,12 @@ var SetProps = ki.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
+			"show-return": true,
+		}},
+		{"sep-diffs", ki.BlankProp{}},
+		{"DiffsWithin", ki.Props{
+			"desc":        "reports where the same param path is being set to different values within this set (both within the same Sheet and betwen sheets)",
+			"icon":        "search",
 			"show-return": true,
 		}},
 	},
@@ -648,6 +677,25 @@ var SetsProps = ki.Props{
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
 			"show-return": true,
+		}},
+		{"sep-diffs", ki.BlankProp{}},
+		{"DiffsAll", ki.Props{
+			"desc":        "between all sets, reports where the same param path is being set to different values",
+			"icon":        "search",
+			"show-return": true,
+		}},
+		{"DiffsFirst", ki.Props{
+			"desc":        "between first set (e.g., the Base set) and rest of sets, reports where the same param path is being set to different values",
+			"icon":        "search",
+			"show-return": true,
+		}},
+		{"DiffsWithin", ki.Props{
+			"desc":        "reports all the cases where the same param path is being set to different values within different sheets in given set",
+			"icon":        "search",
+			"show-return": true,
+			"Args": ki.PropSlice{
+				{"Set Name", ki.Props{}},
+			},
 		}},
 	},
 }

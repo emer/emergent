@@ -86,7 +86,7 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 5/14/2019
+Last updated: 5/15/2019
 
 This list is not strictly in order, but roughly so..
 
@@ -95,9 +95,9 @@ This list is not strictly in order, but roughly so..
     - [x] add higher-order params levels to ra25 to test and illustrate use. include "Sim.MaxEpcs" as example of different categories of params, and how to use those -- and diff sets like "AllDefault" and "StdOutputInhib" etc to illustrate use of different param sets.
     - [x] network / layer NonDefaultParams() method that returns all the non-default params in the network can use this as way of adding params to param sets.  not sure how to automate that process, given flexibility of styling.
     - [x] above needs a string output viewer that supports copy / paste -- I guess this is a non-interactive textview..
-    - [ ] diff between param sets to see where they overlap, and also diff from current values set.
+    - [x] diff between param sets to see where they overlap, and also diff from current values set.
     - [ ] fix gui bug in editing sets -- map key issue..
-    - [ ] sort map values on output so output is reliable -- can then do test compare against target.
+    - [x] sort map values on output so output is reliable -- can then do test compare against target.
 
 - [x] add travis CI to make sure checkins build..
     
