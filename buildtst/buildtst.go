@@ -7,8 +7,8 @@
 package main
 
 import (
-	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/netview"
+	"github.com/emer/emergent/params"
 	"github.com/emer/etable/eplot"
 	"github.com/emer/etable/etable"
 	"github.com/emer/leabra/leabra"
@@ -24,21 +24,48 @@ func main() {
 	})
 }
 
-// DefaultParams are the initial default parameters for this simulation
-var DefaultParams = emer.ParamStyle{
-	{"Prjn", emer.Params{
-		"Prjn.Learn.Norm.On":     1,
-		"Prjn.Learn.Momentum.On": 1,
-		"Prjn.Learn.WtBal.On":    0,
+var ParamSets = params.Sets{
+	{Name: "Base", Desc: "these are the best params", Sheets: params.Sheets{
+		"Sim": &params.Sheet{
+			{Sel: "Sim", Desc: "best params always finish in this time",
+				Params: params.Params{
+					"Sim.MaxEpcs": 50,
+				}},
+		},
+		"Network": &params.Sheet{
+			{Sel: "Prjn", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
+				Params: params.Params{
+					"Prjn.Learn.Norm.On":     1,
+					"Prjn.Learn.Momentum.On": 1,
+					"Prjn.Learn.WtBal.On":    0,
+				}},
+			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
+				Params: params.Params{
+					"Layer.Inhib.Layer.Gi": 1.8,
+				}},
+			{Sel: "#Output", Desc: "output definitely needs lower inhib -- true for smaller layers in general",
+				Params: params.Params{
+					"Layer.Inhib.Layer.Gi": 1.4,
+				}},
+			{Sel: ".Back", Desc: "top-down back-projections MUST have lower relative weight scale, otherwise network hallucinates",
+				Params: params.Params{
+					"Prjn.WtScale.Rel": 0.2,
+				}},
+		},
 	}},
-	// "Layer": {
-	// 	"Layer.Inhib.Layer.Gi": 1.8, // this is the default
-	// },
-	{"#Output", emer.Params{
-		"Layer.Inhib.Layer.Gi": 1.4, // this turns out to be critical for small output layer
-	}},
-	{".Back", emer.Params{
-		"Prjn.WtScale.Rel": 0.2, // this is generally quite important
+	{Name: "DefaultInhib", Desc: "output uses default inhib instead of lower", Sheets: params.Sheets{
+		"Network": &params.Sheet{
+			{Sel: "#Output", Desc: "go back to default",
+				Params: params.Params{
+					"Layer.Inhib.Layer.Gi": 1.8,
+				}},
+		},
+		"Sim": &params.Sheet{
+			{Sel: "Sim", Desc: "takes longer -- generally doesn't finish..",
+				Params: params.Params{
+					"Sim.MaxEpcs": 100,
+				}},
+		},
 	}},
 }
 
@@ -48,7 +75,7 @@ type Sim struct {
 	Lay     *leabra.Layer    `view:"no-inline"`
 	Pats    *etable.Table    `view:"no-inline" desc:"the training patterns"`
 	EpcLog  *etable.Table    `view:"no-inline" desc:"epoch-level log data"`
-	Params  emer.ParamStyle  `view:"no-inline"`
+	Params  params.Sets      `view:"no-inline"`
 	Time    leabra.Time      `desc:"leabra timing parameters and state"`
 	NetView *netview.NetView `view:"-" desc:"the network viewer"`
 	EpcPlot *eplot.Plot2D    `view:"-" desc:"the epoch plot"`
@@ -67,7 +94,7 @@ func (ss *Sim) New() *gi.Window {
 	ss.Lay = &leabra.Layer{}
 	ss.Pats = &etable.Table{}
 	ss.EpcLog = &etable.Table{}
-	ss.Params = DefaultParams
+	ss.Params = ParamSets
 
 	width := 1600
 	height := 1200
