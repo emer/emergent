@@ -85,10 +85,13 @@ Last updated: 5/14/2019
 This list is not strictly in order, but roughly so..
 
 - [x] save / load params including save as code — key
-    - [ ] save as code still needed -- key code is in there but needs string output.
-    - [ ] add higher-order params levels to ra25 to test and illustrate use. include "Sim.MaxEpcs" as example of different categories of params, and how to use those -- and diff sets like "AllDefault" and "StdOutputInhib" etc to illustrate use of different param sets.
+    - [x] save as code still needed -- key code is in there but needs string output.
+    - [x] add higher-order params levels to ra25 to test and illustrate use. include "Sim.MaxEpcs" as example of different categories of params, and how to use those -- and diff sets like "AllDefault" and "StdOutputInhib" etc to illustrate use of different param sets.
     - [x] network / layer NonDefaultParams() method that returns all the non-default params in the network can use this as way of adding params to param sets.  not sure how to automate that process, given flexibility of styling.
-    - [ ] above needs a string output viewer that supports copy / paste -- I guess this is a non-interactive textview..
+    - [x] above needs a string output viewer that supports copy / paste -- I guess this is a non-interactive textview..
+    - [ ] diff between param sets to see where they overlap, and also diff from current values set.
+    - [ ] fix gui bug in editing sets -- map key issue..
+    - [ ] sort map values on output so output is reliable -- can then do test compare against target.
 
 - [x] add travis CI to make sure checkins build..
     

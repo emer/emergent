@@ -33,7 +33,7 @@ var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 // and no prefix = type)
 type Sel struct {
 	Sel    string `desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
-	Desc   string `desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
+	Desc   string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
 	Params Params `desc:"parameter values to apply to whatever matches the selector"`
 }
 
@@ -84,7 +84,7 @@ var KiT_Sheets = kit.Types.AddType(&Sheets{}, SheetsProps)
 // and applying may produce unexpected results -- it is better to lookup by name.
 type Set struct {
 	Name   string `desc:"unique name of this set of parameters"`
-	Desc   string `desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
+	Desc   string `width:"60" desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
 	Sheets Sheets `desc:"Sheet's grouped according to their target and / or function, e.g., "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
 }
 
