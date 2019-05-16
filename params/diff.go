@@ -112,7 +112,7 @@ func (ps *Sheet) Diffs(ops *Sheet, setNm1, setNm2 string) string {
 	pd := ""
 	for _, sel := range *ps {
 		for _, osel := range *ops {
-			spd := sel.Params.Diffs(&osel.Params, setNm1+":"+sel.Sel, setNm2+":"+osel.Sel)
+			spd := sel.Params.Diffs(&sel.Params, setNm1+":"+sel.Sel, setNm2+":"+osel.Sel)
 			pd += spd
 		}
 	}
@@ -127,7 +127,7 @@ func (ps *Sheet) DiffsWithin(shtNm string) string {
 	for i, sel := range *ps {
 		for j := i + 1; j < sz; j++ {
 			osel := (*ps)[j]
-			spd := sel.Params.Diffs(&osel.Params, shtNm+":"+sel.Sel, shtNm+":"+osel.Sel)
+			spd := sel.Params.Diffs(&sel.Params, shtNm+":"+sel.Sel, shtNm+":"+osel.Sel)
 			pd += spd
 		}
 	}

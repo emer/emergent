@@ -90,17 +90,16 @@ Last updated: 5/15/2019
 
 This list is not strictly in order, but roughly so..
 
-- [x] save / load params including save as code — key
-    - [x] save as code still needed -- key code is in there but needs string output.
-    - [x] add higher-order params levels to ra25 to test and illustrate use. include "Sim.MaxEpcs" as example of different categories of params, and how to use those -- and diff sets like "AllDefault" and "StdOutputInhib" etc to illustrate use of different param sets.
-    - [x] network / layer NonDefaultParams() method that returns all the non-default params in the network can use this as way of adding params to param sets.  not sure how to automate that process, given flexibility of styling.
-    - [x] above needs a string output viewer that supports copy / paste -- I guess this is a non-interactive textview..
-    - [x] diff between param sets to see where they overlap, and also diff from current values set.
-    - [ ] fix gui bug in editing sets -- map key issue..
-    - [x] sort map values on output so output is reliable -- can then do test compare against target.
+- [x] finish params -- all ready for use!
 
 - [x] add travis CI to make sure checkins build..
     
+- [ ] etable.Table view — colored squares for tensor in main table view (just a tensor widget) — click to get a separate window tensor editor.  start with current “render all” approach, then do windowed scrolling approach — also key for slice view with large N — need to get that logic in place at some point.
+
+- [ ] impl basic etable group / sort / filter methods, with example proj & tests
+
+- [ ] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
+
 - [ ] events for 3D and ability to select units.
 
 - [ ] logic for displaying recv, send con values — also need con type selector
@@ -111,11 +110,7 @@ This list is not strictly in order, but roughly so..
 
 - [ ] history for netview — need for cycle-level viewing
 
-- [ ] etable.Table view — colored squares for tensor in main table view (just a tensor widget) — click to get a separate window tensor editor.  start with current “render all” approach, then do windowed scrolling approach — also key for slice view with large N — need to get that logic in place at some point.
-
 - [ ] at this point, gui is first-pass complete
-
-- [ ] impl basic etable group / sort / filter methods, with example proj & tests
 
 - [ ] do basic test of deep leabra
 
