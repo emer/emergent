@@ -36,7 +36,7 @@ func (nv *Params) Defaults() {
 type VarParams struct {
 	Var     string         `desc:"name of the variable"`
 	ZeroCtr bool           `desc:"keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)"`
-	Range   minmax.Range64 `view:"inline" desc:"range to plot"`
+	Range   minmax.Range32 `view:"inline" desc:"range to display"`
 	MinMax  minmax.F32     `view:"inline" desc:"if not using fixed range, this is the actual range of data"`
 }
 

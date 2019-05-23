@@ -93,14 +93,14 @@ func (nv *NetView) Update(counters string) {
 		min, max, _ := nv.Net.VarRange(nv.Var)
 		vp.MinMax.Set(min, max)
 		if !vp.Range.FixMin {
-			nmin := minmax.NiceRoundNumber(float64(min), true) // true = below
+			nmin := float32(minmax.NiceRoundNumber(float64(min), true)) // true = below
 			if vp.Range.Min != nmin {
 				vp.Range.Min = nmin
 				needUpdt = true
 			}
 		}
 		if !vp.Range.FixMax {
-			nmax := minmax.NiceRoundNumber(float64(max), false) // false = above
+			nmax := float32(minmax.NiceRoundNumber(float64(max), false)) // false = above
 			if vp.Range.Max != nmax {
 				vp.Range.Max = nmax
 				needUpdt = true
@@ -448,7 +448,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 			return
 		}
 	}
-	clp := nv.CurVarParams.Range.ClipVal(float64(raw))
+	clp := nv.CurVarParams.Range.ClipVal(raw)
 	norm := nv.CurVarParams.Range.NormVal(clp)
 	var op float32
 	if nv.CurVarParams.ZeroCtr {
@@ -458,7 +458,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 		scaled = float32(norm)
 		op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
 	}
-	clr = nv.ColorMap.Map(norm)
+	clr = nv.ColorMap.Map(float64(norm))
 	r, g, b, a := clr.ToNPFloat32()
 	clr.SetNPFloat32(r, g, b, a*op)
 	return
@@ -522,7 +522,7 @@ func (nv *NetView) ToolbarConfig() {
 		vpp, ok := nvv.VarParams[nvv.Var]
 		if ok {
 			sbb := send.(*gi.SpinBox)
-			vpp.Range.SetMin(float64(sbb.Value))
+			vpp.Range.SetMin(sbb.Value)
 			if vpp.ZeroCtr && vpp.Range.Min < 0 && vpp.Range.FixMax {
 				vpp.Range.SetMax(-vpp.Range.Min)
 			}
@@ -567,7 +567,7 @@ func (nv *NetView) ToolbarConfig() {
 		vpp, ok := nvv.VarParams[nvv.Var]
 		if ok {
 			sbb := send.(*gi.SpinBox)
-			vpp.Range.SetMax(float64(sbb.Value))
+			vpp.Range.SetMax(sbb.Value)
 			if vpp.ZeroCtr && vpp.Range.Max > 0 && vpp.Range.FixMin {
 				vpp.Range.SetMin(-vpp.Range.Max)
 			}
