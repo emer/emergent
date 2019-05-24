@@ -29,27 +29,27 @@ var ParamSets = params.Sets{
 		"Sim": &params.Sheet{
 			{Sel: "Sim", Desc: "best params always finish in this time",
 				Params: params.Params{
-					"Sim.MaxEpcs": 50,
+					"Sim.MaxEpcs": "50",
 				}},
 		},
 		"Network": &params.Sheet{
 			{Sel: "Prjn", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
 				Params: params.Params{
-					"Prjn.Learn.Norm.On":     1,
-					"Prjn.Learn.Momentum.On": 1,
-					"Prjn.Learn.WtBal.On":    0,
+					"Prjn.Learn.Norm.On":     "true",
+					"Prjn.Learn.Momentum.On": "true",
+					"Prjn.Learn.WtBal.On":    "false",
 				}},
 			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
 				Params: params.Params{
-					"Layer.Inhib.Layer.Gi": 1.8,
+					"Layer.Inhib.Layer.Gi": "1.8",
 				}},
 			{Sel: "#Output", Desc: "output definitely needs lower inhib -- true for smaller layers in general",
 				Params: params.Params{
-					"Layer.Inhib.Layer.Gi": 1.4,
+					"Layer.Inhib.Layer.Gi": "1.4",
 				}},
 			{Sel: ".Back", Desc: "top-down back-projections MUST have lower relative weight scale, otherwise network hallucinates",
 				Params: params.Params{
-					"Prjn.WtScale.Rel": 0.2,
+					"Prjn.WtScale.Rel": "0.2",
 				}},
 		},
 	}},
@@ -57,13 +57,13 @@ var ParamSets = params.Sets{
 		"Network": &params.Sheet{
 			{Sel: "#Output", Desc: "go back to default",
 				Params: params.Params{
-					"Layer.Inhib.Layer.Gi": 1.8,
+					"Layer.Inhib.Layer.Gi": "1.8",
 				}},
 		},
 		"Sim": &params.Sheet{
 			{Sel: "Sim", Desc: "takes longer -- generally doesn't finish..",
 				Params: params.Params{
-					"Sim.MaxEpcs": 100,
+					"Sim.MaxEpcs": "100",
 				}},
 		},
 	}},
