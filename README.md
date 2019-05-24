@@ -86,7 +86,7 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 5/15/2019
+Last updated: 5/24/2019
 
 This list is not strictly in order, but roughly so..
 
@@ -94,7 +94,10 @@ This list is not strictly in order, but roughly so..
 
 - [x] add travis CI to make sure checkins build..
     
-- [ ] etable.Table view — colored squares for tensor in main table view (just a tensor widget) — click to get a separate window tensor editor.  start with current “render all” approach, then do windowed scrolling approach — also key for slice view with large N — need to get that logic in place at some point.
+- [x] etable.Table view — colored squares for tensor in main table view (just a tensor widget) — click to get a separate window tensor editor.  major infrastructure update all done for table-like views -- much faster.
+
+    - [ ] still needs row-wise and column-wise copy paste and add / delete manips -- save tensor / table
+            to CSV on mimedata and use that for pasting..
 
 - [ ] impl basic etable group / sort / filter methods, with example proj & tests
 
