@@ -11,7 +11,7 @@ import (
 	"github.com/goki/ki/kit"
 )
 
-// Params is a name-value map for floating point parameter values that can be applied
+// Params is a name-value map for parameter values that can be applied
 // to any numeric type in any object.
 // The name must be a dot-separated path to a specific parameter, e.g., Prjn.Learn.Lrate
 // The first part of the path is the overall target object type, e.g., "Prjn" or "Layer",
@@ -22,7 +22,7 @@ import (
 // is used for checking the type of the target.  Also, they all fall within the same
 // Sel selector scope which is used to determine what specific objects to apply the
 // parameters to.
-type Params map[string]float64
+type Params map[string]string
 
 var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 

@@ -69,7 +69,7 @@ func (pr *Params) WriteGoCode(w io.Writer, depth int) {
 	for _, pt := range paths {
 		pv := (*pr)[pt]
 		w.Write(indent.TabBytes(depth))
-		w.Write([]byte(fmt.Sprintf("%q: %v,\n", pt, pv)))
+		w.Write([]byte(fmt.Sprintf("%q: %q,\n", pt, pv)))
 	}
 	depth--
 	w.Write(indent.TabBytes(depth))

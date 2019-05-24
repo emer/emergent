@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/goki/gi/gi"
@@ -176,23 +177,49 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 }
 
 // SetParam sets parameter at given path on given object to given value
-// converts the float32 val as appropriate for target type.
-// returns error if path not found or target is not a numeric type (always logged).
-func SetParam(obj interface{}, path string, val float64) error {
+// converts the string param val as appropriate for target type.
+// returns error if path not found or cannot set (always logged).
+func SetParam(obj interface{}, path string, val string) error {
 	fld, err := FindParam(reflect.ValueOf(obj), path)
 	if err != nil {
 		return err
 	}
 	npf := kit.NonPtrValue(fld)
 	switch npf.Kind() {
+	case reflect.String:
+		npf.SetString(val)
 	case reflect.Float64, reflect.Float32:
-		npf.SetFloat(val)
+		r, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		npf.SetFloat(r)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		npf.SetInt(int64(val))
+		r, err := strconv.ParseInt(val, 0, 64)
+		if err != nil {
+			enerr := kit.SetEnumValueFromString(fld, val)
+			if enerr != nil {
+				log.Println(err)
+				return err
+			}
+		} else {
+			npf.SetInt(r)
+		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		npf.SetUint(uint64(val))
+		r, err := strconv.ParseInt(val, 0, 64)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		npf.SetUint(uint64(r))
 	case reflect.Bool:
-		npf.SetBool((val != 0))
+		r, err := strconv.ParseBool(val)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		npf.SetBool(r)
 	default:
 		err := fmt.Errorf("params.SetParam: field is not of a numeric type -- only numeric types supported. value: %v, kind: %v, path: %v\n", npf.String(), npf.Kind(), path)
 		log.Println(err)
