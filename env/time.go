@@ -90,8 +90,8 @@ const (
 type Ctr struct {
 	Scale     TimeScales `inactive:"+" desc:"the unit of time scale represented by this counter"`
 	Cur       int        `desc:"current counter value"`
-	Prv       int        `desc:"previous counter value, prior to last Incr() call"`
-	PrevQuery int        `desc:"value of counter when it was last queried by the model"`
+	Prv       int        `view:"-" desc:"previous counter value, prior to last Incr() call"`
+	PrevQuery int        `view:"-" desc:"value of counter when it was last queried by the model"`
 	Max       int        `desc:"where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0"`
 }
 
