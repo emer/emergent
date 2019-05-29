@@ -81,51 +81,6 @@ const (
 	TimeScalesN
 )
 
-///////////////////////////////////////////////////////////////////////////
-//  Ctr
-
-// Ctr is a counter that counts increments at a given time scale.
-// It keeps track of prior model queries and can compute when
-// it has been incremented relative to that.
-type Ctr struct {
-	Scale     TimeScales `inactive:"+" desc:"the unit of time scale represented by this counter"`
-	Cur       int        `desc:"current counter value"`
-	Prv       int        `view:"-" desc:"previous counter value, prior to last Incr() call"`
-	PrevQuery int        `view:"-" desc:"value of counter when it was last queried by the model"`
-	Max       int        `desc:"where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0"`
-}
-
-// Init initializes counter -- Cur = 0 and PrevQuery = -1
-func (ct *Ctr) Init() {
-	ct.Prv = 0
-	ct.Cur = 0
-	ct.PrevQuery = 0
-}
-
-// Incr increments the counter by 1.  If Max > 0 then if Incr >= Max
-// then the counter is reset to 0 and true is returned.  Otherwise false.
-func (ct *Ctr) Incr() bool {
-	ct.Prv = ct.Cur
-	ct.Cur++
-	if ct.Max > 0 && ct.Cur >= ct.Max {
-		ct.Cur = 0
-		return true
-	}
-	return false
-}
-
-// Query returns current counter value and a bool indicating whether the
-// current value is different from whenit was previously queried, and
-// updates the PrevQuery value to the current.
-func (ct *Ctr) Query() (int, bool) {
-	diff := ct.Cur != ct.PrevQuery
-	ct.PrevQuery = ct.Cur
-	return ct.Cur, diff
-}
-
-///////////////////////////////////////////////////////////////////////////
-//  Utils
-
 // SchemaFromScales returns an etable.Schema suitable for creating an
 // etable.Table to record the given list of time scales.  Can then add
 // to this schema anything else that might be needed, before using it

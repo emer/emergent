@@ -6,39 +6,20 @@ package env
 
 import "github.com/emer/etable/etensor"
 
-// Env Defines an interface for environments, which determine the nature and
-// sequence of inputs to a model (and responses from the model that are inputs
-// to the environment).
+// Env defines an interface for environments, which determine the nature and
+// sequence of States that can be used as inputs to a model, and the Env
+// also can accept Action responses from the model that affect state evolution.
 //
-// By adhering to this interface, it is then easier to mix-and-match environments
-// with models.
+// The Env encapsulates all of the counter management logic to advance
+// the temporal state of the environment, using TimeScales standard
+// intervals.
 //
-// The overall division of labor is that the model keeps track of the outer-most
-// Run time-scale depending on its own parameters and learning trajectory
-// and the environment is responsible for generating patterns for each run.
-//
-// Multiple different environments will typically be used in a model, e.g.,
-// one for training and other(s) for testing.  Even if these envs all share
-// a common database of patterns, a different Env should be used for each
-// case where different counters and sequences of events etc are presented.
-//
-// Thus, the Env encapsulates all of the counter management logic for each
-// aspect of model training and testing, so that the model itself just
-// needs to manange which Env to use, when, and manage the connection of
-// the Env Outputs as inputs to the model, and vice-versa for Inputs to the
-// Env coming from the model.
-//
-// The channel allows annotation about multiple possible channels of I/O
-// and any given I/O event can specify which channels are provided.
-// Particular paradigms of environments must establish naming conventions
-// for these channels which then allow the model to use the information
-// appropriately -- the Env interface only provides the most basic framework
-// for establishing these paradigms, and ultimately a given model will only
-// work within a particular paradigm of environments following specific
-// conventions.
-//
-// See e.g., env.FixedTable for particular implementation of a fixed Table
-// of patterns, for one example of a widely-used paradigm.
+// State is comprised of one or more Elements, each of which consists of an
+// etensor.Tensor chunk of values that can be obtained by the model.
+// Likewise, Actions can also have Elements.  The Step method is the main
+// interface for advancing the Env state.  Counters should be queried
+// after calling Step to see if any relevant values have changed, to trigger
+// functions in the model (e.g., logging of prior statistics, etc).
 //
 // Typically each specific implementation of this Env interface will have
 // multiple parameters etc that can be modified to control env behavior --
@@ -55,7 +36,7 @@ type Env interface {
 	// Validate checks if the various specific parameters for this
 	// Env have been properly set -- if not, error message(s) will
 	// be returned.  If everything is OK, nil is returned, in which
-	// case calls to Counters(), Outputs(), and Inputs() should all
+	// case calls to Counters(), States(), and Actions() should all
 	// return valid data.  It is essential that a model *always* check
 	// this as a first step, because the Env will not generally check
 	// for errors on any subsequent calls (for greater efficiency
@@ -65,33 +46,33 @@ type Env interface {
 	Validate() error
 
 	// Counters returns []TimeScales list of counters supported by this env.
-	// These should be consistent with in a paradigm and most models
+	// These should be consistent within a paradigm and most models
 	// will just expect particular sets of counters, but this can be
 	// useful for sanity checking that a suitable env has been selected.
-	// See SchemaFromScales for function that takes this list of time
+	// See SchemaFromScales function that takes this list of time
 	// scales and returns an etable.Schema for Table columns to record
 	// these counters in a log.
 	Counters() []TimeScales
 
-	// Outputs returns a list of channels of tensor outputs that this env
+	// States returns a list of Elements of tensor outputs that this env
 	// generates, specifying the unique Name and Shape of the data.
 	// This information can be derived directly from an etable.Schema
 	// and used for configuring model input / output pathways to fit
 	// with those provided by the environment.  Depending on the
-	// env paradigm, all channels may not be always available at every
-	// point in time e.g., an env my alternate between Input and Reward
-	// channels.  This may return nil if Env has not been properly
+	// env paradigm, all elements may not be always available at every
+	// point in time e.g., an env might alternate between Action and Reward
+	// elements.  This may return nil if Env has not been properly
 	// configured.
-	Outputs() Channels
+	States() Elements
 
-	// Inputs returns a list of channels of tensor inputs that this env
-	// accepts, specifying the unique Name and Shape of the data (could be nil).
+	// Actions returns a list of elements of tensor inputs that this env
+	// accepts, specifying the unique Name and Shape of the data.
 	// Specific paradigms of envs can establish the timing and function
 	// of these inputs, and how they then affect subsequent outputs
 	// e.g., if the model is required to make a particular choice
 	// response and then it can receive a reward or not contingent
 	// on that choice.
-	Inputs() Channels
+	Actions() Elements
 
 	// Init initializes the environment for a given run of the model.
 	// The environment may not care about the run number, but may implement
@@ -102,41 +83,42 @@ type Env interface {
 	// All other initialization / updating beyond this outer-most Run level must
 	// be managed internally by the Env itself, and the model can query the
 	// Counter state information to determine when things have updated at different
-	// time scales.  See Next() for important info about state of env after Init
-	// but prior to first Next() call.
+	// time scales.  See Step() for important info about state of env after Init
+	// but prior to first Step() call.
 	Init(run int)
 
-	// Next generates the next step of environment state.
+	// Step generates the next step of environment state.
 	// This is the main API for how the model interacts with the environment --
 	// the env should update all other levels of state internally over
-	// repeated calls to the Next method.
+	// repeated calls to the Step method.
 	// If there are no further inputs available, it returns false (most envs
 	// typically only return true and just continue running as long as needed).
 	//
 	// The Env thus always reflects the *current* state of things, and this
 	// call increments that current state, such that subsequent calls to
-	// Output(), Counter() etc will return this current state.
-	// This implies that the state just after Init and prior to first Next
-	// call should be an *initialized* state that then allows the first Next
+	// State(), Counter() etc will return this current state.
+	// This implies that the state just after Init and prior to first Step
+	// call should be an *initialized* state that then allows the first Step
 	// call to establish the proper *first* state.  Typically this means that
 	// one or more counters will be set to -1 during Init and then get incremented
-	// to 0 on the first Next call.
-	Next() bool
+	// to 0 on the first Step call.
+	Step() bool
 
-	// Output returns the given channel's worth of tensor data from the environment
-	// based on the current state of the env, as a function of having called Next().
-	// If no output is available on that channel, then nil is returned.
+	// State returns the given element's worth of tensor data from the environment
+	// based on the current state of the env, as a function of having called Step().
+	// If no output is available on that element, then nil is returned.
 	// The returned tensor must be treated as read-only as it likely points to original
-	// source data -- please make a copy before modifying.
-	Output(channel string) etensor.Tensor
+	// source data -- please make a copy before modifying (e.g., Clone() methdod)
+	State(element string) etensor.Tensor
 
-	// Input sends tensor data about e.g., responses from model back to environment.
+	// Action sends tensor data about e.g., responses from model back to act
+	// on the environment and influence its subsequent evolution.
 	// The nature and timing of this input is paradigm dependent.
-	Input(channel string, input etensor.Tensor)
+	Action(element string, input etensor.Tensor)
 
 	// Counter(scale TimeScales) returns current counter state for given time scale,
-	// and whether that time scale has changed since the last time it was queried.
-	// Thus, each Env must store a record of last-queried counters -- use the
-	// Ctr struct for each counter which handles this.
-	Counter(scale TimeScales) (val int, changed bool)
+	// the immediate previous counter state, and whether that time scale changed
+	// during the last Step() function call (this may be true even if cur == prv, if
+	// the Max = 1).  Use the Ctr struct for each counter, which manages all of this.
+	Counter(scale TimeScales) (cur, prv int, changed bool)
 }
