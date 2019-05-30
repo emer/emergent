@@ -440,7 +440,7 @@ func (nv *NetView) ViewDefaults() {
 // scaled is in range -1..1
 // todo: incorporate history etc..
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
-	raw, _ = lay.UnitVal(nv.Var, idx)
+	raw = lay.UnitVal(nv.Var, idx)
 	if nv.CurVarParams == nil || nv.CurVarParams.Var != nv.Var {
 		ok := false
 		nv.CurVarParams, ok = nv.VarParams[nv.Var]

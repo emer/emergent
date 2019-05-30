@@ -54,8 +54,8 @@ type Pattern interface {
 
 // NewTensors returns the tensors used for Connect method, based on layer sizes
 func NewTensors(send, recv *etensor.Shape) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
-	sendn = etensor.NewInt32Shape(send)
-	recvn = etensor.NewInt32Shape(recv)
+	sendn = etensor.NewInt32Shape(send, nil)
+	recvn = etensor.NewInt32Shape(recv, nil)
 	csh := etensor.AddShapes(recv, send)
 	cons = etensor.NewBitsShape(csh)
 	return

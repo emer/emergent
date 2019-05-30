@@ -100,7 +100,7 @@ func (ft *FixedTable) Step() bool {
 }
 
 func (ft *FixedTable) State(element string) etensor.Tensor {
-	et, err := ft.Table.Table.CellTensorByNameTry(element, ft.Row())
+	et, err := ft.Table.Table.CellTensorTry(element, ft.Row())
 	if err != nil {
 		log.Println(err)
 	}
