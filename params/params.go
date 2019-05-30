@@ -95,11 +95,36 @@ var KiT_Set = kit.Types.AddType(&Set{}, SetProps)
 func (ps *Set) SheetByNameTry(name string) (*Sheet, error) {
 	psht, ok := ps.Sheets[name]
 	if !ok {
-		err := fmt.Errorf("params.Set %v: Sheet named %v not found", ps.Name, name)
+		err := fmt.Errorf("params.Set: %v Sheet named %v not found", ps.Name, name)
 		log.Println(err)
 		return nil, err
 	}
 	return psht, nil
+}
+
+// ValidateSheets ensures that the sheet names are among those listed -- returns
+// error message for any that are not.  Helps catch typos and makes sure params are
+// applied properly.    Automatically logs errors.
+func (ps *Set) ValidateSheets(valids []string) error {
+	var invalids []string
+	for nm := range ps.Sheets {
+		got := false
+		for _, vl := range valids {
+			if nm == vl {
+				got = true
+				break
+			}
+		}
+		if !got {
+			invalids = append(invalids, nm)
+		}
+	}
+	if len(invalids) > 0 {
+		err := fmt.Errorf("params.Set: %v Invalid sheet names: %v", ps.Name, invalids)
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -121,6 +146,7 @@ func (ps *Sets) SetByNameTry(name string) (*Set, error) {
 		}
 	}
 	err := fmt.Errorf("params.Sets: Param Set named %v not found", name)
+	log.Println(err)
 	return nil, err
 }
 
@@ -129,4 +155,18 @@ func (ps *Sets) SetByNameTry(name string) (*Set, error) {
 func (ps *Sets) SetByName(name string) *Set {
 	st, _ := ps.SetByNameTry(name)
 	return st
+}
+
+// ValidateSheets ensures that the sheet names are among those listed -- returns
+// error message for any that are not.  Helps catch typos and makes sure params are
+// applied properly.  Automatically logs errors.
+func (ps *Sets) ValidateSheets(valids []string) error {
+	var err error
+	for _, st := range *ps {
+		er := st.ValidateSheets(valids)
+		if er != nil {
+			err = er
+		}
+	}
+	return err
 }
