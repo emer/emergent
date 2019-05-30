@@ -85,6 +85,12 @@ func (ft *FixedTable) Row() int {
 	return ft.Table.Idxs[ft.Order[ft.Trial.Cur]]
 }
 
+func (ft *FixedTable) SetTrialName() {
+	if nms := ft.Table.Table.ColByName("Name"); nms != nil {
+		ft.TrialName = nms.StringVal1D(ft.Row())
+	}
+}
+
 func (ft *FixedTable) Step() bool {
 	ft.Epoch.Same() // good idea to just reset all non-inner-most counters at start
 
@@ -92,10 +98,8 @@ func (ft *FixedTable) Step() bool {
 		erand.PermuteInts(ft.Order)
 		ft.Epoch.Incr()
 	}
-	if nms := ft.Table.Table.ColByName("Name"); nms != nil {
-		ft.PrvTrialName = ft.TrialName
-		ft.TrialName = nms.StringVal1D(ft.Row())
-	}
+	ft.PrvTrialName = ft.TrialName
+	ft.SetTrialName()
 	return true
 }
 
