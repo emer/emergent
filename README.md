@@ -99,9 +99,9 @@ This list is not strictly in order, but roughly so..
     - [ ] still needs row-wise and column-wise copy paste and add / delete manips -- save tensor / table
             to CSV on mimedata and use that for pasting..
 
-- [ ] impl basic etable group / sort / filter methods, with example proj & tests
+- [X] impl basic etable group / sort / filter methods, with example proj & tests
 
-- [ ] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
+- [X] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
 
 - [ ] events for 3D and ability to select units.
 
