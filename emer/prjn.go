@@ -57,14 +57,29 @@ type Prjn interface {
 	// SynVarNames returns the names of all the variables on the synapse
 	SynVarNames() []string
 
-	// SynVals returns values of given variable name on synapses for each synapse in the projection
-	// using the natural ordering of the synapses (sender based for Leabra)
-	SynVals(varnm string) []float32
+	// SynVals returns values of given variable name on synapses
+	// for each synapse in the projection using the natural ordering
+	// of the synapses (sender based for Leabra).
+	// returns nil if variable name invalid -- see also Try version.
+	SynVals(varNm string) []float32
+
+	// SynValsTry returns values of given variable name on synapses
+	// for each synapse in the projection using the natural ordering
+	// of the synapses (sender based for Leabra).
+	// returns error message for invalid variable name
+	SynValsTry(varNm string) ([]float32, error)
+
+	// todo: tensor version of synvals using sending layer shape
 
 	// SynVal returns value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes)
+	// returns nil if variable name or indexes invalid -- see also Try version.
+	SynVal(varnm string, sidx, ridx int) float32
+
+	// SynValTry returns value of given variable name on the synapse
+	// between given send, recv unit indexes (1D, flat indexes)
 	// returns error for access errors.
-	SynVal(varnm string, sidx, ridx int) (float32, error)
+	SynValTry(varnm string, sidx, ridx int) (float32, error)
 
 	// SetSynVal sets value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes)
