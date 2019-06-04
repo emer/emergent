@@ -43,6 +43,7 @@ func AddNewNetView(parent ki.Ki, name string) *NetView {
 }
 
 func (nv *NetView) Defaults() {
+	nv.Params.NetView = nv
 	nv.Params.Defaults()
 	nv.ColorMap = giv.AvailColorMaps[string(nv.Params.ColorMap)]
 }

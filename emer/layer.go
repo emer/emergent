@@ -200,6 +200,17 @@ type Layer interface {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
+//  Layers
+
+// Layers is a slice of layers
+type Layers []Layer
+
+// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+func (ls *Layers) ElemLabel(idx int) string {
+	return (*ls)[idx].Name()
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
 //  LayerType
 
 // LayerType is the type of the layer: Input, Hidden, Target, Compare.

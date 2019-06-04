@@ -15,6 +15,7 @@ type Params struct {
 	LayNmSize float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
 	ColorMap  giv.ColorMapName `desc:"name of color map to use"`
 	ZeroAlpha float32          `min:"0" max:"1" step:"0.1" def:"0.4" desc:"opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum"`
+	NetView   *NetView         `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview, for update method"`
 }
 
 func (nv *Params) Defaults() {
@@ -29,6 +30,14 @@ func (nv *Params) Defaults() {
 	}
 	if nv.ColorMap == "" {
 		nv.ColorMap = giv.ColorMapName("ColdHot")
+	}
+}
+
+// Update satisfies the gi.Updater interface and will trigger display update on edits
+func (nv *Params) Update() {
+	if nv.NetView != nil {
+		nv.NetView.Config()
+		nv.NetView.Update("")
 	}
 }
 

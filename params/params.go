@@ -54,6 +54,11 @@ var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
 // application must be done under explicit program control.
 type Sheet []*Sel
 
+// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+func (sh *Sheet) ElemLabel(idx int) string {
+	return (*sh)[idx].Sel
+}
+
 var KiT_Sheet = kit.Types.AddType(&Sheet{}, SheetProps)
 
 ///////////////////////////////////////////////////////////////////////
@@ -169,4 +174,9 @@ func (ps *Sets) ValidateSheets(valids []string) error {
 		}
 	}
 	return err
+}
+
+// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+func (ps *Sets) ElemLabel(idx int) string {
+	return (*ps)[idx].Name
 }

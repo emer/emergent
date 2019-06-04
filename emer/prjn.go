@@ -120,6 +120,11 @@ type Prjn interface {
 // PrjnList is a slice of projections
 type PrjnList []Prjn
 
+// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+func (pl *PrjnList) ElemLabel(idx int) string {
+	return (*pl)[idx].Name()
+}
+
 // Add adds a projection to the list
 func (pl *PrjnList) Add(p Prjn) {
 	(*pl) = append(*pl, p)
