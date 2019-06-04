@@ -10,8 +10,6 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 # Current Status / News
 
-* 6/3/2019: Official initial release!
-
 * 5/2019: NetView nearly fully functional. `eplot` package and `Plot2D` widget provides basic dynamic gui for 2d plots.  See [TODO](#todo) section below for current planning roadmap for a push to get all the basic functionality in place so people can start using it!
 
 * 4/2019: separated the `leabra` and `etable` repositories from the overall `emergent` repository, to make it easier to fork and save / modify just the algorithm components of the system independent of the overall emergent infrastructure, and because `etable` (and associated `etensor` and `bitslice`) packages are fully independent and useful more generally.  This means that `emergent` is just a toolkit library with no runnable `examples` executables etc -- all of that has moved over to the `leabra` repository including the `python` wrapper.  You just need to replace "github.com/emer/emergent/leabra/leabra" -> "github.com/emer/leabra/leabra" in your imports, and likewise "github.com/emer/emergent/etable" -> "github.com/emer/etable/etable", "github.com/emer/emergent/etensor" -> "github.com/emer/etable/etensor".
