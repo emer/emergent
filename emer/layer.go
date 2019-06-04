@@ -145,8 +145,8 @@ type Layer interface {
 	// returns error message if var name not found or invalid index.
 	UnitVal1DTry(varnm string, idx int) (float32, error)
 
-	// RecvPrjnList returns the full list of receiving projections
-	RecvPrjnList() *PrjnList
+	// RecvPrjns returns the full list of receiving projections
+	RecvPrjns() *Prjns
 
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int
@@ -154,8 +154,8 @@ type Layer interface {
 	// RecvPrjn returns a specific receiving projection
 	RecvPrjn(idx int) Prjn
 
-	// SendPrjnList returns the full list of sending projections
-	SendPrjnList() *PrjnList
+	// SendPrjns returns the full list of sending projections
+	SendPrjns() *Prjns
 
 	// NSendPrjns returns the number of sending projections
 	NSendPrjns() int

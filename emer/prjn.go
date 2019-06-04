@@ -117,21 +117,21 @@ type Prjn interface {
 	Build() error
 }
 
-// PrjnList is a slice of projections
-type PrjnList []Prjn
+// Prjns is a slice of projections
+type Prjns []Prjn
 
 // ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
-func (pl *PrjnList) ElemLabel(idx int) string {
+func (pl *Prjns) ElemLabel(idx int) string {
 	return (*pl)[idx].Name()
 }
 
 // Add adds a projection to the list
-func (pl *PrjnList) Add(p Prjn) {
+func (pl *Prjns) Add(p Prjn) {
 	(*pl) = append(*pl, p)
 }
 
 // Send finds the projection with given send layer
-func (pl *PrjnList) Send(send Layer) (Prjn, bool) {
+func (pl *Prjns) Send(send Layer) (Prjn, bool) {
 	for _, pj := range *pl {
 		if pj.SendLay() == send {
 			return pj, true
@@ -141,7 +141,7 @@ func (pl *PrjnList) Send(send Layer) (Prjn, bool) {
 }
 
 // Recv finds the projection with given recv layer
-func (pl *PrjnList) Recv(recv Layer) (Prjn, bool) {
+func (pl *Prjns) Recv(recv Layer) (Prjn, bool) {
 	for _, pj := range *pl {
 		if pj.RecvLay() == recv {
 			return pj, true
@@ -152,21 +152,21 @@ func (pl *PrjnList) Recv(recv Layer) (Prjn, bool) {
 
 // SendName finds the projection with given send layer name, nil if not found
 // see Try version for error checking.
-func (pl *PrjnList) SendName(sender string) Prjn {
+func (pl *Prjns) SendName(sender string) Prjn {
 	pj, _ := pl.SendNameTry(sender)
 	return pj
 }
 
 // RecvName finds the projection with given recv layer name, nil if not found
 // see Try version for error checking.
-func (pl *PrjnList) RecvName(recv string) Prjn {
+func (pl *Prjns) RecvName(recv string) Prjn {
 	pj, _ := pl.RecvNameTry(recv)
 	return pj
 }
 
 // SendNameTry finds the projection with given send layer name.
 // returns error message if not found
-func (pl *PrjnList) SendNameTry(sender string) (Prjn, error) {
+func (pl *Prjns) SendNameTry(sender string) (Prjn, error) {
 	for _, pj := range *pl {
 		if pj.SendLay().Name() == sender {
 			return pj, nil
@@ -177,7 +177,7 @@ func (pl *PrjnList) SendNameTry(sender string) (Prjn, error) {
 
 // RecvNameTry finds the projection with given recv layer name.
 // returns error message if not found
-func (pl *PrjnList) RecvNameTry(recv string) (Prjn, error) {
+func (pl *Prjns) RecvNameTry(recv string) (Prjn, error) {
 	for _, pj := range *pl {
 		if pj.RecvLay().Name() == recv {
 			return pj, nil
