@@ -103,13 +103,13 @@ This list is not strictly in order, but roughly so..
 
 - [X] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
 
-- [ ] events for 3D and ability to select units.
-
-- [ ] logic for displaying recv, send con values — also need con type selector
+- [ ] gogi overlay uses sprites exclusively — key perf enhance
 
 - [ ] fix gopy for complex tensors (pyobject* ownership in slice elem code) and do all the PR fixes and get that accepted
 
-- [ ] gogi overlay uses sprites exclusively — key perf enhance
+- [ ] events for 3D and ability to select units.
+
+- [ ] logic for displaying recv, send con values — also need con type selector
 
 - [ ] history for netview — need for cycle-level viewing
 
