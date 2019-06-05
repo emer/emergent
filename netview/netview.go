@@ -70,13 +70,40 @@ func (nv *NetView) HasLayers() bool {
 	return true
 }
 
+// GoUpdate is the update call to make from another go routine
+// it does the proper blocking to coordinate with GUI updates
+// generated on the main GUI thread.
+func (nv *NetView) GoUpdate(counters string) {
+	if !nv.IsVisible() || !nv.HasLayers() {
+		return
+	}
+	if nv.Viewport.IsUpdatingNode() {
+		return
+	}
+	nv.Viewport.BlockUpdates()
+	vs := nv.Scene()
+	updt := vs.UpdateStart()
+	nv.UpdateImpl(counters)
+	nv.Viewport.UnblockUpdates()
+	vs.UpdateEnd(updt)
+}
+
 // Update updates the display based on current state of network
-// counters string, if non-empty, will be displayed at bottom of view, showing current
-// counter state
+// counters string, if non-empty, will be displayed at bottom of view,
+// showing current counter state
+// This version is for calling within main window eventloop goroutine
+// use GoUpdate version for calling outside of main goroutine.
 func (nv *NetView) Update(counters string) {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
+	vs := nv.Scene()
+	updt := vs.UpdateStart()
+	nv.UpdateImpl(counters)
+	vs.UpdateEnd(updt)
+}
+
+func (nv *NetView) UpdateImpl(counters string) {
 	if counters != "" {
 		nv.SetCounters(counters)
 	}
@@ -117,7 +144,6 @@ func (nv *NetView) Update(counters string) {
 		nv.Config()
 	}
 	vs.UpdateMeshes()
-	vs.UpdateSig()
 }
 
 // Config configures the overall view widget
