@@ -99,13 +99,13 @@ This list is not strictly in order, but roughly so..
     - [ ] still needs row-wise and column-wise copy paste and add / delete manips -- save tensor / table
             to CSV on mimedata and use that for pasting..
 
-- [X] impl basic etable group / sort / filter methods, with example proj & tests
+- [x] impl basic etable group / sort / filter methods, with example proj & tests
 
-- [X] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
+- [x] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
 
-- [ ] gogi overlay uses sprites exclusively — key perf enhance
+- [x] gogi overlay uses sprites exclusively — key perf enhance
 
-- [ ] fix gopy for complex tensors (pyobject* ownership in slice elem code) and do all the PR fixes and get that accepted
+- [ ] fix gopy for complex slices (pyobject* ownership in slice elem code) and do all the PR fixes and get that accepted
 
 - [ ] events for 3D and ability to select units.
 
