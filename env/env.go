@@ -120,5 +120,27 @@ type Env interface {
 	// the immediate previous counter state, and whether that time scale changed
 	// during the last Step() function call (this may be true even if cur == prv, if
 	// the Max = 1).  Use the Ctr struct for each counter, which manages all of this.
+	// See external Counter* methods for Python-safe single-return-value versions.
 	Counter(scale TimeScales) (cur, prv int, changed bool)
+}
+
+// CounterCur returns current counter state for given time scale
+// this Counter for Python because it cannot process multiple return values
+func CounterCur(en Env, scale TimeScales) int {
+	cur, _, _ := en.Counter(scale)
+	return cur
+}
+
+// CounterPrv returns previous counter state for given time scale
+// this Counter for Python because it cannot process multiple return values
+func CounterPrv(en Env, scale TimeScales) int {
+	_, prv, _ := en.Counter(scale)
+	return prv
+}
+
+// CounterChg returns whether counter changed during last Step()
+// this Counter for Python because it cannot process multiple return values
+func CounterChg(en Env, scale TimeScales) bool {
+	_, _, chg := en.Counter(scale)
+	return chg
 }
