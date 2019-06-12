@@ -112,7 +112,7 @@ This list is not strictly in order, but roughly so..
 
 - [ ] at this point, we have most of basic textbook tech.
 
-- [ ] td/rl -- include ability to simulate drugs!a
+- [ ] td/rl -- include ability to simulate drugs!
 
 - [ ] pbwm
 
