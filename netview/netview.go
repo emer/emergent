@@ -520,6 +520,10 @@ func (nv *NetView) ToolbarConfig() {
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nv.ShowNonDefaultParams()
 		})
+	tbar.AddAction(gi.ActOpts{Label: "All Params", Icon: "info", Tooltip: "shows all the parameters in the network"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nv.ShowAllParams()
+		})
 
 	vp, ok := nv.VarParams[nv.Var]
 	if !ok {
@@ -759,7 +763,14 @@ func (nv *NetView) OpenWeights(filename gi.FileName) {
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string {
 	nds := nv.Net.NonDefaultParams()
-	gi.PromptDialog(nil, gi.DlgOpts{Title: "Non Default Params", Prompt: nds}, true, false, nil, nil)
+	giv.TextViewDialog(nv.Viewport, []byte(nds), giv.DlgOpts{Title: "Non Default Params"})
+	return nds
+}
+
+// ShowAllParams shows a dialog of all the parameters in the network.
+func (nv *NetView) ShowAllParams() string {
+	nds := nv.Net.AllParams()
+	giv.TextViewDialog(nv.Viewport, []byte(nds), giv.DlgOpts{Title: "All Params"})
 	return nds
 }
 

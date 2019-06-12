@@ -104,6 +104,9 @@ type Prjn interface {
 	// are not at their default values -- useful for setting param styles etc.
 	NonDefaultParams() string
 
+	// AllParams returns a listing of all parameters in the Projection
+	AllParams() string
+
 	// WriteWtsJSON writes the weights from this projection from the receiver-side perspective
 	// in a JSON text format.  We build in the indentation logic to make it much faster and
 	// more efficient.

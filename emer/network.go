@@ -58,6 +58,9 @@ type Network interface {
 	// are not at their default values -- useful for setting param styles etc.
 	NonDefaultParams() string
 
+	// AllParams returns a listing of all parameters in the Network
+	AllParams() string
+
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
 	// to JSON-formatted output.
 	WriteWtsJSON(w io.Writer)

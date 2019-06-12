@@ -10,6 +10,8 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 # Current Status / News
 
+* 6/12/2019: **Initial beta release!!**  The [leabra ra25](https://github.com/emer/leabra/blob/master/examples/ra25/README.md) example code is now sufficiently feature complete to provide a reasonable starting point for creating your own simulations, with both the Go and Python versions closely matched in functionality so you can choose either way (or explore both!).  We expect that although there will certainly be changes and improvements etc (there are many planned additions already), the existing code should be reasonably stable at this point, with only relatively minor changes to the API -- it is now safe to start building your own models!   Please file issues on github (use the emergent repository's issue tracker) for any bugs or other issues you find.
+
 * 5/2019: NetView nearly fully functional. `eplot` package and `Plot2D` widget provides basic dynamic gui for 2d plots.  See [TODO](#todo) section below for current planning roadmap for a push to get all the basic functionality in place so people can start using it!
 
 * 4/2019: separated the `leabra` and `etable` repositories from the overall `emergent` repository, to make it easier to fork and save / modify just the algorithm components of the system independent of the overall emergent infrastructure, and because `etable` (and associated `etensor` and `bitslice`) packages are fully independent and useful more generally.  This means that `emergent` is just a toolkit library with no runnable `examples` executables etc -- all of that has moved over to the `leabra` repository including the `python` wrapper.  You just need to replace "github.com/emer/emergent/leabra/leabra" -> "github.com/emer/leabra/leabra" in your imports, and likewise "github.com/emer/emergent/etable" -> "github.com/emer/etable/etable", "github.com/emer/emergent/etensor" -> "github.com/emer/etable/etensor".
@@ -68,7 +70,7 @@ Here are some of the additional supporting packages:
 
 * `params` has the parameter-styling infrastructure (e.g., `params.Set`, `params.Sheet`, `params.Sel`), which implement a powerful, flexible, and efficient CSS style-sheet approach to parameters.  See the [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for more info.
 
-* `erand` has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
+* `env` has an interface for environments, which encapsulates all the counters and timing information for patterns that are presented to the network, and enables more of a mix-and-match ability for using different environments with different networks.  See [Wiki Env](https://github.com/emer/emergent/wiki/Env) page for more info.
 
 * `netview` provides the `NetView` interactive 3D network viewer, implemented in the GoGi 3D framework.
 
@@ -78,6 +80,8 @@ Here are some of the additional supporting packages:
 
 * `popcode` supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
 
+* `erand` has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
+
 * `timer` is a simple interval timing struct, used for benchmarking / profiling etc.
 
 * `python` contains a template `Makefile` that uses [GoPy](https://github.com/goki/gopy) to generate python bindings to the entire emergent system.  See the `leabra` package version to actually run an example.
@@ -86,26 +90,11 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 5/24/2019
+Last updated: 6/12/2019
 
 This list is not strictly in order, but roughly so..
 
-- [x] finish params -- all ready for use!
-
-- [x] add travis CI to make sure checkins build..
-    
-- [x] etable.Table view — colored squares for tensor in main table view (just a tensor widget) — click to get a separate window tensor editor.  major infrastructure update all done for table-like views -- much faster.
-
-    - [ ] still needs row-wise and column-wise copy paste and add / delete manips -- save tensor / table
-            to CSV on mimedata and use that for pasting..
-
-- [x] impl basic etable group / sort / filter methods, with example proj & tests
-
-- [x] add "Expt" over "Runs" levels to ra25, and include basic per-Run stats using group etc.
-
-- [x] gogi overlay uses sprites exclusively — key perf enhance
-
-- [ ] fix gopy for complex slices (pyobject* ownership in slice elem code) and do all the PR fixes and get that accepted
+- [ ] add python example code for interchange between pandas, xarray, tensorflow tensor stuff and etable.Table -- right now the best is to just save as .csv and load from there (esp for pandas which doesn't have tensors) -- should be able to use arrow stuff so it would be good to look into that.
 
 - [ ] events for 3D and ability to select units.
 
