@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/emer/etable/etensor"
+	"github.com/goki/ki/ints"
 )
 
 func CheckAllN(ns *etensor.Int32, trg int, t *testing.T) {
@@ -34,8 +35,20 @@ func TestFull(t *testing.T) {
 
 	CheckAllN(sendn, nrecv, t)
 	CheckAllN(recvn, nsend, t)
+}
 
-	// todo: test self
+func TestFullSelf(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3}, nil, nil)
+
+	nsend := send.Len()
+
+	pj := NewFull()
+	pj.SelfCon = false
+	sendn, recvn, cons := pj.Connect(send, send, true)
+	fmt.Printf("full self no-con 2x3\n%s\n", string(ConsStringFull(send, send, cons)))
+
+	CheckAllN(sendn, nsend-1, t)
+	CheckAllN(recvn, nsend-1, t)
 }
 
 func TestOneToOne(t *testing.T) {
@@ -106,4 +119,57 @@ func TestPoolOneToOneSend(t *testing.T) {
 
 	CheckAllN(sendn, 1, t)
 	CheckAllN(recvn, nsendUn, t)
+}
+
+func TestUnifRnd(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{3, 4}, nil, nil)
+
+	nsend := send.Len()
+	nrecv := recv.Len()
+
+	pj := NewUnifRnd()
+	pj.PCon = 0.5
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("unif rnd recv: 3x4 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	_ = recvn
+
+	nrMax := 0
+	nrMin := nrecv
+	nrMean := 0
+	for si := 0; si < nsend; si++ {
+		nr := int(sendn.Values[si])
+		nrMax = ints.MaxInt(nrMax, nr)
+		nrMin = ints.MinInt(nrMin, nr)
+		nrMean += nr
+	}
+	fmt.Printf("sendn: %v\n", sendn.Values)
+	fmt.Printf("unif rnd nrecv: %d  pcon: %g  max: %d  min: %d  mean: %g\n", nrecv, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(nsend))
+}
+
+func TestUnifRndLg(t *testing.T) {
+	send := etensor.NewShape([]int{20, 30}, nil, nil)
+	recv := etensor.NewShape([]int{30, 40}, nil, nil)
+
+	nsend := send.Len()
+	nrecv := recv.Len()
+
+	pj := NewUnifRnd()
+	pj.PCon = 0.05
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+
+	_ = recvn
+	_ = cons
+
+	nrMax := 0
+	nrMin := nrecv
+	nrMean := 0
+	for si := 0; si < nsend; si++ {
+		nr := int(sendn.Values[si])
+		nrMax = ints.MaxInt(nrMax, nr)
+		nrMin = ints.MinInt(nrMin, nr)
+		nrMean += nr
+	}
+	fmt.Printf("unif rnd large nrecv: %d  pcon: %g  max: %d  min: %d  mean: %g\n", nrecv, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(nsend))
 }

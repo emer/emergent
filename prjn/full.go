@@ -22,17 +22,24 @@ func (fp *Full) Name() string {
 }
 
 func (fp *Full) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
-	// todo: exclude self!
 	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()
 	nrecv := recv.Len()
+	if same && !fp.SelfCon {
+		for i := 0; i < nsend; i++ { // nsend = nrecv
+			off := i*nsend + i
+			cons.Values.Set(off, false)
+		}
+		nsend--
+		nrecv--
+	}
 	rnv := recvn.Values
-	for i := 0; i < nrecv; i++ {
+	for i := range rnv {
 		rnv[i] = int32(nsend)
 	}
 	snv := sendn.Values
-	for i := 0; i < nsend; i++ {
+	for i := range snv {
 		snv[i] = int32(nrecv)
 	}
 	return
