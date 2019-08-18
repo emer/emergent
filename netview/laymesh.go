@@ -128,7 +128,7 @@ func (lm *LayMesh) Make2D(init bool) {
 		}
 	}
 
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, 0}, mat32.Vec3{fnx, 0.5, fnz})
+	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnz}, mat32.Vec3{fnx, 0.5, 0})
 }
 
 func (lm *LayMesh) Make4D(init bool) {
@@ -202,5 +202,5 @@ func (lm *LayMesh) Make4D(init bool) {
 		}
 	}
 
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, 0}, mat32.Vec3{fnpx * fnux, 0.5, fnpz * fnuz})
+	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpz * fnuz}, mat32.Vec3{fnpx * fnux, 0.5, 0})
 }
