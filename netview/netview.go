@@ -396,7 +396,7 @@ func (nv *NetView) ViewConfig() {
 		layConfig.Add(gi3d.KiT_Group, lay.Name())
 	}
 	gpConfig := kit.TypeAndNameList{}
-	gpConfig.Add(gi3d.KiT_Object, "layer")
+	gpConfig.Add(KiT_LayObj, "layer")
 	gpConfig.Add(gi3d.KiT_Text2D, "name")
 
 	mods, updt := vs.ConfigChildren(layConfig, false)
@@ -418,7 +418,7 @@ func (nv *NetView) ViewConfig() {
 		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
 		lg.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
 
-		lo := lg.Child(0).(*gi3d.Object)
+		lo := lg.Child(0).(*LayObj)
 		lo.Defaults()
 		lo.SetMeshName(vs, ly.Name())
 		lo.Mat.Color.SetUInt8(255, 100, 255, 128)
