@@ -101,7 +101,7 @@ This list is not strictly in order, but roughly so..
 - [x] logic for displaying recv, send con values
     - [ ] need con type selector to determine which prjn to show when multiple
 
-- [ ] history for netview — need for cycle-level viewing
+- [ ] up next: history for netview — need for cycle-level viewing
 
 - [ ] at this point, gui is first-pass complete
 
