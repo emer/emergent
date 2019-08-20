@@ -96,9 +96,10 @@ This list is not strictly in order, but roughly so..
 
 - [ ] add python example code for interchange between pandas, xarray, tensorflow tensor stuff and etable.Table -- right now the best is to just save as .csv and load from there (esp for pandas which doesn't have tensors) -- should be able to use arrow stuff so it would be good to look into that.
 
-- [ ] events for 3D and ability to select units.
+- [x] events for 3D and ability to select units.
 
-- [ ] logic for displaying recv, send con values — also need con type selector
+- [x] logic for displaying recv, send con values
+    - [ ] need con type selector to determine which prjn to show when multiple
 
 - [ ] history for netview — need for cycle-level viewing
 

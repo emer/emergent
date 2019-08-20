@@ -10,6 +10,7 @@ package netview
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/minmax"
@@ -28,6 +29,9 @@ type NetView struct {
 	gi.Layout
 	Net          emer.Network          `desc:"the network that we're viewing"`
 	Var          string                `desc:"current variable that we're viewing"`
+	LastCtrs     string                `desc:"last non-empty counters string passed"`
+	PrjnLay      string                `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
+	PrjnUnIdx    int                   `desc:"1D index of unit within PrjnLay for for viewing projections"`
 	Vars         []string              `desc:"the list of variables to view, along with view-specific params"`
 	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
 	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
@@ -88,9 +92,9 @@ func (nv *NetView) GoUpdate(counters string) {
 	vs.UpdateEnd(updt)
 }
 
-// Update updates the display based on current state of network
+// Update updates the display based on current state of network.
 // counters string, if non-empty, will be displayed at bottom of view,
-// showing current counter state
+// showing current counter state (if empty, any previous value is shown).
 // This version is for calling within main window eventloop goroutine
 // use GoUpdate version for calling outside of main goroutine.
 func (nv *NetView) Update(counters string) {
@@ -231,6 +235,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 	ct := nv.Counters()
 	if ct.Text != ctrs {
 		ct.SetText(ctrs)
+		nv.LastCtrs = ctrs
 	}
 }
 
@@ -242,11 +247,32 @@ func (nv *NetView) VarsListUpdate() {
 	}
 	lay := nv.Net.Layer(0)
 	unvars := lay.UnitVarNames()
-	if len(unvars) == len(nv.Vars) {
+
+	nlay := nv.Net.NLayers()
+	var prjnvars []string
+	for li := 0; li < nlay; li++ {
+		lay := nv.Net.Layer(li)
+		if lay.NRecvPrjns() > 0 {
+			prjnvars = lay.RecvPrjn(0).SynVarNames()
+			break
+		}
+		if lay.NSendPrjns() > 0 {
+			prjnvars = lay.SendPrjn(0).SynVarNames()
+			break
+		}
+	}
+
+	tlen := len(unvars) + 2*len(prjnvars)
+	if tlen == len(nv.Vars) {
 		return
 	}
-	nv.Vars = make([]string, len(unvars))
+	nv.Vars = make([]string, tlen)
 	copy(nv.Vars, unvars)
+	st := len(unvars)
+	for pi := 0; pi < len(prjnvars); pi++ {
+		nv.Vars[st+2*pi] = "r." + prjnvars[pi]
+		nv.Vars[st+2*pi+1] = "s." + prjnvars[pi]
+	}
 
 	nv.VarParams = make(map[string]*VarParams, len(nv.Vars))
 	for _, nm := range nv.Vars {
@@ -254,7 +280,6 @@ func (nv *NetView) VarsListUpdate() {
 		vp.Defaults()
 		nv.VarParams[nm] = vp
 	}
-	// todo: get prjn vars
 }
 
 // VarsUpdate updates the selection status of the variables
@@ -420,6 +445,8 @@ func (nv *NetView) ViewConfig() {
 
 		lo := lg.Child(0).(*LayObj)
 		lo.Defaults()
+		lo.LayName = ly.Name()
+		lo.NetView = nv
 		lo.SetMeshName(vs, ly.Name())
 		lo.Mat.Color.SetUInt8(255, 100, 255, 128)
 		lo.Mat.Specular.SetUInt8(128, 128, 128, 255)
@@ -463,11 +490,60 @@ func (nv *NetView) ViewDefaults() {
 	// spot.LookAtOrigin()
 }
 
-// UnitVal returns the raw value, scaled value, and color representation for given unit of given layer
-// scaled is in range -1..1
+// RecvPrjnValFrom returns the receiving projection value to cur prjn unit
+// from given 1D unit index in given layer.
+// Returns false if no connection or no valid prjn unit.
+func (nv *NetView) RecvPrjnValFrom(svar string, lay emer.Layer, idx1d int) (float32, bool) {
+	play := nv.Net.LayerByName(nv.PrjnLay)
+	if play == nil {
+		return 0, false
+	}
+	pp := play.RecvPrjns().SendName(lay.Name())
+	if pp == nil {
+		return 0, false
+	}
+	sval, err := pp.SynValTry(svar, idx1d, nv.PrjnUnIdx)
+	if err != nil {
+		return 0, false
+	}
+	return sval, true
+}
+
+// SendPrjnValTo returns the sending projection value from cur prjn unit
+// to given 1D unit index in given layer.
+// Returns false if no connection or no valid prjn unit.
+func (nv *NetView) SendPrjnValFrom(svar string, lay emer.Layer, idx1d int) (float32, bool) {
+	play := nv.Net.LayerByName(nv.PrjnLay)
+	if play == nil {
+		return 0, false
+	}
+	pp := play.SendPrjns().RecvName(lay.Name())
+	if pp == nil {
+		return 0, false
+	}
+	sval, err := pp.SynValTry(svar, nv.PrjnUnIdx, idx1d)
+	if err != nil {
+		return 0, false
+	}
+	return sval, true
+}
+
+// UnitVal returns the raw value, scaled value, and color representation
+// for given unit of given layer scaled is in range -1..1
 // todo: incorporate history etc..
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
-	raw = lay.UnitVal(nv.Var, idx)
+	hasval := true
+	idx1d := lay.Shape().Offset(idx)
+	if strings.HasPrefix(nv.Var, "r.") {
+		svar := nv.Var[2:]
+		raw, hasval = nv.RecvPrjnValFrom(svar, lay, idx1d)
+	} else if strings.HasPrefix(nv.Var, "s.") {
+		svar := nv.Var[2:]
+		raw, hasval = nv.SendPrjnValFrom(svar, lay, idx1d)
+	} else {
+		raw = lay.UnitVal(nv.Var, idx)
+	}
+
 	if nv.CurVarParams == nil || nv.CurVarParams.Var != nv.Var {
 		ok := false
 		nv.CurVarParams, ok = nv.VarParams[nv.Var]
@@ -488,6 +564,13 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 	clr = nv.ColorMap.Map(float64(norm))
 	r, g, b, a := clr.ToNPFloat32()
 	clr.SetNPFloat32(r, g, b, a*op)
+	if !hasval { // implies prjn
+		if lay.Name() == nv.PrjnLay && idx1d == nv.PrjnUnIdx {
+			clr.SetUInt8(0x20, 0x80, 0x20, 0x80)
+		} else {
+			clr.SetUInt8(0x20, 0x20, 0x20, 0x40)
+		}
+	}
 	return
 }
 

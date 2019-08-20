@@ -50,6 +50,10 @@ type Layer interface {
 	// Is4D() returns true if this is a 4D layer (has Pools as inner 2 dimensions)
 	Is4D() bool
 
+	// Idx4DFrom2D returns the 4D index from 2D coordinates
+	// within which inner dims are interleaved.  Returns false if 2D coords are invalid.
+	Idx4DFrom2D(x, y int) ([]int, bool)
+
 	// Type returns the functional type of layer according to LayerType (extensible in
 	// more specialized algorithms)
 	Type() LayerType
