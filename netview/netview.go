@@ -261,14 +261,18 @@ func (nv *NetView) VarsListUpdate() {
 			break
 		}
 	}
+	ulen := len(unvars)
+	if ulen%2 != 0 { // make it an even number, for 2 column layout
+		ulen++
+	}
 
-	tlen := len(unvars) + 2*len(prjnvars)
+	tlen := ulen + 2*len(prjnvars)
 	if tlen == len(nv.Vars) {
 		return
 	}
 	nv.Vars = make([]string, tlen)
 	copy(nv.Vars, unvars)
-	st := len(unvars)
+	st := ulen
 	for pi := 0; pi < len(prjnvars); pi++ {
 		nv.Vars[st+2*pi] = "r." + prjnvars[pi]
 		nv.Vars[st+2*pi+1] = "s." + prjnvars[pi]
@@ -363,7 +367,8 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 func (nv *NetView) VarsConfig() {
 	vl := nv.VarsLay()
 	vl.SetReRenderAnchor()
-	vl.Lay = gi.LayoutVert
+	vl.Lay = gi.LayoutGrid
+	vl.SetProp("columns", 2)
 	vl.SetProp("spacing", 0)
 	vl.SetProp("vertical-align", gi.AlignTop)
 	nv.VarsListUpdate()
