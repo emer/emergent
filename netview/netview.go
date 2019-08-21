@@ -32,7 +32,7 @@ type NetView struct {
 	LastCtrs     string                `desc:"last non-empty counters string passed"`
 	PrjnLay      string                `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
 	PrjnUnIdx    int                   `desc:"1D index of unit within PrjnLay for for viewing projections"`
-	Vars         []string              `desc:"the list of variables to view, along with view-specific params"`
+	Vars         []string              `desc:"the list of variables to view"`
 	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
 	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
 	Params       Params                `desc:"parameters controlling how the view is rendered"`
@@ -239,19 +239,20 @@ func (nv *NetView) SetCounters(ctrs string) {
 	}
 }
 
-// VarsListUpdate updates the list of network variables
-func (nv *NetView) VarsListUpdate() {
-	if !nv.HasLayers() {
-		nv.Vars = nil
-		return
+// NetVarsList returns the list of layer and prjn variables for given network.
+// layEven ensures that the number of layer variables is an even number if true
+// (used for display but not storage).
+func NetVarsList(net emer.Network, layEven bool) []string {
+	if net == nil || net.NLayers() == 0 {
+		return nil
 	}
-	lay := nv.Net.Layer(0)
+	lay := net.Layer(0)
 	unvars := lay.UnitVarNames()
 
-	nlay := nv.Net.NLayers()
+	nlay := net.NLayers()
 	var prjnvars []string
 	for li := 0; li < nlay; li++ {
-		lay := nv.Net.Layer(li)
+		lay := net.Layer(li)
 		if lay.NRecvPrjns() > 0 {
 			prjnvars = lay.RecvPrjn(0).SynVarNames()
 			break
@@ -262,22 +263,28 @@ func (nv *NetView) VarsListUpdate() {
 		}
 	}
 	ulen := len(unvars)
-	if ulen%2 != 0 { // make it an even number, for 2 column layout
+	if layEven && ulen%2 != 0 { // make it an even number, for 2 column layout
 		ulen++
 	}
 
 	tlen := ulen + 2*len(prjnvars)
-	if tlen == len(nv.Vars) {
-		return
-	}
-	nv.Vars = make([]string, tlen)
-	copy(nv.Vars, unvars)
+	nvars := make([]string, tlen)
+	copy(nvars, unvars)
 	st := ulen
 	for pi := 0; pi < len(prjnvars); pi++ {
-		nv.Vars[st+2*pi] = "r." + prjnvars[pi]
-		nv.Vars[st+2*pi+1] = "s." + prjnvars[pi]
+		nvars[st+2*pi] = "r." + prjnvars[pi]
+		nvars[st+2*pi+1] = "s." + prjnvars[pi]
 	}
+	return nvars
+}
 
+// VarsListUpdate updates the list of network variables
+func (nv *NetView) VarsListUpdate() {
+	nvars := NetVarsList(nv.Net, true) // true = layEven
+	if len(nvars) == len(nv.Vars) {
+		return
+	}
+	nv.Vars = nvars
 	nv.VarParams = make(map[string]*VarParams, len(nv.Vars))
 	for _, nm := range nv.Vars {
 		vp := &VarParams{Var: nm}
