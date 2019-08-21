@@ -106,8 +106,18 @@ type Layer interface {
 	SetIndex(idx int)
 
 	// UnitVarNames returns a list of variable names available on the units in this layer.
-	// this is a global list so do not modify!
+	// This is a global list so do not modify!
 	UnitVarNames() []string
+
+	// UnitVarProps returns a map of unit variable properties, with the key being the
+	// name of the variable, and the value gives a space-separated list of
+	// go-tag-style properties for that variable.
+	// The NetView recognizes the following properties:
+	// range:"##" = +- range around 0 for default display scaling
+	// min:"##" max:"##" = min, max display range
+	// auto-scale:"+" = use automatic scaling instead of fixed range.
+	// Note: this is a global list so do not modify!
+	UnitVarProps() map[string]string
 
 	// UnitVals returns values of given variable name on unit,
 	// for each unit in the layer, as a float32 slice (which is created de-novo).

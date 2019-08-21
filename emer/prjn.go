@@ -57,6 +57,16 @@ type Prjn interface {
 	// SynVarNames returns the names of all the variables on the synapse
 	SynVarNames() []string
 
+	// SynVarProps returns a map of synapse variable properties, with the key being the
+	// name of the variable, and the value gives a space-separated list of
+	// go-tag-style properties for that variable.
+	// The NetView recognizes the following properties:
+	// range:"##" = +- range around 0 for default display scaling
+	// min:"##" max:"##" = min, max display range
+	// auto-scale:"+" = use automatic scaling instead of fixed range.
+	// Note: this is a global list so do not modify!
+	SynVarProps() map[string]string
+
 	// SynVals returns values of given variable name on synapses
 	// for each synapse in the projection using the natural ordering
 	// of the synapses (sender based for Leabra).
