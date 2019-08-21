@@ -32,7 +32,7 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 		// note: could conditionalize on modifier but easier to just always be able to click!
 		// if key.HasAllModifierBits(me.Modifiers, key.Shift)
 		nii, _ := gi3d.KiToNode3D(recv)
-		relpos := me.Where.Sub(sc.WinBBox.Min)
+		relpos := me.Where.Sub(sc.ObjBBox.Min)
 		ray := nii.RayPick(relpos, sc)
 		// layer is in XZ plane with norm pointing up in Y axis
 		// offset is 0 in local coordinates
