@@ -63,7 +63,8 @@ type Prjn interface {
 	// The NetView recognizes the following properties:
 	// range:"##" = +- range around 0 for default display scaling
 	// min:"##" max:"##" = min, max display range
-	// auto-scale:"+" = use automatic scaling instead of fixed range.
+	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
+	// zeroctr:"+" or "-" = control whether zero-centering is used
 	// Note: this is a global list so do not modify!
 	SynVarProps() map[string]string
 

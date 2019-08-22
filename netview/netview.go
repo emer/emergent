@@ -10,6 +10,7 @@ package netview
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
@@ -345,6 +346,25 @@ func (nv *NetView) RecTrackLatest() bool {
 	return true
 }
 
+// NetFirstLayPrjn returns the first layer and projection in the network
+func NetFirstLayPrjn(net emer.Network) (emer.Layer, emer.Prjn) {
+	if net == nil || net.NLayers() == 0 {
+		return nil, nil
+	}
+	lay0 := net.Layer(0)
+	nlay := net.NLayers()
+	for li := 0; li < nlay; li++ {
+		ly := net.Layer(li)
+		if ly.NRecvPrjns() > 0 {
+			return lay0, ly.RecvPrjn(0)
+		}
+		if ly.NSendPrjns() > 0 {
+			return lay0, ly.SendPrjn(0)
+		}
+	}
+	return lay0, nil
+}
+
 // NetVarsList returns the list of layer and prjn variables for given network.
 // layEven ensures that the number of layer variables is an even number if true
 // (used for display but not storage).
@@ -352,21 +372,11 @@ func NetVarsList(net emer.Network, layEven bool) []string {
 	if net == nil || net.NLayers() == 0 {
 		return nil
 	}
-	lay := net.Layer(0)
+	lay, prjn := NetFirstLayPrjn(net)
 	unvars := lay.UnitVarNames()
-
-	nlay := net.NLayers()
 	var prjnvars []string
-	for li := 0; li < nlay; li++ {
-		lay := net.Layer(li)
-		if lay.NRecvPrjns() > 0 {
-			prjnvars = lay.RecvPrjn(0).SynVarNames()
-			break
-		}
-		if lay.NSendPrjns() > 0 {
-			prjnvars = lay.SendPrjn(0).SynVarNames()
-			break
-		}
+	if prjn != nil {
+		prjnvars = prjn.SynVarNames()
 	}
 	ulen := len(unvars)
 	if layEven && ulen%2 != 0 { // make it an even number, for 2 column layout
@@ -392,9 +402,25 @@ func (nv *NetView) VarsListUpdate() {
 	}
 	nv.Vars = nvars
 	nv.VarParams = make(map[string]*VarParams, len(nv.Vars))
+
+	lay, prjn := NetFirstLayPrjn(nv.Net)
+	unprops := lay.UnitVarProps()
+	var prjnprops map[string]string
+	if prjn != nil {
+		prjnprops = prjn.SynVarProps()
+	}
 	for _, nm := range nv.Vars {
 		vp := &VarParams{Var: nm}
 		vp.Defaults()
+		var vtag string
+		if strings.HasPrefix(nm, "r.") || strings.HasPrefix(nm, "s.") {
+			vtag = prjnprops[nm[2:]]
+		} else {
+			vtag = unprops[nm]
+		}
+		if vtag != "" {
+			vp.SetProps(vtag)
+		}
 		nv.VarParams[nm] = vp
 	}
 }

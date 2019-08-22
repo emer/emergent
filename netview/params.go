@@ -5,6 +5,10 @@
 package netview
 
 import (
+	"log"
+	"reflect"
+	"strconv"
+
 	"github.com/emer/etable/minmax"
 	"github.com/goki/gi/giv"
 )
@@ -59,5 +63,55 @@ func (vp *VarParams) Defaults() {
 		vp.ZeroCtr = true
 		vp.Range.SetMin(-1)
 		vp.Range.SetMax(1)
+	}
+}
+
+// SetProps parses Go struct-tag style properties for variable and sets values accordingly
+// for customized defaults
+func (vp *VarParams) SetProps(pstr string) {
+	rstr := reflect.StructTag(pstr)
+	if tv, ok := rstr.Lookup("range"); ok {
+		rg, err := strconv.ParseFloat(tv, 32)
+		if err != nil {
+			log.Printf("NetView.VarParams.SetProps for Var: %v 'range:' err: %v on val: %v\n", vp.Var, err, tv)
+		} else {
+			vp.Range.Max = float32(rg)
+			vp.Range.Min = -float32(rg)
+			vp.ZeroCtr = true
+		}
+	}
+	if tv, ok := rstr.Lookup("min"); ok {
+		rg, err := strconv.ParseFloat(tv, 32)
+		if err != nil {
+			log.Printf("NetView.VarParams.SetProps for Var: %v 'min:' err: %v on val: %v\n", vp.Var, err, tv)
+		} else {
+			vp.Range.Min = float32(rg)
+			vp.ZeroCtr = false
+		}
+	}
+	if tv, ok := rstr.Lookup("max"); ok {
+		rg, err := strconv.ParseFloat(tv, 32)
+		if err != nil {
+			log.Printf("NetView.VarParams.SetProps for Var: %v 'max:' err: %v on val: %v\n", vp.Var, err, tv)
+		} else {
+			vp.Range.Max = float32(rg)
+			vp.ZeroCtr = false
+		}
+	}
+	if tv, ok := rstr.Lookup("auto-scale"); ok {
+		if tv == "+" {
+			vp.Range.FixMin = false
+			vp.Range.FixMax = false
+		} else {
+			vp.Range.FixMin = true
+			vp.Range.FixMax = true
+		}
+	}
+	if tv, ok := rstr.Lookup("zeroctr"); ok {
+		if tv == "+" {
+			vp.ZeroCtr = true
+		} else {
+			vp.ZeroCtr = false
+		}
 	}
 }
