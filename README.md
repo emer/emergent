@@ -90,28 +90,27 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 6/12/2019
+Last updated: 8/22/2019
 
 This list is not strictly in order, but roughly so..
-
-- [ ] add python example code for interchange between pandas, xarray, tensorflow tensor stuff and etable.Table -- right now the best is to just save as .csv and load from there (esp for pandas which doesn't have tensors) -- should be able to use arrow stuff so it would be good to look into that.
 
 - [x] events for 3D and ability to select units.
 
 - [x] logic for displaying recv, send con values
-    - [ ] need con type selector to determine which prjn to show when multiple
 
-- [ ] up next: history for netview — need for cycle-level viewing
+- [x] up next: history for netview — need for cycle-level viewing
 
-- [ ] at this point, gui is first-pass complete
+- [x] at this point, gui is first-pass complete
 
-- [ ] do basic test of deep leabra
-
-- [ ] v1 filters — just write as separate passes that get called — programming version is so much simpler than declarative version.
+- [x] v1 filters — just write as separate passes that get called — programming version is so much simpler than declarative version.
 
 - [ ] hippo code
 
 - [ ] at this point, we have most of basic textbook tech.
+
+- [ ] do basic test of deep leabra
+
+- [ ] add python example code for interchange between pandas, xarray, tensorflow tensor stuff and etable.Table -- right now the best is to just save as .csv and load from there (esp for pandas which doesn't have tensors) -- should be able to use arrow stuff so it would be good to look into that.
 
 - [ ] td/rl -- include ability to simulate drugs!
 
