@@ -55,18 +55,19 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 			if !lshp.IdxIsValid(idx) {
 				return
 			}
-			nv.PrjnUnIdx = lshp.Offset(idx)
+			nv.Data.PrjnUnIdx = lshp.Offset(idx)
 		} else if lay.Is4D() {
 			idx, ok := lay.Idx4DFrom2D(lx, ly)
 			if !ok {
 				return
 			}
-			nv.PrjnUnIdx = lshp.Offset(idx)
+			nv.Data.PrjnUnIdx = lshp.Offset(idx)
 		} else {
 			return // not supported
 		}
-		nv.PrjnLay = lo.LayName
-		nv.Update("")
+		nv.Data.PrjnLay = lo.LayName
+		nv.Record("") // requires new update
+		nv.Update()
 		me.SetProcessed()
 	})
 }

@@ -11,6 +11,7 @@ import (
 
 // Params holds parameters controlling how the view is rendered
 type Params struct {
+	MaxRecs   int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
 	UnitSize  float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	LayNmSize float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
 	ColorMap  giv.ColorMapName `desc:"name of color map to use"`
@@ -19,6 +20,9 @@ type Params struct {
 }
 
 func (nv *Params) Defaults() {
+	if nv.MaxRecs == 0 {
+		nv.MaxRecs = 100
+	}
 	if nv.UnitSize == 0 {
 		nv.UnitSize = .9
 	}
@@ -37,7 +41,7 @@ func (nv *Params) Defaults() {
 func (nv *Params) Update() {
 	if nv.NetView != nil {
 		nv.NetView.Config()
-		nv.NetView.Update("")
+		nv.NetView.Update()
 	}
 }
 

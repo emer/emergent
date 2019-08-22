@@ -45,7 +45,7 @@ func (ri *Idx) IdxIsValid(i int) bool {
 // Add adds given number of items to the ring (n <= Len.
 // Shift is called for Len+n - Max extra items to make room.
 func (ri *Idx) Add(n int) {
-	over := ri.Len + n - ri.Max
+	over := (ri.Len + n) - ri.Max
 	if over > 0 {
 		ri.Shift(over)
 	}

@@ -10,8 +10,8 @@ package netview
 import (
 	"fmt"
 	"log"
-	"strings"
 
+	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/minmax"
 	"github.com/goki/gi/gi"
@@ -29,14 +29,14 @@ type NetView struct {
 	gi.Layout
 	Net          emer.Network          `desc:"the network that we're viewing"`
 	Var          string                `desc:"current variable that we're viewing"`
-	LastCtrs     string                `desc:"last non-empty counters string passed"`
-	PrjnLay      string                `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
-	PrjnUnIdx    int                   `desc:"1D index of unit within PrjnLay for for viewing projections"`
 	Vars         []string              `desc:"the list of variables to view"`
 	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
 	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
 	Params       Params                `desc:"parameters controlling how the view is rendered"`
 	ColorMap     *giv.ColorMap         `desc:"color map for mapping values to colors -- set by name in Params"`
+	RecNo        int                   `desc:"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]"`
+	LastCtrs     string                `desc:"last non-empty counters string provided -- re-used if no new one"`
+	Data         NetData               `desc:"contains all the network data with history"`
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
@@ -50,12 +50,14 @@ func (nv *NetView) Defaults() {
 	nv.Params.NetView = nv
 	nv.Params.Defaults()
 	nv.ColorMap = giv.AvailColorMaps[string(nv.Params.ColorMap)]
+	nv.RecNo = -1
 }
 
 // SetNet sets the network to view and updates view
 func (nv *NetView) SetNet(net emer.Network) {
 	nv.Defaults()
 	nv.Net = net
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
 	nv.Config()
 }
 
@@ -64,9 +66,10 @@ func (nv *NetView) SetVar(vr string) {
 	nv.Var = vr
 	nv.VarsUpdate()
 	nv.VarScaleUpdate(nv.Var)
-	nv.Update("")
+	nv.Update()
 }
 
+// HasLayers returns true if network has any layers -- else no display
 func (nv *NetView) HasLayers() bool {
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		return false
@@ -74,10 +77,22 @@ func (nv *NetView) HasLayers() bool {
 	return true
 }
 
+// Record records the current state of the network, along with provided counters
+// string, which is displayed at the bottom of the view to show the current
+// state of the counters.  The NetView displays this recorded data when
+// Update is next called.
+func (nv *NetView) Record(counters string) {
+	if counters != "" {
+		nv.LastCtrs = counters
+	}
+	nv.Data.Record(nv.LastCtrs)
+	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
+}
+
 // GoUpdate is the update call to make from another go routine
 // it does the proper blocking to coordinate with GUI updates
 // generated on the main GUI thread.
-func (nv *NetView) GoUpdate(counters string) {
+func (nv *NetView) GoUpdate() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
@@ -87,31 +102,26 @@ func (nv *NetView) GoUpdate(counters string) {
 	nv.Viewport.BlockUpdates()
 	vs := nv.Scene()
 	updt := vs.UpdateStart()
-	nv.UpdateImpl(counters)
+	nv.UpdateImpl()
 	nv.Viewport.UnblockUpdates()
 	vs.UpdateEnd(updt)
 }
 
 // Update updates the display based on current state of network.
-// counters string, if non-empty, will be displayed at bottom of view,
-// showing current counter state (if empty, any previous value is shown).
-// This version is for calling within main window eventloop goroutine
+// This version is for calling within main window eventloop goroutine --
 // use GoUpdate version for calling outside of main goroutine.
-func (nv *NetView) Update(counters string) {
+func (nv *NetView) Update() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
 	vs := nv.Scene()
 	updt := vs.UpdateStart()
-	nv.UpdateImpl(counters)
+	nv.UpdateImpl()
 	vs.UpdateEnd(updt)
 }
 
-func (nv *NetView) UpdateImpl(counters string) {
-	if counters != "" {
-		nv.SetCounters(counters)
-	}
-
+// UpdateImpl does the guts of updating -- backend for Update or GoUpdate
+func (nv *NetView) UpdateImpl() {
 	vp, ok := nv.VarParams[nv.Var]
 	if !ok {
 		log.Printf("NetView: %v variable: %v not found\n", nv.Nm, nv.Var)
@@ -122,24 +132,36 @@ func (nv *NetView) UpdateImpl(counters string) {
 	if !vp.Range.FixMin || !vp.Range.FixMax {
 		needUpdt := false
 		// need to autoscale
-		min, max, _ := nv.Net.VarRange(nv.Var)
-		vp.MinMax.Set(min, max)
-		if !vp.Range.FixMin {
-			nmin := float32(minmax.NiceRoundNumber(float64(min), true)) // true = below
-			if vp.Range.Min != nmin {
-				vp.Range.Min = nmin
-				needUpdt = true
+		min, max, ok := nv.Data.VarRange(nv.Var)
+		if ok {
+			vp.MinMax.Set(min, max)
+			if !vp.Range.FixMin {
+				nmin := float32(minmax.NiceRoundNumber(float64(min), true)) // true = below
+				if vp.Range.Min != nmin {
+					vp.Range.Min = nmin
+					needUpdt = true
+				}
 			}
-		}
-		if !vp.Range.FixMax {
-			nmax := float32(minmax.NiceRoundNumber(float64(max), false)) // false = above
-			if vp.Range.Max != nmax {
-				vp.Range.Max = nmax
-				needUpdt = true
+			if !vp.Range.FixMax {
+				nmax := float32(minmax.NiceRoundNumber(float64(max), false)) // false = above
+				if vp.Range.Max != nmax {
+					vp.Range.Max = nmax
+					needUpdt = true
+				}
 			}
-		}
-		if needUpdt {
-			nv.VarScaleUpdate(nv.Var)
+			if vp.ZeroCtr && !vp.Range.FixMin && !vp.Range.FixMax {
+				bmax := math32.Max(math32.Abs(vp.Range.Max), math32.Abs(vp.Range.Min))
+				if !needUpdt {
+					if vp.Range.Max != bmax || vp.Range.Min != -bmax {
+						needUpdt = true
+					}
+				}
+				vp.Range.Max = bmax
+				vp.Range.Min = -bmax
+			}
+			if needUpdt {
+				nv.VarScaleUpdate(nv.Var)
+			}
 		}
 	}
 
@@ -147,6 +169,8 @@ func (nv *NetView) UpdateImpl(counters string) {
 	if len(vs.Kids) != nv.Net.NLayers() {
 		nv.Config()
 	}
+	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
+	nv.UpdateRecNo()
 	vs.UpdateMeshes()
 }
 
@@ -192,6 +216,8 @@ func (nv *NetView) Config() {
 	ctrs := nv.Counters()
 	ctrs.Redrawable = true
 	ctrs.SetText("Counters: ")
+
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
 	nv.UpdateEnd(updt)
 }
 
@@ -231,12 +257,92 @@ func (nv *NetView) VarsLay() *gi.Frame {
 	return nv.NetLay().ChildByName("vars", 0).(*gi.Frame)
 }
 
+// SetCounters sets the counters widget view display at bottom of netview
 func (nv *NetView) SetCounters(ctrs string) {
 	ct := nv.Counters()
 	if ct.Text != ctrs {
 		ct.SetText(ctrs)
-		nv.LastCtrs = ctrs
 	}
+}
+
+// UpdateRecNo updates the record number viewing
+func (nv *NetView) UpdateRecNo() {
+	vbar := nv.Viewbar()
+	rlbl := vbar.ChildByName("rec", 10).(*gi.Label)
+	rlbl.SetText(fmt.Sprintf("%d", nv.RecNo))
+}
+
+// RecFastBkwd move view record 10 steps backward. Returns true if updated.
+func (nv *NetView) RecFastBkwd() bool {
+	if nv.RecNo == 0 {
+		return false
+	}
+	if nv.RecNo < 0 {
+		nv.RecNo = nv.Data.Ring.Len - 11
+	} else {
+		nv.RecNo -= 11
+	}
+	if nv.RecNo < 0 {
+		nv.RecNo = 0
+	}
+	return true
+}
+
+// RecBkwd move view record 1 steps backward. Returns true if updated.
+func (nv *NetView) RecBkwd() bool {
+	if nv.RecNo == 0 {
+		return false
+	}
+	if nv.RecNo < 0 {
+		nv.RecNo = nv.Data.Ring.Len - 1
+	} else {
+		nv.RecNo -= 1
+	}
+	if nv.RecNo < 0 {
+		nv.RecNo = 0
+	}
+	return true
+}
+
+// RecFwd move view record 1 step forward. Returns true if updated.
+func (nv *NetView) RecFwd() bool {
+	if nv.RecNo >= nv.Data.Ring.Len-1 {
+		nv.RecNo = nv.Data.Ring.Len - 1
+		return false
+	}
+	if nv.RecNo < 0 {
+		return false
+	}
+	nv.RecNo += 1
+	if nv.RecNo >= nv.Data.Ring.Len-1 {
+		nv.RecNo = nv.Data.Ring.Len - 1
+	}
+	return true
+}
+
+// RecFastFwd move view record 10 steps forward. Returns true if updated.
+func (nv *NetView) RecFastFwd() bool {
+	if nv.RecNo >= nv.Data.Ring.Len-1 {
+		nv.RecNo = nv.Data.Ring.Len - 1
+		return false
+	}
+	if nv.RecNo < 0 {
+		return false
+	}
+	nv.RecNo += 10
+	if nv.RecNo >= nv.Data.Ring.Len-1 {
+		nv.RecNo = nv.Data.Ring.Len - 1
+	}
+	return true
+}
+
+// RecTrackLatest sets view to track latest record (-1).  Returns true if updated.
+func (nv *NetView) RecTrackLatest() bool {
+	if nv.RecNo == -1 {
+		return false
+	}
+	nv.RecNo = -1
+	return true
 }
 
 // NetVarsList returns the list of layer and prjn variables for given network.
@@ -364,9 +470,6 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		zccb.SetChecked(vp.ZeroCtr)
 	}
 	tbar.UpdateEnd(updt)
-	if mod {
-		nv.Update("")
-	}
 	return mod
 }
 
@@ -502,59 +605,12 @@ func (nv *NetView) ViewDefaults() {
 	// spot.LookAtOrigin()
 }
 
-// RecvPrjnValFrom returns the receiving projection value to cur prjn unit
-// from given 1D unit index in given layer.
-// Returns false if no connection or no valid prjn unit.
-func (nv *NetView) RecvPrjnValFrom(svar string, lay emer.Layer, idx1d int) (float32, bool) {
-	play := nv.Net.LayerByName(nv.PrjnLay)
-	if play == nil {
-		return 0, false
-	}
-	pp := play.RecvPrjns().SendName(lay.Name())
-	if pp == nil {
-		return 0, false
-	}
-	sval, err := pp.SynValTry(svar, idx1d, nv.PrjnUnIdx)
-	if err != nil {
-		return 0, false
-	}
-	return sval, true
-}
-
-// SendPrjnValTo returns the sending projection value from cur prjn unit
-// to given 1D unit index in given layer.
-// Returns false if no connection or no valid prjn unit.
-func (nv *NetView) SendPrjnValFrom(svar string, lay emer.Layer, idx1d int) (float32, bool) {
-	play := nv.Net.LayerByName(nv.PrjnLay)
-	if play == nil {
-		return 0, false
-	}
-	pp := play.SendPrjns().RecvName(lay.Name())
-	if pp == nil {
-		return 0, false
-	}
-	sval, err := pp.SynValTry(svar, nv.PrjnUnIdx, idx1d)
-	if err != nil {
-		return 0, false
-	}
-	return sval, true
-}
-
 // UnitVal returns the raw value, scaled value, and color representation
 // for given unit of given layer scaled is in range -1..1
-// todo: incorporate history etc..
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
 	hasval := true
 	idx1d := lay.Shape().Offset(idx)
-	if strings.HasPrefix(nv.Var, "r.") {
-		svar := nv.Var[2:]
-		raw, hasval = nv.RecvPrjnValFrom(svar, lay, idx1d)
-	} else if strings.HasPrefix(nv.Var, "s.") {
-		svar := nv.Var[2:]
-		raw, hasval = nv.SendPrjnValFrom(svar, lay, idx1d)
-	} else {
-		raw = lay.UnitVal(nv.Var, idx)
-	}
+	raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
 
 	if nv.CurVarParams == nil || nv.CurVarParams.Var != nv.Var {
 		ok := false
@@ -577,7 +633,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 	r, g, b, a := clr.ToNPFloat32()
 	clr.SetNPFloat32(r, g, b, a*op)
 	if !hasval { // implies prjn
-		if lay.Name() == nv.PrjnLay && idx1d == nv.PrjnUnIdx {
+		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIdx {
 			clr.SetUInt8(0x20, 0x80, 0x20, 0x80)
 		} else {
 			clr.SetUInt8(0x20, 0x20, 0x20, 0x40)
@@ -595,7 +651,7 @@ func (nv *NetView) ToolbarConfig() {
 	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully redraw display"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nv.Config()
-			nv.Update("")
+			nv.Update()
 			nv.VarsUpdate()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
@@ -638,6 +694,8 @@ func (nv *NetView) ToolbarConfig() {
 			if ok {
 				cbb := send.(*gi.CheckBox)
 				vpp.Range.FixMin = cbb.IsChecked()
+				nvv.Update()
+				nvv.VarScaleUpdate(nvv.Var)
 			}
 		}
 	})
@@ -653,7 +711,7 @@ func (nv *NetView) ToolbarConfig() {
 				vpp.Range.SetMax(-vpp.Range.Min)
 			}
 			nvv.VarScaleUpdate(nvv.Var)
-			nvv.Update("")
+			nvv.Update()
 		}
 	})
 
@@ -668,7 +726,7 @@ func (nv *NetView) ToolbarConfig() {
 		if cmm.Map != nil {
 			nvv.Params.ColorMap = giv.ColorMapName(cmm.Map.Name)
 			nvv.ColorMap = cmm.Map
-			nvv.Update("")
+			nvv.Update()
 		}
 	})
 
@@ -683,6 +741,8 @@ func (nv *NetView) ToolbarConfig() {
 			if ok {
 				cbb := send.(*gi.CheckBox)
 				vpp.Range.FixMax = cbb.IsChecked()
+				nvv.Update()
+				nvv.VarScaleUpdate(nvv.Var)
 			}
 		}
 	})
@@ -697,8 +757,8 @@ func (nv *NetView) ToolbarConfig() {
 			if vpp.ZeroCtr && vpp.Range.Max > 0 && vpp.Range.FixMin {
 				vpp.Range.SetMin(-vpp.Range.Max)
 			}
+			nvv.Update()
 			nvv.VarScaleUpdate(nvv.Var)
-			nvv.Update("")
 		}
 	})
 	zccb := gi.AddNewCheckBox(tbar, "zccb")
@@ -712,7 +772,8 @@ func (nv *NetView) ToolbarConfig() {
 			if ok {
 				cbb := send.(*gi.CheckBox)
 				vpp.ZeroCtr = cbb.IsChecked()
-				nvv.Update("")
+				nvv.Update()
+				nvv.VarScaleUpdate(nvv.Var)
 			}
 		}
 	})
@@ -825,6 +886,42 @@ func (nv *NetView) ViewbarConfig() {
 				nv.Scene().SaveCamera("4")
 			}
 			nv.Scene().UpdateSig()
+		})
+	tbar.AddSeparator("time")
+	tlbl := gi.AddNewLabel(tbar, "time", "Time:")
+	tlbl.Tooltip = "states are recorded over time -- last N can be reviewed using these buttons"
+	rlbl := gi.AddNewLabel(tbar, "rec", fmt.Sprintf("%d", nv.RecNo))
+	rlbl.Redrawable = true
+	rlbl.Tooltip = "current view record: -1 means latest, 0 = earliest"
+	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move earlier by 10"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			if nv.RecFastBkwd() {
+				nv.Update()
+			}
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "step-bkwd", Tooltip: "move earlier by 1"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			if nv.RecBkwd() {
+				nv.Update()
+			}
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "play", Tooltip: "move to latest and always display latest (-1)"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			if nv.RecTrackLatest() {
+				nv.Update()
+			}
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "step-fwd", Tooltip: "move later by 1"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			if nv.RecFwd() {
+				nv.Update()
+			}
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move later by 10"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			if nv.RecFastFwd() {
+				nv.Update()
+			}
 		})
 }
 
