@@ -90,7 +90,7 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 8/22/2019
+Last updated: 8/23/2019
 
 This list is not strictly in order, but roughly so..
 
@@ -98,15 +98,15 @@ This list is not strictly in order, but roughly so..
 
 - [x] logic for displaying recv, send con values
 
-- [x] up next: history for netview — need for cycle-level viewing
+- [x] history for netview — need for cycle-level viewing
 
 - [x] at this point, gui is first-pass complete
 
 - [x] v1 filters — just write as separate passes that get called — programming version is so much simpler than declarative version.
 
-- [ ] hippo code
+- [x] hippo code
 
-- [ ] at this point, we have most of basic textbook tech.
+- [x] at this point, we have most of basic textbook tech.
 
 - [ ] do basic test of deep leabra
 
