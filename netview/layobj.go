@@ -28,7 +28,7 @@ var KiT_LayObj = kit.Types.AddType(&LayObj{}, nil)
 func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 	lo.ConnectEvent(sc.Win, oswin.MouseEvent, gi.RegPri, func(recv, send ki.Ki, sig int64, d interface{}) {
 		me := d.(*mouse.Event)
-		if me.Action != mouse.Press {
+		if me.Action != mouse.Press || !sc.IsVisible() {
 			return
 		}
 		// note: could conditionalize on modifier but easier to just always be able to click!
@@ -73,6 +73,9 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 		me.SetProcessed()
 	})
 	lo.ConnectEvent(sc.Win, oswin.MouseHoverEvent, gi.RegPri, func(recv, send ki.Ki, sig int64, d interface{}) {
+		if !sc.IsVisible() {
+			return
+		}
 		me := d.(*mouse.HoverEvent)
 		me.SetProcessed()
 		nii, _ := gi3d.KiToNode3D(recv)
