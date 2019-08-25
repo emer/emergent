@@ -579,7 +579,9 @@ func (nv *NetView) ViewConfig() {
 		ly := nv.Net.Layer(li)
 		lg := lgi.(*gi3d.Group)
 		lg.ConfigChildren(gpConfig, false) // won't do update b/c of above
-		lp := ly.Pos().Sub(nmin).Mul(nsc).Sub(poff)
+		lp := ly.Pos()
+		lp.Y = -lp.Y // reverse direction
+		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)
 		rp := ly.RelPos()
 		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
 		lg.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
@@ -615,7 +617,8 @@ func (nv *NetView) ViewDefaults() {
 	vs.SetStretchMaxWidth()
 	vs.SetStretchMaxHeight()
 	vs.Defaults()
-	vs.Camera.Pose.Pos.Set(0, 1, 2.75)
+	vs.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
+	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	vs.Camera.Near = 0.1
 	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
 	vs.BgColor.SetUInt8(255, 255, 255, 255) // white
