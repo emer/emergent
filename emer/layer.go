@@ -9,6 +9,7 @@ import (
 
 	"github.com/emer/emergent/params"
 	"github.com/emer/emergent/relpos"
+	"github.com/emer/emergent/weights"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/kit"
@@ -205,8 +206,14 @@ type Layer interface {
 	WriteWtsJSON(w io.Writer, depth int)
 
 	// ReadWtsJSON reads the weights from this layer from the receiver-side perspective
-	// in a JSON text format.
+	// in a JSON text format.  This is for a set of weights that were saved *for one layer only*
+	// and is not used for the network-level ReadWtsJSON, which reads into a separate
+	// structure -- see SetWtsJSON method.
 	ReadWtsJSON(r io.Reader) error
+
+	// SetWtsJSON sets the weights for this layer from weights.Layer struct that was
+	// loaded by network-level ReadWtsJSON.
+	SetWtsJSON(lw *weights.Layer) error
 
 	// Build constructs the layer and projection state based on the layer shapes
 	// and patterns of interconnectivity
