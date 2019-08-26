@@ -1008,7 +1008,7 @@ var NetViewProps = ki.Props{
 			"icon": "file-save",
 			"Args": ki.PropSlice{
 				{"File Name", ki.Props{
-					"ext": ".wts",
+					"ext": ".wts,.wts.gz",
 				}},
 			},
 		}},
@@ -1017,7 +1017,7 @@ var NetViewProps = ki.Props{
 			"icon": "file-open",
 			"Args": ki.PropSlice{
 				{"File Name", ki.Props{
-					"ext": ".wts",
+					"ext": ".wts,.wts.gz",
 				}},
 			},
 		}},
