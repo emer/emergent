@@ -72,11 +72,11 @@ type Network interface {
 	ReadWtsJSON(r io.Reader) error
 
 	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
-	// to a JSON-formatted file.
+	// to a JSON-formatted file.  If filename has .gz extension, then file is gzip compressed.
 	SaveWtsJSON(filename gi.FileName) error
 
 	// OpenWtsJSON opens network weights (and any other state that adapts with learning)
-	// from a JSON-formatted file.
+	// from a JSON-formatted file.  If filename has .gz extension, then file is gzip uncompressed.
 	OpenWtsJSON(filename gi.FileName) error
 
 	// NewLayer creates a new concrete layer of appropriate type for this network

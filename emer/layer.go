@@ -121,25 +121,17 @@ type Layer interface {
 	// Note: this is a global list so do not modify!
 	UnitVarProps() map[string]string
 
-	// UnitVals returns values of given variable name on unit,
-	// for each unit in the layer, as a float32 slice (which is created de-novo).
-	// returns nil on invalid var name -- see Try version for error message.
-	UnitVals(varnm string) []float32
+	// UnitVals fills in values of given variable name on unit,
+	// for each unit in the layer, into given float32 slice (only resized if not big enough).
+	// Returns error on invalid var name.
+	UnitVals(vals *[]float32, varnm string) error
 
-	// UnitValsTry returns values of given variable name on unit,
-	// for each unit in the layer, as a float32 slice (which is created de-novo).
-	// returns error message if var name not found.
-	UnitValsTry(varnm string) ([]float32, error)
-
-	// UnitValsTensor returns values of given variable name on unit
-	// for each unit in the layer, as a float32 tensor in same shape as layer units.
-	// returns nil on invalid var name -- see Try version for error message.
-	UnitValsTensor(varnm string) etensor.Tensor
-
-	// UnitValsTensorTry returns values of given variable name on unit
-	// for each unit in the layer, as a float32 tensor in same shape as layer units.
-	// returns error message if var name not found.
-	UnitValsTensorTry(varnm string) (etensor.Tensor, error)
+	// UnitValsTensor fills in values of given variable name on unit
+	// for each unit in the layer, into given tensor.
+	// If tensor is not already big enough to hold the values, it is
+	// set to the same shape as the layer.
+	// Returns error on invalid var name.
+	UnitValsTensor(tsr etensor.Tensor, varnm string) error
 
 	// UnitVal returns value of given variable name on given unit,
 	// using shape-based dimensional index.
@@ -178,6 +170,26 @@ type Layer interface {
 
 	// SendPrjn returns a specific sending projection
 	SendPrjn(idx int) Prjn
+
+	// RecvPrjnVals fills in values of given synapse variable name,
+	// for projection from given sending layer and neuron 1D index,
+	// for all receiving neurons in this layer,
+	// into given float32 slice (only resized if not big enough).
+	// Returns error on invalid var name.
+	// If the receiving neuron is not connected to the given sending layer or neuron
+	// then the value is set to math32.NaN().
+	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
+	RecvPrjnVals(vals *[]float32, varNm string, sendLay Layer, sendIdx1D int) error
+
+	// SendPrjnVals fills in values of given synapse variable name,
+	// for projection into given receiving layer and neuron 1D index,
+	// for all sending neurons in this layer,
+	// into given float32 slice (only resized if not big enough).
+	// Returns error on invalid var name.
+	// If the sending neuron is not connected to the given receiving layer or neuron
+	// then the value is set to math32.NaN().
+	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
+	SendPrjnVals(vals *[]float32, varNm string, recvLay Layer, recvIdx1D int) error
 
 	// Defaults sets default parameter values for all Layer and recv projection parameters
 	Defaults()
@@ -223,6 +235,13 @@ type Layer interface {
 	// over the layer
 	VarRange(varNm string) (min, max float32, err error)
 }
+
+// LayerDimNames2D provides the standard Shape dimension names for 2D layers
+var LayerDimNames2D = []string{"Y", "X"}
+
+// LayerDimNames4D provides the standard Shape dimension names for 4D layers
+// which have Pools and then neurons within pools.
+var LayerDimNames4D = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Layers

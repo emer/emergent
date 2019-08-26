@@ -105,44 +105,6 @@ makeData:
 	}
 }
 
-// RecvPrjnValFrom returns the receiving projection value to cur prjn unit
-// from given 1D unit index in given layer.
-// Returns false if no connection or no valid prjn unit.
-func (nd *NetData) RecvPrjnValFrom(svar string, lay emer.Layer, idx1d int) (float32, bool) {
-	play := nd.Net.LayerByName(nd.PrjnLay)
-	if play == nil {
-		return 0, false
-	}
-	pp := play.RecvPrjns().SendName(lay.Name())
-	if pp == nil {
-		return 0, false
-	}
-	sval, err := pp.SynValTry(svar, idx1d, nd.PrjnUnIdx)
-	if err != nil {
-		return 0, false
-	}
-	return sval, true
-}
-
-// SendPrjnValTo returns the sending projection value from cur prjn unit
-// to given 1D unit index in given layer.
-// Returns false if no connection or no valid prjn unit.
-func (nd *NetData) SendPrjnValFrom(svar string, lay emer.Layer, idx1d int) (float32, bool) {
-	play := nd.Net.LayerByName(nd.PrjnLay)
-	if play == nil {
-		return 0, false
-	}
-	pp := play.SendPrjns().RecvName(lay.Name())
-	if pp == nil {
-		return 0, false
-	}
-	sval, err := pp.SynValTry(svar, nd.PrjnUnIdx, idx1d)
-	if err != nil {
-		return 0, false
-	}
-	return sval, true
-}
-
 // Record records the current full set of data from the network, and the given counters string
 func (nd *NetData) Record(ctrs string) {
 	nlay := nd.Net.NLayers()
@@ -155,6 +117,8 @@ func (nd *NetData) Record(ctrs string) {
 	lidx := nd.Ring.LastIdx()
 
 	nd.Counters[lidx] = ctrs
+
+	prjnlay := nd.Net.LayerByName(nd.PrjnLay)
 
 	mmidx := lidx * vlen
 	for vi := range nd.Vars {
@@ -170,25 +134,22 @@ func (nd *NetData) Record(ctrs string) {
 		for vi, vnm := range nd.Vars {
 			mn := &nd.MinPer[mmidx+vi]
 			mx := &nd.MaxPer[mmidx+vi]
-			for ui := 0; ui < nu; ui++ {
-				idx := lidx*nvu + vi*nu + ui
-				hasval := true
-				raw := float32(0)
-				if strings.HasPrefix(vnm, "r.") {
-					svar := vnm[2:]
-					raw, hasval = nd.RecvPrjnValFrom(svar, lay, ui)
-				} else if strings.HasPrefix(vnm, "s.") {
-					svar := vnm[2:]
-					raw, hasval = nd.SendPrjnValFrom(svar, lay, ui)
-				} else {
-					raw = lay.UnitVal1D(vnm, ui)
-				}
-				if hasval {
-					ld.Data[idx] = raw
-					*mn = math32.Min(*mn, raw)
-					*mx = math32.Max(*mx, raw)
-				} else {
-					ld.Data[idx] = math.MaxFloat32 // hack flag
+			idx := lidx*nvu + vi*nu
+			dvals := ld.Data[idx : idx+nu]
+			if strings.HasPrefix(vnm, "r.") {
+				svar := vnm[2:]
+				lay.SendPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx)
+			} else if strings.HasPrefix(vnm, "s.") {
+				svar := vnm[2:]
+				lay.RecvPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx)
+			} else {
+				lay.UnitVals(&dvals, vnm)
+			}
+			for ui := range dvals {
+				vl := dvals[ui]
+				if !math32.IsNaN(vl) {
+					*mn = math32.Min(*mn, vl)
+					*mx = math32.Max(*mx, vl)
 				}
 			}
 		}
@@ -251,7 +212,7 @@ func (nd *NetData) CounterRec(recno int) string {
 
 // UnitVal returns the value for given layer, variable name, unit index, and record number,
 // which is -1 for current (last) record, or in [0..Len-1] for prior records.
-// Returns false if value unavailable for any reason (including recorded as such).
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
 func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (float32, bool) {
 	if nd.Ring.Len == 0 {
 		return 0, false
@@ -270,7 +231,7 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 	nvu := vlen * nu
 	idx := ridx*nvu + vi*nu + uidx1d
 	val := ld.Data[idx]
-	if val == math.MaxFloat32 {
+	if math32.IsNaN(val) {
 		return 0, false
 	}
 	return val, true

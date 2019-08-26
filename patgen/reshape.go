@@ -21,12 +21,12 @@ func ReshapeCpp(dt *etable.Table) {
 		shp := cl.Shapes()
 		if cl.NumDims() == 3 && (cl.DataType() == etensor.FLOAT32 || cl.DataType() == etensor.FLOAT64) {
 			revshp := []int{shp[0], shp[2], shp[1]} // [0] = row
-			dnms := []string{"Row", "UnY", "UnX"}
+			dnms := []string{"Row", "Y", "X"}
 			cl.SetShape(revshp, nil, dnms)
 		}
 		if cl.NumDims() == 5 && (cl.DataType() == etensor.FLOAT32 || cl.DataType() == etensor.FLOAT64) {
 			revshp := []int{shp[0], shp[4], shp[3], shp[2], shp[1]} // [0] = row
-			dnms := []string{"Row", "PoolY", "PoolX", "UnY", "UnX"}
+			dnms := []string{"Row", "PoolY", "PoolX", "NeurY", "NeurX"}
 			cl.SetShape(revshp, nil, dnms)
 		}
 	}

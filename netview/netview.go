@@ -648,25 +648,27 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 			return
 		}
 	}
-	clp := nv.CurVarParams.Range.ClipVal(raw)
-	norm := nv.CurVarParams.Range.NormVal(clp)
-	var op float32
-	if nv.CurVarParams.ZeroCtr {
-		scaled = float32(2*norm - 1)
-		op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled))
-	} else {
-		scaled = float32(norm)
-		op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
-	}
-	clr = nv.ColorMap.Map(float64(norm))
-	r, g, b, a := clr.ToNPFloat32()
-	clr.SetNPFloat32(r, g, b, a*op)
-	if !hasval { // implies prjn
+	if !hasval {
+		scaled = 0
 		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIdx {
 			clr.SetUInt8(0x20, 0x80, 0x20, 0x80)
 		} else {
 			clr.SetUInt8(0x20, 0x20, 0x20, 0x40)
 		}
+	} else {
+		clp := nv.CurVarParams.Range.ClipVal(raw)
+		norm := nv.CurVarParams.Range.NormVal(clp)
+		var op float32
+		if nv.CurVarParams.ZeroCtr {
+			scaled = float32(2*norm - 1)
+			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled))
+		} else {
+			scaled = float32(norm)
+			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
+		}
+		clr = nv.ColorMap.Map(float64(norm))
+		r, g, b, a := clr.ToNPFloat32()
+		clr.SetNPFloat32(r, g, b, a*op)
 	}
 	return
 }

@@ -69,34 +69,26 @@ type Prjn interface {
 	// Note: this is a global list so do not modify!
 	SynVarProps() map[string]string
 
-	// SynVals returns values of given variable name on synapses
-	// for each synapse in the projection using the natural ordering
-	// of the synapses (sender based for Leabra).
-	// returns nil if variable name invalid -- see also Try version.
-	SynVals(varNm string) []float32
-
-	// SynValsTry returns values of given variable name on synapses
-	// for each synapse in the projection using the natural ordering
-	// of the synapses (sender based for Leabra).
-	// returns error message for invalid variable name
-	SynValsTry(varNm string) ([]float32, error)
-
-	// todo: tensor version of synvals using sending layer shape
+	// SynVals sets values of given variable name for each synapse, using the natural ordering
+	// of the synapses (sender based for Leabra),
+	// into given float32 slice (only resized if not big enough).
+	// Returns error on invalid var name.
+	SynVals(vals *[]float32, varNm string) error
 
 	// SynVal returns value of given variable name on the synapse
-	// between given send, recv unit indexes (1D, flat indexes)
-	// returns nil if variable name or indexes invalid -- see also Try version.
-	SynVal(varnm string, sidx, ridx int) float32
+	// between given send, recv unit indexes (1D, flat indexes).
+	// Returns math32.NaN() for access errors (see SynValTry for error message)
+	SynVal(varNm string, sidx, ridx int) float32
 
 	// SynValTry returns value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes)
 	// returns error for access errors.
-	SynValTry(varnm string, sidx, ridx int) (float32, error)
+	SynValTry(varNm string, sidx, ridx int) (float32, error)
 
 	// SetSynVal sets value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes)
 	// returns error for access errors.
-	SetSynVal(varnm string, sidx, ridx int, val float32) error
+	SetSynVal(varNm string, sidx, ridx int, val float32) error
 
 	// Defaults sets default parameter values for all Prjn parameters
 	Defaults()
