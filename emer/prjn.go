@@ -119,12 +119,11 @@ type Prjn interface {
 	// ReadWtsJSON reads the weights from this projection from the receiver-side perspective
 	// in a JSON text format.  This is for a set of weights that were saved *for one prjn only*
 	// and is not used for the network-level ReadWtsJSON, which reads into a separate
-	// structure -- see SetWtsJSON method.
+	// structure -- see SetWts method.
 	ReadWtsJSON(r io.Reader) error
 
-	// SetWtsJSON sets the weights for this projection from weights.Prjn struct that was
-	// loaded by network-level ReadWtsJSON.
-	SetWtsJSON(pw *weights.Prjn) error
+	// SetWts sets the weights for this projection from weights.Prjn decoded values
+	SetWts(pw *weights.Prjn) error
 
 	// Build constructs the full connectivity among the layers as specified in this projection.
 	Build() error

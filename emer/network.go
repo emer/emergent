@@ -9,6 +9,7 @@ import (
 
 	"github.com/emer/emergent/params"
 	"github.com/emer/emergent/prjn"
+	"github.com/emer/emergent/weights"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/mat32"
 )
@@ -68,8 +69,12 @@ type Network interface {
 	WriteWtsJSON(w io.Writer)
 
 	// ReadWtsJSON reads network weights (and any other state that adapts with learning)
-	// from JSON-formatted input.
+	// from JSON-formatted input.  Reads into a temporary weights.Network structure that
+	// is then passed to SetWts to actually set the weights.
 	ReadWtsJSON(r io.Reader) error
+
+	// SetWts sets the weights for this network from weights.Network decoded values
+	SetWts(nw *weights.Network) error
 
 	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
 	// to a JSON-formatted file.  If filename has .gz extension, then file is gzip compressed.

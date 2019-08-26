@@ -220,12 +220,11 @@ type Layer interface {
 	// ReadWtsJSON reads the weights from this layer from the receiver-side perspective
 	// in a JSON text format.  This is for a set of weights that were saved *for one layer only*
 	// and is not used for the network-level ReadWtsJSON, which reads into a separate
-	// structure -- see SetWtsJSON method.
+	// structure -- see SetWts method.
 	ReadWtsJSON(r io.Reader) error
 
-	// SetWtsJSON sets the weights for this layer from weights.Layer struct that was
-	// loaded by network-level ReadWtsJSON.
-	SetWtsJSON(lw *weights.Layer) error
+	// SetWts sets the weights for this layer from weights.Layer decoded values
+	SetWts(lw *weights.Layer) error
 
 	// Build constructs the layer and projection state based on the layer shapes
 	// and patterns of interconnectivity

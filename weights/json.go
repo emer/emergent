@@ -10,37 +10,9 @@ import (
 	"log"
 )
 
-// Prec is precision for weight output in text formats
+// Prec is the precision for weight output in text formats -- default is aggressive
+// for Leabra models -- may need to increase for other models.
 var Prec = 4
-
-// Network is used for decoding weights in ReadJSON
-type Network struct {
-	Network  string
-	MetaData map[string]string // used for optional network-level params, metadata
-	Layers   []Layer
-}
-
-// Layer is used for decoding weights in ReadJSON
-type Layer struct {
-	Layer    string
-	MetaData map[string]string // used for optional layer-level params, metadata such as 	ActMAvg, ActPAvg
-	Prjns    []Prjn
-}
-
-// Prjn is used for decoding weights in ReadJSON
-type Prjn struct {
-	From     string
-	MetaData map[string]string // used for optional prjn-level params, metadata such as GScale
-	Rs       []Recv
-}
-
-// Recv is used for decoding weights in ReadJSON
-type Recv struct {
-	Ri int
-	N  int
-	Si []int
-	Wt []float32
-}
 
 // NetReadJSON reads weights for entire network in a JSON format into Network structure
 func NetReadJSON(r io.Reader) (*Network, error) {
