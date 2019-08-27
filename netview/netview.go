@@ -167,7 +167,8 @@ func (nv *NetView) UpdateImpl() {
 	}
 
 	vs := nv.Scene()
-	if len(vs.Kids) != nv.Net.NLayers() {
+	laysGp, err := vs.ChildByNameTry("Layers", 0)
+	if err != nil || laysGp.NumChildren() != nv.Net.NLayers() {
 		nv.Config()
 	}
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
@@ -552,30 +553,34 @@ func (nv *NetView) ViewConfig() {
 		nv.ViewDefaults()
 	}
 	nlay := nv.Net.NLayers()
-	if len(vs.Meshes) != nlay+1 { // one extra for the text plane mesh..
-		vs.Meshes = nil
+	laysGp, err := vs.ChildByNameTry("Layers", 0)
+	if err != nil {
+		laysGp = gi3d.AddNewGroup(vs, vs, "Layers")
 	}
 	layConfig := kit.TypeAndNameList{}
 	for li := 0; li < nlay; li++ {
 		lay := nv.Net.Layer(li)
-		AddNewLayMesh(vs, nv, lay)
+		lmesh := vs.MeshByName(lay.Name())
+		if lmesh == nil {
+			AddNewLayMesh(vs, nv, lay)
+		}
 		layConfig.Add(gi3d.KiT_Group, lay.Name())
 	}
 	gpConfig := kit.TypeAndNameList{}
 	gpConfig.Add(KiT_LayObj, "layer")
 	gpConfig.Add(gi3d.KiT_Text2D, "name")
 
-	mods, updt := vs.ConfigChildren(layConfig, false)
-	if !mods {
-		updt = vs.UpdateStart()
-	}
+	_, updt := laysGp.ConfigChildren(layConfig, true)
+	// if !mods {
+	// 	updt = laysGp.UpdateStart()
+	// }
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
 	nsc := mat32.Vec3{1.0 / nsz.X, 1.0 / nsz.Y, 1.0 / nsz.Z}
 	szc := mat32.Max(nsc.X, nsc.Y)
 	poff := mat32.NewVec3Scalar(0.5)
 	poff.Y = -0.5
-	for li, lgi := range *vs.Children() {
+	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
 		lg := lgi.(*gi3d.Group)
 		lg.ConfigChildren(gpConfig, false) // won't do update b/c of above
@@ -608,7 +613,7 @@ func (nv *NetView) ViewConfig() {
 		txt.SetProp("vertical-align", gi.AlignTop)
 	}
 	vs.InitMeshes()
-	vs.UpdateEnd(updt)
+	laysGp.UpdateEnd(updt)
 }
 
 // ViewDefaults are the default 3D view params
@@ -671,6 +676,66 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 		clr.SetNPFloat32(r, g, b, a*op)
 	}
 	return
+}
+
+// ConfigLabels ensures that given label gi3d.Text2D objects are created and initialized
+// in a top-level group called Labels.  Use LabelByName() to get a given label, and
+// LayerByName() to get a Layer group, whose Pose can be copied to put a label in
+// position relative to a layer.  Default alignment is Left, Top.
+// Returns true set of labels was changed (mods).
+func (nv *NetView) ConfigLabels(labs []string) bool {
+	vs := nv.Scene()
+	lgp, err := vs.ChildByNameTry("Labels", 1)
+	if err != nil {
+		lgp = gi3d.AddNewGroup(vs, vs, "Labels")
+	}
+
+	lbConfig := kit.TypeAndNameList{}
+	for _, ls := range labs {
+		lbConfig.Add(gi3d.KiT_Text2D, ls)
+	}
+	mods, updt := lgp.ConfigChildren(lbConfig, true)
+	if mods {
+		for i, ls := range labs {
+			lb := lgp.ChildByName(ls, i).(*gi3d.Text2D)
+			lb.Defaults(vs)
+			lb.SetText(vs, ls)
+			lb.SetProp("text-align", gi.AlignLeft)
+			lb.SetProp("vertical-align", gi.AlignTop)
+		}
+	}
+	lgp.UpdateEnd(updt)
+	return mods
+}
+
+// LabelByName returns given Text2D label (see ConfigLabels).
+// nil if not found.
+func (nv *NetView) LabelByName(lab string) *gi3d.Text2D {
+	vs := nv.Scene()
+	lgp, err := vs.ChildByNameTry("Labels", 1)
+	if err != nil {
+		return nil
+	}
+	txt, err := lgp.ChildByNameTry(lab, 0)
+	if err != nil {
+		return nil
+	}
+	return txt.(*gi3d.Text2D)
+}
+
+// LayerByName returns the gi3d.Group that represents layer of given name.
+// nil if not found.
+func (nv *NetView) LayerByName(lay string) *gi3d.Group {
+	vs := nv.Scene()
+	lgp, err := vs.ChildByNameTry("Layers", 0)
+	if err != nil {
+		return nil
+	}
+	ly, err := lgp.ChildByNameTry(lay, 0)
+	if err != nil {
+		return nil
+	}
+	return ly.(*gi3d.Group)
 }
 
 func (nv *NetView) ToolbarConfig() {
