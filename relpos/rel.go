@@ -17,13 +17,14 @@ import (
 // and associated position within a given X-Y plane,
 // and Z vertical stacking of layers above and below each other.
 type Rel struct {
-	Rel    Relations `desc:"spatial relationship between this layer and the other layer"`
-	XAlign XAligns   `viewif:"Rel=FrontOf,Behind,Above,Below" desc:"horizontal (x-axis) alignment relative to other"`
-	YAlign YAligns   `viewif:"Rel=LeftOf,RightOf,Above,Below" desc:"vertical (y-axis) alignment relative to other"`
-	Other  string    `desc:"name of the other layer we are in relationship to"`
-	Scale  float32   `desc:"scaling factor applied to layer size for displaying"`
-	Space  float32   `desc:"number of unit-spaces between us"`
-	Offset float32   `desc:"for alignment, amount we are offset relative to perfect alignment"`
+	Rel     Relations `desc:"spatial relationship between this layer and the other layer"`
+	XAlign  XAligns   `viewif:"Rel=FrontOf,Behind,Above,Below" desc:"horizontal (x-axis) alignment relative to other"`
+	YAlign  YAligns   `viewif:"Rel=LeftOf,RightOf,Above,Below" desc:"vertical (y-axis) alignment relative to other"`
+	Other   string    `desc:"name of the other layer we are in relationship to"`
+	Scale   float32   `desc:"scaling factor applied to layer size for displaying"`
+	Space   float32   `desc:"number of unit-spaces between us"`
+	XOffset float32   `desc:"for vertical (y-axis) alignment, amount we are offset relative to perfect alignment"`
+	YOffset float32   `desc:"for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment"`
 }
 
 // Defaults sets default scale, space, offset values -- rel, align must be set specifically
@@ -75,11 +76,11 @@ func (rp *Rel) Pos(op mat32.Vec3, osz mat32.Vec2, sz mat32.Vec2) mat32.Vec3 {
 func (rp *Rel) AlignYPos(yop, yosz, ysz float32) float32 {
 	switch rp.YAlign {
 	case Front:
-		return yop + rp.Offset
+		return yop + rp.YOffset
 	case Center:
-		return yop + 0.5*yosz - 0.5*ysz + rp.Offset
+		return yop + 0.5*yosz - 0.5*ysz + rp.YOffset
 	case Back:
-		return yop + yosz - ysz + rp.Offset
+		return yop + yosz - ysz + rp.YOffset
 	}
 	return yop
 }
@@ -88,11 +89,11 @@ func (rp *Rel) AlignYPos(yop, yosz, ysz float32) float32 {
 func (rp *Rel) AlignXPos(xop, xosz, xsz float32) float32 {
 	switch rp.XAlign {
 	case Left:
-		return xop + rp.Offset
+		return xop + rp.XOffset
 	case Middle:
-		return xop + 0.5*xosz - 0.5*xsz + rp.Offset
+		return xop + 0.5*xosz - 0.5*xsz + rp.XOffset
 	case Right:
-		return xop + xosz - xsz + rp.Offset
+		return xop + xosz - xsz + rp.XOffset
 	}
 	return xop
 }
