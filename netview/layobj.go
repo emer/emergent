@@ -51,6 +51,9 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 		}
 		nv := lo.NetView
 		lay := nv.Net.LayerByName(lo.LayName)
+		if lay == nil {
+			return
+		}
 		lshp := lay.Shape()
 		if lay.Is2D() {
 			idx := []int{ly, lx}
@@ -96,6 +99,9 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 		}
 		nv := lo.NetView
 		lay := nv.Net.LayerByName(lo.LayName)
+		if lay == nil {
+			return
+		}
 		lshp := lay.Shape()
 		sval := ""
 		if lay.Is2D() {

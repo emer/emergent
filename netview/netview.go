@@ -568,7 +568,7 @@ func (nv *NetView) ViewConfig() {
 	}
 	gpConfig := kit.TypeAndNameList{}
 	gpConfig.Add(KiT_LayObj, "layer")
-	gpConfig.Add(gi3d.KiT_Text2D, "name")
+	gpConfig.Add(KiT_LayName, "name")
 
 	_, updt := laysGp.ConfigChildren(layConfig, true)
 	// if !mods {
@@ -605,8 +605,9 @@ func (nv *NetView) ViewConfig() {
 		// but then the front and back fight against each other, causing flickering
 		// really you ned
 
-		txt := lg.Child(1).(*gi3d.Text2D)
+		txt := lg.Child(1).(*LayName)
 		txt.Defaults(vs)
+		txt.NetView = nv
 		txt.SetText(vs, ly.Name())
 		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
 		txt.SetProp("text-align", gi.AlignLeft)
