@@ -703,6 +703,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 			lb.SetText(vs, ls)
 			lb.SetProp("text-align", gi.AlignLeft)
 			lb.SetProp("vertical-align", gi.AlignTop)
+			lb.SetProp("white-space", gi.WhiteSpacePre)
 		}
 	}
 	lgp.UpdateEnd(updt)
