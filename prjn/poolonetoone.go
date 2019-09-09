@@ -17,7 +17,7 @@ import (
 // otherwise each pool connects to the entire set of other units.
 // if neither is 4D, then it is equivalent to OneToOne
 type PoolOneToOne struct {
-	NCons     int `desc:"number of recv pools to connect (0 for entire number of pools in recv layer)"`
+	NPools    int `desc:"number of recv pools to connect (0 for entire number of pools in recv layer)"`
 	SendStart int `desc:"starting pool index for sending connections"`
 	RecvStart int `desc:"starting pool index for recv connections"`
 }
@@ -55,11 +55,11 @@ func (ot *PoolOneToOne) ConnectPools(send, recv *etensor.Shape, same bool) (send
 	nrecvUn := recv.Dim(2) * recv.Dim(3)
 	rnv := recvn.Values
 	snv := sendn.Values
-	ncon := nrecvPl
-	if ot.NCons > 0 {
-		ncon = ints.MinInt(ot.NCons, nrecvPl)
+	npl := nrecvPl
+	if ot.NPools > 0 {
+		npl = ints.MinInt(ot.NPools, nrecvPl)
 	}
-	for i := 0; i < ncon; i++ {
+	for i := 0; i < npl; i++ {
 		rpi := ot.RecvStart + i
 		spi := ot.SendStart + i
 		if rpi >= nrecvPl || spi >= nsendPl {
@@ -87,13 +87,13 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *etensor.Shape, same bool) (s
 	nrecvUn := recv.Dim(2) * recv.Dim(3)
 	rnv := recvn.Values
 	snv := sendn.Values
-	ncon := nrecvPl
-	if ot.NCons > 0 {
-		ncon = ints.MinInt(ot.NCons, nrecvPl)
+	npl := nrecvPl
+	if ot.NPools > 0 {
+		npl = ints.MinInt(ot.NPools, nrecvPl)
 	}
 
 	if nsend == nrecvPl { // one-to-one
-		for i := 0; i < ncon; i++ {
+		for i := 0; i < npl; i++ {
 			rpi := ot.RecvStart + i
 			si := ot.SendStart + i
 			if rpi >= nrecvPl || si >= nsend {
@@ -108,7 +108,7 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *etensor.Shape, same bool) (s
 			}
 		}
 	} else { // full
-		for i := 0; i < ncon; i++ {
+		for i := 0; i < npl; i++ {
 			rpi := ot.RecvStart + i
 			if rpi >= nrecvPl {
 				break
@@ -119,7 +119,7 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *etensor.Shape, same bool) (s
 					off := ri*nsend + si
 					cons.Values.Set(off, true)
 					rnv[ri] = int32(nsend)
-					snv[si] = int32(ncon * nrecvUn)
+					snv[si] = int32(npl * nrecvUn)
 				}
 			}
 		}
@@ -136,13 +136,13 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *etensor.Shape, same bool) (s
 	nsendUn := send.Dim(2) * send.Dim(3)
 	rnv := recvn.Values
 	snv := sendn.Values
-	ncon := nsendPl
-	if ot.NCons > 0 {
-		ncon = ints.MinInt(ot.NCons, nsendPl)
+	npl := nsendPl
+	if ot.NPools > 0 {
+		npl = ints.MinInt(ot.NPools, nsendPl)
 	}
 
 	if nrecv == nsendPl { // one-to-one
-		for i := 0; i < ncon; i++ {
+		for i := 0; i < npl; i++ {
 			spi := ot.SendStart + i
 			ri := ot.RecvStart + i
 			if ri >= nrecv || spi >= nsendPl {
@@ -157,7 +157,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *etensor.Shape, same bool) (s
 			}
 		}
 	} else { // full
-		for i := 0; i < ncon; i++ {
+		for i := 0; i < npl; i++ {
 			spi := ot.SendStart + i
 			if spi >= nsendPl {
 				break
@@ -167,7 +167,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *etensor.Shape, same bool) (s
 					si := spi*nsendUn + sui
 					off := ri*nsend + si
 					cons.Values.Set(off, true)
-					rnv[ri] = int32(ncon * nsendUn)
+					rnv[ri] = int32(npl * nsendUn)
 					snv[si] = int32(nrecv)
 				}
 			}
@@ -183,11 +183,11 @@ func (ot *PoolOneToOne) ConnectOneToOne(send, recv *etensor.Shape, same bool) (s
 	nrecv := recv.Len()
 	rnv := recvn.Values
 	snv := sendn.Values
-	ncon := nrecv
-	if ot.NCons > 0 {
-		ncon = ints.MinInt(ot.NCons, nrecv)
+	npl := nrecv
+	if ot.NPools > 0 {
+		npl = ints.MinInt(ot.NPools, nrecv)
 	}
-	for i := 0; i < ncon; i++ {
+	for i := 0; i < npl; i++ {
 		ri := ot.RecvStart + i
 		si := ot.SendStart + i
 		if ri >= nrecv || si >= nsend {
