@@ -86,6 +86,7 @@ makeData:
 			nd.LayData = nil
 			goto makeData
 		}
+		ld.NUnits = lay.Shape().Len()
 		nu := ld.NUnits
 		ltot := vmax * nu
 		if len(ld.Data) != ltot {
