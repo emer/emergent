@@ -10,6 +10,8 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 # Current Status / News
 
+* 9/10/2019: First batch of [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) complete, for chapters 2-4, which drove development of lots of good stuff in [etable](https://github.com/emer/etable), including `simat` package for similarity / distance matricies, PCA, and cluster plots -- and a few key advances in eplot functionality.  See the [etable wiki](https://github.com/emer/etable/wiki) for docs and example code, and the `family_trees` as an example textbook sim with lots of this code.
+
 * 8/26/2019: Starting on [CCN Textbook](https://grey.colorado.edu/CompCogNeuro/index.php/CCNBook/Main) simulations using new emergent: https://github.com/CompCogNeuro/sims -- in course of doing so, finding and fixing a number of issues, including getting the OpenWtsJSON function to work (using a corrected JSON format), and improving the NetView etc.  For those following along with their own forks, this is a burst of change that should settle down in a week or so.
 
 * 6/12/2019: **Initial beta release!!**  The [leabra ra25](https://github.com/emer/leabra/blob/master/examples/ra25/README.md) example code is now sufficiently feature complete to provide a reasonable starting point for creating your own simulations, with both the Go and Python versions closely matched in functionality so you can choose either way (or explore both!).  We expect that although there will certainly be changes and improvements etc (there are many planned additions already), the existing code should be reasonably stable at this point, with only relatively minor changes to the API -- it is now safe to start building your own models!   Please file issues on github (use the emergent repository's issue tracker) for any bugs or other issues you find.
@@ -88,29 +90,21 @@ Here are some of the additional supporting packages:
 
 * `python` contains a template `Makefile` that uses [GoPy](https://github.com/goki/gopy) to generate python bindings to the entire emergent system.  See the `leabra` package version to actually run an example.
 
-* The [etable](https://github.com/emer/etable) repository holds all of the more general-purpose "DataTable" or DataFrame (`etable.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `etensor` n-dimensional array, `eplot` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`.
+* The [etable](https://github.com/emer/etable) repository holds all of the more general-purpose "DataTable" or DataFrame (`etable.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `etensor` n-dimensional array, `eplot` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`, and lots of data analysis tools like similarity / distance matricies, PCA, cluster plots, etc.
 
 # TODO
 
-Last updated: 8/23/2019
+Last updated: 9/10/2019
 
 This list is not strictly in order, but roughly so..
 
-- [x] events for 3D and ability to select units.
+- [ ] fix bugs, try to update glfw including keyboard input fixes
 
-- [x] logic for displaying recv, send con values
-
-- [x] history for netview — need for cycle-level viewing
-
-- [x] at this point, gui is first-pass complete
-
-- [x] v1 filters — just write as separate passes that get called — programming version is so much simpler than declarative version.
-
-- [x] hippo code
-
-- [x] at this point, we have most of basic textbook tech.
+- [ ] write converter from Go to Python
 
 - [ ] do basic test of deep leabra
+
+- [ ] MPI -- see [MPI Wiki page](https://github.com/emer/emergent/wiki/DMem)
 
 - [ ] add python example code for interchange between pandas, xarray, tensorflow tensor stuff and etable.Table -- right now the best is to just save as .csv and load from there (esp for pandas which doesn't have tensors) -- should be able to use arrow stuff so it would be good to look into that.
 
@@ -121,8 +115,6 @@ This list is not strictly in order, but roughly so..
 - [ ] pvlv
 
 - [ ] virt env -- add as option to gi3d -- requires physics engine which is hard part.. see [VirtEnv Wiki page](https://github.com/emer/emergent/wiki/VirtEnv)
-
-- [ ] MPI -- https://groups.google.com/forum/#!topic/golang-nuts/t7Vjpfu0sjQ
 
 - [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
 
