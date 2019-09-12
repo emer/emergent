@@ -25,7 +25,7 @@ type Params struct {
 
 func (nv *Params) Defaults() {
 	if nv.MaxRecs == 0 {
-		nv.MaxRecs = 100
+		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
 	}
 	if nv.UnitSize == 0 {
 		nv.UnitSize = .9
