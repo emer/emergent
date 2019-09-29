@@ -19,6 +19,7 @@ import (
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/giv"
 	"github.com/goki/gi/mat32"
+	"github.com/goki/gi/oswin/key"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
@@ -748,30 +749,36 @@ func (nv *NetView) ToolbarConfig() {
 	tbar.SetStretchMaxWidth()
 	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully redraw display"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Config()
-			nv.Update()
-			nv.VarsUpdate()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Config()
+			nvv.Update()
+			nvv.VarsUpdate()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			giv.StructViewDialog(nv.Viewport, &nv.Params, giv.DlgOpts{Title: nv.Nm + " Params"}, nil, nil)
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			giv.StructViewDialog(nvv.Viewport, &nvv.Params, giv.DlgOpts{Title: nvv.Nm + " Params"}, nil, nil)
 		})
 	tbar.AddSeparator("file")
 	tbar.AddAction(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			giv.CallMethod(nv, "SaveWeights", nv.Viewport) // this auto prompts for filename using file chooser
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			giv.CallMethod(nvv, "SaveWeights", nvv.Viewport) // this auto prompts for filename using file chooser
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Open Wts", Icon: "file-open"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			giv.CallMethod(nv, "OpenWeights", nv.Viewport) // this auto prompts for filename using file chooser
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			giv.CallMethod(nvv, "OpenWeights", nvv.Viewport) // this auto prompts for filename using file chooser
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Non Def Params", Icon: "info", Tooltip: "shows all the parameters that are not at default values -- useful for setting params"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.ShowNonDefaultParams()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.ShowNonDefaultParams()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "All Params", Icon: "info", Tooltip: "shows all the parameters in the network"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.ShowAllParams()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.ShowAllParams()
 		})
 
 	vp, ok := nv.VarParams[nv.Var]
@@ -883,107 +890,137 @@ func (nv *NetView) ViewbarConfig() {
 		return
 	}
 	tbar.SetStretchMaxWidth()
-	tbar.AddAction(gi.ActOpts{Icon: "pan", Tooltip: "return to default pan / orbit mode where mouse drags move camera around (Shift = pan, Alt = pan target)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			fmt.Printf("this will select pan mode\n")
-		})
-	tbar.AddAction(gi.ActOpts{Icon: "arrow", Tooltip: "turn on select mode for selecting units and layers with mouse clicks"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			fmt.Printf("this will select select mode\n")
-		})
-	tbar.AddSeparator("zoom")
 	tbar.AddAction(gi.ActOpts{Icon: "update", Tooltip: "reset to default initial display"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().SetCamera("default")
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().SetCamera("default")
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "zoom-in", Tooltip: "zoom in"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Zoom(-.05)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Zoom(-.05)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "zoom-out", Tooltip: "zoom out"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Zoom(.05)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Zoom(.05)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddSeparator("rot")
 	gi.AddNewLabel(tbar, "rot", "Rot:")
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-left"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Orbit(5, 0)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Orbit(5, 0)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-up"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Orbit(0, 5)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Orbit(0, 5)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-down"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Orbit(0, -5)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Orbit(0, -5)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-right"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Orbit(-5, 0)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Orbit(-5, 0)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddSeparator("pan")
 	gi.AddNewLabel(tbar, "pan", "Pan:")
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-left"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Pan(-.2, 0)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Pan(-.2, 0)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-up"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Pan(0, .2)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Pan(0, .2)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-down"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Pan(0, -.2)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Pan(0, -.2)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "wedge-right"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nv.Scene().Camera.Pan(.2, 0)
-			nv.Scene().UpdateSig()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Scene().Camera.Pan(.2, 0)
+			nvv.Scene().UpdateSig()
 		})
 	tbar.AddSeparator("save")
 	gi.AddNewLabel(tbar, "save", "Save:")
-	tbar.AddAction(gi.ActOpts{Label: "1", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Label: "1", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			err := nv.Scene().SetCamera("1")
-			if err != nil {
-				nv.Scene().SaveCamera("1")
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			scc := nvv.Scene()
+			cam := "1"
+			if key.HasAllModifierBits(scc.Win.LastModBits, key.Shift) {
+				scc.SaveCamera(cam)
+			} else {
+				err := scc.SetCamera(cam)
+				if err != nil {
+					scc.SaveCamera(cam)
+				}
 			}
-			nv.Scene().UpdateSig()
+			scc.UpdateSig()
 		})
-	tbar.AddAction(gi.ActOpts{Label: "2", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Label: "2", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			err := nv.Scene().SetCamera("2")
-			if err != nil {
-				nv.Scene().SaveCamera("2")
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			scc := nvv.Scene()
+			cam := "2"
+			if key.HasAllModifierBits(scc.Win.LastModBits, key.Shift) {
+				scc.SaveCamera(cam)
+			} else {
+				err := scc.SetCamera(cam)
+				if err != nil {
+					scc.SaveCamera(cam)
+				}
 			}
-			nv.Scene().UpdateSig()
+			scc.UpdateSig()
 		})
-	tbar.AddAction(gi.ActOpts{Label: "3", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Label: "3", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			err := nv.Scene().SetCamera("3")
-			if err != nil {
-				nv.Scene().SaveCamera("3")
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			scc := nvv.Scene()
+			cam := "3"
+			if key.HasAllModifierBits(scc.Win.LastModBits, key.Shift) {
+				scc.SaveCamera(cam)
+			} else {
+				err := scc.SetCamera(cam)
+				if err != nil {
+					scc.SaveCamera(cam)
+				}
 			}
-			nv.Scene().UpdateSig()
+			scc.UpdateSig()
 		})
-	tbar.AddAction(gi.ActOpts{Label: "4", Icon: "save", Tooltip: "first click saves current view, second click restores to saved state"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Label: "4", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			err := nv.Scene().SetCamera("4")
-			if err != nil {
-				nv.Scene().SaveCamera("4")
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			scc := nvv.Scene()
+			cam := "4"
+			if key.HasAllModifierBits(scc.Win.LastModBits, key.Shift) {
+				scc.SaveCamera(cam)
+			} else {
+				err := scc.SetCamera(cam)
+				if err != nil {
+					scc.SaveCamera(cam)
+				}
 			}
-			nv.Scene().UpdateSig()
+			scc.UpdateSig()
 		})
 	tbar.AddSeparator("time")
 	tlbl := gi.AddNewLabel(tbar, "time", "Time:")
@@ -993,49 +1030,40 @@ func (nv *NetView) ViewbarConfig() {
 	rlbl.Tooltip = "current view record: -1 means latest, 0 = earliest"
 	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move earlier by 10"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			if nv.RecFastBkwd() {
-				nv.Update()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecFastBkwd() {
+				nvv.Update()
 			}
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "step-bkwd", Tooltip: "move earlier by 1"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			if nv.RecBkwd() {
-				nv.Update()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecBkwd() {
+				nvv.Update()
 			}
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "play", Tooltip: "move to latest and always display latest (-1)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			if nv.RecTrackLatest() {
-				nv.Update()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecTrackLatest() {
+				nvv.Update()
 			}
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "step-fwd", Tooltip: "move later by 1"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			if nv.RecFwd() {
-				nv.Update()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecFwd() {
+				nvv.Update()
 			}
 		})
 	tbar.AddAction(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move later by 10"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			if nv.RecFastFwd() {
-				nv.Update()
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecFastFwd() {
+				nvv.Update()
 			}
 		})
 }
-
-// func (nv *NetView) Render2D() {
-// 	if nv.FullReRenderIfNeeded() {
-// 		return
-// 	}
-// 	if nv.PushBounds() {
-// 		nv.This().(gi.Node2D).ConnectEvents2D()
-// 		nv.RenderScrolls()
-// 		nv.Render2DChildren()
-// 		nv.PopBounds()
-// 	} else {
-// 		nv.DisconnectAllEvents(gi.AllPris) // uses both Low and Hi
-// 	}
-// }
 
 // SaveWeights saves the network weights -- when called with giv.CallMethod
 // it will auto-prompt for filename
