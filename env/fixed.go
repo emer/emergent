@@ -87,7 +87,10 @@ func (ft *FixedTable) Row() int {
 
 func (ft *FixedTable) SetTrialName() {
 	if nms := ft.Table.Table.ColByName("Name"); nms != nil {
-		ft.TrialName = nms.StringVal1D(ft.Row())
+		rw := ft.Row()
+		if rw >= 0 && rw < nms.Len() {
+			ft.TrialName = nms.StringVal1D(rw)
+		}
 	}
 }
 
