@@ -45,35 +45,6 @@ type Env interface {
 	// sense to do once at this point, not every time during Init().
 	Validate() error
 
-	// Counters returns []TimeScales list of counters supported by this env.
-	// These should be consistent within a paradigm and most models
-	// will just expect particular sets of counters, but this can be
-	// useful for sanity checking that a suitable env has been selected.
-	// See SchemaFromScales function that takes this list of time
-	// scales and returns an etable.Schema for Table columns to record
-	// these counters in a log.
-	Counters() []TimeScales
-
-	// States returns a list of Elements of tensor outputs that this env
-	// generates, specifying the unique Name and Shape of the data.
-	// This information can be derived directly from an etable.Schema
-	// and used for configuring model input / output pathways to fit
-	// with those provided by the environment.  Depending on the
-	// env paradigm, all elements may not be always available at every
-	// point in time e.g., an env might alternate between Action and Reward
-	// elements.  This may return nil if Env has not been properly
-	// configured.
-	States() Elements
-
-	// Actions returns a list of elements of tensor inputs that this env
-	// accepts, specifying the unique Name and Shape of the data.
-	// Specific paradigms of envs can establish the timing and function
-	// of these inputs, and how they then affect subsequent outputs
-	// e.g., if the model is required to make a particular choice
-	// response and then it can receive a reward or not contingent
-	// on that choice.
-	Actions() Elements
-
 	// Init initializes the environment for a given run of the model.
 	// The environment may not care about the run number, but may implement
 	// different parameterizations for different runs (e.g., between-subject
@@ -104,17 +75,14 @@ type Env interface {
 	// to 0 on the first Step call.
 	Step() bool
 
-	// State returns the given element's worth of tensor data from the environment
-	// based on the current state of the env, as a function of having called Step().
-	// If no output is available on that element, then nil is returned.
-	// The returned tensor must be treated as read-only as it likely points to original
-	// source data -- please make a copy before modifying (e.g., Clone() methdod)
-	State(element string) etensor.Tensor
-
-	// Action sends tensor data about e.g., responses from model back to act
-	// on the environment and influence its subsequent evolution.
-	// The nature and timing of this input is paradigm dependent.
-	Action(element string, input etensor.Tensor)
+	// Counters returns []TimeScales list of counters supported by this env.
+	// These should be consistent within a paradigm and most models
+	// will just expect particular sets of counters, but this can be
+	// useful for sanity checking that a suitable env has been selected.
+	// See SchemaFromScales function that takes this list of time
+	// scales and returns an etable.Schema for Table columns to record
+	// these counters in a log.
+	Counters() []TimeScales
 
 	// Counter(scale TimeScales) returns current counter state for given time scale,
 	// the immediate previous counter state, and whether that time scale changed
@@ -122,6 +90,38 @@ type Env interface {
 	// the Max = 1).  Use the Ctr struct for each counter, which manages all of this.
 	// See external Counter* methods for Python-safe single-return-value versions.
 	Counter(scale TimeScales) (cur, prv int, changed bool)
+
+	// States returns a list of Elements of tensor outputs that this env
+	// generates, specifying the unique Name and Shape of the data.
+	// This information can be derived directly from an etable.Schema
+	// and used for configuring model input / output pathways to fit
+	// with those provided by the environment.  Depending on the
+	// env paradigm, all elements may not be always available at every
+	// point in time e.g., an env might alternate between Action and Reward
+	// elements.  This may return nil if Env has not been properly
+	// configured.
+	States() Elements
+
+	// State returns the given element's worth of tensor data from the environment
+	// based on the current state of the env, as a function of having called Step().
+	// If no output is available on that element, then nil is returned.
+	// The returned tensor must be treated as read-only as it likely points to original
+	// source data -- please make a copy before modifying (e.g., Clone() methdod)
+	State(element string) etensor.Tensor
+
+	// Actions returns a list of elements of tensor inputs that this env
+	// accepts, specifying the unique Name and Shape of the data.
+	// Specific paradigms of envs can establish the timing and function
+	// of these inputs, and how they then affect subsequent outputs
+	// e.g., if the model is required to make a particular choice
+	// response and then it can receive a reward or not contingent
+	// on that choice.
+	Actions() Elements
+
+	// Action sends tensor data about e.g., responses from model back to act
+	// on the environment and influence its subsequent evolution.
+	// The nature and timing of this input is paradigm dependent.
+	Action(element string, input etensor.Tensor)
 }
 
 // CounterCur returns current counter state for given time scale
