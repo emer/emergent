@@ -37,9 +37,6 @@ func (ft *FixedTable) Name() string { return ft.Nm }
 func (ft *FixedTable) Desc() string { return ft.Dsc }
 
 func (ft *FixedTable) Validate() error {
-	ft.Run.Scale = Run
-	ft.Epoch.Scale = Epoch
-	ft.Trial.Scale = Trial
 	if ft.Table == nil || ft.Table.Table == nil {
 		return fmt.Errorf("env.FixedTable: %v has no Table set", ft.Nm)
 	}
@@ -64,6 +61,9 @@ func (ft *FixedTable) Actions() Elements {
 }
 
 func (ft *FixedTable) Init(run int) {
+	ft.Run.Scale = Run
+	ft.Epoch.Scale = Epoch
+	ft.Trial.Scale = Trial
 	ft.Run.Init()
 	ft.Epoch.Init()
 	ft.Trial.Init()
