@@ -47,11 +47,3 @@ func (ot *OneToOne) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 	}
 	return
 }
-
-func (ot *OneToOne) HasWeights() bool {
-	return false
-}
-
-func (ot *OneToOne) Weights(sendn, recvn *etensor.Int32, cons *etensor.Bits) []float32 {
-	return nil
-}

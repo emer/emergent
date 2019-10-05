@@ -44,11 +44,3 @@ func (fp *Full) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 	}
 	return
 }
-
-func (fp *Full) HasWeights() bool {
-	return false
-}
-
-func (fp *Full) Weights(sendn, recvn *etensor.Int32, cons *etensor.Bits) []float32 {
-	return nil
-}

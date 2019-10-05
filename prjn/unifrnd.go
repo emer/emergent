@@ -25,7 +25,7 @@ type UnifRnd struct {
 }
 
 func NewUnifRnd() *UnifRnd {
-	return &UnifRnd{}
+	return &UnifRnd{PCon: 0.5}
 }
 
 func (ur *UnifRnd) Name() string {
@@ -118,12 +118,4 @@ func (ur *UnifRnd) ConnectFull(send, recv *etensor.Shape, same bool) (sendn, rec
 		snv[i] = int32(nrecv)
 	}
 	return
-}
-
-func (ur *UnifRnd) HasWeights() bool {
-	return false
-}
-
-func (ur *UnifRnd) Weights(sendn, recvn *etensor.Int32, cons *etensor.Bits) []float32 {
-	return nil
 }

@@ -26,37 +26,34 @@ func TestFull(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3}, nil, nil)
 	recv := etensor.NewShape([]int{3, 4}, nil, nil)
 
-	nsend := send.Len()
-	nrecv := recv.Len()
+	sNtot := send.Len()
+	rNtot := recv.Len()
 
 	pj := NewFull()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	fmt.Printf("full recv: 3x4 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
 
-	CheckAllN(sendn, nrecv, t)
-	CheckAllN(recvn, nsend, t)
+	CheckAllN(sendn, rNtot, t)
+	CheckAllN(recvn, sNtot, t)
 }
 
 func TestFullSelf(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3}, nil, nil)
 
-	nsend := send.Len()
+	sNtot := send.Len()
 
 	pj := NewFull()
 	pj.SelfCon = false
 	sendn, recvn, cons := pj.Connect(send, send, true)
 	fmt.Printf("full self no-con 2x3\n%s\n", string(ConsStringFull(send, send, cons)))
 
-	CheckAllN(sendn, nsend-1, t)
-	CheckAllN(recvn, nsend-1, t)
+	CheckAllN(sendn, sNtot-1, t)
+	CheckAllN(recvn, sNtot-1, t)
 }
 
 func TestOneToOne(t *testing.T) {
 	send := etensor.NewShape([]int{3, 4}, nil, nil)
 	recv := etensor.NewShape([]int{3, 4}, nil, nil)
-
-	// nsend := send.Len()
-	// nrecv := recv.Len()
 
 	pj := NewOneToOne()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
@@ -70,11 +67,8 @@ func TestPoolOneToOne(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
 	recv := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
 
-	// nsend := send.Len()
-	// nrecv := recv.Len()
-
-	nsendUn := send.Dim(2) * send.Dim(3)
-	nrecvUn := recv.Dim(2) * recv.Dim(3)
+	sNu := send.Dim(2) * send.Dim(3)
+	rNu := recv.Dim(2) * recv.Dim(3)
 
 	pj := NewPoolOneToOne()
 	// pj.NCons = 4
@@ -83,24 +77,21 @@ func TestPoolOneToOne(t *testing.T) {
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	fmt.Printf("pool 1-to-1 both 2x3 1x2\n%s\n", string(ConsStringFull(send, recv, cons)))
 
-	CheckAllN(sendn, nrecvUn, t)
-	CheckAllN(recvn, nsendUn, t)
+	CheckAllN(sendn, rNu, t)
+	CheckAllN(recvn, sNu, t)
 }
 
 func TestPoolOneToOneRecv(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3}, nil, nil)
 	recv := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
 
-	// nsend := send.Len()
-	// nrecv := recv.Len()
-
-	nrecvUn := recv.Dim(2) * recv.Dim(3)
+	rNu := recv.Dim(2) * recv.Dim(3)
 
 	pj := NewPoolOneToOne()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	fmt.Printf("pool 1-to-1 recv 2x3 1x2, send 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
 
-	CheckAllN(sendn, nrecvUn, t)
+	CheckAllN(sendn, rNu, t)
 	CheckAllN(recvn, 1, t)
 }
 
@@ -108,25 +99,40 @@ func TestPoolOneToOneSend(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
 	recv := etensor.NewShape([]int{2, 3}, nil, nil)
 
-	// nsend := send.Len()
-	// nrecv := recv.Len()
-
-	nsendUn := send.Dim(2) * send.Dim(3)
+	sNu := send.Dim(2) * send.Dim(3)
 
 	pj := NewPoolOneToOne()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	fmt.Printf("pool 1-to-1 send 2x3 1x2, recv 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
 
 	CheckAllN(sendn, 1, t)
-	CheckAllN(recvn, nsendUn, t)
+	CheckAllN(recvn, sNu, t)
+}
+
+func TestPoolTile(t *testing.T) {
+	send := etensor.NewShape([]int{4, 4, 1, 2}, nil, nil)
+	recv := etensor.NewShape([]int{2, 2, 1, 3}, nil, nil)
+
+	sNu := send.Dim(2) * send.Dim(3)
+	rNu := recv.Dim(2) * recv.Dim(3)
+
+	pj := NewPoolTile()
+	pj.Size.Set(2, 2)
+	pj.Skip.Set(2, 2)
+	pj.Start.Set(0, 0)
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("pool tile send 4x4 1x2, recv 2x2 1x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	CheckAllN(sendn, rNu, t)
+	CheckAllN(recvn, 4*sNu, t)
 }
 
 func TestUnifRnd(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3}, nil, nil)
 	recv := etensor.NewShape([]int{3, 4}, nil, nil)
 
-	nsend := send.Len()
-	nrecv := recv.Len()
+	sNtot := send.Len()
+	rNtot := recv.Len()
 
 	pj := NewUnifRnd()
 	pj.PCon = 0.5
@@ -136,24 +142,24 @@ func TestUnifRnd(t *testing.T) {
 	_ = recvn
 
 	nrMax := 0
-	nrMin := nrecv
+	nrMin := rNtot
 	nrMean := 0
-	for si := 0; si < nsend; si++ {
+	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
 		nrMax = ints.MaxInt(nrMax, nr)
 		nrMin = ints.MinInt(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("sendn: %v\n", sendn.Values)
-	fmt.Printf("unif rnd nrecv: %d  pcon: %g  max: %d  min: %d  mean: %g\n", nrecv, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(nsend))
+	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
 }
 
 func TestUnifRndLg(t *testing.T) {
 	send := etensor.NewShape([]int{20, 30}, nil, nil)
 	recv := etensor.NewShape([]int{30, 40}, nil, nil)
 
-	nsend := send.Len()
-	nrecv := recv.Len()
+	sNtot := send.Len()
+	rNtot := recv.Len()
 
 	pj := NewUnifRnd()
 	pj.PCon = 0.05
@@ -163,13 +169,13 @@ func TestUnifRndLg(t *testing.T) {
 	_ = cons
 
 	nrMax := 0
-	nrMin := nrecv
+	nrMin := rNtot
 	nrMean := 0
-	for si := 0; si < nsend; si++ {
+	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
 		nrMax = ints.MaxInt(nrMax, nr)
 		nrMin = ints.MinInt(nrMin, nr)
 		nrMean += nr
 	}
-	fmt.Printf("unif rnd large nrecv: %d  pcon: %g  max: %d  min: %d  mean: %g\n", nrecv, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(nsend))
+	fmt.Printf("unif rnd large rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
 }
