@@ -125,6 +125,12 @@ func TestPoolTile(t *testing.T) {
 
 	CheckAllN(sendn, rNu, t)
 	CheckAllN(recvn, 4*sNu, t)
+
+	// send = etensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
+	// recv = etensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
+	// wts := &etensor.Float32{}
+	// pj.TopoWts(send, recv, wts)
+	// fmt.Printf("topo wts\n%v\n", wts)
 }
 
 func TestUnifRnd(t *testing.T) {
