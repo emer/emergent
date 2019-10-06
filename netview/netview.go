@@ -975,6 +975,7 @@ func (nv *NetView) ViewbarConfig() {
 					scc.SaveCamera(cam)
 				}
 			}
+			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
 			scc.UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "2", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
@@ -990,6 +991,7 @@ func (nv *NetView) ViewbarConfig() {
 					scc.SaveCamera(cam)
 				}
 			}
+			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
 			scc.UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "3", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
@@ -1005,6 +1007,7 @@ func (nv *NetView) ViewbarConfig() {
 					scc.SaveCamera(cam)
 				}
 			}
+			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
 			scc.UpdateSig()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "4", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
@@ -1020,6 +1023,7 @@ func (nv *NetView) ViewbarConfig() {
 					scc.SaveCamera(cam)
 				}
 			}
+			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
 			scc.UpdateSig()
 		})
 	tbar.AddSeparator("time")
