@@ -32,6 +32,9 @@ type Prjn interface {
 	// Pattern returns the pattern of connectivity for interconnecting the layers
 	Pattern() prjn.Pattern
 
+	// SetPattern sets the pattern of connectivity for interconnecting the layers
+	SetPattern(pat prjn.Pattern)
+
 	// Type returns the functional type of projection according to PrjnType (extensible in
 	// more specialized algorithms)
 	Type() PrjnType
