@@ -16,8 +16,8 @@ func RunningAvg(out, act, trg *etensor.Float32, tau float32) {
 	cdt := 1 - dt
 	aNy := act.Dim(0)
 	aNx := act.Dim(1)
-	tNy := act.Dim(0)
-	tNx := act.Dim(1)
+	tNy := trg.Dim(0)
+	tNx := trg.Dim(1)
 	oshp := []int{aNy, aNx, tNy, tNx}
 	out.SetShape(oshp, nil, []string{"ActY", "ActX", "TrgY", "TrgX"})
 	for ay := 0; ay < aNy; ay++ {
