@@ -47,13 +47,14 @@ func (pc *OneD) Encode(pat *[]float32, val float32, n int) {
 		*pat = make([]float32, n)
 	}
 	rng := pc.Max - pc.Min
+	gnrm := 1 / (rng * pc.Sigma)
 	incr := rng / float32(n-1)
 	for i := 0; i < n; i++ {
 		trg := pc.Min + incr*float32(i)
 		act := float32(0)
 		switch pc.Code {
 		case GaussBump:
-			dist := (trg - val) / (rng * pc.Sigma)
+			dist := gnrm * (trg - val)
 			act = math32.Exp(-(dist * dist))
 		case Localist:
 			dist := math32.Abs(trg - val)
