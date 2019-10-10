@@ -23,6 +23,7 @@ import (
 // Various initial weight / scaling patterns are also available -- code
 // must specifically apply these to the receptive fields.
 type PoolTile struct {
+	Recip       bool       `desc:"reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv"`
 	Size        evec.Vec2i `desc:"size of receptive field tile, in terms of pools on the sending layer"`
 	Skip        evec.Vec2i `desc:"how many pools to skip in tiling over sending layer -- typically 1/2 of Size"`
 	Start       evec.Vec2i `desc:"starting pool offset for lower-left corner of first receptive field in sending layer"`
@@ -55,6 +56,9 @@ func (pt *PoolTile) Name() string {
 }
 
 func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+	if pt.Recip {
+		return pt.ConnectRecip(send, recv, same)
+	}
 	sendn, recvn, cons = NewTensors(send, recv)
 	if send.NumDims() != 4 || recv.NumDims() != 4 {
 		log.Printf("prjn.PoolTile; only valid if both sending and receiving layer are 4D shape with outer 2D being pools and inner 2D are units within pools")
@@ -91,9 +95,71 @@ func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 						for sui := 0; sui < sNu; sui++ {
 							si := sis + sui
 							off := ri*sNtot + si
-							cons.Values.Set(off, true)
-							rnv[ri]++
-							snv[si]++
+							if off < cons.Len() {
+								cons.Values.Set(off, true)
+								if ri < len(rnv) {
+									rnv[ri]++
+								}
+								if si < len(snv) {
+									snv[si]++
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+	sendn, recvn, cons = NewTensors(send, recv)
+	if send.NumDims() != 4 || recv.NumDims() != 4 {
+		log.Printf("prjn.PoolTile; only valid if both sending and receiving layer are 4D shape with outer 2D being pools and inner 2D are units within pools")
+		return
+	}
+	sNtot := send.Len()
+	sNpY := recv.Dim(0) // swapped
+	sNpX := recv.Dim(1)
+	rNpY := send.Dim(0)
+	rNpX := send.Dim(1)
+	sNu := send.Dim(2) * send.Dim(3)
+	rNu := recv.Dim(2) * recv.Dim(3)
+	rnv := recvn.Values
+	snv := sendn.Values
+	var clip bool
+	for rpy := 0; rpy < rNpY; rpy++ {
+		for rpx := 0; rpx < rNpX; rpx++ {
+			rpi := rpy*rNpX + rpx
+			ris := rpi * sNu
+			for fy := 0; fy < pt.Size.Y; fy++ {
+				spy := pt.Start.Y + rpy*pt.Skip.Y + fy
+				if spy, clip = Edge(spy, sNpY, pt.Wrap); clip {
+					continue
+				}
+				for fx := 0; fx < pt.Size.X; fx++ {
+					spx := pt.Start.X + rpx*pt.Skip.X + fx
+					if spx, clip = Edge(spx, sNpX, pt.Wrap); clip {
+						continue
+					}
+					spi := spy*sNpX + spx
+					sis := spi * rNu
+					for rui := 0; rui < rNu; rui++ {
+						ri := sis + rui
+						for sui := 0; sui < sNu; sui++ {
+							si := ris + sui
+							// note: indexes reversed here
+							off := ri*sNtot + si
+							if off < cons.Len() {
+								cons.Values.Set(off, true)
+								if ri < len(rnv) {
+									rnv[ri]++
+								}
+								if si < len(snv) {
+									snv[si]++
+								}
+							}
 						}
 					}
 				}

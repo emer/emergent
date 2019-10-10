@@ -133,6 +133,31 @@ func TestPoolTile(t *testing.T) {
 	// fmt.Printf("topo wts\n%v\n", wts)
 }
 
+func TestPoolTileRecip(t *testing.T) {
+	send := etensor.NewShape([]int{4, 4, 1, 2}, nil, nil)
+	recv := etensor.NewShape([]int{2, 2, 1, 3}, nil, nil)
+
+	sNu := send.Dim(2) * send.Dim(3)
+	rNu := recv.Dim(2) * recv.Dim(3)
+
+	pj := NewPoolTile()
+	pj.Size.Set(2, 2)
+	pj.Skip.Set(2, 2)
+	pj.Start.Set(0, 0)
+	pj.Recip = true
+	sendn, recvn, cons := pj.Connect(recv, send, false)
+	fmt.Printf("pool tile recip send 4x4 1x2, recv 2x2 1x3\n%s\n", string(ConsStringFull(recv, send, cons)))
+
+	CheckAllN(sendn, 4*sNu, t)
+	CheckAllN(recvn, rNu, t)
+
+	// send = etensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
+	// recv = etensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
+	// wts := &etensor.Float32{}
+	// pj.TopoWts(send, recv, wts)
+	// fmt.Printf("topo wts\n%v\n", wts)
+}
+
 func TestUnifRnd(t *testing.T) {
 	send := etensor.NewShape([]int{2, 3}, nil, nil)
 	recv := etensor.NewShape([]int{3, 4}, nil, nil)
