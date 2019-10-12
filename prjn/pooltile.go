@@ -40,6 +40,14 @@ func NewPoolTile() *PoolTile {
 	return pt
 }
 
+// NewPoolTileRecip creates a new PoolTile that is a recip version of given ff feedforward one
+func NewPoolTileRecip(ff *PoolTile) *PoolTile {
+	pt := &PoolTile{}
+	*pt = *ff
+	pt.Recip = true
+	return pt
+}
+
 func (pt *PoolTile) Defaults() {
 	pt.Size.Set(4, 4)
 	pt.Skip.Set(2, 2)
