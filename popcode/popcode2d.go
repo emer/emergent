@@ -36,6 +36,13 @@ func (pc *TwoD) Defaults() {
 	pc.MinSum = 0.2
 }
 
+// SetRange sets the min, max and sigma values to the same scalar values
+func (pc *TwoD) SetRange(min, max, sigma float32) {
+	pc.Min.Set(min, min)
+	pc.Max.Set(max, max)
+	pc.Sigma.Set(sigma, sigma)
+}
+
 // Encode generates a pattern of activation on given tensor, which must already have
 // appropriate 2D shape which is used for encoding sizes (error if not).
 func (pc *TwoD) Encode(pat etensor.Tensor, val mat32.Vec2) error {
@@ -44,6 +51,10 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val mat32.Vec2) error {
 		log.Println(err)
 		return err
 	}
+	if pc.Clip {
+		val.Clamp(pc.Min, pc.Max)
+	}
+
 	rng := pc.Max.Sub(pc.Min)
 
 	gnrm := mat32.NewVec2Scalar(1).Div(rng.Mul(pc.Sigma))

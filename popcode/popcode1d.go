@@ -4,7 +4,10 @@
 
 package popcode
 
-import "github.com/chewxy/math32"
+import (
+	"github.com/chewxy/math32"
+	"github.com/goki/gi/mat32"
+)
 
 type PopCodes int
 
@@ -39,12 +42,22 @@ func (pc *OneD) Defaults() {
 	pc.MinSum = 0.2
 }
 
+// SetRange sets the min, max and sigma values
+func (pc *OneD) SetRange(min, max, sigma float32) {
+	pc.Min = min
+	pc.Max = max
+	pc.Sigma = sigma
+}
+
 // Encode generates a pattern of activation of given size to encode given value.
 // n must be 2 or more.
 // pat slice will be constructed if len != n
 func (pc *OneD) Encode(pat *[]float32, val float32, n int) {
 	if len(*pat) != n {
 		*pat = make([]float32, n)
+	}
+	if pc.Clip {
+		val = mat32.Clamp(val, pc.Min, pc.Max)
 	}
 	rng := pc.Max - pc.Min
 	gnrm := 1 / (rng * pc.Sigma)
