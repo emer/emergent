@@ -18,6 +18,27 @@ type RFs struct {
 	RFs     []*RF          `desc:"the RFs"`
 }
 
+// RFByName returns RF of given name, nil if not found
+func (af *RFs) RFByName(name string) *RF {
+	if af.NameMap == nil {
+		return nil
+	}
+	idx, ok := af.NameMap[name]
+	if ok {
+		return af.RFs[idx]
+	}
+	return nil
+}
+
+// RFByNameTry returns RF of given name, nil and error msg if not found
+func (af *RFs) RFByNameTry(name string) (*RF, error) {
+	rf := af.RFByName(name)
+	if rf == nil {
+		return nil, fmt.Errorf("Name: %s not found in list of named RFs", name)
+	}
+	return rf, nil
+}
+
 // AddRF adds a new RF, calling Init on it using given act, trg tensors
 func (af *RFs) AddRF(name string, act, trg etensor.Tensor) *RF {
 	if af.NameMap == nil {
@@ -33,13 +54,11 @@ func (af *RFs) AddRF(name string, act, trg etensor.Tensor) *RF {
 
 // Add adds a new act sample to the accumulated data for given named rf
 func (af *RFs) Add(name string, act, trg etensor.Tensor, thr float32) error {
-	idx, ok := af.NameMap[name]
-	if !ok {
-		err := fmt.Errorf("Name: %s not found in list of named RFs", name)
+	rf, err := af.RFByNameTry(name)
+	if err != nil {
 		log.Println(err)
 		return err
 	}
-	rf := af.RFs[idx]
 	rf.Add(act, trg, thr)
 	return nil
 }
