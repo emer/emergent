@@ -5,13 +5,13 @@
 /*
 Package actrf provides activation-based receptive field computation, otherwise
 known as reverse correlation.  It simply computes the activation weighted average
-of other *target* patterns of activation -- i.e., sum (act * targ) / sum (targ)
-which then shows you the patterns of target activity for which a given unit was
+of other *source* patterns of activation -- i.e., sum(act * src) / sum(src)
+which then shows you the patterns of source activity for which a given unit was
 active.
 
 The RF's are computed and stored in 4D tensors, where the outer 2D are the
 2D projection of the activation tensor (e.g., the activations of units in
-a layer), and the inner 2D are the 2D projection of the target tensor.
+a layer), and the inner 2D are the 2D projection of the source tensor.
 
 This results in a nice standard RF plot that can be visualized in a tensor
 grid view.

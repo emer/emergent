@@ -7,23 +7,23 @@ package actrf
 import "github.com/emer/etable/etensor"
 
 // RunningAvg computes a running-average activation-based receptive field
-// for activities act relative to target activations trg (the thing we're projecting rf onto)
+// for activities act relative to source activations src (the thing we're projecting rf onto)
 // accumulating into output out, with time constant tau.
-// act and trg are projected into a 2D space (etensor.Prjn2D* methods), and
-// resulting out is 4D of act outer and trg inner.
-func RunningAvg(out *etensor.Float32, act, trg etensor.Tensor, tau float32) {
+// act and src are projected into a 2D space (etensor.Prjn2D* methods), and
+// resulting out is 4D of act outer and src inner.
+func RunningAvg(out *etensor.Float32, act, src etensor.Tensor, tau float32) {
 	dt := 1 / tau
 	cdt := 1 - dt
 	aNy, aNx, _, _ := etensor.Prjn2DShape(act, false)
-	tNy, tNx, _, _ := etensor.Prjn2DShape(trg, false)
+	tNy, tNx, _, _ := etensor.Prjn2DShape(src, false)
 	oshp := []int{aNy, aNx, tNy, tNx}
-	out.SetShape(oshp, nil, []string{"ActY", "ActX", "TrgY", "TrgX"})
+	out.SetShape(oshp, nil, []string{"ActY", "ActX", "SrcY", "SrcX"})
 	for ay := 0; ay < aNy; ay++ {
 		for ax := 0; ax < aNx; ax++ {
 			av := float32(etensor.Prjn2DVal(act, false, ay, ax))
 			for ty := 0; ty < tNy; ty++ {
 				for tx := 0; tx < tNx; tx++ {
-					tv := float32(etensor.Prjn2DVal(trg, false, ty, tx))
+					tv := float32(etensor.Prjn2DVal(src, false, ty, tx))
 					oi := []int{ay, ax, ty, tx}
 					oo := out.Offset(oi)
 					ov := out.Values[oo]

@@ -39,8 +39,8 @@ func (af *RFs) RFByNameTry(name string) (*RF, error) {
 	return rf, nil
 }
 
-// AddRF adds a new RF, calling Init on it using given act, trg tensors
-func (af *RFs) AddRF(name string, act, trg etensor.Tensor) *RF {
+// AddRF adds a new RF, calling Init on it using given act, src tensors
+func (af *RFs) AddRF(name string, act, src etensor.Tensor) *RF {
 	if af.NameMap == nil {
 		af.NameMap = make(map[string]int)
 	}
@@ -48,18 +48,18 @@ func (af *RFs) AddRF(name string, act, trg etensor.Tensor) *RF {
 	af.NameMap[name] = sz
 	rf := &RF{}
 	af.RFs = append(af.RFs, rf)
-	rf.Init(name, act, trg)
+	rf.Init(name, act, src)
 	return rf
 }
 
 // Add adds a new act sample to the accumulated data for given named rf
-func (af *RFs) Add(name string, act, trg etensor.Tensor, thr float32) error {
+func (af *RFs) Add(name string, act, src etensor.Tensor, thr float32) error {
 	rf, err := af.RFByNameTry(name)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	rf.Add(act, trg, thr)
+	rf.Add(act, src, thr)
 	return nil
 }
 

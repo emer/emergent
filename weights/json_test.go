@@ -15,22 +15,19 @@ import (
 
 func TestSaveWts(t *testing.T) {
 	nw := &Network{Network: "TestNet"}
-	nw.MetaData = make(map[string]string)
-	nw.MetaData["Epoch"] = "100"
-	nw.MetaData["TrainEnv"] = "ra25"
+	nw.SetMetaData("Epoch", "100")
+	nw.SetMetaData("TrainEnv", "ra25")
 	nw.Layers = make([]Layer, 2)
 	l0 := &nw.Layers[0]
 	l0.Layer = "Input"
 	l1 := &nw.Layers[1]
 	l1.Layer = "Hidden"
-	l1.MetaData = make(map[string]string)
-	l1.MetaData["ActMAvg"] = "0.15"
-	l1.MetaData["ActPAvg"] = "0.18"
+	l1.SetMetaData("ActMAvg", "0.15")
+	l1.SetMetaData("ActPAvg", "0.18")
 	l1.Prjns = make([]Prjn, 1)
 	pj := &l1.Prjns[0]
 	pj.From = "Input"
-	pj.MetaData = make(map[string]string)
-	pj.MetaData["GScale"] = "0.333"
+	pj.SetMetaData("GScale", "0.333")
 	pj.Rs = make([]Recv, 3)
 	for ri := range pj.Rs {
 		rw := &pj.Rs[ri]
