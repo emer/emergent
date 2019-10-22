@@ -194,6 +194,18 @@ func (gt *GaussTopo) Defaults() {
 	gt.CtrMove = 1
 }
 
+// DefWrap sets default wrap parameters (which are overall defaults): CtrMove = 1
+func (gt *GaussTopo) DefWrap() {
+	gt.Wrap = true
+	gt.CtrMove = 1
+}
+
+// DefNoWrap sets default no-wrap parameters (CtrMove = .8 instead of 1)
+func (gt *GaussTopo) DefNoWrap() {
+	gt.Wrap = false
+	gt.CtrMove = 0.8
+}
+
 // TopoWts sets values in given 6D tensor according to Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within pool
 // of recv layer (these are units over which topography is defined)
