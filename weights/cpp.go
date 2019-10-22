@@ -56,6 +56,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			lnm := strings.TrimSuffix(strings.TrimPrefix(bs, "<Lay "), ">")
 			nw.Layers = append(nw.Layers, Layer{Layer: lnm})
 			lw = &nw.Layers[len(nw.Layers)-1]
+			pw = nil
 			continue
 		case strings.HasPrefix(bs, "<UgUn "):
 			us := strings.TrimSuffix(strings.TrimPrefix(bs, "<UgUn "), ">")
@@ -93,6 +94,30 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 				rw.Wt = make([]float32, nc)
 			}
 			cidx = 0 // start reading on next ones
+			continue
+		case strings.HasPrefix(bs, "<"): // misc meta
+			kvl := strings.Split(bs, " ")
+			if len(kvl) != 2 {
+				err = fmt.Errorf("NetReadCpp: unrecognized input: %v", bs)
+				errlist = append(errlist, err)
+				log.Println(err)
+				continue
+			}
+			ky := strings.TrimPrefix(kvl[0], "<")
+			vl := strings.TrimSuffix(kvl[1], ">")
+			switch ky {
+			case "acts_m_avg":
+				ky = "ActMAvg"
+			case "acts_p_avg":
+				ky = "ActPAvg"
+			}
+			if lw == nil {
+				nw.SetMetaData(ky, vl)
+			} else if pw == nil {
+				lw.SetMetaData(ky, vl)
+			} else {
+				pw.SetMetaData(ky, vl)
+			}
 			continue
 		default: // weight values read into current rw
 			siwts := strings.Split(bs, " ")

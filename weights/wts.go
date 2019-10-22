@@ -11,6 +11,13 @@ type Network struct {
 	Layers   []Layer
 }
 
+func (nt *Network) SetMetaData(key, val string) {
+	if nt.MetaData == nil {
+		nt.MetaData = make(map[string]string)
+	}
+	nt.MetaData[key] = val
+}
+
 // Layer is temp structure for holding decoded weights, one for each layer
 type Layer struct {
 	Layer    string
@@ -18,11 +25,25 @@ type Layer struct {
 	Prjns    []Prjn            // receiving projections
 }
 
+func (ly *Layer) SetMetaData(key, val string) {
+	if ly.MetaData == nil {
+		ly.MetaData = make(map[string]string)
+	}
+	ly.MetaData[key] = val
+}
+
 // Prjn is temp structure for holding decoded weights, one for each projection
 type Prjn struct {
 	From     string
 	MetaData map[string]string // used for optional prjn-level params, metadata such as GScale
 	Rs       []Recv
+}
+
+func (pj *Prjn) SetMetaData(key, val string) {
+	if pj.MetaData == nil {
+		pj.MetaData = make(map[string]string)
+	}
+	pj.MetaData[key] = val
 }
 
 // Recv is temp structure for holding decoded weights, one for each recv unit
