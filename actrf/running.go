@@ -14,8 +14,8 @@ import "github.com/emer/etable/etensor"
 func RunningAvg(out *etensor.Float32, act, src etensor.Tensor, tau float32) {
 	dt := 1 / tau
 	cdt := 1 - dt
-	aNy, aNx, _, _ := etensor.Prjn2DShape(act, false)
-	tNy, tNx, _, _ := etensor.Prjn2DShape(src, false)
+	aNy, aNx, _, _ := etensor.Prjn2DShape(act.ShapeObj(), false)
+	tNy, tNx, _, _ := etensor.Prjn2DShape(src.ShapeObj(), false)
 	oshp := []int{aNy, aNx, tNy, tNx}
 	out.SetShape(oshp, nil, []string{"ActY", "ActX", "SrcY", "SrcX"})
 	for ay := 0; ay < aNy; ay++ {

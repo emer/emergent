@@ -29,9 +29,9 @@ type RF struct {
 // tensors representing the activations and source values.
 func (af *RF) Init(name string, act, src etensor.Tensor) {
 	af.Name = name
-	aNy, aNx, _, _ := etensor.Prjn2DShape(act, false)
-	tNy, tNx, _, _ := etensor.Prjn2DShape(src, false)
-	oshp := []int{aNy, aNx, tNy, tNx}
+	aNy, aNx, _, _ := etensor.Prjn2DShape(act.ShapeObj(), false)
+	sNy, sNx, _, _ := etensor.Prjn2DShape(src.ShapeObj(), false)
+	oshp := []int{aNy, aNx, sNy, sNx}
 	snm := []string{"ActY", "ActX", "SrcY", "SrcX"}
 	af.RF.SetShape(oshp, nil, snm)
 	af.NormRF.SetShape(oshp, nil, snm)
@@ -51,18 +51,18 @@ func (af *RF) Reset() {
 // thr is a threshold value on sources below which values are not added (prevents
 // numerical issues with very small numbers)
 func (af *RF) Add(act, src etensor.Tensor, thr float32) {
-	aNy, aNx, _, _ := etensor.Prjn2DShape(act, false)
-	tNy, tNx, _, _ := etensor.Prjn2DShape(src, false)
-	for ty := 0; ty < tNy; ty++ {
-		for tx := 0; tx < tNx; tx++ {
-			tv := float32(etensor.Prjn2DVal(src, false, ty, tx))
+	aNy, aNx, _, _ := etensor.Prjn2DShape(act.ShapeObj(), false)
+	sNy, sNx, _, _ := etensor.Prjn2DShape(src.ShapeObj(), false)
+	for sy := 0; sy < sNy; sy++ {
+		for sx := 0; sx < sNx; sx++ {
+			tv := float32(etensor.Prjn2DVal(src, false, sy, sx))
 			if tv < thr {
 				continue
 			}
 			for ay := 0; ay < aNy; ay++ {
 				for ax := 0; ax < aNx; ax++ {
 					av := float32(etensor.Prjn2DVal(act, false, ay, ax))
-					oi := []int{ay, ax, ty, tx}
+					oi := []int{ay, ax, sy, sx}
 					oo := af.SumProd.Offset(oi)
 					af.SumProd.Values[oo] += av * tv
 					af.SumSrc.Values[oo] += tv
@@ -76,13 +76,13 @@ func (af *RF) Add(act, src etensor.Tensor, thr float32) {
 func (af *RF) Avg() {
 	aNy := af.SumProd.Dim(0)
 	aNx := af.SumProd.Dim(1)
-	tNy := af.SumProd.Dim(2)
-	tNx := af.SumProd.Dim(3)
+	sNy := af.SumProd.Dim(2)
+	sNx := af.SumProd.Dim(3)
 	for ay := 0; ay < aNy; ay++ {
 		for ax := 0; ax < aNx; ax++ {
-			for ty := 0; ty < tNy; ty++ {
-				for tx := 0; tx < tNx; tx++ {
-					oi := []int{ay, ax, ty, tx}
+			for sy := 0; sy < sNy; sy++ {
+				for sx := 0; sx < sNx; sx++ {
+					oi := []int{ay, ax, sy, sx}
 					oo := af.SumProd.Offset(oi)
 					src := af.SumSrc.Values[oo]
 					if src > 0 {

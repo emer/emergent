@@ -104,6 +104,9 @@ func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 							si := sis + sui
 							off := ri*sNtot + si
 							if off < cons.Len() {
+								// if !pt.SelfCon && same && ri == si {
+								// 	continue
+								// }
 								cons.Values.Set(off, true)
 								if ri < len(rnv) {
 									rnv[ri]++

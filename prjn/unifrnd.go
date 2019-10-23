@@ -75,6 +75,9 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
 		for si := 0; si < nsend; si++ {
+			if !ur.SelfCon && same && ri == si {
+				continue
+			}
 			off := ri*slen + slist[si]
 			cons.Values.Set(off, true)
 		}
