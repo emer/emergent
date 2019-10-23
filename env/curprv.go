@@ -10,8 +10,8 @@ type CurPrvF32 struct {
 	Prv float32 `desc:"previous value"`
 }
 
-// Update updates the new current value, copying Cur to Prv
-func (cv *CurPrvF32) Update(cur float32) {
+// Set sets the new current value, copying Cur to Prv
+func (cv *CurPrvF32) Set(cur float32) {
 	cv.Prv = cv.Cur
 	cv.Cur = cur
 }
@@ -21,14 +21,17 @@ func (cv *CurPrvF32) Diff() float32 {
 	return cv.Cur - cv.Prv
 }
 
+//////////////////////////////
+// Int
+
 // CurPrvInt is basic state management for current and previous values, int values
 type CurPrvInt struct {
 	Cur int `desc:"current value"`
 	Prv int `desc:"previous value"`
 }
 
-// Update updates the new current value, copying Cur to Prv
-func (cv *CurPrvInt) Update(cur int) {
+// Set sets the new current value, copying Cur to Prv
+func (cv *CurPrvInt) Set(cur int) {
 	cv.Prv = cv.Cur
 	cv.Cur = cur
 }
@@ -36,4 +39,19 @@ func (cv *CurPrvInt) Update(cur int) {
 // Diff returns the difference between current and previous values
 func (cv *CurPrvInt) Diff() int {
 	return cv.Cur - cv.Prv
+}
+
+//////////////////////////////
+// String
+
+// CurPrvString is basic state management for current and previous values, string values
+type CurPrvString struct {
+	Cur string `desc:"current value"`
+	Prv string `desc:"previous value"`
+}
+
+// Set sets the new current value, copying Cur to Prv
+func (cv *CurPrvString) Set(cur string) {
+	cv.Prv = cv.Cur
+	cv.Cur = cur
 }
