@@ -21,6 +21,9 @@ type Circle struct {
 	Start     evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position"`
 	Scale     mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute sending center as function of recv unit position"`
 	AutoScale bool       `desc:"auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size"`
+	Wrap      bool       `desc:"if true, connectivity wraps around edges"`
+	Sigma     float32    `desc:"gaussian sigma (width) as a proportion of the radius of the circle"`
+	MaxWt     float32    `desc:"maximum weight value for GaussWts function -- multiplies values"`
 	SelfCon   bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
 }
 
@@ -31,12 +34,11 @@ func NewCircle() *Circle {
 }
 
 func (cr *Circle) Defaults() {
-	if cr.Radius == 0 {
-		cr.Radius = 8
-	}
-	if cr.Scale.X == 0 || cr.Scale.Y == 0 {
-		cr.Scale.SetScalar(1)
-	}
+	cr.Wrap = true
+	cr.Radius = 8
+	cr.Scale.SetScalar(1)
+	cr.Sigma = 0.5
+	cr.MaxWt = 1
 }
 
 func (cr *Circle) Name() string {
@@ -65,8 +67,10 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 			for sy := 0; sy < sNy; sy++ {
 				for sx := 0; sx < sNx; sx++ {
 					sp := mat32.Vec2{float32(sx), float32(sy)}
-					sp.X = WrapMinDist(sp.X, float32(sNx-1), sctr.X)
-					sp.Y = WrapMinDist(sp.Y, float32(sNy-1), sctr.Y)
+					if cr.Wrap {
+						sp.X = WrapMinDist(sp.X, float32(sNx-1), sctr.X)
+						sp.Y = WrapMinDist(sp.Y, float32(sNy-1), sctr.Y)
+					}
 					d := int(mat32.Round(sp.DistTo(sctr)))
 					if d <= cr.Radius {
 						ri := ry*rNx + rx
@@ -84,4 +88,34 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 		}
 	}
 	return
+}
+
+// GaussWts returns gaussian weight value for given unit indexes in
+// given send and recv layers according to Gaussian Sigma and MaxWt.
+// Can be used for a Prjn.SetScalesFunc or SetWtsFunc
+func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
+	sNy, sNx, _, _ := etensor.Prjn2DShape(send, false)
+	rNy, rNx, _, _ := etensor.Prjn2DShape(recv, false)
+
+	ry := ri / rNx
+	rx := ri % rNx
+	sy := si / sNx
+	sx := si % sNx
+
+	fsig := cr.Sigma * float32(cr.Radius)
+
+	sc := cr.Scale
+	if cr.AutoScale {
+		ssz := mat32.Vec2{float32(sNx - 2*cr.Start.X), float32(sNy - 2*cr.Start.Y)}
+		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
+		sc = ssz.Div(rsz)
+	}
+	sctr := mat32.Vec2{float32(rx)*sc.X + float32(cr.Start.X), float32(ry)*sc.Y + float32(cr.Start.Y)}
+	sp := mat32.Vec2{float32(sx), float32(sy)}
+	if cr.Wrap {
+		sp.X = WrapMinDist(sp.X, float32(sNx-1), sctr.X)
+		sp.Y = WrapMinDist(sp.Y, float32(sNy-1), sctr.Y)
+	}
+	wt := cr.MaxWt * evec.GaussVecDistNoNorm(sp, sctr, fsig)
+	return wt
 }
