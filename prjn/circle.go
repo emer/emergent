@@ -56,7 +56,11 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx - 2*cr.Start.X), float32(sNy - 2*cr.Start.Y)}
+		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
+		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
+			ssz.X -= float32(2 * cr.Start.X)
+			ssz.Y -= float32(2 * cr.Start.Y)
+		}
 		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
 		sc = ssz.Div(rsz)
 	}
@@ -73,8 +77,8 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 					}
 					d := int(mat32.Round(sp.DistTo(sctr)))
 					if d <= cr.Radius {
-						ri := ry*rNx + rx
-						si := sy*sNx + sx
+						ri := etensor.Prjn2DIdx(recv, false, ry, rx)
+						si := etensor.Prjn2DIdx(send, false, sy, sx)
 						off := ri*sNtot + si
 						if !cr.SelfCon && same && ri == si {
 							continue
@@ -97,7 +101,7 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 	sNy, sNx, _, _ := etensor.Prjn2DShape(send, false)
 	rNy, rNx, _, _ := etensor.Prjn2DShape(recv, false)
 
-	ry := ri / rNx
+	ry := ri / rNx // todo: this is not right for 4d!
 	rx := ri % rNx
 	sy := si / sNx
 	sx := si % sNx
@@ -106,7 +110,11 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx - 2*cr.Start.X), float32(sNy - 2*cr.Start.Y)}
+		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
+		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
+			ssz.X -= float32(2 * cr.Start.X)
+			ssz.Y -= float32(2 * cr.Start.Y)
+		}
 		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
 		sc = ssz.Div(rsz)
 	}
