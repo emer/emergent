@@ -71,6 +71,13 @@ func (nv *NetView) SetVar(vr string) {
 	nv.Update()
 }
 
+// SetMaxRecs sets the maximum number of records that are maintained (default 210)
+// resets the current data in the process
+func (nv *NetView) SetMaxRecs(max int) {
+	nv.Params.MaxRecs = max
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+}
+
 // HasLayers returns true if network has any layers -- else no display
 func (nv *NetView) HasLayers() bool {
 	if nv.Net == nil || nv.Net.NLayers() == 0 {

@@ -30,7 +30,8 @@ type FixedTable struct {
 	Epoch        Ctr             `view:"inline" desc:"number of times through entire set of patterns"`
 	Trial        Ctr             `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
 	TrialName    string          `desc:"if Table has a Name column, this is the contents of that for current trial"`
-	PrvTrialName string          `desc:"previous trial name"`
+	PrvTrialName string          `desc:"if Table has a Name column, this is the contents of that for current trial"`
+	GroupName    CurPrvString    `desc:"if Table has a Group column, this is contents of that"`
 }
 
 func (ft *FixedTable) Name() string { return ft.Nm }
@@ -80,6 +81,15 @@ func (ft *FixedTable) SetTrialName() {
 	}
 }
 
+func (ft *FixedTable) SetGroupName() {
+	if nms := ft.Table.Table.ColByName("Group"); nms != nil {
+		rw := ft.Row()
+		if rw >= 0 && rw < nms.Len() {
+			ft.GroupName.Set(nms.StringVal1D(rw))
+		}
+	}
+}
+
 func (ft *FixedTable) Step() bool {
 	ft.Epoch.Same() // good idea to just reset all non-inner-most counters at start
 
@@ -89,6 +99,7 @@ func (ft *FixedTable) Step() bool {
 	}
 	ft.PrvTrialName = ft.TrialName
 	ft.SetTrialName()
+	ft.SetGroupName()
 	return true
 }
 

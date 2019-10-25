@@ -40,7 +40,7 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 		// offset is 0 in local coordinates
 		plane := mat32.Plane{Norm: mat32.Vec3{0, 1, 0}, Off: 0}
 		pt, ok := ray.IntersectPlane(plane)
-		if !ok {
+		if !ok || pt.Z > 0 { // Z > 0 means clicked "in front" of plane -- where labels are
 			return
 		}
 		lx := int(pt.X)
