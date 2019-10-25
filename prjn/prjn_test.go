@@ -148,7 +148,7 @@ func TestPoolTileRecip(t *testing.T) {
 	sendn, recvn, cons := pj.Connect(recv, send, false)
 	fmt.Printf("pool tile recip send 4x4 1x2, recv 2x2 1x3\n%s\n", string(ConsStringFull(recv, send, cons)))
 
-	CheckAllN(sendn, 4*sNu, t)
+	CheckAllN(sendn, pj.Size.X*pj.Size.Y*sNu, t)
 	CheckAllN(recvn, rNu, t)
 
 	// send = etensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
