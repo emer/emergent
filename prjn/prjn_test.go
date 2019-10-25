@@ -124,7 +124,7 @@ func TestPoolTile(t *testing.T) {
 	fmt.Printf("pool tile send 4x4 1x2, recv 2x2 1x3\n%s\n", string(ConsStringFull(send, recv, cons)))
 
 	CheckAllN(sendn, rNu, t)
-	CheckAllN(recvn, 4*sNu, t)
+	CheckAllN(recvn, pj.Size.X*pj.Size.Y*sNu, t)
 
 	// send = etensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
 	// recv = etensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
@@ -158,9 +158,27 @@ func TestPoolTileRecip(t *testing.T) {
 	// fmt.Printf("topo wts\n%v\n", wts)
 }
 
+func TestPoolTile2(t *testing.T) {
+	send := etensor.NewShape([]int{5, 4, 1, 2}, nil, nil)
+	recv := etensor.NewShape([]int{5, 4, 2, 1}, nil, nil)
+
+	sNu := send.Dim(2) * send.Dim(3)
+	rNu := recv.Dim(2) * recv.Dim(3)
+
+	pj := NewPoolTile()
+	pj.Size.Set(3, 3)
+	pj.Skip.Set(1, 1)
+	pj.Start.Set(-1, -1)
+	sendn, recvn, cons := pj.Connect(recv, send, false)
+	fmt.Printf("pool tile 3x3skip1 send 5x4 1x2, recv 5x5 2x1\n%s\n", string(ConsStringFull(recv, send, cons)))
+
+	CheckAllN(recvn, pj.Size.X*pj.Size.Y*sNu, t)
+	CheckAllN(sendn, pj.Size.X*pj.Size.Y*rNu, t)
+}
+
 func TestPoolTileRecip2(t *testing.T) {
-	send := etensor.NewShape([]int{5, 4, 10, 10}, nil, nil)
-	recv := etensor.NewShape([]int{5, 5, 2, 7}, nil, nil)
+	send := etensor.NewShape([]int{5, 4, 1, 2}, nil, nil)
+	recv := etensor.NewShape([]int{5, 4, 2, 1}, nil, nil)
 
 	sNu := send.Dim(2) * send.Dim(3)
 	rNu := recv.Dim(2) * recv.Dim(3)
@@ -171,10 +189,10 @@ func TestPoolTileRecip2(t *testing.T) {
 	pj.Start.Set(-1, -1)
 	pj.Recip = true
 	sendn, recvn, cons := pj.Connect(recv, send, false)
-	fmt.Printf("pool tile recip send 5x4 5x5, recv 5x5 2x7\n%s\n", string(ConsStringFull(recv, send, cons)))
+	fmt.Printf("pool tile recip send 5x4 1x2, recv 5x4 2x1\n%s\n", string(ConsStringFull(recv, send, cons)))
 
 	CheckAllN(sendn, pj.Size.X*pj.Size.Y*sNu, t)
-	CheckAllN(recvn, rNu, t)
+	CheckAllN(recvn, pj.Size.X*pj.Size.Y*rNu, t)
 }
 
 func TestUnifRnd(t *testing.T) {

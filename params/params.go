@@ -24,6 +24,30 @@ import (
 // parameters to.
 type Params map[string]string
 
+// ParamByNameTry returns given parameter, by name.
+// Returns error if not found.
+func (pr *Params) ParamByNameTry(name string) (string, error) {
+	vl, ok := (*pr)[name]
+	if !ok {
+		err := fmt.Errorf("params.Params: parameter named %v not found", name)
+		log.Println(err)
+		return "", err
+	}
+	return vl, nil
+}
+
+// ParamByName returns given parameter by name (just does the map access)
+// Returns "" if not found -- use Try version for error
+func (pr *Params) ParamByName(name string) string {
+	return (*pr)[name]
+}
+
+// SetParamByName sets given parameter by name to given value.
+// (just a wrapper around map set function)
+func (pr *Params) SetParamByName(name, value string) {
+	(*pr)[name] = value
+}
+
 var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 
 ///////////////////////////////////////////////////////////////////////
@@ -60,6 +84,29 @@ func (sh *Sheet) ElemLabel(idx int) string {
 }
 
 var KiT_Sheet = kit.Types.AddType(&Sheet{}, SheetProps)
+
+// SelByNameTry returns given selector within the Sheet, by Name.
+// Returns nil and error if not found.
+func (sh *Sheet) SelByNameTry(sel string) (*Sel, error) {
+	sl := sh.SelByName(sel)
+	if sl == nil {
+		err := fmt.Errorf("params.Sheet: Sel named %v not found", sel)
+		log.Println(err)
+		return nil, err
+	}
+	return sl, nil
+}
+
+// SelByName returns given selector within the Sheet, by Name.
+// Returns nil if not found -- use Try version for error
+func (sh *Sheet) SelByName(sel string) *Sel {
+	for _, sl := range *sh {
+		if sl.Sel == sel {
+			return sl
+		}
+	}
+	return nil
+}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -105,6 +152,12 @@ func (ps *Set) SheetByNameTry(name string) (*Sheet, error) {
 		return nil, err
 	}
 	return psht, nil
+}
+
+// SheetByName finds given sheet by name -- returns nil if not found.
+// Use this when sure the sheet exists -- otherwise use Try version.
+func (ps *Set) SheetByName(name string) *Sheet {
+	return ps.Sheets[name]
 }
 
 // ValidateSheets ensures that the sheet names are among those listed -- returns
