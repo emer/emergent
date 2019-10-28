@@ -24,8 +24,9 @@ type Layer interface {
 	params.Styler // TypeName, Name, and Class methods for parameter styling
 
 	// InitName MUST be called to initialize the layer's pointer to itself as an emer.Layer
-	// which enables the proper interface methods to be called.  Also sets the name.
-	InitName(lay Layer, name string)
+	// which enables the proper interface methods to be called.  Also sets the name, and
+	// the parent network that this layer belongs to (which layers may want to retain).
+	InitName(lay Layer, name string, net Network)
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
