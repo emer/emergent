@@ -94,7 +94,7 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 9/10/2019
+Last updated: 10/28/2019
 
 This list is not strictly in order, but roughly so..
 
@@ -102,7 +102,7 @@ This list is not strictly in order, but roughly so..
 
 - [ ] write converter from Go to Python
 
-- [ ] do basic test of deep leabra
+- [x] do basic test of deep leabra
 
 - [ ] MPI -- see [MPI Wiki page](https://github.com/emer/emergent/wiki/DMem)
 
@@ -110,11 +110,11 @@ This list is not strictly in order, but roughly so..
 
 - [ ] td/rl -- include ability to simulate drugs!
 
-- [ ] pbwm
+- [x] pbwm -- in process now
 
 - [ ] pvlv
 
-- [ ] virt env -- add as option to gi3d -- requires physics engine which is hard part.. see [VirtEnv Wiki page](https://github.com/emer/emergent/wiki/VirtEnv)
+- [x] virtual environment -- [eve](https://github.com/emer/eve) is under way -- no actual physics yet but core infrastructure in place and usable for basic boxy objects under external control.
 
 - [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
 
