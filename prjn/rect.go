@@ -15,12 +15,13 @@ import (
 // and multiplier factors (with wrap-around optionally).
 // 4D layers are automatically flattened to 2D for this connection.
 type Rect struct {
-	Start     evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position"`
-	Size      evec.Vec2i `desc:"size of rectangle"`
-	Scale     mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute corresponding position in sending layer"`
-	AutoScale bool       `desc:"auto-scale sending positions as function of relative sizes of send and recv layers"`
-	Wrap      bool       `desc:"if true, connectivity wraps around edges"`
-	SelfCon   bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	Start      evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position"`
+	Size       evec.Vec2i `desc:"size of rectangle"`
+	Scale      mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute corresponding position in sending layer"`
+	AutoScale  bool       `desc:"auto-scale sending positions as function of relative sizes of send and recv layers"`
+	Wrap       bool       `desc:"if true, connectivity wraps around edges"`
+	SelfCon    bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	RoundScale bool       `desc:"if true, use Round when applying scaling factor -- otherwise uses Floor which makes Scale work like a grouping factor -- e.g., .25 will effectively group 4 recv units with same send position"`
 }
 
 func NewRect() *Rect {
@@ -58,8 +59,13 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 	for ry := 0; ry < rNy; ry++ {
 		for rx := 0; rx < rNx; rx++ {
 			sst := cr.Start
-			sst.X += int(mat32.Round(float32(rx) * sc.X))
-			sst.Y += int(mat32.Round(float32(ry) * sc.Y))
+			if cr.RoundScale {
+				sst.X += int(mat32.Round(float32(rx) * sc.X))
+				sst.Y += int(mat32.Round(float32(ry) * sc.Y))
+			} else {
+				sst.X += int(mat32.Floor(float32(rx) * sc.X))
+				sst.Y += int(mat32.Floor(float32(ry) * sc.Y))
+			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := Edge(sst.Y+y, sNy, cr.Wrap)
 				if clipy {
