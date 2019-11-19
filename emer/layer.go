@@ -31,6 +31,9 @@ type Layer interface {
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
 
+	// SetName sets name of layer
+	SetName(nm string)
+
 	// SetClass sets CSS-style class name(s) for this layer (space-separated if multiple)
 	SetClass(cls string)
 

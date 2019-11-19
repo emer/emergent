@@ -84,7 +84,9 @@ func (ps *Sel) TargetTypeMatch(obj interface{}) bool {
 	trg := ps.Params.TargetType()
 	if stylr, has := obj.(Styler); has {
 		tnm := stylr.TypeName()
-		return tnm == trg
+		if tnm == trg {
+			return true
+		}
 	}
 	tnm := kit.NonPtrType(reflect.TypeOf(obj)).Name()
 	return tnm == trg
@@ -96,11 +98,12 @@ func (ps *Sel) SelMatch(obj interface{}) bool {
 	if !has {
 		return true // default match if no styler..
 	}
-	return SelMatch(ps.Sel, stylr.Name(), stylr.Class(), stylr.TypeName())
+	gotyp := kit.NonPtrType(reflect.TypeOf(obj)).Name()
+	return SelMatch(ps.Sel, stylr.Name(), stylr.Class(), stylr.TypeName(), gotyp)
 }
 
 // SelMatch returns true if Sel selector matches the target object properties
-func SelMatch(sel string, name, cls, typ string) bool {
+func SelMatch(sel string, name, cls, styp, gotyp string) bool {
 	if sel == "" {
 		return false
 	}
@@ -110,7 +113,7 @@ func SelMatch(sel string, name, cls, typ string) bool {
 	if sel[0] == '#' { // name
 		return name == sel[1:]
 	}
-	return typ == sel // type
+	return styp == sel || gotyp == sel // type
 }
 
 // ClassMatch returns true if given class names -- handles space-separated multiple class names

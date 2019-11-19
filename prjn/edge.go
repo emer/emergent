@@ -11,13 +11,13 @@ import "github.com/chewxy/math32"
 func Edge(ci, max int, wrap bool) (int, bool) {
 	if ci < 0 {
 		if wrap {
-			return max + ci, false
+			return (max + ci) % max, false
 		}
 		return 0, true
 	}
 	if ci >= max {
 		if wrap {
-			return ci - max, false
+			return (ci - max) % max, false
 		}
 		return max - 1, true
 	}
