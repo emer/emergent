@@ -247,3 +247,31 @@ func TestUnifRndLg(t *testing.T) {
 	}
 	fmt.Printf("unif rnd large rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
 }
+
+func TestUnifRndSelf(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+
+	sNtot := send.Len()
+	rNtot := recv.Len()
+
+	pj := NewUnifRnd()
+	pj.PCon = 0.5
+	pj.SelfCon = false
+	sendn, recvn, cons := pj.Connect(send, recv, true)
+	fmt.Printf("unif rnd self: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	_ = recvn
+
+	nrMax := 0
+	nrMin := rNtot
+	nrMean := 0
+	for si := 0; si < sNtot; si++ {
+		nr := int(sendn.Values[si])
+		nrMax = ints.MaxInt(nrMax, nr)
+		nrMin = ints.MinInt(nrMin, nr)
+		nrMean += nr
+	}
+	fmt.Printf("sendn: %v\n", sendn.Values)
+	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
+}

@@ -40,8 +40,9 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 	slen := send.Len()
 	rlen := recv.Len()
 
+	noself := same && !ur.SelfCon
 	var nsend int
-	if same && ur.SelfCon {
+	if noself {
 		nsend = int(math32.Round(ur.PCon * float32(slen-1)))
 	} else {
 		nsend = int(math32.Round(ur.PCon * float32(slen)))
@@ -69,15 +70,27 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 	}
 	rand.Seed(ur.RndSeed)
 
-	sorder := rand.Perm(slen)
+	sordlen := slen
+	if noself {
+		sordlen--
+	}
+
+	sorder := rand.Perm(sordlen)
 	slist := make([]int, nsend)
 	for ri := 0; ri < rlen; ri++ {
+		if noself { // need to exclude ri
+			ix := 0
+			for j := 0; j < slen; j++ {
+				if j != ri {
+					sorder[ix] = j
+					ix++
+				}
+			}
+			erand.PermuteInts(sorder)
+		}
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
 		for si := 0; si < nsend; si++ {
-			if !ur.SelfCon && same && ri == si {
-				continue
-			}
 			off := ri*slen + slist[si]
 			cons.Values.Set(off, true)
 		}
