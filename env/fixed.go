@@ -21,19 +21,18 @@ import (
 // It uses an IdxView indexed view of the Table, so a single shared table
 // can be used across different environments, with each having its own unique view.
 type FixedTable struct {
-	Nm           string          `desc:"name of this environment"`
-	Dsc          string          `desc:"description of this environment"`
-	Table        *etable.IdxView `desc:"this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential"`
-	Sequential   bool            `desc:"present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order"`
-	Order        []int           `desc:"permuted order of items to present if not sequential -- updated every time through the list"`
-	Run          Ctr             `view:"inline" desc:"current run of model as provided during Init"`
-	Epoch        Ctr             `view:"inline" desc:"number of times through entire set of patterns"`
-	Trial        Ctr             `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
-	TrialName    string          `desc:"if Table has a Name column, this is the contents of that for current trial"`
-	PrvTrialName string          `desc:"if Table has a Name column, this is the contents of that for previous trial"`
-	GroupName    CurPrvString    `desc:"if Table has a Group column, this is contents of that"`
-	NameCol      string          `desc:"name of the Name column -- defaults to 'Name'"`
-	GroupCol     string          `desc:"name of the Group column -- defaults to 'Group'"`
+	Nm         string          `desc:"name of this environment"`
+	Dsc        string          `desc:"description of this environment"`
+	Table      *etable.IdxView `desc:"this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential"`
+	Sequential bool            `desc:"present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order"`
+	Order      []int           `desc:"permuted order of items to present if not sequential -- updated every time through the list"`
+	Run        Ctr             `view:"inline" desc:"current run of model as provided during Init"`
+	Epoch      Ctr             `view:"inline" desc:"number of times through entire set of patterns"`
+	Trial      Ctr             `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
+	TrialName  CurPrvString    `desc:"if Table has a Name column, this is the contents of that"`
+	GroupName  CurPrvString    `desc:"if Table has a Group column, this is contents of that"`
+	NameCol    string          `desc:"name of the Name column -- defaults to 'Name'"`
+	GroupCol   string          `desc:"name of the Group column -- defaults to 'Group'"`
 }
 
 func (ft *FixedTable) Name() string { return ft.Nm }
@@ -84,7 +83,7 @@ func (ft *FixedTable) SetTrialName() {
 	if nms := ft.Table.Table.ColByName(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName = nms.StringVal1D(rw)
+			ft.TrialName.Set(nms.StringVal1D(rw))
 		}
 	}
 }
@@ -105,7 +104,6 @@ func (ft *FixedTable) Step() bool {
 		erand.PermuteInts(ft.Order)
 		ft.Epoch.Incr()
 	}
-	ft.PrvTrialName = ft.TrialName
 	ft.SetTrialName()
 	ft.SetGroupName()
 	return true
