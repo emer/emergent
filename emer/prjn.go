@@ -42,6 +42,11 @@ type Prjn interface {
 	// SetType sets the functional type of projection according to PrjnType
 	SetType(typ PrjnType)
 
+	// PrjnTypeName returns the string rep of functional type of projection
+	// according to PrjnType (extensible in more specialized algorithms, by
+	// redefining this method as needed).
+	PrjnTypeName() string
+
 	// Connect sets the basic connection parameters for this projection (send, recv, pattern, and type)
 	Connect(send, recv Layer, pat prjn.Pattern, typ PrjnType)
 
@@ -195,7 +200,7 @@ func (pl *Prjns) SendNameTry(sender string) (Prjn, error) {
 func (pl *Prjns) SendNameTypeTry(sender, typ string) (Prjn, error) {
 	for _, pj := range *pl {
 		if pj.SendLay().Name() == sender {
-			tstr := kit.ToString(pj.Type())
+			tstr := pj.PrjnTypeName()
 			if tstr == typ {
 				return pj, nil
 			}
@@ -220,7 +225,7 @@ func (pl *Prjns) RecvNameTry(recv string) (Prjn, error) {
 func (pl *Prjns) RecvNameTypeTry(recv, typ string) (Prjn, error) {
 	for _, pj := range *pl {
 		if pj.RecvLay().Name() == recv {
-			tstr := kit.ToString(pj.Type())
+			tstr := pj.PrjnTypeName()
 			if tstr == typ {
 				return pj, nil
 			}
