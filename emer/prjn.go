@@ -190,6 +190,20 @@ func (pl *Prjns) SendNameTry(sender string) (Prjn, error) {
 	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
 }
 
+// SendNameTypeTry finds the projection with given send layer name and Type string.
+// returns error message if not found.
+func (pl *Prjns) SendNameTypeTry(sender, typ string) (Prjn, error) {
+	for _, pj := range *pl {
+		if pj.SendLay().Name() == sender {
+			tstr := kit.ToString(pj.Type())
+			if tstr == typ {
+				return pj, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("sending layer: %v, type: %v not found in list of projections", sender, typ)
+}
+
 // RecvNameTry finds the projection with given recv layer name.
 // returns error message if not found
 func (pl *Prjns) RecvNameTry(recv string) (Prjn, error) {
@@ -199,6 +213,20 @@ func (pl *Prjns) RecvNameTry(recv string) (Prjn, error) {
 		}
 	}
 	return nil, fmt.Errorf("receiving layer: %v not found in list of projections", recv)
+}
+
+// RecvNameTypeTry finds the projection with given recv layer name and Type string.
+// returns error message if not found.
+func (pl *Prjns) RecvNameTypeTry(recv, typ string) (Prjn, error) {
+	for _, pj := range *pl {
+		if pj.RecvLay().Name() == recv {
+			tstr := kit.ToString(pj.Type())
+			if tstr == typ {
+				return pj, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of projections", recv, typ)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

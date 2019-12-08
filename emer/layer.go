@@ -179,21 +179,25 @@ type Layer interface {
 	// for projection from given sending layer and neuron 1D index,
 	// for all receiving neurons in this layer,
 	// into given float32 slice (only resized if not big enough).
+	// prjnType is the string representation of the prjn type -- used if non-empty,
+	// useful when there are multiple projections between two layers.
 	// Returns error on invalid var name.
 	// If the receiving neuron is not connected to the given sending layer or neuron
 	// then the value is set to math32.NaN().
 	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
-	RecvPrjnVals(vals *[]float32, varNm string, sendLay Layer, sendIdx1D int) error
+	RecvPrjnVals(vals *[]float32, varNm string, sendLay Layer, sendIdx1D int, prjnType string) error
 
 	// SendPrjnVals fills in values of given synapse variable name,
 	// for projection into given receiving layer and neuron 1D index,
 	// for all sending neurons in this layer,
 	// into given float32 slice (only resized if not big enough).
+	// prjnType is the string representation of the prjn type -- used if non-empty,
+	// useful when there are multiple projections between two layers.
 	// Returns error on invalid var name.
 	// If the sending neuron is not connected to the given receiving layer or neuron
 	// then the value is set to math32.NaN().
 	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
-	SendPrjnVals(vals *[]float32, varNm string, recvLay Layer, recvIdx1D int) error
+	SendPrjnVals(vals *[]float32, varNm string, recvLay Layer, recvIdx1D int, prjnType string) error
 
 	// Defaults sets default parameter values for all Layer and recv projection parameters
 	Defaults()

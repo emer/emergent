@@ -15,6 +15,7 @@ import (
 
 // Params holds parameters controlling how the view is rendered
 type Params struct {
+	PrjnType  string           `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	MaxRecs   int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
 	UnitSize  float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	LayNmSize float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`

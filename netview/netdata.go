@@ -27,6 +27,7 @@ type NetData struct {
 	Net       emer.Network        `desc:"the network that we're viewing"`
 	PrjnLay   string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
 	PrjnUnIdx int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
+	PrjnType  string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	Vars      []string            `desc:"the list of variables saved -- copied from NetView"`
 	VarIdxs   map[string]int      `desc:"index of each variable in the Vars slice"`
 	Ring      ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
@@ -139,10 +140,10 @@ func (nd *NetData) Record(ctrs string) {
 			dvals := ld.Data[idx : idx+nu]
 			if strings.HasPrefix(vnm, "r.") {
 				svar := vnm[2:]
-				lay.SendPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx)
+				lay.SendPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx, nd.PrjnType)
 			} else if strings.HasPrefix(vnm, "s.") {
 				svar := vnm[2:]
-				lay.RecvPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx)
+				lay.RecvPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx, nd.PrjnType)
 			} else {
 				lay.UnitVals(&dvals, vnm)
 			}

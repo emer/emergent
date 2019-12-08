@@ -94,6 +94,7 @@ func (nv *NetView) Record(counters string) {
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
+	nv.Data.PrjnType = nv.Params.PrjnType
 	nv.Data.Record(nv.LastCtrs)
 	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
 }
