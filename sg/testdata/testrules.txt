@@ -1,0 +1,198 @@
+// Production rules are specified as:
+// Name {
+//	   Item(s)
+//    ...
+// }
+// 
+// where Items within each rule are orthogonal options,
+// chosen at uniform random unless otherwise specified with a leading %pct.
+// %pct can add up to < 100 in which case *nothing* is an alternative output.
+// 
+// Multiple elements in an item (on the same line) are resolved and
+// emitted in order.
+// Terminal literals are 'quoted' -- otherwise refers to another rule:
+// error message will flag missing rules.
+//
+// A rule may have ? conditional items, in which case all items must be conditional.
+// the ? expression before the opening bracket is a standard logical expression
+// where the elements are rules that could have been generated earlier in the pass --
+// they evaluate to true if so, and false if not.
+//
+// If just one item per rule it can be put all on one line.
+// 
+// Conventional modifiers: A = Agent, V = Verb, P = Patient,
+// Pi = instrument, Pc = copatient, Ao = coagent, L = location, R = adverb, 
+
+Sentence {
+	Ate
+//	Drank
+//	Stirred
+//	Spread
+//	Kissed
+//	Gave
+//	Hit
+//	ThrewTossed
+//	ThrewHosted
+//	DroveTrans
+//	DroveMotiv
+//	ShedV
+//	RoseV
+}
+
+Ate {
+	Std:A Ate:V Ate:P Ate:M
+}
+
+Ate:V {
+	%80 'ate'
+	%20 'consumed'
+}
+
+// Std agent used for most actions
+Std:A {
+	Busdriver:A
+	Teacher:A
+	PitcherPers:A
+	Schoolgirl:A
+}
+
+Busdriver:A {
+	%70 'busdriver'
+	%20 'adult'
+	%10 'someone'
+}
+
+Teacher:A {
+	%70 'teacher'
+	%20 'adult'
+	%10 'someone'
+}
+
+PitcherPers:A {
+	%70 'pitcherpers'
+	%20 'child'
+	%10 'someone'
+}
+
+Schoolgirl:A {
+	%70 'schoolgirl'
+	%20 'child'
+	%10 'someone'
+}
+
+Ate:P ? {
+	Busdriver:A {
+		%70 Steak:P
+		%10 Soup:P
+		%10 IceCream:P
+		%10 Crackers:P
+	}
+	Teacher:A {
+		%70 Soup:P
+		%10 Steak:P
+		%10 IceCream:P
+		%10 Crackers:P
+	}
+	PitcherPers:A {
+		%25 Soup:P
+		%25 Steak:P
+		%25 IceCream:P
+		%25 Crackers:P
+	}
+	Schoolgirl:A {
+		%25 Soup:P
+		%25 Steak:P
+		%25 IceCream:P
+		%25 Crackers:P
+	}
+}
+
+Steak:P {
+	%70 'steak'
+	%20 'food'
+	%10 'something'
+}
+
+Soup:P {
+	%70 'soup'
+	%20 'food'
+	%10 'something'
+}
+
+IceCream:P {
+	%70 'icecream'
+	%20 'food'
+	%10 'something'
+}
+
+Crackers:P {
+	%70 'crackers'
+	%20 'food'
+	%10 'something'
+}
+
+Ate:M {
+	Ate:Pi
+	Ate:AoPc
+	Ate:L
+	Ate:R
+}
+
+Ate:Pi ? {
+	Steak:P {
+		%70 'with' 'knife'
+		%20 'with' 'utensil'
+		%10 'with' 'something'
+	}
+	Soup:P || IceCream:P {
+		%70 'with' 'spoon'
+		%20 'with' 'utensil'
+		%10 'with' 'something'
+	}
+	Crackers:P {
+		%80 'with' 'finger'
+		%20 'with' 'something'
+	}
+}
+
+Ate:AoPc ? {
+	Steak:P || IceCream:P { Ate:Ao }
+	Soup:P  || Crackers:P { Ate:Pc }
+}
+
+Ate:Ao ? {
+	Busdriver:A {
+		%70 'with' 'teacher'
+		%20 'with' 'adult
+		%10 'with' 'someone'
+	}
+	Teacher:A {
+		%70 'with' 'busdriver'
+		%20 'with' 'adult
+		%10 'with' 'someone'
+	}
+}
+
+Ate:Pc ? {
+	Soup:P {
+		%80 'with' 'crackers'
+		%20 'with' 'something'
+	}
+	Crackers:P {
+		%80 'with' 'jelly'
+		%20 'with' 'something'
+	}
+}
+
+Ate:L ? {
+	Steak:P || Soup:P || Crackers:P {	'in' 'kitchen' }
+	IceCream:P {	'in' 'park' }
+}
+
+Ate:R ? {
+	(Busdriver:A || PitcherPers:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'gusto' }
+	(Teacher:A || Schoolgirl:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'daintiness' }
+	IceCream:P {	'with' 'pleasure' }
+}
+
+
