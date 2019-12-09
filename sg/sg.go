@@ -16,6 +16,7 @@ import (
 type Rules struct {
 	Name  string              `desc:"name of this rule collection"`
 	Desc  string              `desc:"description of this rule collection"`
+	Trace bool                `desc:"if true, will print out a trace during generation"`
 	Top   *Rule               `desc:"top-level rule -- this is where to start generating"`
 	Map   map[string]*Rule    `desc:"map of each rule"`
 	Fired map[string]struct{} `desc:"map of names of all the rules that have fired"`
@@ -24,6 +25,9 @@ type Rules struct {
 // Gen generates one expression according to the rules
 func (rls *Rules) Gen() []string {
 	rls.Fired = make(map[string]struct{}, 100)
+	if rls.Trace {
+		fmt.Printf("\n#########################\nRules: %v starting Gen\n", rls.Name)
+	}
 	return rls.Top.Gen(rls)
 }
 
@@ -113,6 +117,9 @@ type Rule struct {
 // Gen generates expression according to the rule
 func (rl *Rule) Gen(rls *Rules) []string {
 	rls.SetFired(rl.Name)
+	if rls.Trace {
+		fmt.Printf("Fired Rule: %v\n", rl.Name)
+	}
 	if rl.IsConds {
 		var copts []int
 		for ii, it := range rl.Items {
@@ -122,25 +129,39 @@ func (rl *Rule) Gen(rls *Rules) []string {
 		}
 		no := len(copts)
 		if no == 0 {
+			if rls.Trace {
+				fmt.Printf("No items match Conds\n")
+			}
 			return nil
 		}
 		opt := rand.Intn(no)
+		if rls.Trace {
+			fmt.Printf("Selected item: %v from: %v matching Conds\n", copts[opt], no)
+		}
 		return rl.Items[copts[opt]].Gen(rl, rls)
 	}
 	if rl.HasProbs {
 		pv := rand.Float32()
 		sum := float32(0)
-		for _, it := range rl.Items {
+		for ii, it := range rl.Items {
 			sum += it.Prob
 			if pv < sum { // note: lower values already excluded
+				if rls.Trace {
+					fmt.Printf("Selected item: %v using rnd val: %v sum: %v\n", ii, pv, sum)
+				}
 				return it.Gen(rl, rls)
 			}
 		}
-		fmt.Printf("ran out of probs in: %v\n", rl.Name)
+		if rls.Trace {
+			fmt.Printf("No items selected using rnd val: %v sum: %v\n", pv, sum)
+		}
 		return nil
 	} else {
 		no := len(rl.Items)
 		opt := rand.Intn(no)
+		if rls.Trace {
+			fmt.Printf("Selected item: %v from: %v uniform random\n", opt, no)
+		}
 		return rl.Items[opt].Gen(rl, rls)
 	}
 }
@@ -242,6 +263,9 @@ func (it *Item) Gen(rl *Rule, rls *Rules) []string {
 		if len(ov) > 0 {
 			gout = append(gout, ov...)
 		}
+	}
+	if rls.Trace {
+		fmt.Printf("Item generated tokens: %v\n", gout)
 	}
 	return gout
 }

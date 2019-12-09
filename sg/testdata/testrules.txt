@@ -1,42 +1,7 @@
-// Production rules are specified as:
-// Name {
-//	   Item(s)
-//    ...
-// }
-// 
-// where Items within each rule are orthogonal options,
-// chosen at uniform random unless otherwise specified with a leading %pct.
-// %pct can add up to < 100 in which case *nothing* is an alternative output.
-// 
-// Multiple elements in an item (on the same line) are resolved and
-// emitted in order.
-// Terminal literals are 'quoted' -- otherwise refers to another rule:
-// error message will flag missing rules.
-//
-// A rule may have ? conditional items, in which case all items must be conditional.
-// the ? expression before the opening bracket is a standard logical expression
-// where the elements are rules that could have been generated earlier in the pass --
-// they evaluate to true if so, and false if not.
-//
-// If just one item per rule it can be put all on one line.
-// 
-// Conventional modifiers: A = Agent, V = Verb, P = Patient,
-// Pi = instrument, Pc = copatient, Ao = coagent, L = location, R = adverb, 
+// This is a test case from sentence gestalt model
 
 Sentence {
 	Ate
-//	Drank
-//	Stirred
-//	Spread
-//	Kissed
-//	Gave
-//	Hit
-//	ThrewTossed
-//	ThrewHosted
-//	DroveTrans
-//	DroveMotiv
-//	ShedV
-//	RoseV
 }
 
 Ate {
@@ -161,16 +126,10 @@ Ate:AoPc ? {
 }
 
 Ate:Ao ? {
-	Busdriver:A {
-		%70 'with' 'teacher'
-		%20 'with' 'adult
-		%10 'with' 'someone'
-	}
-	Teacher:A {
-		%70 'with' 'busdriver'
-		%20 'with' 'adult
-		%10 'with' 'someone'
-	}
+	Busdriver:A { 'with' Teacher:A }
+	Teacher:A { 'with' Busdriver:A }
+	Schoolgirl:A { 'with' PitcherPers:A }
+	PitcherPers:A { 'with' Schoolgirl:A }
 }
 
 Ate:Pc ? {
