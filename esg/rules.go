@@ -14,17 +14,19 @@ import (
 
 // Rules is a collection of rules
 type Rules struct {
-	Name  string              `desc:"name of this rule collection"`
-	Desc  string              `desc:"description of this rule collection"`
-	Trace bool                `desc:"if true, will print out a trace during generation"`
-	Top   *Rule               `desc:"top-level rule -- this is where to start generating"`
-	Map   map[string]*Rule    `desc:"map of each rule"`
-	Fired map[string]struct{} `desc:"map of names of all the rules that have fired"`
+	Name   string              `desc:"name of this rule collection"`
+	Desc   string              `desc:"description of this rule collection"`
+	Trace  bool                `desc:"if true, will print out a trace during generation"`
+	Top    *Rule               `desc:"top-level rule -- this is where to start generating"`
+	Map    map[string]*Rule    `desc:"map of each rule"`
+	Fired  map[string]struct{} `desc:"map of names of all the rules that have fired"`
+	States map[string]string   `desc:"user-defined state map optionally created during generation"`
 }
 
 // Gen generates one expression according to the rules
 func (rls *Rules) Gen() []string {
-	rls.Fired = make(map[string]struct{}, 100)
+	rls.Fired = make(map[string]struct{})
+	rls.States = make(map[string]string)
 	if rls.Trace {
 		fmt.Printf("\n#########################\nRules: %v starting Gen\n", rls.Name)
 	}
@@ -112,11 +114,13 @@ type Rule struct {
 	IsConds  bool    `desc:"items are conditionals -- choose first that fits"`
 	HasProbs bool    `desc:"items have probabilities (else uninform random)"`
 	Items    []*Item `desc:"items in rule"`
+	State    State   `desc:"state update for rule"`
 }
 
 // Gen generates expression according to the rule
 func (rl *Rule) Gen(rls *Rules) []string {
 	rls.SetFired(rl.Name)
+	rl.State.Set(rls, rl.Name)
 	if rls.Trace {
 		fmt.Printf("Fired Rule: %v\n", rl.Name)
 	}
@@ -233,6 +237,7 @@ type Item struct {
 	Elems   []Elem  `desc:"elements of the rule -- for non-Cond rules"`
 	Cond    Conds   `desc:"conditions for this item -- specified by ?"`
 	SubRule *Rule   `desc:"for conditional, this is the sub-rule that is run with sub-items"`
+	State   State   `desc:"state update for rule"`
 }
 
 // String returns string rep
@@ -254,8 +259,10 @@ func (it *Item) String() string {
 // Gen generates expression according to the item
 func (it *Item) Gen(rl *Rule, rls *Rules) []string {
 	if it.SubRule != nil {
+		it.State.Set(rls, "") // no value
 		return it.SubRule.Gen(rls)
 	}
+	it.State.Set(rls, it.Elems[0].Value)
 	var gout []string
 	for i := range it.Elems {
 		el := &it.Elems[i]
@@ -366,3 +373,27 @@ const (
 
 	ElementsN
 )
+
+/////////////////////////////////////////////////////////////////////
+// State
+
+// State holds the name=value state setting associated with rule or item
+type State struct {
+	Name  string `desc:"state name key to set -- if empty then not active"`
+	Value string `desc:"state value to set -- if empty, value is derived from owner (Rule or Item)"`
+}
+
+// Set sets state if Name is not empty
+func (ss *State) Set(rls *Rules, val string) bool {
+	if ss.Name == "" {
+		return false
+	}
+	if ss.Value != "" {
+		val = ss.Value
+	}
+	rls.States[ss.Name] = val
+	if rls.Trace {
+		fmt.Printf("Set State: %v = %v\n", ss.Name, val)
+	}
+	return true
+}

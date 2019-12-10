@@ -111,6 +111,9 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			it := &Item{}
 			ci.SubRule.Items = append(ci.SubRule.Items, it)
 			rls.ParseElems(ci.SubRule, it, sp[sbidx+1:nsp-1], &errs)
+		case sp[0][0] == '=':
+			rl := rls.ParseCurRule(rstack, &errs)
+			rls.ParseState(sp[0][1:], &rl.State, &errs)
 		case sp[0][0] == '%':
 			rl, it := rls.ParseAddItem(rstack, &errs)
 			if rl == nil {
@@ -162,11 +165,27 @@ func (rls *Rules) ParseAddItem(rstack []*Rule, errs *[]error) (*Rule, *Item) {
 
 func (rls *Rules) ParseElems(rl *Rule, it *Item, els []string, errs *[]error) {
 	for _, es := range els {
-		if es[0] == '\'' {
+		switch {
+		case es[0] == '=':
+			rls.ParseState(es[1:], &it.State, errs)
+		case es[0] == '\'':
 			tok := es[1 : len(es)-1]
 			it.Elems = append(it.Elems, Elem{El: TokenEl, Value: tok})
-		} else {
+		default:
 			it.Elems = append(it.Elems, Elem{El: RuleEl, Value: es})
+		}
+	}
+}
+
+func (rls *Rules) ParseState(ststr string, state *State, errs *[]error) {
+	stsp := strings.Split(ststr, "=")
+	if len(stsp) == 0 {
+		err := fmt.Errorf("sg.Rules parse error: state expr: %v empty", ststr)
+		*errs = append(*errs, err)
+	} else {
+		state.Name = stsp[0]
+		if len(stsp) > 1 {
+			state.Value = stsp[1]
 		}
 	}
 }

@@ -1,7 +1,7 @@
 // This is a test case from sentence gestalt model
 
 Sentence {
-	Ate
+	Ate =Action
 }
 
 Ate {
@@ -15,11 +15,13 @@ Ate:V {
 
 // Std agent used for most actions
 Std:A {
-	Busdriver:A
-	Teacher:A
-	PitcherPers:A
-	Schoolgirl:A
+	Busdriver:A =Agent
+	Teacher:A   =Agent
+	PitcherPers:A =Agent
+	Schoolgirl:A =Agent
 }
+
+// Note: following are re-used across Agent and CoAgent so no state there
 
 Busdriver:A {
 	%70 'busdriver'
@@ -73,24 +75,28 @@ Ate:P ? {
 }
 
 Steak:P {
+	=Patient
 	%70 'steak'
 	%20 'food'
 	%10 'something'
 }
 
 Soup:P {
+	=Patient
 	%70 'soup'
 	%20 'food'
 	%10 'something'
 }
 
 IceCream:P {
+	=Patient
 	%70 'icecream'
 	%20 'food'
 	%10 'something'
 }
 
 Crackers:P {
+	=Patient
 	%70 'crackers'
 	%20 'food'
 	%10 'something'
@@ -105,16 +111,19 @@ Ate:M {
 
 Ate:Pi ? {
 	Steak:P {
+		=Instrument=Knife
 		%70 'with' 'knife'
 		%20 'with' 'utensil'
 		%10 'with' 'something'
 	}
 	Soup:P || IceCream:P {
+		=Instrument=Spoon
 		%70 'with' 'spoon'
 		%20 'with' 'utensil'
 		%10 'with' 'something'
 	}
 	Crackers:P {
+		=Instrument=Finger
 		%80 'with' 'finger'
 		%20 'with' 'something'
 	}
@@ -126,32 +135,34 @@ Ate:AoPc ? {
 }
 
 Ate:Ao ? {
-	Busdriver:A { 'with' Teacher:A }
-	Teacher:A { 'with' Busdriver:A }
-	Schoolgirl:A { 'with' PitcherPers:A }
-	PitcherPers:A { 'with' Schoolgirl:A }
+	Busdriver:A { 'with' Teacher:A =CoAgent=Teacher }
+	Teacher:A { 'with' Busdriver:A =CoAgent=Busdriver }
+	Schoolgirl:A { 'with' PitcherPers:A =CoAgent=PitcherPers }
+	PitcherPers:A { 'with' Schoolgirl:A =CoAgent=Schoolgirl }
 }
 
 Ate:Pc ? {
 	Soup:P {
+		=CoPatient=Crackers
 		%80 'with' 'crackers'
 		%20 'with' 'something'
 	}
 	Crackers:P {
+		=CoPatient=Jelly
 		%80 'with' 'jelly'
 		%20 'with' 'something'
 	}
 }
 
 Ate:L ? {
-	Steak:P || Soup:P || Crackers:P {	'in' 'kitchen' }
-	IceCream:P {	'in' 'park' }
+	Steak:P || Soup:P || Crackers:P {	'in' 'kitchen' =Location=Kitchen }
+	IceCream:P {	'in' 'park' =Location=Park }
 }
 
 Ate:R ? {
-	(Busdriver:A || PitcherPers:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'gusto' }
-	(Teacher:A || Schoolgirl:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'daintiness' }
-	IceCream:P {	'with' 'pleasure' }
+	(Busdriver:A || PitcherPers:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'gusto' =Adverb=Gusto }
+	(Teacher:A || Schoolgirl:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'daintiness' =Adverb=Daintiness }
+	IceCream:P {	'with' 'pleasure' =Adverb=Pleasure }
 }
 
 
