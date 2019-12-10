@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package sg provides a stochastic generator, where tokens are generated
+Package esg is the emergent stochastic generator, where tokens are generated
 stochastically according to rules defining the contingencies and probabilities.
 It can be used for generating sentences (sg as well).
 
@@ -62,4 +62,4 @@ P = Patient,
 L = Location
 R = adverb
 */
-package sg
+package esg
