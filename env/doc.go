@@ -30,14 +30,15 @@ needs to manange which Env to use, when, and manage the connection of
 the Env States as inputs to the model, and vice-versa for Actions on the
 Env coming from the model.
 
-The channel allows annotation about multiple possible channels of I/O
-and any given I/O event can specify which channels are provided.
-Particular paradigms of environments must establish naming conventions
-for these channels which then allow the model to use the information
-appropriately -- the Env interface only provides the most basic framework
-for establishing these paradigms, and ultimately a given model will only
-work within a particular paradigm of environments following specific
-conventions.
+Each Element of the overall State allows annotation about the different
+elements of state that are available in general, and the `Step` should
+update all relevant state elements as appropriate, so these can be queried
+by the user. Particular paradigms of environments must establish naming
+conventions for these state elements which then allow the model to use
+the information appropriately -- the Env interface only provides the most
+basic framework for establishing these paradigms, and ultimately a given
+model will only work within a particular paradigm of environments following
+specific conventions.
 
 See e.g., env.FixedTable for particular implementation of a fixed Table
 of patterns, for one example of a widely-used paradigm.
