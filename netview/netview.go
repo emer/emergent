@@ -572,6 +572,8 @@ func (nv *NetView) ViewConfig() {
 		lmesh := vs.MeshByName(lay.Name())
 		if lmesh == nil {
 			AddNewLayMesh(vs, nv, lay)
+		} else {
+			lmesh.(*LayMesh).Lay = lay // make sure
 		}
 		layConfig.Add(gi3d.KiT_Group, lay.Name())
 	}
