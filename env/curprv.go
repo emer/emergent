@@ -16,6 +16,12 @@ func (cv *CurPrvF32) Set(cur float32) {
 	cv.Cur = cur
 }
 
+// Incr increments Cur by 1
+func (cv *CurPrvF32) Incr() {
+	cv.Prv = cv.Cur
+	cv.Cur += 1.0
+}
+
 // Diff returns the difference between current and previous values
 func (cv *CurPrvF32) Diff() float32 {
 	return cv.Cur - cv.Prv
@@ -34,6 +40,12 @@ type CurPrvInt struct {
 func (cv *CurPrvInt) Set(cur int) {
 	cv.Prv = cv.Cur
 	cv.Cur = cur
+}
+
+// Incr increments Cur by 1
+func (cv *CurPrvInt) Incr() {
+	cv.Prv = cv.Cur
+	cv.Cur++
 }
 
 // Diff returns the difference between current and previous values
