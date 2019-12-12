@@ -104,6 +104,16 @@ func (rls *Rules) Add(rl *Rule) {
 	rls.Map[rl.Name] = rl
 }
 
+// TrimStateQualifiers removes any :X qualifiers after state values
+func (rls *Rules) TrimStateQualifiers() {
+	for k, v := range rls.States {
+		ci := strings.Index(v, ":")
+		if ci > 0 {
+			rls.States[k] = v[:ci]
+		}
+	}
+}
+
 /////////////////////////////////////////////////////////////////////
 // Rule
 
