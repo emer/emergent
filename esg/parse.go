@@ -49,11 +49,13 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				lastcmt = ncmt
 				lastwascmt = true
 			}
+		case len(sp[0]) > 2 && sp[0][:2] == "//":
+			lastwascmt = false // skip these
 		case sp[0] == "}":
 			lastwascmt = false
 			sz := len(rstack)
 			if sz == 0 {
-				err := errors.New("sg.Rules parse error: mismatched end bracket } has no match")
+				err := errors.New("esg.Rules parse error: mismatched end bracket } has no match")
 				errs = append(errs, err)
 				continue
 			}
@@ -65,7 +67,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				lastwascmt = false
 			}
 			if nsp == 1 {
-				err := errors.New("sg.Rules parse error: start bracket { needs at least a rule name")
+				err := errors.New("esg.Rules parse error: start bracket { needs at least a rule name")
 				errs = append(errs, err)
 				continue
 			}
@@ -74,7 +76,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			if rnm == "?" {
 				cond = true
 				if nsp == 2 {
-					err := errors.New("sg.Rules parse error: start cond bracket ? { needs at least a rule name")
+					err := errors.New("esg.Rules parse error: start cond bracket ? { needs at least a rule name")
 					errs = append(errs, err)
 					continue
 				}
@@ -82,7 +84,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			}
 			sz := len(rstack)
 			if sz > 0 {
-				cr, ci := rls.ParseAddItem(rstack, &errs)
+				cr, ci := rls.ParseAddItem(rstack, &errs, sp)
 				ci.SubRule = &Rule{Name: cr.Name + "SubRule", Desc: desc, IsConds: cond}
 				rstack = append(rstack, ci.SubRule)
 				ncond := nsp - 1
@@ -96,7 +98,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				rls.Add(nr)
 			}
 		case sp[nsp-1] == "}":
-			cr, ci := rls.ParseAddItem(rstack, &errs)
+			cr, ci := rls.ParseAddItem(rstack, &errs, sp)
 			if cr == nil {
 				continue
 			}
@@ -112,10 +114,10 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			ci.SubRule.Items = append(ci.SubRule.Items, it)
 			rls.ParseElems(ci.SubRule, it, sp[sbidx+1:nsp-1], &errs)
 		case sp[0][0] == '=':
-			rl := rls.ParseCurRule(rstack, &errs)
+			rl := rls.ParseCurRule(rstack, &errs, sp)
 			rls.ParseState(sp[0][1:], &rl.State, &errs)
 		case sp[0][0] == '%':
-			rl, it := rls.ParseAddItem(rstack, &errs)
+			rl, it := rls.ParseAddItem(rstack, &errs, sp)
 			if rl == nil {
 				continue
 			}
@@ -127,7 +129,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			rl.HasProbs = true
 			rls.ParseElems(rl, it, sp[1:], &errs)
 		default:
-			rl, it := rls.ParseAddItem(rstack, &errs)
+			rl, it := rls.ParseAddItem(rstack, &errs, sp)
 			if rl == nil {
 				continue
 			}
@@ -143,18 +145,18 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 	return errs
 }
 
-func (rls *Rules) ParseCurRule(rstack []*Rule, errs *[]error) *Rule {
+func (rls *Rules) ParseCurRule(rstack []*Rule, errs *[]error, sp []string) *Rule {
 	sz := len(rstack)
 	if sz == 0 {
-		err := errors.New("sg.Rules parse error: no active rule when defining items")
+		err := fmt.Errorf("esg.Rules parse error: no active rule when defining items: %v", sp)
 		*errs = append(*errs, err)
 		return nil
 	}
 	return rstack[sz-1]
 }
 
-func (rls *Rules) ParseAddItem(rstack []*Rule, errs *[]error) (*Rule, *Item) {
-	rl := rls.ParseCurRule(rstack, errs)
+func (rls *Rules) ParseAddItem(rstack []*Rule, errs *[]error, sp []string) (*Rule, *Item) {
+	rl := rls.ParseCurRule(rstack, errs, sp)
 	if rl == nil {
 		return nil, nil
 	}
@@ -180,7 +182,7 @@ func (rls *Rules) ParseElems(rl *Rule, it *Item, els []string, errs *[]error) {
 func (rls *Rules) ParseState(ststr string, state *State, errs *[]error) {
 	stsp := strings.Split(ststr, "=")
 	if len(stsp) == 0 {
-		err := fmt.Errorf("sg.Rules parse error: state expr: %v empty", ststr)
+		err := fmt.Errorf("esg.Rules parse error: state expr: %v empty", ststr)
 		*errs = append(*errs, err)
 	} else {
 		state.Name = stsp[0]
@@ -199,7 +201,7 @@ func (rls *Rules) ParseConds(cds []string, errs *[]error) Conds {
 			csz := len(c)
 			switch {
 			case csz == 0:
-				*errs = append(*errs, errors.New("sg.Rules parse error: no text left in cond expr"))
+				*errs = append(*errs, errors.New("esg.Rules parse error: no text left in cond expr"))
 			case c == "&&":
 				*cur = append(*cur, &Cond{El: And})
 			case c == "||":
@@ -223,7 +225,7 @@ func (rls *Rules) ParseConds(cds []string, errs *[]error) Conds {
 			case c[csz-1] == ')':
 				ssz := len(substack)
 				if ssz == 1 {
-					*errs = append(*errs, errors.New("sg.Rules parse error: imbalanced parens in cond expr: "+strings.Join(cds, " ")))
+					*errs = append(*errs, errors.New("esg.Rules parse error: imbalanced parens in cond expr: "+strings.Join(cds, " ")))
 				} else {
 					*cur = append(*cur, &Cond{El: CRule, Rule: c[:csz-1]})
 					cur = substack[ssz-2]
@@ -232,7 +234,7 @@ func (rls *Rules) ParseConds(cds []string, errs *[]error) Conds {
 			case c == ")":
 				ssz := len(substack)
 				if ssz == 1 {
-					*errs = append(*errs, errors.New("sg.Rules parse error: imbalanced parens in cond expr: "+strings.Join(cds, " ")))
+					*errs = append(*errs, errors.New("esg.Rules parse error: imbalanced parens in cond expr: "+strings.Join(cds, " ")))
 				} else {
 					cur = substack[ssz-2]
 					substack = substack[:ssz-1]
