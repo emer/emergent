@@ -62,12 +62,23 @@ func (ft *FixedTable) Init(run int) {
 	ft.Epoch.Init()
 	ft.Trial.Init()
 	ft.Run.Cur = run
+	ft.NewOrder()
+	ft.Trial.Cur = -1 // init state -- key so that first Step() = 0
+}
+
+// NewOrder sets a new random Order based on number of rows in the table.
+func (ft *FixedTable) NewOrder() {
 	np := ft.Table.Len()
 	ft.Order = rand.Perm(np) // always start with new one so random order is identical
 	// and always maintain Order so random number usage is same regardless, and if
 	// user switches between Sequential and random at any point, it all works..
 	ft.Trial.Max = np
-	ft.Trial.Cur = -1 // init state -- key so that first Step() = 0
+}
+
+// PermuteOrder permutes the existing order table to get a new random sequence of inputs
+// just calls: erand.PermuteInts(ft.Order)
+func (ft *FixedTable) PermuteOrder() {
+	erand.PermuteInts(ft.Order)
 }
 
 // Row returns the current row number in table, based on Sequential / perumuted Order and
@@ -101,7 +112,7 @@ func (ft *FixedTable) Step() bool {
 	ft.Epoch.Same() // good idea to just reset all non-inner-most counters at start
 
 	if ft.Trial.Incr() { // if true, hit max, reset to 0
-		erand.PermuteInts(ft.Order)
+		ft.PermuteOrder()
 		ft.Epoch.Incr()
 	}
 	ft.SetTrialName()
