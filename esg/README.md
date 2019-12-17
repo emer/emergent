@@ -4,9 +4,10 @@ Package esg is the emergent stochastic generator, where tokens are generated sto
 
 # Rules
 
-There are two types of rules:
-* unconditional random items
-* conditional items.
+There are 5 types of rules, based on how the items within the rule are selected:
+* Uniform random and random with specified probabilities.
+* Conditional items that depend on a logical expression -- use the `?` before `{` to mark.
+* Sequential and permuted order items that iterate through the list -- use `|` or `$` respectively.
 
 Unconditional items are chosen at random, optionally with specified probabilities:
 
@@ -52,7 +53,7 @@ In the rules text file, an `=` prefix indicates a state-setting expression -- it
 * `=Name=Value` -- directly sets state Name to Value
 * `=Name`  -- sets state Name to value of Item or Rule that it is associated with.  Only non-conditional Items can be used to set the value, which is the first element in the item expression -- conditionals with sub-rules must set the value explicitly.
 
-Expressions at the start of a rule (or sub-rule), on a separate line, are associated with the rule and activate when that rule is fired (and the implicit value is the name of the rule).  Expressions at the end of an Item line are associated with the Item.  Put single-line sub-rule state expressions at end just before }.
+Expressions at the start of a rule (or sub-rule), on a separate line, are associated with the rule and activate when that rule is fired (and the implicit value is the name of the rule).  Expressions at the end of an Item line are associated with the Item.  Put single-line sub-rule state expressions at end just before `}`.  Any number of state expressions can be added.
 
 # Std Modifiers
 
