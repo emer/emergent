@@ -67,16 +67,23 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				lastwascmt = false
 			}
 			if nsp == 1 {
-				err := errors.New("esg.Rules parse error: start bracket { needs at least a rule name")
+				err := errors.New("esg.Rules parse error: start bracket: '{' needs at least a rule name")
 				errs = append(errs, err)
 				continue
 			}
 			rnm := sp[nsp-2]
-			cond := false
-			if rnm == "?" {
-				cond = true
+			typ := UniformItems
+			switch rnm {
+			case "?":
+				typ = CondItems
+			case "|":
+				typ = SequentialItems
+			case "$":
+				typ = PermutedItems
+			}
+			if typ != UniformItems {
 				if nsp == 2 {
-					err := errors.New("esg.Rules parse error: start cond bracket ? { needs at least a rule name")
+					err := errors.New("esg.Rules parse error: start special bracket: '? {' needs at least a rule name")
 					errs = append(errs, err)
 					continue
 				}
@@ -85,15 +92,15 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			sz := len(rstack)
 			if sz > 0 {
 				cr, ci := rls.ParseAddItem(rstack, &errs, sp)
-				ci.SubRule = &Rule{Name: cr.Name + "SubRule", Desc: desc, IsConds: cond}
+				ci.SubRule = &Rule{Name: cr.Name + "SubRule", Desc: desc, Type: typ}
 				rstack = append(rstack, ci.SubRule)
 				ncond := nsp - 1
-				if cond {
+				if typ == CondItems {
 					ncond--
 				}
 				ci.Cond = rls.ParseConds(sp[:ncond], &errs)
 			} else {
-				nr := &Rule{Name: rnm, Desc: desc, IsConds: cond}
+				nr := &Rule{Name: rnm, Desc: desc, Type: typ}
 				rstack = append(rstack, nr)
 				rls.Add(nr)
 			}
@@ -126,7 +133,9 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				errs = append(errs, err)
 			}
 			it.Prob = float32(pct / 100)
-			rl.HasProbs = true
+			if rl.Type == UniformItems {
+				rl.Type = ProbItems
+			}
 			rls.ParseElems(rl, it, sp[1:], &errs)
 		default:
 			rl, it := rls.ParseAddItem(rstack, &errs, sp)
@@ -185,9 +194,10 @@ func (rls *Rules) ParseState(ststr string, state *State, errs *[]error) {
 		err := fmt.Errorf("esg.Rules parse error: state expr: %v empty", ststr)
 		*errs = append(*errs, err)
 	} else {
-		state.Name = stsp[0]
 		if len(stsp) > 1 {
-			state.Value = stsp[1]
+			state.Add(stsp[0], stsp[1])
+		} else {
+			state.Add(stsp[0], "")
 		}
 	}
 }
