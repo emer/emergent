@@ -180,8 +180,13 @@ func (rls *Rules) ParseElems(rl *Rule, it *Item, els []string, errs *[]error) {
 		case es[0] == '=':
 			rls.ParseState(es[1:], &it.State, errs)
 		case es[0] == '\'':
-			tok := es[1 : len(es)-1]
-			it.Elems = append(it.Elems, Elem{El: TokenEl, Value: tok})
+			if len(es) < 3 {
+				err := fmt.Errorf("esg.Rules parse error: empty token: %v in els: %v", es, els)
+				*errs = append(*errs, err)
+			} else {
+				tok := es[1 : len(es)-1]
+				it.Elems = append(it.Elems, Elem{El: TokenEl, Value: tok})
+			}
 		default:
 			it.Elems = append(it.Elems, Elem{El: RuleEl, Value: es})
 		}
