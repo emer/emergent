@@ -28,6 +28,8 @@ func (rls *Rules) OpenRules(fname string) []error {
 
 // ReadRules reads in a text file with rules, line-by-line simple parser
 func (rls *Rules) ReadRules(r io.Reader) []error {
+	rls.Map = nil
+	rls.Top = nil
 	var errs []error
 	scan := bufio.NewScanner(r) // line at a time
 	rstack := []*Rule{}

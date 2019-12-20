@@ -68,6 +68,7 @@ func (rls *Rules) Validate() []error {
 
 // Init initializes rule order state
 func (rls *Rules) Init() {
+	rls.Top.Init()
 	for _, rl := range rls.Map {
 		rl.Init()
 	}
