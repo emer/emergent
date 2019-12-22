@@ -142,7 +142,17 @@ type Prjns []Prjn
 
 // ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
 func (pl *Prjns) ElemLabel(idx int) string {
-	return (*pl)[idx].Name()
+	if len(*pl) == 0 {
+		return "(empty)"
+	}
+	if idx < 0 || idx >= len(*pl) {
+		return ""
+	}
+	pj := (*pl)[idx]
+	if kit.IfaceIsNil(pj) {
+		return "nil"
+	}
+	return pj.Name()
 }
 
 // Add adds a projection to the list
