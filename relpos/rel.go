@@ -103,7 +103,7 @@ type Relations int
 
 //go:generate stringer -type=Relations
 
-var KiT_Relations = kit.Enums.AddEnum(RelationsN, false, nil)
+var KiT_Relations = kit.Enums.AddEnum(RelationsN, kit.NotBitFlag, nil)
 
 func (ev Relations) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *Relations) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
@@ -126,7 +126,7 @@ type XAligns int
 
 //go:generate stringer -type=XAligns
 
-var KiT_XAligns = kit.Enums.AddEnum(XAlignsN, false, nil)
+var KiT_XAligns = kit.Enums.AddEnum(XAlignsN, kit.NotBitFlag, nil)
 
 func (ev XAligns) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *XAligns) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
@@ -144,7 +144,7 @@ type YAligns int
 
 //go:generate stringer -type=YAligns
 
-var KiT_YAligns = kit.Enums.AddEnum(YAlignsN, false, nil)
+var KiT_YAligns = kit.Enums.AddEnum(YAlignsN, kit.NotBitFlag, nil)
 
 func (ev YAligns) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *YAligns) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

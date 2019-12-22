@@ -139,7 +139,7 @@ type Elements int32
 
 //go:generate stringer -type=Elements
 
-var KiT_Elements = kit.Enums.AddEnum(ElementsN, false, nil)
+var KiT_Elements = kit.Enums.AddEnum(ElementsN, kit.NotBitFlag, nil)
 
 func (ev Elements) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *Elements) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

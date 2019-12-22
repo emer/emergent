@@ -243,7 +243,7 @@ type PrjnType int32
 
 //go:generate stringer -type=PrjnType
 
-var KiT_PrjnType = kit.Enums.AddEnum(PrjnTypeN, false, nil)
+var KiT_PrjnType = kit.Enums.AddEnum(PrjnTypeN, kit.NotBitFlag, nil)
 
 func (ev PrjnType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *PrjnType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

@@ -18,7 +18,7 @@ type RuleTypes int32
 
 //go:generate stringer -type=RuleTypes
 
-var KiT_RuleTypes = kit.Enums.AddEnum(RuleTypesN, false, nil)
+var KiT_RuleTypes = kit.Enums.AddEnum(RuleTypesN, kit.NotBitFlag, nil)
 
 func (ev RuleTypes) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *RuleTypes) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

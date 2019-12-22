@@ -272,7 +272,7 @@ type LayerType int32
 
 //go:generate stringer -type=LayerType
 
-var KiT_LayerType = kit.Enums.AddEnum(LayerTypeN, false, nil)
+var KiT_LayerType = kit.Enums.AddEnum(LayerTypeN, kit.NotBitFlag, nil)
 
 func (ev LayerType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *LayerType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

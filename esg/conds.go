@@ -161,7 +161,7 @@ type CondEls int32
 
 //go:generate stringer -type=CondEls
 
-var KiT_CondEls = kit.Enums.AddEnum(CondElsN, false, nil)
+var KiT_CondEls = kit.Enums.AddEnum(CondElsN, kit.NotBitFlag, nil)
 
 func (ev CondEls) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *CondEls) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

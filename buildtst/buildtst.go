@@ -98,7 +98,7 @@ func (ss *Sim) New() *gi.Window {
 
 	width := 1600
 	height := 1200
-	win := gi.NewWindow2D("ra25", "Leabra Random Associator", width, height, true)
+	win := gi.NewMainWindow("ra25", "Leabra Random Associator", width, height)
 
 	vp := win.WinViewport2D()
 	updt := vp.UpdateStart()

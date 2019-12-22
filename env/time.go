@@ -22,7 +22,7 @@ type TimeScales int32
 
 //go:generate stringer -type=TimeScales
 
-var KiT_TimeScales = kit.Enums.AddEnum(TimeScalesN, false, nil)
+var KiT_TimeScales = kit.Enums.AddEnum(TimeScalesN, kit.NotBitFlag, nil)
 
 func (ev TimeScales) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *TimeScales) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }

@@ -51,7 +51,7 @@ type RndDists int
 
 //go:generate stringer -type=RndDists
 
-var KiT_RndDists = kit.Enums.AddEnum(RndDistsN, false, nil)
+var KiT_RndDists = kit.Enums.AddEnum(RndDistsN, kit.NotBitFlag, nil)
 
 func (ev RndDists) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *RndDists) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
