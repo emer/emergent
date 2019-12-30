@@ -4,27 +4,19 @@
 [![GoDoc](https://godoc.org/github.com/emer/emergent?status.svg)](https://godoc.org/github.com/emer/emergent)
 [![Travis](https://travis-ci.com/emer/emergent.svg?branch=master)](https://travis-ci.com/emer/emergent)
 
-This is the new home of the *emergent* neural network simulation software, developed primarily by the CCN lab at the University of Colorado Boulder.  We have decided to completely reboot the entire enterprise from the ground up, with a much more open, general-purpose design and approach.
+This is the new home of the *emergent* neural network simulation software, developed primarily by the CCN lab at the University of Colorado Boulder (now at UC Davis): https://ccnlab.org.  We have decided to completely reboot the entire enterprise from the ground up, with a much more open, general-purpose design and approach.
 
 See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installation instructions, and the [Wiki Rationale](https://github.com/emer/emergent/wiki/Rationale) and [History](https://github.com/emer/emergent/wiki/History) pages for a more detailed rationale for the new version of emergent, and a history of emergent (and its predecessors).
 
+See the [ra25 example](https://github.com/emer/leabra/blob/master/examples/ra25/README.md) in the `leabra` package for a complete working example (intended to be a good starting point for creating your own models), and any of the 26 models in the [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) repository which also provide good starting points.  See the [etable wiki](https://github.com/emer/etable/wiki) for docs and example code for the widely-used etable data table structure, and the `family_trees` example in the CCN textbook sims which has good examples of many standard network representation analysis techniques (PCA, cluster plots, RSA).
+
 # Current Status / News
 
-* 9/10/2019: First batch of [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) complete, for chapters 2-4, which drove development of lots of good stuff in [etable](https://github.com/emer/etable), including `simat` package for similarity / distance matricies, PCA, and cluster plots -- and a few key advances in eplot functionality.  See the [etable wiki](https://github.com/emer/etable/wiki) for docs and example code, and the `family_trees` as an example textbook sim with lots of this code.
-
-* 8/26/2019: Starting on [CCN Textbook](https://grey.colorado.edu/CompCogNeuro/index.php/CCNBook/Main) simulations using new emergent: https://github.com/CompCogNeuro/sims -- in course of doing so, finding and fixing a number of issues, including getting the OpenWtsJSON function to work (using a corrected JSON format), and improving the NetView etc.  For those following along with their own forks, this is a burst of change that should settle down in a week or so.
-
-* 6/12/2019: **Initial beta release!!**  The [leabra ra25](https://github.com/emer/leabra/blob/master/examples/ra25/README.md) example code is now sufficiently feature complete to provide a reasonable starting point for creating your own simulations, with both the Go and Python versions closely matched in functionality so you can choose either way (or explore both!).  We expect that although there will certainly be changes and improvements etc (there are many planned additions already), the existing code should be reasonably stable at this point, with only relatively minor changes to the API -- it is now safe to start building your own models!   Please file issues on github (use the emergent repository's issue tracker) for any bugs or other issues you find.
-
-* 5/2019: NetView nearly fully functional. `eplot` package and `Plot2D` widget provides basic dynamic gui for 2d plots.  See [TODO](#todo) section below for current planning roadmap for a push to get all the basic functionality in place so people can start using it!
-
-* 4/2019: separated the `leabra` and `etable` repositories from the overall `emergent` repository, to make it easier to fork and save / modify just the algorithm components of the system independent of the overall emergent infrastructure, and because `etable` (and associated `etensor` and `bitslice`) packages are fully independent and useful more generally.  This means that `emergent` is just a toolkit library with no runnable `examples` executables etc -- all of that has moved over to the `leabra` repository including the `python` wrapper.  You just need to replace "github.com/emer/emergent/leabra/leabra" -> "github.com/emer/leabra/leabra" in your imports, and likewise "github.com/emer/emergent/etable" -> "github.com/emer/etable/etable", "github.com/emer/emergent/etensor" -> "github.com/emer/etable/etensor".
+* 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) that accompany the [CCN Textbook](https://grey.colorado.edu/CompCogNeuro/index.php/CCNBook/Main) are now complete and have driven extensive testing and bugfixing.
 
 * 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
 
-* 2/2019: An initial complete basic-level implementation is now in place, and you can actually run `Leabra` models in the new emergent!  See the `examples/ra25` directory for a runnable, standalone Go program that you can compile use to train a "random associator" test model.  This is definitely the place to start in understanding how everything works.
-
-* 2/2019: Initial benchmarking (see `examples/bench` for details) shows that the Go version is roughly 20-30% slower than C++ emergent for larger-sized models on a single processor, and while it does benefit significantly from multi-CPU processors, it does so less than the C++ version, which can be 2x faster than the Go version for some sizes and numbers of processors.  Nevertheless, we think the massive improvement in code simplicity and flexibility makes these performance tradeoffs worth it for most typical applications.
+* 2/2019: Initial implementation and benchmarking (see `examples/bench` for details -- shows that the Go version is comparable in speed to C++).
 
 # Key Features
 
@@ -82,6 +74,8 @@ Here are some of the additional supporting packages:
 
 * `patgen` supports various general-purpose pattern-generation algorithms, as implemented in `taDataGen` in C++ emergent (e.g., `PermutedBinary` and `FlipBits`).
 
+* `esg` is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
+
 * `popcode` supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
 
 * `erand` has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
@@ -94,11 +88,9 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 12/09/2019
+Last updated: 12/30/2019
 
 This list is not strictly in order, but roughly so..
-
-- [ ] fix bugs, try to update glfw including keyboard input fixes
 
 - [ ] write converter from Go to Python
 
@@ -108,7 +100,8 @@ This list is not strictly in order, but roughly so..
 
 - [ ] pvlv
 
+- [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
+
 - [x] virtual environment -- [eve](https://github.com/emer/eve) is under way -- no actual physics yet but core infrastructure in place and usable for basic boxy objects under external control.
 
-- [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
 

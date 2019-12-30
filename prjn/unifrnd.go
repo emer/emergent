@@ -5,12 +5,12 @@
 package prjn
 
 import (
+	"math"
 	"math/rand"
 	"sort"
 
 	"github.com/emer/emergent/erand"
 	"github.com/emer/etable/etensor"
-	"github.com/g3n/engine/math32"
 )
 
 // UnifRnd implements uniform random pattern of connectivity between two layers
@@ -43,9 +43,9 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 	noself := same && !ur.SelfCon
 	var nsend int
 	if noself {
-		nsend = int(math32.Round(ur.PCon * float32(slen-1)))
+		nsend = int(math.Round(float64(ur.PCon) * float64(slen-1)))
 	} else {
-		nsend = int(math32.Round(ur.PCon * float32(slen)))
+		nsend = int(math.Round(float64(ur.PCon) * float64(slen)))
 	}
 
 	// NOTE: this is reasonably accurate: mean + 3 * SEM, but we can just use
