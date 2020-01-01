@@ -18,12 +18,12 @@ import (
 
 // LayObj is the Layer 3D object within the NetView
 type LayObj struct {
-	gi3d.Object
+	gi3d.Solid
 	LayName string   `desc:"name of the layer we represent"`
 	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview"`
 }
 
-var KiT_LayObj = kit.Types.AddType(&LayObj{}, nil)
+var KiT_LayObj = kit.Types.AddType(&LayObj{}, LayObjProps)
 
 func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 	lo.ConnectEvent(sc.Win, oswin.MouseEvent, gi.RegPri, func(recv, send ki.Ki, sig int64, d interface{}) {
@@ -124,4 +124,8 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 		pos := me.Where
 		gi.PopupTooltip(sval, pos.X, pos.Y, sc.Win.Viewport, lo.LayName)
 	})
+}
+
+var LayObjProps = ki.Props{
+	"EnumType:Flag": gi.KiT_NodeFlags,
 }
