@@ -103,7 +103,7 @@ func (cs *Conds) Validate(rl *Rule, it *Item, rls *Rules) []error {
 // Cond is one element of a conditional
 type Cond struct {
 	El    CondEls `desc:"what type of conditional element is this"`
-	Rule  string  `desc:"name of rule to evaluate for CRule"`
+	Rule  string  `desc:"name of rule or token to evaluate for CRule"`
 	Conds Conds   `desc:"sub-conditions for SubCond"`
 }
 
@@ -127,7 +127,11 @@ func (cd *Cond) String() string {
 // True returns true if conditional expression is true
 func (cd *Cond) True(rls *Rules) bool {
 	if cd.El == CRule {
-		return rls.HasFired(cd.Rule)
+		if cd.Rule[0] == '\'' {
+			return rls.HasOutput(cd.Rule)
+		} else {
+			return rls.HasFired(cd.Rule)
+		}
 	}
 	if cd.El == SubCond && cd.Conds != nil {
 		return cd.Conds.True(rls)
@@ -141,9 +145,11 @@ func (cd *Cond) Validate(rl *Rule, it *Item, rls *Rules) []error {
 		if cd.Rule == "" {
 			return []error{fmt.Errorf("Rule: %v Item: %v Rule Condition has empty Rule", rl.Name, it.String())}
 		}
-		_, err := rls.RuleTry(cd.Rule)
-		if err != nil {
-			return []error{err}
+		if cd.Rule[0] != '\'' {
+			_, err := rls.RuleTry(cd.Rule)
+			if err != nil {
+				return []error{err}
+			}
 		}
 		return nil
 	}

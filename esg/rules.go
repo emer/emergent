@@ -16,17 +16,21 @@ type Rules struct {
 	Top    *Rule               `desc:"top-level rule -- this is where to start generating"`
 	Map    map[string]*Rule    `desc:"map of each rule"`
 	Fired  map[string]struct{} `desc:"map of names of all the rules that have fired"`
+	Output []string            `desc:"array of output strings -- appended as the rules generate output"`
 	States State               `desc:"user-defined state map optionally created during generation"`
 }
 
-// Gen generates one expression according to the rules
+// Gen generates one expression according to the rules.
+// returns the token output, which is also avail as rls.Output
 func (rls *Rules) Gen() []string {
 	rls.Fired = make(map[string]struct{})
-	rls.States = make(map[string]string)
+	rls.States = make(State)
+	rls.Output = nil
 	if rls.Trace {
 		fmt.Printf("\n#########################\nRules: %v starting Gen\n", rls.Name)
 	}
-	return rls.Top.Gen(rls)
+	rls.Top.Gen(rls)
+	return rls.Output
 }
 
 // String generates string representation of all rules
@@ -94,9 +98,28 @@ func (rls *Rules) HasFired(name string) bool {
 	return has
 }
 
+// HasOutput returns true if given token is in the output string
+// strips ' ' delimiters if present in out string
+func (rls *Rules) HasOutput(out string) bool {
+	if out[0] == '\'' {
+		out = out[1 : len(out)-1]
+	}
+	for _, o := range rls.Output {
+		if o == out {
+			return true
+		}
+	}
+	return false
+}
+
 // SetFired adds given rule name to map of those that fired this round
 func (rls *Rules) SetFired(name string) {
 	rls.Fired[name] = struct{}{}
+}
+
+// AddOutput adds given string to Output array
+func (rls *Rules) AddOutput(out string) {
+	rls.Output = append(rls.Output, out)
 }
 
 // Adds given rule

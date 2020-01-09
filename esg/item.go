@@ -37,24 +37,18 @@ func (it *Item) String() string {
 }
 
 // Gen generates expression according to the item
-func (it *Item) Gen(rl *Rule, rls *Rules) []string {
+func (it *Item) Gen(rl *Rule, rls *Rules) {
 	if it.SubRule != nil {
 		it.State.Set(rls, "") // no value
-		return it.SubRule.Gen(rls)
+		it.SubRule.Gen(rls)
 	}
-	it.State.Set(rls, it.Elems[0].Value)
-	var gout []string
-	for i := range it.Elems {
-		el := &it.Elems[i]
-		ov := el.Gen(rls)
-		if len(ov) > 0 {
-			gout = append(gout, ov...)
+	if len(it.Elems) > 0 {
+		it.State.Set(rls, it.Elems[0].Value)
+		for i := range it.Elems {
+			el := &it.Elems[i]
+			el.Gen(rl, rls)
 		}
 	}
-	if rls.Trace {
-		fmt.Printf("Item generated tokens: %v\n", gout)
-	}
-	return gout
 }
 
 // CondTrue evalutes whether the condition is true
@@ -105,15 +99,17 @@ func (el *Elem) String() string {
 }
 
 // Gen generates expression according to the element
-func (el *Elem) Gen(rls *Rules) []string {
+func (el *Elem) Gen(rl *Rule, rls *Rules) {
 	switch el.El {
 	case RuleEl:
 		rl := rls.Rule(el.Value)
-		return rl.Gen(rls)
+		rl.Gen(rls)
 	case TokenEl:
-		return []string{el.Value}
+		if rls.Trace {
+			fmt.Printf("Rule: %v added Token output: %v\n", rl.Name, el.Value)
+		}
+		rls.AddOutput(el.Value)
 	}
-	return nil
 }
 
 // Validate checks for config errors

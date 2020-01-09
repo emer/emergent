@@ -61,8 +61,9 @@ func (rl *Rule) Init() {
 	}
 }
 
-// Gen generates expression according to the rule
-func (rl *Rule) Gen(rls *Rules) []string {
+// Gen generates expression according to the rule, appending output
+// to the rls.Output array
+func (rl *Rule) Gen(rls *Rules) {
 	rls.SetFired(rl.Name)
 	rl.State.Set(rls, rl.Name)
 	if rls.Trace {
@@ -75,7 +76,7 @@ func (rl *Rule) Gen(rls *Rules) []string {
 		if rls.Trace {
 			fmt.Printf("Selected item: %v from: %v uniform random\n", opt, no)
 		}
-		return rl.Items[opt].Gen(rl, rls)
+		rl.Items[opt].Gen(rl, rls)
 	case ProbItems:
 		pv := rand.Float32()
 		sum := float32(0)
@@ -85,13 +86,13 @@ func (rl *Rule) Gen(rls *Rules) []string {
 				if rls.Trace {
 					fmt.Printf("Selected item: %v using rnd val: %v sum: %v\n", ii, pv, sum)
 				}
-				return it.Gen(rl, rls)
+				it.Gen(rl, rls)
+				return
 			}
 		}
 		if rls.Trace {
 			fmt.Printf("No items selected using rnd val: %v sum: %v\n", pv, sum)
 		}
-		return nil
 	case CondItems:
 		var copts []int
 		for ii, it := range rl.Items {
@@ -104,17 +105,17 @@ func (rl *Rule) Gen(rls *Rules) []string {
 			if rls.Trace {
 				fmt.Printf("No items match Conds\n")
 			}
-			return nil
+			return
 		}
 		opt := rand.Intn(no)
 		if rls.Trace {
 			fmt.Printf("Selected item: %v from: %v matching Conds\n", copts[opt], no)
 		}
-		return rl.Items[copts[opt]].Gen(rl, rls)
+		rl.Items[copts[opt]].Gen(rl, rls)
 	case SequentialItems:
 		no := len(rl.Items)
 		if no == 0 {
-			return nil
+			return
 		}
 		if rl.CurIdx >= no {
 			rl.CurIdx = 0
@@ -124,11 +125,11 @@ func (rl *Rule) Gen(rls *Rules) []string {
 			fmt.Printf("Selected item: %v sequentially\n", opt)
 		}
 		rl.CurIdx++
-		return rl.Items[opt].Gen(rl, rls)
+		rl.Items[opt].Gen(rl, rls)
 	case PermutedItems:
 		no := len(rl.Items)
 		if no == 0 {
-			return nil
+			return
 		}
 		if len(rl.Order) != no {
 			rl.Order = rand.Perm(no)
@@ -143,9 +144,8 @@ func (rl *Rule) Gen(rls *Rules) []string {
 			fmt.Printf("Selected item: %v sequentially\n", opt)
 		}
 		rl.CurIdx++
-		return rl.Items[opt].Gen(rl, rls)
+		rl.Items[opt].Gen(rl, rls)
 	}
-	return nil
 }
 
 // String generates string representation of rule
