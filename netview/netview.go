@@ -289,9 +289,9 @@ func (nv *NetView) RecFastBkwd() bool {
 		return false
 	}
 	if nv.RecNo < 0 {
-		nv.RecNo = nv.Data.Ring.Len - 11
+		nv.RecNo = nv.Data.Ring.Len - 10
 	} else {
-		nv.RecNo -= 11
+		nv.RecNo -= 10
 	}
 	if nv.RecNo < 0 {
 		nv.RecNo = 0
