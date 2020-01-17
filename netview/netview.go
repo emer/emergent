@@ -91,9 +91,6 @@ func (nv *NetView) HasLayers() bool {
 // state of the counters.  The NetView displays this recorded data when
 // Update is next called.
 func (nv *NetView) Record(counters string) {
-	if counters == nv.LastCtrs { // In case Record() is called twice for same event - e.g. multiple update view calls
-		return
-	}
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
