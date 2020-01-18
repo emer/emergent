@@ -280,7 +280,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
 	rlbl := vbar.ChildByName("rec", 10).(*gi.Label)
-	rlbl.SetText(fmt.Sprintf("%d", nv.RecNo))
+	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo))
 }
 
 // RecFastBkwd move view record 10 steps backward. Returns true if updated.
@@ -1042,7 +1042,7 @@ func (nv *NetView) ViewbarConfig() {
 	tbar.AddSeparator("time")
 	tlbl := gi.AddNewLabel(tbar, "time", "Time:")
 	tlbl.Tooltip = "states are recorded over time -- last N can be reviewed using these buttons"
-	rlbl := gi.AddNewLabel(tbar, "rec", fmt.Sprintf("%d", nv.RecNo))
+	rlbl := gi.AddNewLabel(tbar, "rec", fmt.Sprintf("%4d ", nv.RecNo))
 	rlbl.Redrawable = true
 	rlbl.Tooltip = "current view record: -1 means latest, 0 = earliest"
 	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move earlier by 10"}, nv.This(),
