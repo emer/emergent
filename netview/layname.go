@@ -31,7 +31,7 @@ func (ln *LayName) ConnectEvents3D(sc *gi3d.Scene) {
 		nv := ln.NetView
 		lay := nv.Net.LayerByName(ln.Text)
 		if lay != nil {
-			giv.StructViewDialog(nv.Viewport, lay, giv.DlgOpts{Title: ln.Text}, nil, nil)
+			giv.StructViewDialog(nv.Viewport, "Layer: "+lay.Name(), giv.DlgOpts{Title: ln.Text}, nil, nil)
 		}
 		me.SetProcessed()
 	})
