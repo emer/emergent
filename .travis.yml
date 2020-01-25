@@ -3,6 +3,7 @@ language: go
 go:
   - 1.11.x
   - 1.12.x
+  - 1.13.x
   - master
 
 addons:
@@ -15,17 +16,20 @@ matrix:
   allow_failures:
     - go: master
 
+env:
+  - GO111MODULE=off
+
 script:
   - go get -d -t -v ./...
   - go build -v `go list ./... | grep -v python`
   - go test `go list ./... | grep -v python`
 
 notifications:
-#  email:
-#    recipients:
-#      - emergentdev@grey.colorado.edu
-#    on_success: change
-#    on_failure: always
+  email:
+    recipients:
+      - oreilly@ucdavis.edu
+    on_success: change
+    on_failure: always
   webhooks:
     urls:
       - https://ccnlab.zulipchat.com/api/v1/external/travis?api_key=7lfyOrci6YROdaxqqdDvQnNMWWQBtNuW&stream=emergent&topic=travis
