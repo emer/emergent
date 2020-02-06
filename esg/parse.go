@@ -74,6 +74,16 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				continue
 			}
 			rnm := sp[nsp-2]
+			var prepeat float32
+			if len(rnm) > 2 && rnm[0:2] == "=%" {
+				pct, err := strconv.ParseFloat(rnm[2:], 32)
+				if err != nil {
+					errs = append(errs, err)
+				} else {
+					prepeat = float32(pct / 100)
+				}
+				rnm = sp[nsp-3]
+			}
 			typ := UniformItems
 			switch rnm {
 			case "?":
@@ -94,7 +104,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			sz := len(rstack)
 			if sz > 0 {
 				cr, ci := rls.ParseAddItem(rstack, &errs, sp)
-				ci.SubRule = &Rule{Name: cr.Name + "SubRule", Desc: desc, Type: typ}
+				ci.SubRule = &Rule{Name: cr.Name + "SubRule", Desc: desc, Type: typ, RepeatP: prepeat}
 				rstack = append(rstack, ci.SubRule)
 				ncond := nsp - 1
 				if typ == CondItems {
@@ -102,7 +112,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				}
 				ci.Cond = rls.ParseConds(sp[:ncond], &errs)
 			} else {
-				nr := &Rule{Name: rnm, Desc: desc, Type: typ}
+				nr := &Rule{Name: rnm, Desc: desc, Type: typ, RepeatP: prepeat}
 				rstack = append(rstack, nr)
 				rls.Add(nr)
 			}
