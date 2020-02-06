@@ -14,7 +14,7 @@ Ate:V {
 }
 
 // Std agent used for most actions
-Std:A {
+Std:A =%80 {
 	Busdriver:A =Agent
 	Teacher:A   =Agent
 	PitcherPers:A =Agent

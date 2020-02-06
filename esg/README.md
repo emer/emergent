@@ -39,11 +39,22 @@ RuleName ? {
 }
 ```
 
-The expression before the opening bracket for each item is a standard logical expression using || (or), && (and), and ! (not), along with parens, where the elements are rules that could have been generated earlier in the pass -- they evaluate to true if so, and false if not.
+The expression before the opening bracket for each item is a standard logical expression using || (or), && (and), and ! (not), along with parens, where the elements are rules or output tokens (which must be enclosed in ' ' single quotes) that could have been generated earlier in the pass -- they evaluate to true if so, and false if not.
 
 If the whole expression evaluates to true, then it is among items chosen at random (typically only one for conditionals but could be any number).
 
 If just one item per rule it can be put all on one line.
+
+# Repeating choices over time:
+
+Any rule can have an optional `=%p` expression just before the `{`, which indicates the probability of repeating the same item as last time:
+
+```
+RuleName ? %=70 {
+...
+```
+
+This gives the rule a 70% chance of repeating the same item, regardless of how it was chosen before.  Note that this probably doesn't make a lot of sense for conditional rules as the choice last time may not satisfy the conditions this time.
 
 # States
 
