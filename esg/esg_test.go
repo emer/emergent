@@ -52,7 +52,7 @@ func TestGen(t *testing.T) {
 // 	if errs != nil {
 // 		t.Error("validation errors occured as logged above")
 // 	}
-// 	rls.Trace = true
+// 	// rls.Trace = true
 // 	for i := 0; i < 10; i++ {
 // 		str := rls.Gen()
 // 		fmt.Println(str)
