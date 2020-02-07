@@ -50,7 +50,7 @@ If just one item per rule it can be put all on one line.
 Any rule can have an optional `=%p` expression just before the `{`, which indicates the probability of repeating the same item as last time:
 
 ```
-RuleName ? %=70 {
+RuleName ? =%70 {
 ...
 ```
 

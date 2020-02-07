@@ -42,7 +42,7 @@ func TestGen(t *testing.T) {
 }
 
 func TestGenIto(t *testing.T) {
-	t.SkipNow()
+	// t.SkipNow()
 	rls := &Rules{Name: "test"}
 	errs := rls.OpenRules("testdata/ito.txt")
 	if errs != nil {
