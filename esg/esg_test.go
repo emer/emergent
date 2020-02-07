@@ -41,20 +41,20 @@ func TestGen(t *testing.T) {
 	}
 }
 
-func TestGenIto(t *testing.T) {
-	// t.SkipNow()
-	rls := &Rules{Name: "test"}
-	errs := rls.OpenRules("testdata/ito.txt")
-	if errs != nil {
-		t.Error("parsing errors occured as logged above")
-	}
-	errs = rls.Validate()
-	if errs != nil {
-		t.Error("validation errors occured as logged above")
-	}
-	// rls.Trace = true
-	for i := 0; i < 10; i++ {
-		str := rls.Gen()
-		fmt.Println(str)
-	}
-}
+// func TestGenIto(t *testing.T) {
+// 	// t.SkipNow()
+// 	rls := &Rules{Name: "test"}
+// 	errs := rls.OpenRules("testdata/ito.txt")
+// 	if errs != nil {
+// 		t.Error("parsing errors occured as logged above")
+// 	}
+// 	errs = rls.Validate()
+// 	if errs != nil {
+// 		t.Error("validation errors occured as logged above")
+// 	}
+// 	// rls.Trace = true
+// 	for i := 0; i < 10; i++ {
+// 		str := rls.Gen()
+// 		fmt.Println(str)
+// 	}
+// }
