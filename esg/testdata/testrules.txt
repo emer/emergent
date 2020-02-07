@@ -15,7 +15,7 @@ Ate:V {
 
 // Std agent used for most actions
 Std:A =%80 {
-	Busdriver:A =Agent
+	Busdriver:A =Agent // also comments here ok now
 	Teacher:A   =Agent
 	PitcherPers:A =Agent
 	Schoolgirl:A =Agent
@@ -75,7 +75,7 @@ Ate:P ? {
 }
 
 Steak:P {
-	=Patient
+	=Patient    // whatever is chosen is set to the patient role
 	%70 'steak'
 	%20 'food'
 	%10 'something'
@@ -116,7 +116,7 @@ Ate:Pi ? {
 		%20 'with' 'utensil'
 		%10 'with' 'something'
 	}
-	Soup:P || IceCream:P {
+	Soup:P || IceCream:P { // usual logical operators supported
 		=Instrument=Spoon
 		%70 'with' 'spoon'
 		%20 'with' 'utensil'
@@ -160,7 +160,7 @@ Ate:L ? {
 }
 
 Ate:R ? {
-	(Busdriver:A || PitcherPers:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'gusto' =Adverb=Gusto }
+	(Busdriver:A || PitcherPers:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'gusto' =Adverb=Gusto }  // some pretty complex items are possible
 	(Teacher:A || Schoolgirl:A) && (Steak:P || Soup:P || Crackers:P) { 'with' 'daintiness' =Adverb=Daintiness }
 	IceCream:P {	'with' 'pleasure' =Adverb=Pleasure }
 }

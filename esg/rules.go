@@ -10,14 +10,16 @@ import (
 
 // Rules is a collection of rules
 type Rules struct {
-	Name   string              `desc:"name of this rule collection"`
-	Desc   string              `desc:"description of this rule collection"`
-	Trace  bool                `desc:"if true, will print out a trace during generation"`
-	Top    *Rule               `desc:"top-level rule -- this is where to start generating"`
-	Map    map[string]*Rule    `desc:"map of each rule"`
-	Fired  map[string]struct{} `desc:"map of names of all the rules that have fired"`
-	Output []string            `desc:"array of output strings -- appended as the rules generate output"`
-	States State               `desc:"user-defined state map optionally created during generation"`
+	Name      string              `desc:"name of this rule collection"`
+	Desc      string              `desc:"description of this rule collection"`
+	Trace     bool                `desc:"if true, will print out a trace during generation"`
+	Top       *Rule               `desc:"top-level rule -- this is where to start generating"`
+	Map       map[string]*Rule    `desc:"map of each rule"`
+	Fired     map[string]struct{} `desc:"map of names of all the rules that have fired"`
+	Output    []string            `desc:"array of output strings -- appended as the rules generate output"`
+	States    State               `desc:"user-defined state map optionally created during generation"`
+	ParseErrs []error             `desc:"errors from parsing"`
+	ParseLn   int                 `desc:"current line number during parsing"`
 }
 
 // Gen generates one expression according to the rules.
