@@ -637,7 +637,7 @@ func (nv *NetView) ViewDefaults() {
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	vs.Camera.Near = 0.1
 	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
-	vs.BgColor.SetUInt8(255, 255, 255, 255) // white
+	vs.BgColor = gi.Prefs.Colors.Background
 	gi3d.AddNewAmbientLight(vs, "ambient", 0.3, gi3d.DirectSun)
 	dir := gi3d.AddNewDirLight(vs, "dirUp", 0.3, gi3d.DirectSun)
 	dir.Pos.Set(0, 1, 0)
