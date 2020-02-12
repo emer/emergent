@@ -561,6 +561,7 @@ func (nv *NetView) ViewConfig() {
 	if len(vs.Lights) == 0 {
 		nv.ViewDefaults()
 	}
+	vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
 	nlay := nv.Net.NLayers()
 	laysGp, err := vs.ChildByNameTry("Layers", 0)
 	if err != nil {
@@ -1107,6 +1108,16 @@ func (nv *NetView) ShowAllParams() string {
 	nds := nv.Net.AllParams()
 	giv.TextViewDialog(nv.Viewport, []byte(nds), giv.DlgOpts{Title: "All Params"})
 	return nds
+}
+
+func (nv *NetView) Render2D() {
+	if gi.RebuildDefaultStyles {
+		vs := nv.Scene()
+		if vs != nil {
+			vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
+		}
+	}
+	nv.Layout.Render2D()
 }
 
 var NetViewProps = ki.Props{
