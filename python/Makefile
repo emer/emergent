@@ -25,3 +25,6 @@ install-exe:
 	# install executable into /usr/local/bin
 	cp emergent/pyemergent /usr/local/bin/
 
+clean:
+	rm -rf emergent dist build */*.egg-info *.egg-info
+	

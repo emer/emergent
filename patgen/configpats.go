@@ -6,13 +6,14 @@ package patgen
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
 )
 
-// InitPats initiates patterns to be used in ConfigPatsTrain
+// InitPats initiates patterns to be used in MixPats
 func InitPats(dt *etable.Table, name, desc, inputName, outputName string, listSize, ySize, xSize, poolY, poolX int) {
 	dt.SetMetaData("name", name)
 	dt.SetMetaData("desc", desc)
@@ -23,9 +24,9 @@ func InitPats(dt *etable.Table, name, desc, inputName, outputName string, listSi
 	}, listSize)
 }
 
-// ConfigPats configures patterns using first listSize rows in the vocabulary map
+// MixPats mixes patterns using first listSize rows in the vocabulary map
 // poolSource order: left right, bottom up
-func ConfigPats(dt *etable.Table, mp map[string]*etensor.Float32, colName string, poolSource []string) error {
+func MixPats(dt *etable.Table, mp map[string]*etensor.Float32, colName string, poolSource []string) error {
 	name := dt.MetaData["name"]
 	listSize := dt.ColByName(colName).Shapes()[0]
 	ySize := dt.ColByName(colName).Shapes()[1]
@@ -39,7 +40,7 @@ func ConfigPats(dt *etable.Table, mp map[string]*etensor.Float32, colName string
 				frmPool := mp[poolSource[npool]].SubSpace([]int{row})
 				if !reflect.DeepEqual(pool.Shapes(), frmPool.Shapes()) {
 					err := fmt.Errorf("Vocab and pools in the table should have the same shape") // how do I stop the program?
-					// fmt.Println(err.Error())
+					log.Println(err.Error())
 					return err
 				}
 				pool.CopyFrom(frmPool)
