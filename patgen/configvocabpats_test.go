@@ -12,15 +12,14 @@ import (
 func TestVocab(t *testing.T) {
 	fmt.Println("Testing starts")
 	m := make(map[string]*etensor.Float32)
-	AddVocabEmpty(m, 3, 3, 3, "empty")
-	AddVocabPermutedBinary(m, 3, 3, 3, 0.3, "A")
-	AddVocabDrift(m, 3, 3, 3, 0.3, 0.2, "B") // nOn=4*(3*3*0.3); nDrift=nOn*0.5
-	AddVocabRepeat(m, 3, 3, 3, 0.3, "ctxt1")
-	VocabRepeat(m, "ctxt1", 3)
+	AddVocabEmpty(m, "empty", 3, 3, 3)
+	AddVocabPermutedBinary(m, "A", 3, 3, 3, 0.3)
+	AddVocabDrift(m, "B", 3, 0.2, "A", 0) // nOn=4*(3*3*0.3); nDrift=nOn*0.5
+	AddVocabRepeat(m, "ctxt1", 3, "A", 0)
 	VocabConcat(m, "AB-C", []string{"A", "B"})
 	VocabSlice(m, "AB-C", []string{"A'", "B'"}, []int{0, 3, 6}) // 3 cutoffs for 2 vocabs
 	VocabShuffle(m, []string{"B'"})
-	VocabClone(m, "B'", "B''")
+	AddVocabClone(m, "B''", "B'")
 
 	fmt.Println("\n\n\nmap")
 	fmt.Println(reflect.ValueOf(m).MapKeys())

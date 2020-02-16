@@ -40,3 +40,14 @@ func FlipBits(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 		tsr.SetFloat1D(offs[i], onVal)
 	}
 }
+
+// FlipBitsRows turns nOff bits that are currently On to Off and
+// nOn bits that are currently Off to On, using permuted lists.
+// Iterates over the outer-most tensor dimension as rows.
+func FlipBitsRows(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
+	rows, _ := tsr.RowCellSize()
+	for i := 0; i < rows; i++ {
+		trow := tsr.SubSpace([]int{i})
+		FlipBits(trow, nOff, nOn, onVal, offVal)
+	}
+}
