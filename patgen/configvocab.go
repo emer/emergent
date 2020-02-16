@@ -37,14 +37,20 @@ func (vc Vocab) ByNameTry(name string) (*etensor.Float32, error) {
 // "end user" code, it is much better to have error messages instead of crashes
 // so we add the extra checks etc.
 
-// NOn returns the number of bits active in given tensor
-func NOn(trow *etensor.Float32) int {
+// NOnInTensor returns the number of bits active in given tensor
+func NOnInTensor(trow *etensor.Float32) int {
 	return int(tsragg.Sum(trow))
 }
 
-// PctAct returns the percent activity in given tensor (NOn / size)
-func PctAct(trow *etensor.Float32) float32 {
-	return float32(NOn(trow)) / float32(trow.Len())
+// PctActInTensor returns the percent activity in given tensor (NOn / size)
+func PctActInTensor(trow *etensor.Float32) float32 {
+	return float32(NOnInTensor(trow)) / float32(trow.Len())
+}
+
+// NFmPct returns the number of bits for given pct (proportion 0-1),
+// relative to total n.  uses math.Round.
+func NFmPct(pct float32, n int) int {
+	return int(math.Round(float64(n) * float64(pct)))
 }
 
 // AddVocabEmpty adds an empty pool to the vocabulary.
@@ -56,14 +62,21 @@ func AddVocabEmpty(mp Vocab, name string, rows, poolY, poolX int) (*etensor.Floa
 }
 
 // AddVocabPermutedBinary adds a permuted binary pool to the vocabulary.
-// This is a good source of random patterns with no systematic similarity
-// (with pctAct percent bits turned on) for a pool.
-func AddVocabPermutedBinary(mp Vocab, name string, rows, poolY, poolX int, pctAct float32) (*etensor.Float32, error) {
-	nOn := int(math.Round(float64(poolY) * float64(poolX) * float64(pctAct)))
+// This is a good source of random patterns with no systematic similarity.
+// pctAct = proportion (0-1) bits turned on for a pool.
+// minPctDiff = proportion of pctAct (0-1) for minimum difference between
+// patterns -- e.g., .5 = each pattern must have half of its bits different
+// from each other.  This constraint can be hard to meet depending on the
+// number of rows, amount of activity, and minPctDiff level -- an error
+// will be returned and printed if it cannot be satisfied in a reasonable
+// amount of time.
+func AddVocabPermutedBinary(mp Vocab, name string, rows, poolY, poolX int, pctAct, minPctDiff float32) (*etensor.Float32, error) {
+	nOn := NFmPct(pctAct, poolY*poolX)
+	minDiff := NFmPct(minPctDiff, nOn)
 	tsr := etensor.NewFloat32([]int{rows, poolY, poolX}, nil, []string{"row", "Y", "X"})
-	PermutedBinaryRows(tsr, nOn, 1, 0)
+	err := PermutedBinaryMinDiff(tsr, nOn, 1, 0, minDiff)
 	mp[name] = tsr
-	return tsr, nil
+	return tsr, err
 }
 
 // AddVocabClone clones an existing pool in the vocabulary to make a new one.
@@ -115,7 +128,7 @@ func AddVocabDrift(mp Vocab, name string, rows int, pctDrift float32, copyFrom s
 	cprow := cp.SubSpace([]int{copyRow}).(*etensor.Float32)
 	trow := tsr.SubSpace([]int{0})
 	trow.CopyFrom(cprow)
-	nOn := NOn(cprow)
+	nOn := NOnInTensor(cprow)
 	nDrift := int(math.Round(float64(nOn) * float64(pctDrift)))
 	nDrift = ints.MaxInt(1, nDrift) // ensure at least one
 	for i := 1; i < rows; i++ {

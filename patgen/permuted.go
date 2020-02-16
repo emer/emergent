@@ -5,10 +5,16 @@
 package patgen
 
 import (
+	"errors"
+	"fmt"
+	"log"
+	"math"
 	"math/rand"
 
+	"github.com/chewxy/math32"
 	"github.com/emer/emergent/erand"
 	"github.com/emer/etable/etensor"
+	"github.com/emer/etable/metric"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
@@ -51,58 +57,71 @@ func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	}
 }
 
-/*
-bool taDataGen::PermutedBinary_MinDist(DataTable* data, const String& col_nm, int n_on,
-                                       float dist, taMath::DistMetric metric,
-                                       bool norm, float tol, int thr_no)
-{
-  if(!data) return false;
-  if(col_nm.empty()) {
-    bool rval = true;
-    for(int pn = 0;pn<data->data.size;pn++) {
-      DataCol* da = data->data.FastEl(pn);
-      if(da->is_matrix && da->valType() == VT_FLOAT) {
-        if(!PermutedBinary_MinDist(data, da->name, n_on, dist, metric, norm, tol, thr_no))
-          rval = false;
-      }
-    }
-    return rval;
-  }
-  DataCol* da = GetFloatMatrixDataCol(data, col_nm);
-  if(!da) return false;
-  bool larger_further = taMath::dist_larger_further(metric);
-  int bogus_count = 0;
-  data->DataUpdate(true);
-  for(int i =0;i<da->rows();i++) {
-    float_Matrix* mat = (float_Matrix*)da->GetValAsMatrix(i);
-    taBase::Ref(mat);
-    int cnt = 100 + (10 * (i + 1));   // 100 plus 10 more for every new stim
-    bool ok = false;
-    float min_d;
-    do {
-      PermutedBinaryMat(mat, n_on, 1.0f, 0.0f, thr_no);
-      min_d = LastMinDist(da, i, metric, norm, tol);
-      cnt--;
-      if(larger_further)
-        ok = (min_d >= dist);
-      else
-        ok = (min_d <= dist);
-    } while(!ok && (cnt > 0));
-    taBase::unRefDone(mat);
-
-    if(cnt == 0) {
-      taMisc::Warning("*** PermutedBinary_MinDist row:", String(i), "dist of:", (String)min_d,
-                     "under dist limit:", (String)dist);
-      bogus_count++;
-    }
-    if(bogus_count > 5) {
-      taMisc::Warning("PermutedBinary_MinDist Giving up after 5 stimuli under the limit, set limits lower");
-      data->DataUpdate(false);
-      return false;
-    }
-  }
-  data->DataUpdate(false);
-  return true;
+// PermutedBinaryMinDiff treats the tensor as a column of rows as in a etable.Table
+// and sets each row to contain nOn onVal values and the remainder are offVal values,
+// using a permuted order of tensor elements (i.e., randomly shuffled or permuted).
+// This version ensures that all patterns have at least a given minimum distance from each other,
+// expressed using minDiff = number of bits that must be different (can't be > nOn).
+// If the mindiff constraint cannot be met within a reasonable number of iterations,
+// then an error is returned.
+func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32, minDiff int) error {
+	rows, cells := tsr.RowCellSize()
+	if rows == 0 || cells == 0 {
+		return errors.New("empty tensor")
+	}
+	pord := rand.Perm(cells)
+	fails := 0
+	for rw := 0; rw < rows; rw++ {
+		stidx := rw * cells
+		iters := 100 + (10 * (rw + 1)) // 100 plus 10 more for every new rew
+		got := false
+		for itr := 0; itr < iters; itr++ {
+			for i := 0; i < cells; i++ {
+				if i < nOn {
+					tsr.Values[stidx+pord[i]] = onVal
+				} else {
+					tsr.Values[stidx+pord[i]] = offVal
+				}
+			}
+			erand.PermuteInts(pord)
+			if rw == 0 {
+				got = true
+				break
+			}
+			min, _ := RowVsPrevDist32(tsr, rw, metric.Hamming32)
+			df := int(math.Round(float64(.5 * min))) // diff
+			if df >= minDiff {
+				got = true
+				break
+			}
+		}
+		if !got {
+			fails++
+		}
+	}
+	if fails > 0 {
+		err := fmt.Errorf("PermutedBinaryMinDiff: minimum difference of: %d was not met: %d times, rows: %d", minDiff, fails, rows)
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
-*/
+// RowVsPrevDist32 returns the minimum and maximum distance between the given row
+// in tensor and all previous rows.  Row must be >= 1 and < total rows.
+// (outer-most dimension is row, as in columns of etable.Table).
+func RowVsPrevDist32(tsr *etensor.Float32, row int, fun metric.Func32) (min, max float32) {
+	if row < 1 {
+		return
+	}
+	min = float32(math.MaxFloat32)
+	max = float32(-math.MaxFloat32)
+	lrow := tsr.SubSpace([]int{row}).(*etensor.Float32)
+	for i := 0; i <= row-1; i++ {
+		crow := tsr.SubSpace([]int{i}).(*etensor.Float32)
+		dst := fun(lrow.Values, crow.Values)
+		min = math32.Min(min, dst)
+		max = math32.Max(max, dst)
+	}
+	return
+}
