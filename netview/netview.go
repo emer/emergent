@@ -289,9 +289,9 @@ func (nv *NetView) RecFastBkwd() bool {
 		return false
 	}
 	if nv.RecNo < 0 {
-		nv.RecNo = nv.Data.Ring.Len - nv.Params.FwdBkwd
+		nv.RecNo = nv.Data.Ring.Len - nv.Params.NFastSteps
 	} else {
-		nv.RecNo -= nv.Params.FwdBkwd
+		nv.RecNo -= nv.Params.NFastSteps
 	}
 	if nv.RecNo < 0 {
 		nv.RecNo = 0
@@ -340,7 +340,7 @@ func (nv *NetView) RecFastFwd() bool {
 	if nv.RecNo < 0 {
 		return false
 	}
-	nv.RecNo += nv.Params.FwdBkwd
+	nv.RecNo += nv.Params.NFastSteps
 	if nv.RecNo >= nv.Data.Ring.Len-1 {
 		nv.RecNo = nv.Data.Ring.Len - 1
 	}
