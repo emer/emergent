@@ -283,15 +283,15 @@ func (nv *NetView) UpdateRecNo() {
 	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo))
 }
 
-// RecFastBkwd move view record 10 steps backward. Returns true if updated.
+// RecFastBkwd move view record N (default 10) steps backward. Returns true if updated.
 func (nv *NetView) RecFastBkwd() bool {
 	if nv.RecNo == 0 {
 		return false
 	}
 	if nv.RecNo < 0 {
-		nv.RecNo = nv.Data.Ring.Len - 10
+		nv.RecNo = nv.Data.Ring.Len - nv.Params.FwdBkwd
 	} else {
-		nv.RecNo -= 10
+		nv.RecNo -= nv.Params.FwdBkwd
 	}
 	if nv.RecNo < 0 {
 		nv.RecNo = 0
@@ -331,7 +331,7 @@ func (nv *NetView) RecFwd() bool {
 	return true
 }
 
-// RecFastFwd move view record 10 steps forward. Returns true if updated.
+// RecFastFwd move view record N (default 10) steps forward. Returns true if updated.
 func (nv *NetView) RecFastFwd() bool {
 	if nv.RecNo >= nv.Data.Ring.Len-1 {
 		nv.RecNo = nv.Data.Ring.Len - 1
@@ -340,7 +340,7 @@ func (nv *NetView) RecFastFwd() bool {
 	if nv.RecNo < 0 {
 		return false
 	}
-	nv.RecNo += 10
+	nv.RecNo += nv.Params.FwdBkwd
 	if nv.RecNo >= nv.Data.Ring.Len-1 {
 		nv.RecNo = nv.Data.Ring.Len - 1
 	}
@@ -1046,7 +1046,7 @@ func (nv *NetView) ViewbarConfig() {
 	rlbl := gi.AddNewLabel(tbar, "rec", fmt.Sprintf("%4d ", nv.RecNo))
 	rlbl.Redrawable = true
 	rlbl.Tooltip = "current view record: -1 means latest, 0 = earliest"
-	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move earlier by 10"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move earlier by N records (default 10)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			if nvv.RecFastBkwd() {
@@ -1074,7 +1074,7 @@ func (nv *NetView) ViewbarConfig() {
 				nvv.Update()
 			}
 		})
-	tbar.AddAction(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move later by 10"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move later by N (default 10)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			if nvv.RecFastFwd() {
