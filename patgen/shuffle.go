@@ -5,8 +5,6 @@
 package patgen
 
 import (
-	"fmt"
-
 	"github.com/emer/emergent/erand"
 	"github.com/emer/etable/etable"
 )
@@ -19,8 +17,6 @@ func Shuffle(dt *etable.Table, rows []int, colNames []string, colIndependent boo
 			sfrows := make([]int, len(rows))
 			copy(sfrows, rows)
 			erand.PermuteInts(sfrows)
-			fmt.Println(sfrows)
-			fmt.Println(rows)
 			for i, row := range rows {
 				dt.CellTensor(colNm, row).CopyFrom(cl.CellTensor(colNm, sfrows[i]))
 			}
@@ -29,8 +25,6 @@ func Shuffle(dt *etable.Table, rows []int, colNames []string, colIndependent boo
 		sfrows := make([]int, len(rows))
 		copy(sfrows, rows)
 		erand.PermuteInts(sfrows)
-		fmt.Println(sfrows)
-		fmt.Println(rows)
 		for _, colNm := range colNames {
 			for i, row := range rows {
 				dt.CellTensor(colNm, row).CopyFrom(cl.CellTensor(colNm, sfrows[i]))
