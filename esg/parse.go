@@ -89,8 +89,9 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 			}
 			rnm := sp[0]
 			var rptp float32
-			if len(rnm) > 2 && rnm[0:2] == "=%" {
-				pct, err := strconv.ParseFloat(rnm[2:], 32)
+			prp := sp[nsp-2]
+			if len(prp) > 2 && prp[0:2] == "=%" {
+				pct, err := strconv.ParseFloat(prp[2:], 32)
 				if err != nil {
 					rls.AddParseErr(err.Error())
 				} else {

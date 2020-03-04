@@ -10,6 +10,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
+	// t.SkipNow()
 	rls := &Rules{Name: "test"}
 	errs := rls.OpenRules("testdata/testrules.txt")
 	if errs != nil {
@@ -24,7 +25,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestGen(t *testing.T) {
-	t.SkipNow()
+	// t.SkipNow()
 	rls := &Rules{Name: "test"}
 	errs := rls.OpenRules("testdata/testrules.txt")
 	if errs != nil {
@@ -34,15 +35,15 @@ func TestGen(t *testing.T) {
 	if errs != nil {
 		t.Error("validation errors occured as logged above")
 	}
-	rls.Trace = true
-	for i := 0; i < 10; i++ {
+	// rls.Trace = true
+	for i := 0; i < 50; i++ {
 		str := rls.Gen()
 		fmt.Println(str)
 	}
 }
 
 // func TestGenIto(t *testing.T) {
-// 	// t.SkipNow()
+// 	t.SkipNow()
 // 	rls := &Rules{Name: "test"}
 // 	errs := rls.OpenRules("testdata/ito.txt")
 // 	if errs != nil {
