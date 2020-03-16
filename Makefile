@@ -60,5 +60,5 @@ gopath-update:
 	cd buildtst; go get -u ./...
 
 release:
-	$(MAKE) -C emergent release
+	$(MAKE) -C emer release
 
