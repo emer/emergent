@@ -10,6 +10,9 @@
 
 package evec
 
+// Note: This is distinct from mat32.Vec2i because it uses int instead of int32
+// the int is significantly easier to deal with for layer sizing params etc.
+
 // Vec2i is a 2D vector/point with X and Y int components.
 type Vec2i struct {
 	X int

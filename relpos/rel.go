@@ -9,8 +9,8 @@ and associated position within a given X-Y plane, and Z vertical stacking of lay
 package relpos
 
 import (
-	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // Rel defines a position relationship among layers, in terms of X,Y width and height of layer

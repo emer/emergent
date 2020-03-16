@@ -46,7 +46,8 @@ old:
 	@echo "GO111MODULE = $(value GO111MODULE)"
 	go list -u -m all | grep '\['
 	
-update:
+mod-update: export GO111MODULE = on
+mod-update:
 	@echo "GO111MODULE = $(value GO111MODULE)"
 	go get -u ./...
 	go mod tidy
@@ -56,8 +57,8 @@ update:
 gopath-update: export GO111MODULE = off
 gopath-update:
 	@echo "GO111MODULE = $(value GO111MODULE)"
-	cd cmd/gide; go get -u ./...
-	
+	cd buildtst; go get -u ./...
+
 release:
 	$(MAKE) -C emergent release
 

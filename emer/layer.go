@@ -11,8 +11,8 @@ import (
 	"github.com/emer/emergent/relpos"
 	"github.com/emer/emergent/weights"
 	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // Layer defines the basic interface for neural network layers, used for managing the structural

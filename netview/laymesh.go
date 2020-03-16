@@ -8,8 +8,8 @@ import (
 	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/gi/gi3d"
-	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // LayMesh is a gi3d.Mesh that represents a layer -- it is dynamically updated using the

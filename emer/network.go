@@ -11,7 +11,7 @@ import (
 	"github.com/emer/emergent/prjn"
 	"github.com/emer/emergent/weights"
 	"github.com/goki/gi/gi"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // Network defines the basic interface for a neural network, used for managing the structural

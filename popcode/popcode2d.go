@@ -10,7 +10,7 @@ import (
 
 	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // popcode.TwoD provides encoding and decoding of population

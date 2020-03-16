@@ -10,7 +10,7 @@ import (
 	"github.com/emer/emergent/evec"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/minmax"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // PoolTile implements tiled 2D connectivity between pools within layers, where

@@ -7,7 +7,7 @@ package prjn
 import (
 	"github.com/emer/emergent/evec"
 	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // Circle implements a circular pattern of connectivity between two layers

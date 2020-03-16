@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 func TestRels(t *testing.T) {

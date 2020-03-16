@@ -6,7 +6,7 @@ package evec
 
 import (
 	"github.com/chewxy/math32"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // GaussVecDistNoNorm returns the gaussian of the distance between two 2D vectors

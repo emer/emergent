@@ -18,11 +18,11 @@ import (
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/giv"
-	"github.com/goki/gi/mat32"
 	"github.com/goki/gi/oswin/key"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
