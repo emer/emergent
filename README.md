@@ -12,6 +12,8 @@ See the [ra25 example](https://github.com/emer/leabra/blob/master/examples/ra25/
 
 # Current Status / News
 
+* April 2020: Version 1.0 of GoGi GUI is now released, and we have updated all module dependencies accordingly. *We now recommend using the go modules instead of GOPATH* -- the [Wiki Install](https://github.com/emer/emergent/wiki/Install) instructions have been updated accordingly.
+
 * 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) that accompany the [CCN Textbook](https://grey.colorado.edu/CompCogNeuro/index.php/CCNBook/Main) are now complete and have driven extensive testing and bugfixing.
 
 * 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
@@ -88,7 +90,7 @@ Here are some of the additional supporting packages:
 
 # TODO
 
-Last updated: 12/30/2019
+Last updated: April 2020
 
 This list is not strictly in order, but roughly so..
 
@@ -102,6 +104,8 @@ This list is not strictly in order, but roughly so..
 
 - [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
 
-- [x] virtual environment -- [eve](https://github.com/emer/eve) is under way -- no actual physics yet but core infrastructure in place and usable for basic boxy objects under external control.
+- [x] virtual environment -- [eve](https://github.com/emer/eve) is under way -- some basic actual physics in place, and basic collision detection.
+
+- [x] finalize GoGi GUI version 1.0 release -- finally done!
 
 
