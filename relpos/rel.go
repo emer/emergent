@@ -65,7 +65,7 @@ func (rp *Rel) Pos(op mat32.Vec3, osz mat32.Vec2, sz mat32.Vec2) mat32.Vec3 {
 		rs.X = rp.AlignXPos(op.X, osz.X, sz.X)
 		rs.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
 	case Below:
-		rs.Z += 1
+		rs.Z -= 1
 		rs.X = rp.AlignXPos(op.X, osz.X, sz.X)
 		rs.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
 	}
