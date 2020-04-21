@@ -39,7 +39,6 @@ master: export GO111MODULE = on
 master:
 	@echo "GO111MODULE = $(value GO111MODULE)"
 	go get -u github.com/emer/etable@master
-	go get -u github.com/emer/leabra@master
 	go list -m all | grep emer
 	
 old:
