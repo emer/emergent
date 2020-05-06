@@ -22,6 +22,7 @@ type UnifRnd struct {
 	PCon    float32 `min:"0" max:"1" desc:"probability of connection (0-1)"`
 	RndSeed int64   `view:"-" desc:"the current random seed"`
 	SelfCon bool    `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	Recip   bool    `desc:"reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down projection -- ESSENTIAL to use same RndSeed between two prjns to ensure symmetry"`
 }
 
 func NewUnifRnd() *UnifRnd {
@@ -35,6 +36,9 @@ func (ur *UnifRnd) Name() string {
 func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	if ur.PCon >= 1 {
 		return ur.ConnectFull(send, recv, same)
+	}
+	if ur.Recip {
+		return ur.ConnectRecip(send, recv, same)
 	}
 	sendn, recvn, cons = NewTensors(send, recv)
 	slen := send.Len()
@@ -103,6 +107,74 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 		nr := 0
 		for ri := 0; ri < rlen; ri++ {
 			off := ri*slen + si
+			if cons.Values.Index(off) {
+				nr++
+			}
+		}
+		snv[si] = int32(nr)
+	}
+	return
+}
+
+// ConnectRecip does reciprocal connectvity
+func (ur *UnifRnd) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+	sendn, recvn, cons = NewTensors(send, recv)
+	slen := recv.Len() // swapped
+	rlen := send.Len()
+
+	slenR := send.Len() // NOT swapped
+
+	noself := same && !ur.SelfCon
+	var nsend int
+	if noself {
+		nsend = int(math.Round(float64(ur.PCon) * float64(slen-1)))
+	} else {
+		nsend = int(math.Round(float64(ur.PCon) * float64(slen)))
+	}
+
+	rnv := sendn.Values // swapped
+	for i := range rnv {
+		rnv[i] = int32(nsend)
+	}
+
+	if ur.RndSeed == 0 {
+		ur.RndSeed = int64(rand.Uint64())
+	}
+	rand.Seed(ur.RndSeed)
+
+	sordlen := slen
+	if noself {
+		sordlen--
+	}
+
+	sorder := rand.Perm(sordlen)
+	slist := make([]int, nsend)
+	for ri := 0; ri < rlen; ri++ {
+		if noself { // need to exclude ri
+			ix := 0
+			for j := 0; j < slen; j++ {
+				if j != ri {
+					sorder[ix] = j
+					ix++
+				}
+			}
+			erand.PermuteInts(sorder)
+		}
+		copy(slist, sorder)
+		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
+		for si := 0; si < nsend; si++ {
+			off := slist[si]*slenR + ri
+			cons.Values.Set(off, true)
+		}
+		erand.PermuteInts(sorder)
+	}
+
+	// set send n's empirically
+	snv := recvn.Values // swapped
+	for si := range snv {
+		nr := 0
+		for ri := 0; ri < rlen; ri++ { // actually si
+			off := si*slenR + ri
 			if cons.Values.Index(off) {
 				nr++
 			}

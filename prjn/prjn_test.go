@@ -220,6 +220,15 @@ func TestUnifRnd(t *testing.T) {
 	}
 	fmt.Printf("sendn: %v\n", sendn.Values)
 	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
+
+	// now test recip
+	rpj := NewUnifRnd()
+	rpj.PCon = 0.5
+	rpj.Recip = true
+	sendn, recvn, cons = rpj.Connect(send, recv, false)
+	fmt.Printf("unif rnd recip recv: 3x4 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	_ = recvn
 }
 
 func TestUnifRndLg(t *testing.T) {
