@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
@@ -39,6 +40,7 @@ type NetView struct {
 	RecNo        int                   `desc:"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]"`
 	LastCtrs     string                `desc:"last non-empty counters string provided -- re-used if no new one"`
 	Data         NetData               `desc:"contains all the network data with history"`
+	DataMu       sync.RWMutex          `view:"-" copy:"-" json:"-" xml:"-" desc:"mutex on data access"`
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
@@ -59,15 +61,19 @@ func (nv *NetView) Defaults() {
 func (nv *NetView) SetNet(net emer.Network) {
 	nv.Defaults()
 	nv.Net = net
+	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.DataMu.Unlock()
 	nv.Config()
 }
 
 // SetVar sets the variable to view and updates the display
 func (nv *NetView) SetVar(vr string) {
+	nv.DataMu.Lock()
 	nv.Var = vr
 	nv.VarsUpdate()
 	nv.VarScaleUpdate(nv.Var)
+	nv.DataMu.Unlock()
 	nv.Update()
 }
 
@@ -91,6 +97,8 @@ func (nv *NetView) HasLayers() bool {
 // state of the counters.  The NetView displays this recorded data when
 // Update is next called.
 func (nv *NetView) Record(counters string) {
+	nv.DataMu.Lock()
+	defer nv.DataMu.Unlock()
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
@@ -106,14 +114,15 @@ func (nv *NetView) GoUpdate() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	if nv.Viewport.IsUpdatingNode() {
+	mvp := nv.ViewportSafe()
+	if mvp.IsUpdatingNode() {
 		return
 	}
-	nv.Viewport.BlockUpdates()
+	mvp.BlockUpdates()
 	vs := nv.Scene()
 	updt := vs.UpdateStart()
 	nv.UpdateImpl()
-	nv.Viewport.UnblockUpdates()
+	mvp.UnblockUpdates()
 	vs.UpdateEnd(updt)
 }
 
@@ -132,8 +141,10 @@ func (nv *NetView) Update() {
 
 // UpdateImpl does the guts of updating -- backend for Update or GoUpdate
 func (nv *NetView) UpdateImpl() {
+	nv.DataMu.Lock()
 	vp, ok := nv.VarParams[nv.Var]
 	if !ok {
+		nv.DataMu.Unlock()
 		log.Printf("NetView: %v variable: %v not found\n", nv.Nm, nv.Var)
 		return
 	}
@@ -182,11 +193,15 @@ func (nv *NetView) UpdateImpl() {
 	}
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
 	nv.UpdateRecNo()
+	nv.DataMu.Unlock()
 	vs.UpdateMeshes()
 }
 
 // Config configures the overall view widget
 func (nv *NetView) Config() {
+	nv.DataMu.Lock()
+	defer nv.DataMu.Unlock()
+
 	nv.Lay = gi.LayoutVert
 	if nv.Params.UnitSize == 0 {
 		nv.Defaults()
@@ -651,6 +666,17 @@ func (nv *NetView) ViewDefaults() {
 	// spot.LookAtOrigin()
 }
 
+// ReadLock locks data for reading -- call ReadUnlock when done.
+// Call this surrounding calls to UnitVal.
+func (nv *NetView) ReadLock() {
+	nv.DataMu.RLock()
+}
+
+// ReadUnlock unlocks data for reading.
+func (nv *NetView) ReadUnlock() {
+	nv.DataMu.RUnlock()
+}
+
 // UnitVal returns the raw value, scaled value, and color representation
 // for given unit of given layer scaled is in range -1..1
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color) {
@@ -767,18 +793,18 @@ func (nv *NetView) ToolbarConfig() {
 	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.StructViewDialog(nvv.Viewport, &nvv.Params, giv.DlgOpts{Title: nvv.Nm + " Params"}, nil, nil)
+			giv.StructViewDialog(nvv.ViewportSafe(), &nvv.Params, giv.DlgOpts{Title: nvv.Nm + " Params"}, nil, nil)
 		})
 	tbar.AddSeparator("file")
 	tbar.AddAction(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.CallMethod(nvv, "SaveWeights", nvv.Viewport) // this auto prompts for filename using file chooser
+			giv.CallMethod(nvv, "SaveWeights", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Open Wts", Icon: "file-open"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.CallMethod(nvv, "OpenWeights", nvv.Viewport) // this auto prompts for filename using file chooser
+			giv.CallMethod(nvv, "OpenWeights", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Non Def Params", Icon: "info", Tooltip: "shows all the parameters that are not at default values -- useful for setting params"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
@@ -1099,14 +1125,14 @@ func (nv *NetView) OpenWeights(filename gi.FileName) {
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string {
 	nds := nv.Net.NonDefaultParams()
-	giv.TextViewDialog(nv.Viewport, []byte(nds), giv.DlgOpts{Title: "Non Default Params"})
+	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "Non Default Params"})
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
 func (nv *NetView) ShowAllParams() string {
 	nds := nv.Net.AllParams()
-	giv.TextViewDialog(nv.Viewport, []byte(nds), giv.DlgOpts{Title: "All Params"})
+	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "All Params"})
 	return nds
 }
 

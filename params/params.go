@@ -58,7 +58,7 @@ var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 type Sel struct {
 	Sel    string `desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
 	Desc   string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
-	Params Params `desc:"parameter values to apply to whatever matches the selector"`
+	Params Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
 }
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)

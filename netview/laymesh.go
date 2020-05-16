@@ -100,6 +100,7 @@ func (lm *LayMesh) Make2D(init bool) {
 	setTex := init
 	setIdx := init
 
+	lm.View.ReadLock()
 	for zi := nz - 1; zi >= 0; zi-- {
 		z0 := uo - float32(zi+1)
 		for xi := 0; xi < nx; xi++ {
@@ -127,8 +128,11 @@ func (lm *LayMesh) Make2D(init bool) {
 			pidx++
 		}
 	}
+	lm.View.ReadUnlock()
 
+	lm.BBoxMu.Lock()
 	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnz}, mat32.Vec3{fnx, 0.5, 0})
+	lm.BBoxMu.Unlock()
 }
 
 func (lm *LayMesh) Make4D(init bool) {
@@ -168,6 +172,7 @@ func (lm *LayMesh) Make4D(init bool) {
 	setTex := init
 	setIdx := init
 
+	lm.View.ReadLock()
 	for zpi := npz - 1; zpi >= 0; zpi-- {
 		zp0 := zsc * (-float32(zpi) * (uo + fnuz))
 		for xpi := 0; xpi < npx; xpi++ {
@@ -201,6 +206,9 @@ func (lm *LayMesh) Make4D(init bool) {
 			}
 		}
 	}
+	lm.View.ReadUnlock()
 
+	lm.BBoxMu.Lock()
 	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpz * fnuz}, mat32.Vec3{fnpx * fnux, 0.5, 0})
+	lm.BBoxMu.Unlock()
 }
