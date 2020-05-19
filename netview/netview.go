@@ -199,9 +199,6 @@ func (nv *NetView) UpdateImpl() {
 
 // Config configures the overall view widget
 func (nv *NetView) Config() {
-	nv.DataMu.Lock()
-	defer nv.DataMu.Unlock()
-
 	nv.Lay = gi.LayoutVert
 	if nv.Params.UnitSize == 0 {
 		nv.Defaults()
@@ -243,7 +240,9 @@ func (nv *NetView) Config() {
 	ctrs.Redrawable = true
 	ctrs.SetText("Counters: ")
 
+	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.DataMu.Unlock()
 	nv.UpdateEnd(updt)
 }
 
