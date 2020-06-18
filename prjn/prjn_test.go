@@ -284,3 +284,93 @@ func TestUnifRndSelf(t *testing.T) {
 	fmt.Printf("sendn: %v\n", sendn.Values)
 	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
 }
+
+func TestPoolUnifRnd(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3, 3, 4}, nil, nil)
+
+	sNtot := send.Len()
+	rNtot := recv.Len()
+
+	pj := NewPoolUnifRnd()
+	pj.PCon = 0.5
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("unif rnd recv: 2x3x3x4 send: 2x3x2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	_ = recvn
+
+	nrMax := 0
+	nrMin := rNtot
+	nrMean := 0
+	for si := 0; si < sNtot; si++ {
+		nr := int(sendn.Values[si])
+		nrMax = ints.MaxInt(nrMax, nr)
+		nrMin = ints.MinInt(nrMin, nr)
+		nrMean += nr
+	}
+	fmt.Printf("sendn: %v\n", sendn.Values)
+	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
+
+	// now test recip
+	// rpj := NewUnifRnd()
+	// rpj.PCon = 0.5
+	// rpj.Recip = true
+	// sendn, recvn, cons = rpj.Connect(send, recv, false)
+	// fmt.Printf("unif rnd recip recv: 3x4 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	// _ = recvn
+}
+
+func TestPoolUnifRndLg(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3, 20, 30}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3, 30, 40}, nil, nil)
+
+	sNtot := send.Len()
+	rNtot := recv.Len()
+
+	pj := NewPoolUnifRnd()
+	pj.PCon = 0.05
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+
+	_ = recvn
+	_ = cons
+
+	nrMax := 0
+	nrMin := rNtot
+	nrMean := 0
+	for si := 0; si < sNtot; si++ {
+		nr := int(sendn.Values[si])
+		nrMax = ints.MaxInt(nrMax, nr)
+		nrMin = ints.MinInt(nrMin, nr)
+		nrMean += nr
+	}
+	fmt.Printf("unif rnd large rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
+}
+
+func TestPoolUnifRndSelf(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
+
+	sNtot := send.Len()
+	rNtot := recv.Len()
+
+	pj := NewPoolUnifRnd()
+	pj.PCon = 0.5
+	pj.SelfCon = false
+	sendn, recvn, cons := pj.Connect(send, recv, true)
+	fmt.Printf("unif rnd self: 2x3x2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	_ = recvn
+
+	nrMax := 0
+	nrMin := rNtot
+	nrMean := 0
+	for si := 0; si < sNtot; si++ {
+		nr := int(sendn.Values[si])
+		nrMax = ints.MaxInt(nrMax, nr)
+		nrMin = ints.MinInt(nrMin, nr)
+		nrMean += nr
+	}
+	fmt.Printf("sendn: %v\n", sendn.Values)
+	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
+}
