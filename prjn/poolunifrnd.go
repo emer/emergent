@@ -14,12 +14,10 @@ import (
 	"github.com/goki/ki/ints"
 )
 
-// PoolOneToOne implements one-to-one connectivity between pools within layers.
+// PoolUnifRnd implements random pattern of connectivity between pools within layers.
 // Pools are the outer-most two dimensions of a 4D layer shape.
-// If either layer does not have pools, then if the number of individual
-// units matches the number of pools in the other layer, those are connected one-to-one
-// otherwise each pool connects to the entire set of other units.
-// If neither is 4D, then it is equivalent to OneToOne.
+// If either layer does not have pools, PoolUnifRnd works as UnifRnd does.
+// If probability of connection (PCon) is 1, PoolUnifRnd works as PoolOnetoOne does.
 type PoolUnifRnd struct {
 	PoolOneToOne
 	UnifRnd
@@ -38,23 +36,11 @@ func (ur *PoolUnifRnd) Name() string {
 func (ur *PoolUnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	if send.NumDims() == 4 && recv.NumDims() == 4 {
 		return ur.ConnectPoolsRnd(send, recv, same)
-	} else {
-		return ur.ConnectRnd(send, recv, same)
 	}
-	// switch {
-	// case send.NumDims() == 4 && recv.NumDims() == 4:
-	// 	return ur.ConnectPools(send, recv, same)
-	// case send.NumDims() == 2 && recv.NumDims() == 4:
-	// 	return ur.ConnectRecvPool(send, recv, same)
-	// case send.NumDims() == 4 && recv.NumDims() == 2:
-	// 	return ur.ConnectSendPool(send, recv, same)
-	// case send.NumDims() == 2 && recv.NumDims() == 2:
-	// 	return ur.ConnectOneToOne(send, recv, same)
-	// }
-	// return
+	return ur.ConnectRnd(send, recv, same)
 }
 
-// ConnectPools is when both recv and send have pools
+// ConnectPoolsRnd is when both recv and send have pools
 func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	if ur.PCon >= 1 {
 		return ur.ConnectPools(send, recv, same)
@@ -106,7 +92,8 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 			if noself { // need to exclude ri
 				ix := 0
 				for j := 0; j < sNu; j++ {
-					if j != ri {
+					ji := spi*sNu + j
+					if ji != ri {
 						sorder[ix] = j
 						ix++
 					}
@@ -138,7 +125,7 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 	return
 }
 
-// copy of UnifRnd.Connect
+// ConnectRnd is a copy of UnifRnd.Connect with initial if statement modified
 func (ur *PoolUnifRnd) ConnectRnd(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	if ur.PCon >= 1 {
 		switch {
