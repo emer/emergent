@@ -96,13 +96,13 @@ This list is not strictly in order, but roughly so..
 
 - [ ] write converter from Go to Python
 
-- [ ] MPI -- see [MPI Wiki page](https://github.com/emer/emergent/wiki/DMem)
-
 - [ ] add python example code for interchange between pandas, xarray, tensorflow tensor stuff and etable.Table -- right now the best is to just save as .csv and load from there (esp for pandas which doesn't have tensors) -- should be able to use arrow stuff so it would be good to look into that.
 
 - [ ] pvlv
 
 - [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
+
+- [x] MPI -- see [MPI Wiki page](https://github.com/emer/emergent/wiki/DMem)
 
 - [x] virtual environment -- [eve](https://github.com/emer/eve) is under way -- some basic actual physics in place, and basic collision detection.
 
