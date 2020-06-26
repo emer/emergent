@@ -48,8 +48,9 @@ func (pj *Prjn) SetMetaData(key, val string) {
 
 // Recv is temp structure for holding decoded weights, one for each recv unit
 type Recv struct {
-	Ri int
-	N  int
-	Si []int
-	Wt []float32
+	Ri    int
+	N     int
+	Si    []int
+	Wt    []float32
+	Scale []float32
 }

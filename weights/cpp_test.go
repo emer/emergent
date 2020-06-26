@@ -12,7 +12,7 @@ import (
 )
 
 func TestCppOpenWts(t *testing.T) {
-	fp, err := os.Open("FaceNetworkCpp.wts")
+	fp, err := os.Open("PVLVNet.wts")
 	defer fp.Close()
 	if err != nil {
 		t.Error(err)

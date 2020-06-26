@@ -92,6 +92,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			if len(rw.Si) != nc {
 				rw.Si = make([]int, nc)
 				rw.Wt = make([]float32, nc)
+				rw.Scale = make([]float32, nc)
 			}
 			cidx = 0 // start reading on next ones
 			continue
@@ -121,23 +122,43 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			continue
 		default: // weight values read into current rw
 			siwts := strings.Split(bs, " ")
-			if len(siwts) != 2 {
+			switch len(siwts) {
+			case 2:
+				si, err := strconv.Atoi(siwts[0])
+				if err != nil {
+					errlist = append(errlist, err)
+				}
+				wt, err := strconv.ParseFloat(siwts[1], 32)
+				if err != nil {
+					errlist = append(errlist, err)
+				}
+				rw.Si[cidx] = si
+				rw.Wt[cidx] = float32(wt)
+				rw.Scale[cidx] = float32(0)
+				cidx++
+			case 3:
+				si, err := strconv.Atoi(siwts[0])
+				if err != nil {
+					errlist = append(errlist, err)
+				}
+				wt, err := strconv.ParseFloat(siwts[1], 32)
+				if err != nil {
+					errlist = append(errlist, err)
+				}
+				scale, err := strconv.ParseFloat(siwts[2], 32)
+				if err != nil {
+					errlist = append(errlist, err)
+				}
+				rw.Si[cidx] = si
+				rw.Wt[cidx] = float32(wt)
+				rw.Scale[cidx] = float32(scale)
+				cidx++
+			default:
 				err = fmt.Errorf("NetReadCpp: unrecognized input: %v", bs)
 				errlist = append(errlist, err)
 				log.Println(err)
 				continue
 			}
-			si, err := strconv.Atoi(siwts[0])
-			if err != nil {
-				errlist = append(errlist, err)
-			}
-			wt, err := strconv.ParseFloat(siwts[1], 32)
-			if err != nil {
-				errlist = append(errlist, err)
-			}
-			rw.Si[cidx] = si
-			rw.Wt[cidx] = float32(wt)
-			cidx++
 		}
 	}
 	var eall error
