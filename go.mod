@@ -1,4 +1,4 @@
-module github.com/emer/emergent
+module github.com/rgobbel/emergent
 
 go 1.13
 
