@@ -297,6 +297,15 @@ func (nv *NetView) UpdateRecNo() {
 	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo))
 }
 
+// RecFullBkwd move view record to start of history.
+func (nv *NetView) RecFullBkwd() bool {
+	if nv.RecNo == 0 {
+		return false
+	}
+	nv.RecNo = 0
+	return true
+}
+
 // RecFastBkwd move view record N (default 10) steps backward. Returns true if updated.
 func (nv *NetView) RecFastBkwd() bool {
 	if nv.RecNo == 0 {
@@ -370,25 +379,6 @@ func (nv *NetView) RecTrackLatest() bool {
 	return true
 }
 
-// NetFirstLayPrjn returns the first layer and projection in the network
-func NetFirstLayPrjn(net emer.Network) (emer.Layer, emer.Prjn) {
-	if net == nil || net.NLayers() == 0 {
-		return nil, nil
-	}
-	lay0 := net.Layer(0)
-	nlay := net.NLayers()
-	for li := 0; li < nlay; li++ {
-		ly := net.Layer(li)
-		if ly.NRecvPrjns() > 0 {
-			return lay0, ly.RecvPrjn(0)
-		}
-		if ly.NSendPrjns() > 0 {
-			return lay0, ly.SendPrjn(0)
-		}
-	}
-	return lay0, nil
-}
-
 // NetVarsList returns the list of layer and prjn variables for given network.
 // layEven ensures that the number of layer variables is an even number if true
 // (used for display but not storage).
@@ -396,12 +386,8 @@ func NetVarsList(net emer.Network, layEven bool) []string {
 	if net == nil || net.NLayers() == 0 {
 		return nil
 	}
-	lay, prjn := NetFirstLayPrjn(net)
-	unvars := lay.UnitVarNames()
-	var prjnvars []string
-	if prjn != nil {
-		prjnvars = prjn.SynVarNames()
-	}
+	unvars := net.UnitVarNames()
+	prjnvars := net.SynVarNames()
 	ulen := len(unvars)
 	if layEven && ulen%2 != 0 { // make it an even number, for 2 column layout
 		ulen++
@@ -427,12 +413,8 @@ func (nv *NetView) VarsListUpdate() {
 	nv.Vars = nvars
 	nv.VarParams = make(map[string]*VarParams, len(nv.Vars))
 
-	lay, prjn := NetFirstLayPrjn(nv.Net)
-	unprops := lay.UnitVarProps()
-	var prjnprops map[string]string
-	if prjn != nil {
-		prjnprops = prjn.SynVarProps()
-	}
+	unprops := nv.Net.UnitVarProps()
+	prjnprops := nv.Net.SynVarProps()
 	for _, nm := range nv.Vars {
 		vp := &VarParams{Var: nm}
 		vp.Defaults()
@@ -1071,7 +1053,14 @@ func (nv *NetView) ViewbarConfig() {
 	rlbl := gi.AddNewLabel(tbar, "rec", fmt.Sprintf("%4d ", nv.RecNo))
 	rlbl.Redrawable = true
 	rlbl.Tooltip = "current view record: -1 means latest, 0 = earliest"
-	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move earlier by N records (default 10)"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move to first record (start of history)"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecFullBkwd() {
+				nvv.Update()
+			}
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "backward", Tooltip: "move earlier by N records (default 10)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			if nvv.RecFastBkwd() {
@@ -1099,10 +1088,17 @@ func (nv *NetView) ViewbarConfig() {
 				nvv.Update()
 			}
 		})
-	tbar.AddAction(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move later by N (default 10)"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Icon: "forward", Tooltip: "move later by N (default 10)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			if nvv.RecFastFwd() {
+				nvv.Update()
+			}
+		})
+	tbar.AddAction(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move to end (current time, tracking latest updates)"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			if nvv.RecTrackLatest() {
 				nvv.Update()
 			}
 		})

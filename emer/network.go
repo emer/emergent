@@ -64,6 +64,42 @@ type Network interface {
 	// AllParams returns a listing of all parameters in the Network
 	AllParams() string
 
+	// UnitVarNames returns a list of variable names available on the units in this network.
+	// This list determines what is shown in the NetView (and the order of vars list).
+	// Not all layers need to support all variables, but must safely return math32.NaN() for
+	// unsupported ones.
+	// This is typically a global list so do not modify!
+	UnitVarNames() []string
+
+	// UnitVarProps returns a map of unit variable properties, with the key being the
+	// name of the variable, and the value gives a space-separated list of
+	// go-tag-style properties for that variable.
+	// The NetView recognizes the following properties:
+	// range:"##" = +- range around 0 for default display scaling
+	// min:"##" max:"##" = min, max display range
+	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
+	// zeroctr:"+" or "-" = control whether zero-centering is used
+	// Note: this is typically a global list so do not modify!
+	UnitVarProps() map[string]string
+
+	// SynVarNames returns the names of all the variables on the synapses in this network.
+	// This list determines what is shown in the NetView (and the order of vars list).
+	// Not all projections need to support all variables, but must safely return math32.NaN() for
+	// unsupported ones.
+	// This is typically a global list so do not modify!
+	SynVarNames() []string
+
+	// SynVarProps returns a map of synapse variable properties, with the key being the
+	// name of the variable, and the value gives a space-separated list of
+	// go-tag-style properties for that variable.
+	// The NetView recognizes the following properties:
+	// range:"##" = +- range around 0 for default display scaling
+	// min:"##" max:"##" = min, max display range
+	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
+	// zeroctr:"+" or "-" = control whether zero-centering is used
+	// Note: this is typically a global list so do not modify!
+	SynVarProps() map[string]string
+
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
 	// to JSON-formatted output.
 	WriteWtsJSON(w io.Writer)

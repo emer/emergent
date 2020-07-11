@@ -111,7 +111,7 @@ type Layer interface {
 	SetIndex(idx int)
 
 	// UnitVarNames returns a list of variable names available on the units in this layer.
-	// This is a global list so do not modify!
+	// This is typically a global list so do not modify!
 	UnitVarNames() []string
 
 	// UnitVarProps returns a map of unit variable properties, with the key being the

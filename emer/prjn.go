@@ -23,11 +23,11 @@ type Prjn interface {
 	// which enables the proper interface methods to be called.
 	Init(prjn Prjn)
 
-	// RecvLay returns the receiving layer for this projection
-	RecvLay() Layer
-
 	// SendLay returns the sending layer for this projection
 	SendLay() Layer
+
+	// RecvLay returns the receiving layer for this projection
+	RecvLay() Layer
 
 	// Pattern returns the pattern of connectivity for interconnecting the layers
 	Pattern() prjn.Pattern
@@ -64,6 +64,7 @@ type Prjn interface {
 	SetOff(off bool)
 
 	// SynVarNames returns the names of all the variables on the synapse
+	// This is typically a global list so do not modify!
 	SynVarNames() []string
 
 	// SynVarProps returns a map of synapse variable properties, with the key being the
@@ -76,6 +77,11 @@ type Prjn interface {
 	// zeroctr:"+" or "-" = control whether zero-centering is used
 	// Note: this is a global list so do not modify!
 	SynVarProps() map[string]string
+
+	// SynIdx returns the index of the synapse between given send, recv unit indexes
+	// (1D, flat indexes). Returns -1 if synapse not found between these two neurons.
+	// This requires searching within connections for receiving unit.
+	SynIdx(sidx, ridx int) int
 
 	// SynVals sets values of given variable name for each synapse, using the natural ordering
 	// of the synapses (sender based for Leabra),
