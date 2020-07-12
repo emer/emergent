@@ -125,37 +125,33 @@ type Layer interface {
 	// Note: this is a global list so do not modify!
 	UnitVarProps() map[string]string
 
+	// UnitVarIdx returns the index of given variable within the Neuron,
+	// according to *this layer's* UnitVarNames() list (using a map to lookup index),
+	// or -1 and error message if not found.
+	UnitVarIdx(varNm string) (int, error)
+
+	// UnitVal1D returns value of given variable index on given unit, using 1-dimensional index.
+	// returns NaN on invalid index.
+	// This is the core unit var access method used by other methods,
+	// so it is the only one that needs to be updated for derived layer types.
+	UnitVal1D(varIdx int, idx int) float32
+
 	// UnitVals fills in values of given variable name on unit,
 	// for each unit in the layer, into given float32 slice (only resized if not big enough).
 	// Returns error on invalid var name.
-	UnitVals(vals *[]float32, varnm string) error
+	UnitVals(vals *[]float32, varNm string) error
 
 	// UnitValsTensor fills in values of given variable name on unit
 	// for each unit in the layer, into given tensor.
 	// If tensor is not already big enough to hold the values, it is
 	// set to the same shape as the layer.
 	// Returns error on invalid var name.
-	UnitValsTensor(tsr etensor.Tensor, varnm string) error
+	UnitValsTensor(tsr etensor.Tensor, varNm string) error
 
 	// UnitVal returns value of given variable name on given unit,
 	// using shape-based dimensional index.
-	// returns nil on invalid var name or index -- see Try version for error message.
-	UnitVal(varnm string, idx []int) float32
-
-	// UnitValTry returns value of given variable name on given unit,
-	// using shape-based dimensional index.
-	// returns error message if var name not found or invalid index.
-	UnitValTry(varnm string, idx []int) (float32, error)
-
-	// UnitVal1D returns value of given variable name on given unit,
-	// using 1-dimensional index.
-	// returns nil on invalid var name or index -- see Try version for error message.
-	UnitVal1D(varnm string, idx int) float32
-
-	// UnitVal1DTry returns value of given variable name on given unit,
-	// using 1-dimensional index.
-	// returns error message if var name not found or invalid index.
-	UnitVal1DTry(varnm string, idx int) (float32, error)
+	// Returns NaN on invalid var name or index.
+	UnitVal(varNm string, idx []int) float32
 
 	// RecvPrjns returns the full list of receiving projections
 	RecvPrjns() *Prjns

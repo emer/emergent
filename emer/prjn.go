@@ -80,8 +80,19 @@ type Prjn interface {
 
 	// SynIdx returns the index of the synapse between given send, recv unit indexes
 	// (1D, flat indexes). Returns -1 if synapse not found between these two neurons.
-	// This requires searching within connections for receiving unit.
+	// This requires searching within connections for receiving unit (a bit slow).
 	SynIdx(sidx, ridx int) int
+
+	// SynVarIdx returns the index of given variable within the synapse,
+	// according to *this prjn's* SynVarNames() list (using a map to lookup index),
+	// or -1 and error message if not found.
+	SynVarIdx(varNm string) (int, error)
+
+	// SynVal1D returns value of given variable index (from SynVarIdx) on given SynIdx.
+	// Returns NaN on invalid index.
+	// This is the core synapse var access method used by other methods,
+	// so it is the only one that needs to be updated for derived layer types.
+	SynVal1D(varIdx int, synIdx int) float32
 
 	// SynVals sets values of given variable name for each synapse, using the natural ordering
 	// of the synapses (sender based for Leabra),
@@ -91,17 +102,14 @@ type Prjn interface {
 
 	// SynVal returns value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes).
-	// Returns math32.NaN() for access errors (see SynValTry for error message)
+	// Returns math32.NaN() for access errors.
 	SynVal(varNm string, sidx, ridx int) float32
 
-	// SynValTry returns value of given variable name on the synapse
-	// between given send, recv unit indexes (1D, flat indexes)
-	// returns error for access errors.
-	SynValTry(varNm string, sidx, ridx int) (float32, error)
-
 	// SetSynVal sets value of given variable name on the synapse
-	// between given send, recv unit indexes (1D, flat indexes)
-	// returns error for access errors.
+	// between given send, recv unit indexes (1D, flat indexes).
+	// Typically only supports base synapse variables and is not extended
+	// for derived types.
+	// Returns error for access errors.
 	SetSynVal(varNm string, sidx, ridx int, val float32) error
 
 	// Defaults sets default parameter values for all Prjn parameters
