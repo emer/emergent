@@ -109,15 +109,23 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 			if !lshp.IdxIsValid(idx) {
 				return
 			}
-			val, _, _ := nv.UnitVal(lay, idx)
-			sval = fmt.Sprintf("[%d,%d]=%g\n", lx, ly, val)
+			val, _, _, hasval := nv.UnitVal(lay, idx)
+			if !hasval {
+				sval = fmt.Sprintf("[%d,%d]=n/a\n", lx, ly)
+			} else {
+				sval = fmt.Sprintf("[%d,%d]=%g\n", lx, ly, val)
+			}
 		} else if lay.Is4D() {
 			idx, ok := lay.Idx4DFrom2D(lx, ly)
 			if !ok {
 				return
 			}
-			val, _, _ := nv.UnitVal(lay, idx)
-			sval = fmt.Sprintf("[%d,%d][%d,%d]=%g\n", idx[1], idx[0], idx[3], idx[2], val)
+			val, _, _, hasval := nv.UnitVal(lay, idx)
+			if !hasval {
+				sval = fmt.Sprintf("[%d,%d][%d,%d]=n/a\n", idx[1], idx[0], idx[3], idx[2])
+			} else {
+				sval = fmt.Sprintf("[%d,%d][%d,%d]=%g\n", idx[1], idx[0], idx[3], idx[2], val)
+			}
 		} else {
 			return // not supported
 		}

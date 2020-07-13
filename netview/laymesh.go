@@ -107,7 +107,7 @@ func (lm *LayMesh) Make2D(init bool) {
 			poff := pidx * vtxSz * 5
 			ioff := pidx * idxSz * 5
 			x0 := uo + float32(xi)
-			_, scaled, clr := lm.View.UnitVal(lm.Lay, []int{zi, xi})
+			_, scaled, clr, _ := lm.View.UnitVal(lm.Lay, []int{zi, xi})
 			ht := 0.5 * mat32.Abs(scaled)
 			if ht < MinUnitHeight {
 				ht = MinUnitHeight
@@ -183,7 +183,7 @@ func (lm *LayMesh) Make4D(init bool) {
 					poff := pidx * vtxSz * 5
 					ioff := pidx * idxSz * 5
 					x0 := xp0 + xsc*(uo+float32(xui))
-					_, scaled, clr := lm.View.UnitVal(lm.Lay, []int{zpi, xpi, zui, xui})
+					_, scaled, clr, _ := lm.View.UnitVal(lm.Lay, []int{zpi, xpi, zui, xui})
 					ht := 0.5 * mat32.Abs(scaled)
 					if ht < MinUnitHeight {
 						ht = MinUnitHeight
