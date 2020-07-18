@@ -12,3 +12,7 @@ Package `popcode` provides population code encoding and decoding support functio
 
 `popcode.TwoD` likewise has `Encode` and `Decode` methods for 2D gaussian-bumps that simultaneously encode a 2D value such as a 2D position.
 
+# popcode.Ring
+
+`popcode.Ring` is a version of `popcode.OneD` for values that wrap-around, such as an angle -- set the Min and Max to the exact values with no extra (e.g., 0, 360 for angle).
+
