@@ -75,6 +75,30 @@ type Env interface {
 	// to 0 on the first Step call.
 	Step() bool
 
+	// Counter(scale TimeScales) returns current counter state for given time scale,
+	// the immediate previous counter state, and whether that time scale changed
+	// during the last Step() function call (this may be true even if cur == prv, if
+	// the Max = 1).  Use the Ctr struct for each counter, which manages all of this.
+	// See external Counter* methods for Python-safe single-return-value versions.
+	Counter(scale TimeScales) (cur, prv int, changed bool)
+
+	// State returns the given element's worth of tensor data from the environment
+	// based on the current state of the env, as a function of having called Step().
+	// If no output is available on that element, then nil is returned.
+	// The returned tensor must be treated as read-only as it likely points to original
+	// source data -- please make a copy before modifying (e.g., Clone() methdod)
+	State(element string) etensor.Tensor
+
+	// Action sends tensor data about e.g., responses from model back to act
+	// on the environment and influence its subsequent evolution.
+	// The nature and timing of this input is paradigm dependent.
+	Action(element string, input etensor.Tensor)
+}
+
+// EnvDesc is an interface that defines methods that describe an Env.
+// These are optional for basic Env, but in cases where an Env
+// should be fully self-describing, these methods can be implemented.
+type EnvDesc interface {
 	// Counters returns []TimeScales list of counters supported by this env.
 	// These should be consistent within a paradigm and most models
 	// will just expect particular sets of counters, but this can be
@@ -83,13 +107,6 @@ type Env interface {
 	// scales and returns an etable.Schema for Table columns to record
 	// these counters in a log.
 	Counters() []TimeScales
-
-	// Counter(scale TimeScales) returns current counter state for given time scale,
-	// the immediate previous counter state, and whether that time scale changed
-	// during the last Step() function call (this may be true even if cur == prv, if
-	// the Max = 1).  Use the Ctr struct for each counter, which manages all of this.
-	// See external Counter* methods for Python-safe single-return-value versions.
-	Counter(scale TimeScales) (cur, prv int, changed bool)
 
 	// States returns a list of Elements of tensor outputs that this env
 	// generates, specifying the unique Name and Shape of the data.
@@ -102,13 +119,6 @@ type Env interface {
 	// configured.
 	States() Elements
 
-	// State returns the given element's worth of tensor data from the environment
-	// based on the current state of the env, as a function of having called Step().
-	// If no output is available on that element, then nil is returned.
-	// The returned tensor must be treated as read-only as it likely points to original
-	// source data -- please make a copy before modifying (e.g., Clone() methdod)
-	State(element string) etensor.Tensor
-
 	// Actions returns a list of elements of tensor inputs that this env
 	// accepts, specifying the unique Name and Shape of the data.
 	// Specific paradigms of envs can establish the timing and function
@@ -117,11 +127,6 @@ type Env interface {
 	// response and then it can receive a reward or not contingent
 	// on that choice.
 	Actions() Elements
-
-	// Action sends tensor data about e.g., responses from model back to act
-	// on the environment and influence its subsequent evolution.
-	// The nature and timing of this input is paradigm dependent.
-	Action(element string, input etensor.Tensor)
 }
 
 // CounterCur returns current counter state for given time scale

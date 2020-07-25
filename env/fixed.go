@@ -120,10 +120,6 @@ func (ft *FixedTable) Step() bool {
 	return true
 }
 
-func (ft *FixedTable) Counters() []TimeScales {
-	return []TimeScales{Run, Epoch, Trial}
-}
-
 func (ft *FixedTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
 	switch scale {
 	case Run:
@@ -136,12 +132,6 @@ func (ft *FixedTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
 	return -1, -1, false
 }
 
-func (ft *FixedTable) States() Elements {
-	els := Elements{}
-	els.FromSchema(ft.Table.Table.Schema())
-	return els
-}
-
 func (ft *FixedTable) State(element string) etensor.Tensor {
 	et, err := ft.Table.Table.CellTensorTry(element, ft.Row())
 	if err != nil {
@@ -150,13 +140,26 @@ func (ft *FixedTable) State(element string) etensor.Tensor {
 	return et
 }
 
-func (ft *FixedTable) Actions() Elements {
-	return nil
-}
-
 func (ft *FixedTable) Action(element string, input etensor.Tensor) {
 	// nop
 }
 
 // Compile-time check that implements Env interface
 var _ Env = (*FixedTable)(nil)
+
+/////////////////////////////////////////////////////
+// EnvDesc -- optional but implemented here
+
+func (ft *FixedTable) Counters() []TimeScales {
+	return []TimeScales{Run, Epoch, Trial}
+}
+
+func (ft *FixedTable) States() Elements {
+	els := Elements{}
+	els.FromSchema(ft.Table.Table.Schema())
+	return els
+}
+
+func (ft *FixedTable) Actions() Elements {
+	return nil
+}

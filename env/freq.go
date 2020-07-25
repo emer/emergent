@@ -152,10 +152,6 @@ func (ft *FreqTable) Step() bool {
 	return true
 }
 
-func (ft *FreqTable) Counters() []TimeScales {
-	return []TimeScales{Run, Epoch, Trial}
-}
-
 func (ft *FreqTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
 	switch scale {
 	case Run:
@@ -168,12 +164,6 @@ func (ft *FreqTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
 	return -1, -1, false
 }
 
-func (ft *FreqTable) States() Elements {
-	els := Elements{}
-	els.FromSchema(ft.Table.Table.Schema())
-	return els
-}
-
 func (ft *FreqTable) State(element string) etensor.Tensor {
 	et, err := ft.Table.Table.CellTensorTry(element, ft.Row())
 	if err != nil {
@@ -182,13 +172,26 @@ func (ft *FreqTable) State(element string) etensor.Tensor {
 	return et
 }
 
-func (ft *FreqTable) Actions() Elements {
-	return nil
-}
-
 func (ft *FreqTable) Action(element string, input etensor.Tensor) {
 	// nop
 }
 
 // Compile-time check that implements Env interface
 var _ Env = (*FreqTable)(nil)
+
+/////////////////////////////////////////////////////
+// EnvDesc -- optional but implemented here
+
+func (ft *FreqTable) Counters() []TimeScales {
+	return []TimeScales{Run, Epoch, Trial}
+}
+
+func (ft *FreqTable) States() Elements {
+	els := Elements{}
+	els.FromSchema(ft.Table.Table.Schema())
+	return els
+}
+
+func (ft *FreqTable) Actions() Elements {
+	return nil
+}
