@@ -48,3 +48,16 @@ func (ln *LayNames) AddAllBut(net Network, excl []string) {
 		ln.Add(nm)
 	}
 }
+
+// Layers returns slice of emer.Layers in given network based on layer names
+// error is returned if any are not found.
+func (ln *LayNames) Layers(net Network) (lays []Layer, err error) {
+	var ly Layer
+	for _, nm := range *ln {
+		ly, err = net.LayerByNameTry(nm)
+		if err == nil {
+			lays = append(lays, ly)
+		}
+	}
+	return
+}
