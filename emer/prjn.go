@@ -88,6 +88,10 @@ type Prjn interface {
 	// or -1 and error message if not found.
 	SynVarIdx(varNm string) (int, error)
 
+	// SynVarNum returns the number of synapse-level variables
+	// for this prjn.  This is needed for extending indexes in derived types.
+	SynVarNum() int
+
 	// SynVal1D returns value of given variable index (from SynVarIdx) on given SynIdx.
 	// Returns NaN on invalid index.
 	// This is the core synapse var access method used by other methods,

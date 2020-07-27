@@ -130,6 +130,10 @@ type Layer interface {
 	// or -1 and error message if not found.
 	UnitVarIdx(varNm string) (int, error)
 
+	// UnitVarNum returns the number of Neuron-level variables
+	// for this layer.  This is needed for extending indexes in derived types.
+	UnitVarNum() int
+
 	// UnitVal1D returns value of given variable index on given unit, using 1-dimensional index.
 	// returns NaN on invalid index.
 	// This is the core unit var access method used by other methods,
