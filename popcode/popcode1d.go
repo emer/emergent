@@ -5,6 +5,8 @@
 package popcode
 
 import (
+	"sort"
+
 	"github.com/chewxy/math32"
 	"github.com/goki/mat32"
 )
@@ -49,10 +51,24 @@ func (pc *OneD) SetRange(min, max, sigma float32) {
 	pc.Sigma = sigma
 }
 
+const (
+	// Add is used for popcode Encode methods, add arg -- indicates to add values
+	// to any existing values in the target vector / tensor:
+	// used for encoding additional values (see DecodeN for decoding).
+	Add = true
+
+	// Set is used for popcode Encode methods, add arg -- indicates to set values
+	// in any existing values in the target vector / tensor:
+	// used for encoding first / only values.
+	Set = false
+)
+
 // Encode generates a pattern of activation of given size to encode given value.
-// n must be 2 or more.
-// pat slice will be constructed if len != n
-func (pc *OneD) Encode(pat *[]float32, val float32, n int) {
+// n must be 2 or more. pat slice will be constructed if len != n.
+// If add == false (use Set const for clarity), values are set to pattern
+// else if add == true (Add), then values are added to any existing,
+// for encoding additional values in same pattern.
+func (pc *OneD) Encode(pat *[]float32, val float32, n int, add bool) {
 	if len(*pat) != n {
 		*pat = make([]float32, n)
 	}
@@ -77,7 +93,11 @@ func (pc *OneD) Encode(pat *[]float32, val float32, n int) {
 				act = 1.0 - (dist / incr)
 			}
 		}
-		(*pat)[i] = act
+		if add {
+			(*pat)[i] += act
+		} else {
+			(*pat)[i] = act
+		}
 	}
 }
 
@@ -95,10 +115,10 @@ func (pc *OneD) Decode(pat []float32) float32 {
 	avg := float32(0)
 	sum := float32(0)
 	for i, act := range pat {
-		trg := pc.Min + incr*float32(i)
 		if act < pc.Thr {
 			act = 0
 		}
+		trg := pc.Min + incr*float32(i)
 		avg += trg * act
 		sum += act
 	}
@@ -121,4 +141,73 @@ func (pc *OneD) Values(vals *[]float32, n int) {
 		trg := pc.Min + incr*float32(i)
 		(*vals)[i] = trg
 	}
+}
+
+// DecodeNPeaks decodes N values from a pattern of activation
+// using a neighborhood of specified width around local maxima,
+// which is the amount on either side of the central point to
+// accumulate (0 = localist, single points, 1 = +/- 1 point on
+// either side, etc).
+// Allocates a temporary slice of size pat, and sorts that: relatively expensive
+func (pc *OneD) DecodeNPeaks(pat []float32, nvals, width int) []float32 {
+	n := len(pat)
+	if n < 2 {
+		return nil
+	}
+	rng := pc.Max - pc.Min
+	incr := rng / float32(n-1)
+
+	type navg struct {
+		avg float32
+		idx int
+	}
+	avgs := make([]navg, n)
+
+	for i := range pat {
+		sum := float32(0)
+		ns := 0
+		for d := -width; d <= width; d++ {
+			di := i + d
+			if di < 0 || di >= n {
+				continue
+			}
+			act := pat[di]
+			if act < pc.Thr {
+				continue
+			}
+			sum += pat[di]
+			ns++
+		}
+		avgs[i].avg = sum / float32(ns)
+		avgs[i].idx = i
+	}
+
+	// sort highest to lowest
+	sort.Slice(avgs, func(i, j int) bool {
+		return avgs[i].avg > avgs[j].avg
+	})
+
+	vals := make([]float32, nvals)
+	for i := range vals {
+		avg := float32(0)
+		sum := float32(0)
+		mxi := avgs[i].idx
+		for d := -width; d <= width; d++ {
+			di := mxi + d
+			if di < 0 || di >= n {
+				continue
+			}
+			act := pat[di]
+			if act < pc.Thr {
+				act = 0
+			}
+			trg := pc.Min + incr*float32(di)
+			avg += trg * act
+			sum += act
+		}
+		sum = math32.Max(sum, pc.MinSum)
+		vals[i] = avg / sum
+	}
+
+	return vals
 }

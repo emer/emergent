@@ -6,7 +6,7 @@
 Package `popcode` provides population code encoding and decoding
 support functionality, in 1D and 2D.
 
-`popcode.OneD` `Encode` method turns a single scalar value into a 1D
+`popcode.OneD` `Encode` method turns a scalar value into a 1D
 population code according to a set of parameters about the nature
 of the population code, range of values to encode, etc.
 
@@ -17,5 +17,9 @@ value of individual units.
 `popcode.TwoD` likewise has `Encode` and `Decode` methods for 2D
 gaussian-bumps that simultaneously encode a 2D value such as a 2D
 position.
+
+The `add` option to the Encode methods allows multiple values to be
+encoded, and `DecodeNPeaks` allows multiple to be decoded, using a
+neighborhood around local maxima.
 */
 package popcode
