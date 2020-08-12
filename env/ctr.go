@@ -41,6 +41,19 @@ func (ct *Ctr) Incr() bool {
 	return false
 }
 
+// Set sets the Cur value if different from Cur, while preserving previous value
+// and setting Chg appropriately.  Returns true if changed.
+// does NOT check Cur vs. Max.
+func (ct *Ctr) Set(cur int) bool {
+	if ct.Cur == cur {
+		return false
+	}
+	ct.Chg = true
+	ct.Prv = ct.Cur
+	ct.Cur = cur
+	return true
+}
+
 // Query returns the current, previous and changed values for this counter
 func (ct *Ctr) Query() (cur, prv int, chg bool) {
 	return ct.Cur, ct.Prv, ct.Chg
