@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package evec
+// Package efuns has misc functions, such as Gaussian and Logistic,
+// that are used in neural models, and do not have a home elsewhere.
+package efuns
 
 import (
 	"github.com/chewxy/math32"

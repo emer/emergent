@@ -5,6 +5,7 @@
 package prjn
 
 import (
+	"github.com/emer/emergent/efuns"
 	"github.com/emer/emergent/evec"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
@@ -124,6 +125,6 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 		sp.X = WrapMinDist(sp.X, float32(sNx-1), sctr.X)
 		sp.Y = WrapMinDist(sp.Y, float32(sNy-1), sctr.Y)
 	}
-	wt := cr.MaxWt * evec.GaussVecDistNoNorm(sp, sctr, fsig)
+	wt := cr.MaxWt * efuns.GaussVecDistNoNorm(sp, sctr, fsig)
 	return wt
 }

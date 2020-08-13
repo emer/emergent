@@ -8,10 +8,11 @@
 // license that can be found in the LICENSE file.
 // with modifications needed to suit GoGi functionality.
 
-package evec
-
-// Note: This is distinct from mat32.Vec2i because it uses int instead of int32
+// Package evec has vector types for emergent, including Vec2i which is a 2D
+// vector with int values, using the API based on mat32.Vec2i.
+// This is distinct from mat32.Vec2i because it uses int instead of int32, and
 // the int is significantly easier to deal with for layer sizing params etc.
+package evec
 
 // Vec2i is a 2D vector/point with X and Y int components.
 type Vec2i struct {
