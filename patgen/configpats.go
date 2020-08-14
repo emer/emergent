@@ -36,14 +36,62 @@ func MixPats(dt *etable.Table, mp map[string]*etensor.Float32, colName string, p
 		npool := 0
 		for iY := 0; iY < ySize; iY++ {
 			for iX := 0; iX < xSize; iX++ {
-				pool := dt.CellTensor(colName, row).SubSpace([]int{iY, iX})
-				frmPool := mp[poolSource[npool]].SubSpace([]int{row})
-				if !reflect.DeepEqual(pool.Shapes(), frmPool.Shapes()) {
-					err := fmt.Errorf("Vocab and pools in the table should have the same shape") // how do I stop the program?
+				trgPool := dt.CellTensor(colName, row).SubSpace([]int{iY, iX})
+				vocNm := poolSource[npool]
+				voc, ok := mp[vocNm]
+				if !ok {
+					err := fmt.Errorf("Vocab not found: %s", vocNm)
 					log.Println(err.Error())
 					return err
 				}
-				pool.CopyFrom(frmPool)
+				vocSize := voc.Shapes()[0]
+				effIdx := row % vocSize // be safe and wrap-around to re-use patterns
+				frmPool := voc.SubSpace([]int{effIdx})
+				if !reflect.DeepEqual(trgPool.Shapes(), frmPool.Shapes()) {
+					err := fmt.Errorf("Vocab and pools in the table should have the same shape")
+					log.Println(err.Error())
+					return err
+				}
+				trgPool.CopyFrom(frmPool)
+				npool++
+			}
+		}
+	}
+	return nil
+}
+
+// MixPatsN mixes patterns using specified startVocab and vocabN numbers
+// of vocabulary patterns, inserting starting at specified targRow in table.
+// poolSource order: left right, bottom up
+func MixPatsN(dt *etable.Table, mp map[string]*etensor.Float32, colName string, poolSource []string, targRow, vocabStart, vocabN int) error {
+	name := dt.MetaData["name"]
+	_ = name
+	ySize := dt.ColByName(colName).Shapes()[1]
+	xSize := dt.ColByName(colName).Shapes()[2]
+	for ri := 0; ri < vocabN; ri++ {
+		row := targRow + ri
+		vocIdx := vocabStart + ri
+		dt.CellTensor("Name", row).SetString([]int{0}, fmt.Sprint(name, row))
+		npool := 0
+		for iY := 0; iY < ySize; iY++ {
+			for iX := 0; iX < xSize; iX++ {
+				trgPool := dt.CellTensor(colName, row).SubSpace([]int{iY, iX})
+				vocNm := poolSource[npool]
+				voc, ok := mp[vocNm]
+				if !ok {
+					err := fmt.Errorf("Vocab not found: %s", vocNm)
+					log.Println(err.Error())
+					return err
+				}
+				vocSize := voc.Shapes()[0]
+				effIdx := vocIdx % vocSize // be safe and wrap-around to re-use patterns
+				frmPool := voc.SubSpace([]int{effIdx})
+				if !reflect.DeepEqual(trgPool.Shapes(), frmPool.Shapes()) {
+					err := fmt.Errorf("Vocab and pools in the table should have the same shape")
+					log.Println(err.Error())
+					return err
+				}
+				trgPool.CopyFrom(frmPool)
 				npool++
 			}
 		}
