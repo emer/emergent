@@ -374,3 +374,45 @@ func TestPoolUnifRndSelf(t *testing.T) {
 	fmt.Printf("sendn: %v\n", sendn.Values)
 	fmt.Printf("unif rnd rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
 }
+
+func TestPoolSameUnit(t *testing.T) {
+	send := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+
+	sNp := send.Dim(0) * send.Dim(1)
+	rNp := recv.Dim(0) * recv.Dim(1)
+
+	pj := NewPoolSameUnit()
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("pool same unit both 2x3 1x2\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	CheckAllN(sendn, rNp, t)
+	CheckAllN(recvn, sNp, t)
+}
+
+func TestPoolSameUnitRecv(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+
+	rNp := recv.Dim(0) * recv.Dim(1)
+	pj := NewPoolSameUnit()
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("pool same unit recv 2x3 1x2, send 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	CheckAllN(sendn, rNp, t)
+	CheckAllN(recvn, 1, t)
+}
+
+func TestPoolSameUnitSend(t *testing.T) {
+	send := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+
+	sNp := send.Dim(0) * send.Dim(1)
+
+	pj := NewPoolSameUnit()
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("pool same unit send 2x3 1x2, recv 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+
+	CheckAllN(sendn, 1, t)
+	CheckAllN(recvn, sNp, t)
+}

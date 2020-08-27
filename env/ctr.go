@@ -46,6 +46,7 @@ func (ct *Ctr) Incr() bool {
 // does NOT check Cur vs. Max.
 func (ct *Ctr) Set(cur int) bool {
 	if ct.Cur == cur {
+		ct.Chg = false
 		return false
 	}
 	ct.Chg = true
