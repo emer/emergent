@@ -7,21 +7,24 @@ package prjn
 import (
 	"github.com/emer/emergent/evec"
 	"github.com/emer/etable/etensor"
+	"github.com/goki/ki/ints"
 	"github.com/goki/mat32"
 )
 
 // Rect implements a rectangular pattern of connectivity between two layers
 // where the lower-left corner moves in proportion to receiver position with offset
 // and multiplier factors (with wrap-around optionally).
-// 4D layers are automatically flattened to 2D for this connection.
+// 4D layers are automatically flattened to 2D for this projection.
 type Rect struct {
+	Size       evec.Vec2i `desc:"size of rectangle in sending layer that each receiving unit receives from"`
 	Start      evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position"`
-	Size       evec.Vec2i `desc:"size of rectangle"`
-	Scale      mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute corresponding position in sending layer"`
-	AutoScale  bool       `desc:"auto-scale sending positions as function of relative sizes of send and recv layers"`
-	Wrap       bool       `desc:"if true, connectivity wraps around edges"`
-	SelfCon    bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	Scale      mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute corresponding position in sending layer of the lower-left corner of rectangle"`
+	AutoScale  bool       `desc:"auto-set the Scale as function of the relative sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)"`
 	RoundScale bool       `desc:"if true, use Round when applying scaling factor -- otherwise uses Floor which makes Scale work like a grouping factor -- e.g., .25 will effectively group 4 recv units with same send position"`
+	Wrap       bool       `desc:"if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped"`
+	SelfCon    bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	RecvStart  evec.Vec2i `desc:"starting position in receiving layer -- if > 0 then units below this starting point remain unconnected"`
+	RecvN      evec.Vec2i `desc:"number of units in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected"`
 }
 
 func NewRect() *Rect {
@@ -56,8 +59,17 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 		sc = ssz.Div(rsz)
 	}
 
-	for ry := 0; ry < rNy; ry++ {
-		for rx := 0; rx < rNx; rx++ {
+	rNyEff := rNy
+	if cr.RecvN.Y > 0 {
+		rNyEff = ints.MinInt(rNy, cr.RecvStart.Y+cr.RecvN.Y)
+	}
+	rNxEff := rNx
+	if cr.RecvN.X > 0 {
+		rNxEff = ints.MinInt(rNx, cr.RecvStart.X+cr.RecvN.X)
+	}
+
+	for ry := cr.RecvStart.Y; ry < rNyEff; ry++ {
+		for rx := cr.RecvStart.X; rx < rNxEff; rx++ {
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(mat32.Round(float32(rx) * sc.X))
