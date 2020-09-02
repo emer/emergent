@@ -47,8 +47,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2 v1.2.0 h1:8sAhBGEM0dRWogWqWyQeIJnxjWO6oIjl8FKqREDsGfk=
 github.com/dlclark/regexp2 v1.2.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
-github.com/emer/etable v1.0.9 h1:+XVBdyqbLWmPHFEqSwRwZLfeae3wz7rvw2ABqdj9Ehw=
-github.com/emer/etable v1.0.9/go.mod h1:hj0Q+ghLoiDPzULQGumxgaW9xapT8ClDiBRN/PG0XeM=
+github.com/emer/etable v1.0.11 h1:ncedwtQQwI1ttmZDluEkYUCmf9hJWOrrEb9EE/7+9Uw=
+github.com/emer/etable v1.0.11/go.mod h1:qEBkFudMFuV6zpbnVcYB1pK0QZ9mbRVjZct7SXihR1g=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90 h1:WXb3TSNmHp2vHoCroCIB1foO/yQ36swABL8aOVeDpgg=
@@ -65,8 +65,8 @@ github.com/go-gl/mathgl v0.0.0-20190713194549-592312d8590a h1:yoAEv7yeWqfL/l9A/J
 github.com/go-gl/mathgl v0.0.0-20190713194549-592312d8590a/go.mod h1:yhpkQzEiH9yPyxDUGzkmgScbaBVlhC06qodikEM0ZwQ=
 github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff h1:W71vTCKoxtdXgnm1ECDFkfQnpdqAO00zzGXLA5yaEX8=
 github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff/go.mod h1:wfqRWLHRBsRgkp5dmbG56SA0DmVtwrF5N3oPdI8t+Aw=
-github.com/goki/gi v1.0.11 h1:gkXuOsqHNfr54rLEJ7KuKgGzC1eRhg0oX/7CHpCZtJE=
-github.com/goki/gi v1.0.11/go.mod h1:Ig7a4paXz+H2k1L9Yd4ZRnVw/BIh2XAhdTiQhKGkK7c=
+github.com/goki/gi v1.0.13 h1:danB9avTpPAc/Uf2yZMy7IFdlrRrYhOYE+xglOlrM6M=
+github.com/goki/gi v1.0.13/go.mod h1:Ig7a4paXz+H2k1L9Yd4ZRnVw/BIh2XAhdTiQhKGkK7c=
 github.com/goki/ki v1.0.0 h1:tsg8UII9T9vbEI55tNoJe+Y9MMdsE3b9mMrRWGZBZ4Y=
 github.com/goki/ki v1.0.0/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
 github.com/goki/ki v1.0.2 h1:mupuGLlIFrkpXe28UiZr5tD/2nGMfBEL86/bZclyx8g=
