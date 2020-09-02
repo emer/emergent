@@ -47,8 +47,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2 v1.2.0 h1:8sAhBGEM0dRWogWqWyQeIJnxjWO6oIjl8FKqREDsGfk=
 github.com/dlclark/regexp2 v1.2.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
-github.com/emer/etable v1.0.11 h1:ncedwtQQwI1ttmZDluEkYUCmf9hJWOrrEb9EE/7+9Uw=
-github.com/emer/etable v1.0.11/go.mod h1:qEBkFudMFuV6zpbnVcYB1pK0QZ9mbRVjZct7SXihR1g=
+github.com/emer/etable v1.0.12 h1:B+5p1caP+znQRQ5GbTd0SzW5RGJcLzi/cJOoHRbElwQ=
+github.com/emer/etable v1.0.12/go.mod h1:qEBkFudMFuV6zpbnVcYB1pK0QZ9mbRVjZct7SXihR1g=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90 h1:WXb3TSNmHp2vHoCroCIB1foO/yQ36swABL8aOVeDpgg=
