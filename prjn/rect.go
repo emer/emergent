@@ -70,6 +70,7 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	for ry := cr.RecvStart.Y; ry < rNyEff; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff; rx++ {
+			ri := etensor.Prjn2DIdx(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(mat32.Round(float32(rx) * sc.X))
@@ -88,7 +89,6 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 					if clipx {
 						continue
 					}
-					ri := etensor.Prjn2DIdx(recv, false, ry, rx)
 					si := etensor.Prjn2DIdx(send, false, sy, sx)
 					off := ri*sNtot + si
 					if !cr.SelfCon && same && ri == si {

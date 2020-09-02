@@ -416,3 +416,33 @@ func TestPoolSameUnitSend(t *testing.T) {
 	CheckAllN(sendn, 1, t)
 	CheckAllN(recvn, sNp, t)
 }
+
+func TestRect(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+
+	pj := NewRect()
+	pj.Size.Set(2, 1)
+	pj.Scale.Set(1, 1)
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("rect 2x1 recv: 2x3 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+	_ = sendn
+
+	CheckAllN(sendn, 2, t)
+	CheckAllN(recvn, 2, t)
+}
+
+func TestPoolRect(t *testing.T) {
+	send := etensor.NewShape([]int{2, 3, 2, 2}, nil, nil)
+	recv := etensor.NewShape([]int{2, 3, 2, 2}, nil, nil)
+
+	pj := NewPoolRect()
+	pj.Size.Set(2, 1)
+	pj.Scale.Set(1, 1)
+	sendn, recvn, cons := pj.Connect(send, recv, false)
+	fmt.Printf("rect 2x1 recv: 2x3 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
+	_ = sendn
+
+	CheckAllN(sendn, 2*4, t)
+	CheckAllN(recvn, 2*4, t)
+}
