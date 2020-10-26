@@ -51,8 +51,8 @@ github.com/dlclark/regexp2 v1.2.0 h1:8sAhBGEM0dRWogWqWyQeIJnxjWO6oIjl8FKqREDsGfk
 github.com/dlclark/regexp2 v1.2.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
 github.com/dlclark/regexp2 v1.2.1 h1:Ff/S0snjr1oZHUNOkvA/gP6KUaMg5vDDl3Qnhjnwgm8=
 github.com/dlclark/regexp2 v1.2.1/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
-github.com/emer/etable v1.0.16 h1:xv1vNYaOMZQijmhWH0vNXN1uVp0ZZAKXEA+JLHVDpuA=
-github.com/emer/etable v1.0.16/go.mod h1:eP3PjPnmQjX4iXF/gRSMgFV8loepGgDbdweRa6t/wo0=
+github.com/emer/etable v1.0.17 h1:yWusmYlONN38fB6jT7+7y6IbSEx8axduniBY34ySiYA=
+github.com/emer/etable v1.0.17/go.mod h1:eP3PjPnmQjX4iXF/gRSMgFV8loepGgDbdweRa6t/wo0=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90 h1:WXb3TSNmHp2vHoCroCIB1foO/yQ36swABL8aOVeDpgg=
@@ -71,6 +71,8 @@ github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff h1:W71vTCKoxtdXgnm1E
 github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff/go.mod h1:wfqRWLHRBsRgkp5dmbG56SA0DmVtwrF5N3oPdI8t+Aw=
 github.com/goki/gi v1.0.16 h1:O1t6huv/GPHmkZC+peftO+2XG/aijKaljcSb42PCP2s=
 github.com/goki/gi v1.0.16/go.mod h1:E1XS7yoU8sD2XtpnI1RznuKzB8lwYYMqo3J/5lt/9vM=
+github.com/goki/gi v1.0.17 h1:fInTNLII7yfvd38tStiJm5Od3PBjRH50lXCcSznVH/8=
+github.com/goki/gi v1.0.17/go.mod h1:E1XS7yoU8sD2XtpnI1RznuKzB8lwYYMqo3J/5lt/9vM=
 github.com/goki/ki v1.0.0 h1:tsg8UII9T9vbEI55tNoJe+Y9MMdsE3b9mMrRWGZBZ4Y=
 github.com/goki/ki v1.0.0/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
 github.com/goki/ki v1.0.2 h1:mupuGLlIFrkpXe28UiZr5tD/2nGMfBEL86/bZclyx8g=
