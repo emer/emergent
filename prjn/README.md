@@ -2,7 +2,7 @@
 
 See [Wiki Params](https://github.com/emer/emergent/wiki/Prjns) page for detailed docs.
 
-Package prjn is a separate package for defining patterns of connectivity between layers (i.e., the ProjectionSpecs from C++ emergent).  This is done using a fully independent structure that *only* knows about the shapes of the two layers, and it returns a fully general bitmap representation of the pattern of connectivity between them.
+Package prjn is a separate package for defining `Pattern`s of connectivity between layers (i.e., the ProjectionSpecs from C++ emergent).  This is done using a fully independent structure that *only* knows about the shapes of the two layers, and it returns a fully general bitmap representation of the pattern of connectivity between them.
 
 The algorithm-specific leabra.Prjn code then uses these patterns to do all the nitty-gritty of connecting up neurons.
 
@@ -16,3 +16,8 @@ Individual Pattern types may have a Defaults() method to initialize default valu
 
 Also, the Edge method is handy for dealing with edges and wrap-around etc.
 
+# Topographic Weights
+
+Some projections (e.g., Circle, PoolTile) support the generation of topographic weight patterns that can be used to set initial weights, or per-synapse scaling factors.  The `Pattern` interface does not define any standard for how this done, as there are various possible approaches.  Circle defines a method with a standard signature that can be called for each point in the pattern, while PoolTile has a lot more overhead per point and is thus more efficient to generate the whole set of weights to tensor, which can then be used.
+
+It is recommended to have some kind of positive flag(s) for enabling the use of TopoWts -- the standard weight initialization methods, e.g., leabra.Network.InitWts, can then automatically do the correct thing for each type of standard projection -- custom ones outside of this standard set would need custom code..

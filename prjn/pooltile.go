@@ -197,6 +197,11 @@ func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, r
 	return
 }
 
+// HasTopoWts returns true if some form of topographic weight patterns are set
+func (pt *PoolTile) HasTopoWts() bool {
+	return pt.GaussFull.On || pt.GaussInPool.On || pt.SigFull.On || pt.SigInPool.On
+}
+
 // TopoWts sets values in given 4D or 6D tensor according to *Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within layer / pool
 // of recv layer (these are units over which topography is defined)
