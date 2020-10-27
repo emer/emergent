@@ -1,3 +1,5 @@
+[GoDoc](https://godoc.org/github.com/emer/emergent/stepper)
+
 # Stepper
 
 The `stepper` package provides a facility for pausing a simulation run at various time scales without having to
