@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-The Stepper package allows you to set StepPoints in simulation code that will pause if some condition is satisfied.
+Package stepper allows you to set StepPoints in simulation code that will pause if some condition is satisfied.
 While paused, the simulation waits for the top-level process (the user interface) to tell it to continue.
 Once a continue notification is received, the simulation continues on its way, with all internal state
 exactly as it was when the StopPoint was hit, without having to explicitly save anything.
