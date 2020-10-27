@@ -10,7 +10,7 @@ worry about saving and restoring simulation state.
 1. Import the `stepper` package:
 
     ```go
-   import "github.com/emer/emergent/stepper/stepper"
+   import "github.com/emer/emergent/stepper"
 
 2. Define an enumerated type for whatever different types/granularities of steps you'd like. Note that the stepper
 does not interpret these values, and only checks equality to see decide whether or not to stop at any given StepPoint.
@@ -46,14 +46,13 @@ does not interpret these values, and only checks equality to see decide whether 
       StopStepCounter              env.Ctr           `inactive:"+" view:"-" desc:"number of times we've hit whatever StopStepGrain is set to'"`
    }
 
-4. Define a `stepper.PauseNotifier` callback:
+4. Define a `stepper.PauseNotifyFn` callback:
 
    ```go
    // NotifyPause is called from within the Stepper, with the Stepper's lock held.
    // From within this function, Stepper variables should be set directly, rather than calling Stepper methods,
    // which would try to take the lock and then deadlock.
-   func NotifyPause(simState interface{}) {
-      ss := simState.(Sim)
+   func (ss *Sim) NotifyPause() {
       if int(ss.StepGrain) != ss.Stepper.Grain() {
          ss.Stepper.StepGrain = int(ss.StepGrain)
       }
@@ -67,15 +66,14 @@ does not interpret these values, and only checks equality to see decide whether 
       ss.Win.Viewport.SetNeedsFullRender()
    }
 
-5. (__OPTIONAL__) Create a `stepper.StopChecker` callback:
+5. (__OPTIONAL__) Create a `stepper.StopCondCheckFn` callback:
 
     ```go
     // CheckStopCondition is called from within the Stepper.
     // Since CheckStopCondition is called with the Stepper's lock held,
     // it must not call any Stepper methods that set the lock. Rather, Stepper variables
     // should be set directly, if need be.
-    func CheckStopCondition(st interface{}, _ int) bool {
-       ss := st.(Sim)
+    func (ss *Sim) CheckStopCondition(_ int) bool {
        ev := &ss.Env
        ret := false
        switch ss.StopStepCondition {
@@ -95,13 +93,13 @@ does not interpret these values, and only checks equality to see decide whether 
        return ret
     }
 
-6. Somewhere in your initialization code, create the actual `Stepper` and register your `stepper.PauseNotifier`
-and (optionally) `stepper.StopChecker` functions:
+6. Somewhere in your initialization code, create the actual `Stepper` and register your `stepper.PauseNotifyFn`
+and (optionally) `stepper.StopCondCheckFn` functions:
 
    ```go
    ss.Stepper = stepper.New()
-   ss.Stepper.RegisterStopChecker(CheckStopCondition, ss)
-   ss.Stepper.RegisterPauseNotifier(NotifyPause, ss)
+   ss.Stepper.RegisterStopCheckFn(CheckStopCondition)
+   ss.Stepper.RegisterPauseNotifyFn(NotifyPause)
    ss.Stepper.Init()
 
 7. At appropriate points in your simulation code, insert `stepper.StepPoint` calls, e.g.:
