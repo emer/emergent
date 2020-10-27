@@ -20,35 +20,9 @@ program (i.e., the user interface) should make sure that everything is properly 
 package stepper
 
 import (
-	"github.com/goki/ki/kit"
 	"sync"
 	"time"
 )
-
-type RunState int
-
-const (
-	Stopped  RunState = iota // execution is stopped. The Stepper is NOT waiting, so running again is basically a restart. The only way to go from Running or Stepping to Stopped is to explicitly call Stop(). Program state will not be preserved once the Stopped state is entered.
-	Paused                   // execution is paused. The sim is waiting for further instructions, and can continue, or stop.
-	Stepping                 // the application is running, but will pause if it hits a StepPoint that matches the current StepGrain.
-	Running                  // the application is running, and will NOT pause at StepPoints. It will pause if a stop has been requested.
-	RunStateN
-)
-
-var KiT_RunState = kit.Enums.AddEnum(RunStateN, kit.NotBitFlag, nil)
-
-//go:generate stringer -type=RunState
-
-// A StopCondCheckFn is a callback to check whether an arbitrary condition has been matched.
-// If a StopCondCheckFn returns true, the program is suspended with a RunState of Paused,
-// and will remain so until the RunState changes to Stepping, Running, or Stopped.
-// As noted below for the PauseNotifyFn, the StopCondCheckFn is called with the Stepper's lock held.
-type StopCondCheckFn func(grain int) (matched bool)
-
-// A PauseNotifyFn is a callback that will be invoked if the program enters the Paused state.
-// NOTE! The PauseNotifyFn is called with the Stepper's lock held, so it must not call any Stepper methods
-// that try to take the lock on entry, or a deadlock will result.
-type PauseNotifyFn func()
 
 // The Stepper struct contains all of the state info for stepping a program, enabling step points.
 // where the running application can be suspended with no loss of state.
@@ -67,6 +41,43 @@ type Stepper struct {
 
 // New makes a new Stepper. Always call this to create a Stepper, so that initialization will be run correctly.
 func New() *Stepper { return new(Stepper).Init() }
+
+// A PauseNotifyFn is a callback that will be invoked if the program enters the Paused state.
+// NOTE! The PauseNotifyFn is called with the Stepper's lock held, so it must not call any Stepper methods
+// that try to take the lock on entry, or a deadlock will result.
+type PauseNotifyFn func()
+
+// RegisterPauseNotifyFn registers a PauseNotifyFn callback. A PauseNotifyFn is not required,
+// but is recommended. As an alternative, the controlling code could poll Stepper state periodically.
+func (st *Stepper) RegisterPauseNotifyFn(notifyFn PauseNotifyFn) {
+	st.pauseNotifyFn = notifyFn
+}
+
+// A StopCondCheckFn is a callback to check whether an arbitrary condition has been matched.
+// If a StopCondCheckFn returns true, the program is suspended with a RunState of Paused,
+// and will remain so until the RunState changes to Stepping, Running, or Stopped.
+// As noted below for the PauseNotifyFn, the StopCondCheckFn is called with the Stepper's lock held.
+type StopCondCheckFn func(grain int) (matched bool)
+
+// RegisterStopCheckFn registers a StopCondCheckFn callback. This is completely optional:
+// it's fine to not have a StopCondCheckFn at all.
+func (st *Stepper) RegisterStopCheckFn(checkFn StopCondCheckFn) {
+	st.condCheckFn = checkFn
+}
+
+type RunState int
+
+const (
+	Stopped  RunState = iota // execution is stopped. The Stepper is NOT waiting, so running again is basically a restart. The only way to go from Running or Stepping to Stopped is to explicitly call Stop(). Program state will not be preserved once the Stopped state is entered.
+	Paused                   // execution is paused. The sim is waiting for further instructions, and can continue, or stop.
+	Stepping                 // the application is running, but will pause if it hits a StepPoint that matches the current StepGrain.
+	Running                  // the application is running, and will NOT pause at StepPoints. It will pause if a stop has been requested.
+	RunStateN
+)
+
+//var kiT_RunState = kit.Enums.AddEnum(RunStateN, kit.NotBitFlag, nil)
+
+//go:generate stringer -type=RunState
 
 // Init puts everything into a good state before starting a run
 // Init is called automatically by New, and should be called before running again after calling Stop (not Pause).
@@ -106,14 +117,30 @@ func DontStop(_ interface{}, _ int) bool {
 	return false
 }
 
-// SetStepGrain sets the internal value of StepGrain to an uninterpreted int. Semantics are up to the client
+// SetStepGrain sets the internal value of StepGrain to an uninterpreted int. Semantics are up to the client.
+// DO NOT CALL THIS FROM YOUR PauseNotifyFn, or a deadlock will result.
 func (st *Stepper) SetStepGrain(grain int) {
 	st.StepGrain = grain
 }
 
-// Grain gets the current StepGrain
-func (st *Stepper) Grain() int {
-	return st.StepGrain
+// SetNSteps sets the number of times to go through a StepPoint of the current granularity before actually pausing.
+func (st *Stepper) SetNSteps(toTake int) {
+	st.stateMut.Lock()
+	defer st.stateMut.Unlock()
+	st.StepsPerClick = toTake
+	st.stepsRemaining = toTake
+}
+
+// StartStepping enters the Stepping run state. This should be called at the start of a run only.
+func (st *Stepper) StartStepping(grain int, nSteps int) {
+	st.stateMut.Lock()
+	defer st.stateMut.Unlock()
+	if nSteps > 0 {
+		st.StepsPerClick = nSteps
+		st.stepsRemaining = nSteps
+	}
+	st.StepGrain = grain
+	st.RunState = Stepping
 }
 
 // Enter unconditionally enters the specified RunState. It broadcasts a stateChange, which should be picked
@@ -123,18 +150,6 @@ func (st *Stepper) Enter(state RunState) {
 	defer st.stateMut.Unlock()
 	st.RunState = state
 	st.stateChange.Broadcast()
-}
-
-// RegisterStopCheckFn registers a StopCondCheckFn callback. This is completely optional:
-// it's fine to not have a StopCondCheckFn at all.
-func (st *Stepper) RegisterStopCheckFn(checkFn StopCondCheckFn) {
-	st.condCheckFn = checkFn
-}
-
-// RegisterPauseNotifyFn registers a PauseNotifyFn callback. A PauseNotifyFn is not required,
-// but is recommended. As an alternative, the controlling code could poll Stepper state periodically.
-func (st *Stepper) RegisterPauseNotifyFn(notifyFn PauseNotifyFn) {
-	st.pauseNotifyFn = notifyFn
 }
 
 // Stop sets RunState to Stopped. The running program will exit at the next StepPoint it hits.
@@ -153,26 +168,6 @@ func (st *Stepper) Active() bool {
 	st.stateMut.Lock()
 	defer st.stateMut.Unlock()
 	return st.RunState == Running || st.RunState == Stepping
-}
-
-// StartStepping enters the Stepping run state. This should be called at the start of a run only.
-func (st *Stepper) StartStepping(grain int, nSteps int) {
-	st.stateMut.Lock()
-	defer st.stateMut.Unlock()
-	if nSteps > 0 {
-		st.StepsPerClick = nSteps
-		st.stepsRemaining = nSteps
-	}
-	st.StepGrain = grain
-	st.RunState = Stepping
-}
-
-// SetNSteps sets the number of times to go through a StepPoint of the current granularity before actually pausing.
-func (st *Stepper) SetNSteps(toTake int) {
-	st.stateMut.Lock()
-	defer st.stateMut.Unlock()
-	st.StepsPerClick = toTake
-	st.stepsRemaining = toTake
 }
 
 // StepPoint checks for possible pause or stop.
