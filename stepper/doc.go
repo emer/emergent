@@ -36,7 +36,7 @@ In addition to the required PauseNotifyFn callback, there is an option to regist
 This callback can check any state information that it likes, and if it returns true, the PauseNotifyFn will be invoked.
 
 Whether or not a StopCondCheckFn has been set, if RunState is Stepping and the grain argument matches StepGrain,
-StepPoint decrements the value of NSteps. If NSteps goes to zero, PauseNotifyFn is called, and the Stepper goes into
+StepPoint decrements the value of StepsPerClick. If stepsRemaining goes to zero, PauseNotifyFn is called, and the Stepper goes into
 a wait loop, waiting for RunState to be something other than Paused. If RunState becomes Stopped, StepPoint exits with
 a value of true, indicating that the caller should end the current run. If the new state is either Running or Stepping,
 StepPoint returns false, indicating that the caller should continue.
