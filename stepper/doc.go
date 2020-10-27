@@ -19,24 +19,24 @@ program (i.e., the user interface) should make sure that everything is properly 
 Usage Basics
 
 The Stepper struct includes an integer field, "StepGrain", which controls whether it will actually pause. The StepPoint
-function checks that its argument is equal to the current StepGrain, and if so, calls the PauseNotifier callback
-with whatever state information was set up when the PauseNotifier was registered. It then enters a loop, waiting
+function checks that its argument is equal to the current StepGrain, and if so, calls the PauseNotifyFn callback
+with whatever state information was set up when the PauseNotifyFn was registered. It then enters a loop, waiting
 for a change in the RunState field of the Stepper. If it sees that RunState has become Stopped, it return true,
 and the caller (i.e., the simulation) should exit the current run. If it sees
 that RunState has changed to either Running or Stepping, it returns false, and the caller should continue.
 
 Before running, the caller should call Stepper.New() to get a fresh, initialized Stepper, and must also call
-RegisterPauseNotifier to designate a callback to be invoked when StepPoint is called with a value of grain that
+RegisterPauseNotifyFn to designate a callback to be invoked when StepPoint is called with a value of grain that
 matches the value of StepGrain set in the struct. Internally, StepGrain is just an integer, but the intention is that
 callers will define a StepGrain enumerated type to designate meaningful points at which to pause. Note that the
 current implementation makes no use of the actual values of StepGrain, i.e., the fact that one value is greater than
 another has no effect. This might change in a future version.
 
-In addition to the required PauseNotifier callback, there is an option to register a StopConditionChecker callback.
-This callback can check any state information that it likes, and if it returns true, the PauseNotifier will be invoked.
+In addition to the required PauseNotifyFn callback, there is an option to register a StopCondCheckFn callback.
+This callback can check any state information that it likes, and if it returns true, the PauseNotifyFn will be invoked.
 
-Whether or not a StopConditionChecker has been set, if RunState is Stepping and the grain argument matches StepGrain,
-StepPoint decrements the value of NSteps. If NSteps goes to zero, PauseNotifier is called, and the Stepper goes into
+Whether or not a StopCondCheckFn has been set, if RunState is Stepping and the grain argument matches StepGrain,
+StepPoint decrements the value of NSteps. If NSteps goes to zero, PauseNotifyFn is called, and the Stepper goes into
 a wait loop, waiting for RunState to be something other than Paused. If RunState becomes Stopped, StepPoint exits with
 a value of true, indicating that the caller should end the current run. If the new state is either Running or Stepping,
 StepPoint returns false, indicating that the caller should continue.
