@@ -53,13 +53,13 @@ type PauseNotifyFn func()
 // The Stepper struct contains all of the state info for stepping a program, enabling step points.
 // where the running application can be suspended with no loss of state.
 type Stepper struct {
-	stateMut       sync.Mutex      `view:"-" desc:"mutex for RunState"`
-	stateChange    *sync.Cond      `view:"-" desc:"state change condition variable"`
 	RunState       RunState        `desc:"current run state"`
 	StepGrain      int             `desc:"granularity of one step. No enum type here so clients can define their own"`
+	StepsPerClick  int             `desc:"number of steps to execute before returning"`
+	stateMut       sync.Mutex      `view:"-" desc:"mutex for RunState"`
+	stateChange    *sync.Cond      `view:"-" desc:"state change condition variable"`
 	condCheckFn    StopCondCheckFn `view:"-" desc:"function to test for special stopping conditions"`
 	pauseNotifyFn  PauseNotifyFn   `view:"-" desc:"function to deal with any changes on client side when paused after stepping"`
-	StepsPerClick  int             `desc:"number of steps to execute before returning"`
 	stepsRemaining int             `view:"-" desc:"number of steps yet to execute before returning"`
 	waitTimer      chan RunState   `desc:"watchdog timer channel"`
 	oneTimeInit    sync.Once       `view:"-" desc:"this ensures that global initialization only happens once"`
