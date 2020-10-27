@@ -102,7 +102,7 @@ func (st *Stepper) waitWithTimeout(cond *sync.Cond, secs int) {
 }
 
 // DontStop is a StopCondCheckFn that does nothing, i.e., it will never trigger a pause
-func DontStop(_ interface{}, _ int) bool {
+func DontStop(_ int) bool {
 	return false
 }
 
