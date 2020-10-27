@@ -15,6 +15,6 @@ will not stop at StepPoints without interaction, it will pause if RunState is Pa
 between Paused and Stopped is that in the Paused state, the application waits for a state change, whereas in the
 Stopped state, the Stepper exits, and no application state is preserved. After entering Stopped, the controlling
 program (i.e., the user interface) should make sure that everything is properly reinitialized before running again.
-*/
 
+*/
 package stepper
