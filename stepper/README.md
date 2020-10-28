@@ -38,8 +38,8 @@ does not interpret these values, and only checks equality to see decide whether 
    ```go
    struct Sim {
       Stepper                      *stepper.Stepper  `view:"-"`        
-      StepsToRun                   int               `view:"-" desc:"number of StopStepGrain steps to execute before stopping"`
-      OrigSteps                    int               `view:"-" desc:"saved number of StopStepGrain steps to execute before stopping"`
+      StepsToRun                   int               `view:"-" desc:"number of steps to execute before stopping"`
+      OrigSteps                    int               `view:"-" desc:"saved number of steps to execute before stopping"`
       StepGrain                    StepGrain         `view:"-" desc:"granularity for the Step command"`
       StopStepCondition            StopStepCond      `desc:"granularity for conditional stop"`
       StopConditionTrialNameString string            `desc:"if StopStepCond is TrialName or NotTrialName, this string is used for matching the current AlphaTrialName"`
@@ -57,7 +57,7 @@ does not interpret these values, and only checks equality to see decide whether 
          ss.Stepper.StepGrain = int(ss.StepGrain)
       }
       if ss.StepsToRun != ss.OrigSteps { // User has changed the step count while running
-        ss.Stepper.StepsPerClick = ss.StepsToRun
+        ss.Stepper.StepsPer = ss.StepsToRun
         ss.OrigSteps = ss.StepsToRun
       }
       ss.IsRunning = false
@@ -94,13 +94,12 @@ does not interpret these values, and only checks equality to see decide whether 
     }
 
 6. Somewhere in your initialization code, create the actual `Stepper` and register your `stepper.PauseNotifyFn`
-and (optionally) `stepper.StopCondCheckFn` functions:
+and (optionally) `stepper.StopCheckFn` functions:
 
    ```go
    ss.Stepper = stepper.New()
-   ss.Stepper.RegisterStopCheckFn(CheckStopCondition)
-   ss.Stepper.RegisterPauseNotifyFn(NotifyPause)
-   ss.Stepper.Init()
+   ss.Stepper..StopCheckFn = CheckStopCondition
+   ss.Stepper.PauseNotifyFn = NotifyPause
 
 7. At appropriate points in your simulation code, insert `stepper.StepPoint` calls, e.g.:
 
@@ -148,12 +147,12 @@ and (optionally) `stepper.StopCondCheckFn` functions:
          if ss.Stepper.RunState == stepper.Stopped {
             ss.SimHasRun = true
             ss.OrigSteps = ss.StepsToRun
-            ss.Stepper.StartStepping(int(grain), ss.StepsToRun)
+            ss.Stepper.Start(int(grain), ss.StepsToRun)
             ss.ToolBar.UpdateActions()
             go ss.Train()
       } else if ss.Stepper.RunState == stepper.Paused {
-         ss.Stepper.SetStepGrain(int(grain))
-         ss.Stepper.SetNSteps(ss.StepsToRun)
+         ss.Stepper.StepGrain = int(grain)
+         ss.Stepper.StepsPer = ss.StepsToRun
          ss.Stepper.Enter(stepper.Stepping)
          ss.ToolBar.UpdateActions()
       }

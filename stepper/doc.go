@@ -32,11 +32,11 @@ callers will define a StepGrain enumerated type to designate meaningful points a
 current implementation makes no use of the actual values of StepGrain, i.e., the fact that one value is greater than
 another has no effect. This might change in a future version.
 
-In addition to the required PauseNotifyFn callback, there is an option to register a StopCondCheckFn callback.
+In addition to the required PauseNotifyFn callback, there is an optional StopCheckFn callback.
 This callback can check any state information that it likes, and if it returns true, the PauseNotifyFn will be invoked.
 
-Whether or not a StopCondCheckFn has been set, if RunState is Stepping and the grain argument matches StepGrain,
-StepPoint decrements the value of StepsPerClick. If stepsRemaining goes to zero, PauseNotifyFn is called, and the Stepper goes into
+Whether or not a StopCheckFn has been set, if RunState is Stepping and the grain argument matches StepGrain,
+StepPoint decrements the value of StepsPer. If stepsLeft goes to zero, PauseNotifyFn is called, and the Stepper goes into
 a wait loop, waiting for RunState to be something other than Paused. If RunState becomes Stopped, StepPoint exits with
 a value of true, indicating that the caller should end the current run. If the new state is either Running or Stepping,
 StepPoint returns false, indicating that the caller should continue.
