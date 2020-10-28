@@ -20,9 +20,10 @@ program (i.e., the user interface) should make sure that everything is properly 
 package stepper
 
 import (
-	"github.com/goki/ki/kit"
 	"sync"
 	"time"
+
+	"github.com/goki/ki/kit"
 )
 
 type RunState int
@@ -102,7 +103,7 @@ func (st *Stepper) waitWithTimeout(cond *sync.Cond, secs int) {
 }
 
 // DontStop is a StopCondCheckFn that does nothing, i.e., it will never trigger a pause
-func DontStop(_ int) bool {
+func DontStop(na int) bool {
 	return false
 }
 
