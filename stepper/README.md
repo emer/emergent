@@ -50,8 +50,7 @@ does not interpret these values, and only checks equality to see decide whether 
 
    ```go
    // NotifyPause is called from within the Stepper, with the Stepper's lock held.
-   // From within this function, Stepper variables should be set directly, rather than calling Stepper methods,
-   // which would try to take the lock and then deadlock.
+   // This function's code must not call any Stepper methods (e.g. Enter) that try to take the Stepper mutex lock.
    func (ss *Sim) NotifyPause() {
       if int(ss.StepGrain) != ss.Stepper.Grain() {
          ss.Stepper.StepGrain = int(ss.StepGrain)
@@ -66,13 +65,11 @@ does not interpret these values, and only checks equality to see decide whether 
       ss.Win.Viewport.SetNeedsFullRender()
    }
 
-5. (__OPTIONAL__) Create a `stepper.StopCondCheckFn` callback:
+5. (__OPTIONAL__) Create a `stepper.StopCheckFn` callback:
 
     ```go
-    // CheckStopCondition is called from within the Stepper.
-    // Since CheckStopCondition is called with the Stepper's lock held,
-    // it must not call any Stepper methods that set the lock. Rather, Stepper variables
-    // should be set directly, if need be.
+   // CheckStopCondition is called from within the Stepper, with the Stepper's lock held.
+   // This function's code must not call any Stepper methods (e.g. Enter) that try to take the Stepper mutex lock.
     func (ss *Sim) CheckStopCondition(_ int) bool {
        ev := &ss.Env
        ret := false
