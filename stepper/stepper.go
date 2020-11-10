@@ -85,6 +85,12 @@ func (st *Stepper) Init() *Stepper {
 	return st
 }
 
+func (st *Stepper) ResetParams(nSteps int, grain int) {
+	st.StepsPer = nSteps
+	st.stepsLeft = nSteps
+	st.StepGrain = grain
+}
+
 // Enter unconditionally enters the specified RunState. It broadcasts a stateChange, which should be picked
 // up by a paused application.
 func (st *Stepper) Enter(state RunState) {
