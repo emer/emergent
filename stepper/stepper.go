@@ -85,6 +85,7 @@ func (st *Stepper) Init() *Stepper {
 	return st
 }
 
+// Reset StepsPer and StepGrain parameters
 func (st *Stepper) ResetParams(nSteps int, grain int) {
 	st.StepsPer = nSteps
 	st.stepsLeft = nSteps
