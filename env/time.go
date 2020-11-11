@@ -55,6 +55,10 @@ const (
 	// when conditions are varied across blocks.
 	Block
 
+	// Condition is a collection of Blocks that share the same set of parameters.
+	// This is intermediate between Block and Run levels.
+	Condition
+
 	// Epoch is used in two different contexts.  In machine learning, it represents a
 	// collection of Trials, Sequences or Events that constitute a "representative sample"
 	// of the environment.  In the simplest case, it is the entire collection of Trials
