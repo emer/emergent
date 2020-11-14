@@ -25,6 +25,11 @@ func (rls *Rules) OpenRules(fname string) []error {
 	return rls.ReadRules(fp)
 }
 
+// OpenRulesPy reads in a text file with rules, line-by-line simple parser
+func (rls *Rules) OpenRulesPy(fname string) {
+	rls.OpenRules(fname)
+}
+
 // AddParseErr adds given parser error, auto including line number
 func (rls *Rules) AddParseErr(msg string) {
 	err := fmt.Errorf("Line: %d \tesg Parse Error: %s", rls.ParseLn, msg)
