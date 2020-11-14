@@ -112,7 +112,7 @@ func (rl *Rule) Gen(rls *Rules) {
 	case CondItems:
 		var copts []int
 		for ii, it := range rl.Items {
-			if it.CondTrue(rl, rls) {
+			if it.CondEval(rl, rls) {
 				copts = append(copts, ii)
 			}
 		}

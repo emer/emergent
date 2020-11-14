@@ -52,8 +52,8 @@ func (it *Item) Gen(rl *Rule, rls *Rules) {
 }
 
 // CondTrue evalutes whether the condition is true
-func (it *Item) CondTrue(rl *Rule, rls *Rules) bool {
-	return it.Cond.True(rls)
+func (it *Item) CondEval(rl *Rule, rls *Rules) bool {
+	return it.Cond.Eval(rls)
 }
 
 // Validate checks for config errors

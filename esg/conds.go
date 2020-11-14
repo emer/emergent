@@ -24,7 +24,7 @@ func (cs *Conds) String() string {
 }
 
 // True returns true if conditional expression is true
-func (cs *Conds) True(rls *Rules) bool {
+func (cs *Conds) Eval(rls *Rules) bool {
 	cval := true
 	hasCval := false
 	lastBin := CondElsN // binary op
@@ -37,7 +37,7 @@ func (cs *Conds) True(rls *Rules) bool {
 		case Not:
 			lastNot = true
 		default:
-			tst := cd.True(rls)
+			tst := cd.Eval(rls)
 			if lastNot {
 				tst = !tst
 				lastNot = false
@@ -125,7 +125,7 @@ func (cd *Cond) String() string {
 }
 
 // True returns true if conditional expression is true
-func (cd *Cond) True(rls *Rules) bool {
+func (cd *Cond) Eval(rls *Rules) bool {
 	if cd.El == CRule {
 		if cd.Rule[0] == '\'' {
 			return rls.HasOutput(cd.Rule)
@@ -134,7 +134,7 @@ func (cd *Cond) True(rls *Rules) bool {
 		}
 	}
 	if cd.El == SubCond && cd.Conds != nil {
-		return cd.Conds.True(rls)
+		return cd.Conds.Eval(rls)
 	}
 	return false
 }
