@@ -10,22 +10,22 @@ import (
 
 // Rules is a collection of rules
 type Rules struct {
-	Name      string              `desc:"name of this rule collection"`
-	Desc      string              `desc:"description of this rule collection"`
-	Trace     bool                `desc:"if true, will print out a trace during generation"`
-	Top       *Rule               `desc:"top-level rule -- this is where to start generating"`
-	Map       map[string]*Rule    `desc:"map of each rule"`
-	Fired     map[string]struct{} `desc:"map of names of all the rules that have fired"`
-	Output    []string            `desc:"array of output strings -- appended as the rules generate output"`
-	States    State               `desc:"user-defined state map optionally created during generation"`
-	ParseErrs []error             `desc:"errors from parsing"`
-	ParseLn   int                 `desc:"current line number during parsing"`
+	Name      string           `desc:"name of this rule collection"`
+	Desc      string           `desc:"description of this rule collection"`
+	Trace     bool             `desc:"if true, will print out a trace during generation"`
+	Top       *Rule            `desc:"top-level rule -- this is where to start generating"`
+	Map       map[string]*Rule `desc:"map of each rule"`
+	Fired     map[string]bool  `desc:"map of names of all the rules that have fired"`
+	Output    []string         `desc:"array of output strings -- appended as the rules generate output"`
+	States    State            `desc:"user-defined state map optionally created during generation"`
+	ParseErrs []error          `desc:"errors from parsing"`
+	ParseLn   int              `desc:"current line number during parsing"`
 }
 
 // Gen generates one expression according to the rules.
 // returns the token output, which is also avail as rls.Output
 func (rls *Rules) Gen() []string {
-	rls.Fired = make(map[string]struct{})
+	rls.Fired = make(map[string]bool)
 	rls.States = make(State)
 	rls.Output = nil
 	if rls.Trace {
@@ -116,7 +116,7 @@ func (rls *Rules) HasOutput(out string) bool {
 
 // SetFired adds given rule name to map of those that fired this round
 func (rls *Rules) SetFired(name string) {
-	rls.Fired[name] = struct{}{}
+	rls.Fired[name] = true
 }
 
 // AddOutput adds given string to Output array
