@@ -18,6 +18,7 @@ import (
 	"github.com/emer/etable/minmax"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
+	"github.com/goki/gi/gist"
 	"github.com/goki/gi/giv"
 	"github.com/goki/gi/oswin/key"
 	"github.com/goki/gi/units"
@@ -512,7 +513,7 @@ func (nv *NetView) VarsConfig() {
 	vl.Lay = gi.LayoutGrid
 	vl.SetProp("columns", 2)
 	vl.SetProp("spacing", 0)
-	vl.SetProp("vertical-align", gi.AlignTop)
+	vl.SetProp("vertical-align", gist.AlignTop)
 	nv.VarsListUpdate()
 	if len(nv.Vars) == 0 {
 		vl.DeleteChildren(true)
@@ -618,8 +619,8 @@ func (nv *NetView) ViewConfig() {
 		txt.NetView = nv
 		txt.SetText(vs, ly.Name())
 		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
-		txt.SetProp("text-align", gi.AlignLeft)
-		txt.SetProp("vertical-align", gi.AlignTop)
+		txt.SetProp("text-align", gist.AlignLeft)
+		txt.SetProp("vertical-align", gist.AlignTop)
 	}
 	vs.InitMeshes()
 	laysGp.UpdateEnd(updt)
@@ -718,9 +719,9 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 			lb := lgp.ChildByName(ls, i).(*gi3d.Text2D)
 			lb.Defaults(vs)
 			lb.SetText(vs, ls)
-			lb.SetProp("text-align", gi.AlignLeft)
-			lb.SetProp("vertical-align", gi.AlignTop)
-			lb.SetProp("white-space", gi.WhiteSpacePre)
+			lb.SetProp("text-align", gist.AlignLeft)
+			lb.SetProp("vertical-align", gist.AlignTop)
+			lb.SetProp("white-space", gist.WhiteSpacePre)
 		}
 	}
 	lgp.UpdateEnd(updt)
@@ -1131,7 +1132,7 @@ func (nv *NetView) ShowAllParams() string {
 }
 
 func (nv *NetView) Render2D() {
-	if gi.RebuildDefaultStyles {
+	if gist.RebuildDefaultStyles {
 		vs := nv.Scene()
 		if vs != nil {
 			vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
