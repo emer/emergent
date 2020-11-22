@@ -661,7 +661,7 @@ func (nv *NetView) ReadUnlock() {
 
 // UnitVal returns the raw value, scaled value, and color representation
 // for given unit of given layer scaled is in range -1..1
-func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gi.Color, hasval bool) {
+func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gist.Color, hasval bool) {
 	idx1d := lay.Shape().Offset(idx)
 	raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
 
