@@ -6,12 +6,11 @@ import (
 	"testing"
 
 	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
 )
 
 func TestVocab(t *testing.T) {
 	fmt.Println("Testing starts")
-	m := make(map[string]*etensor.Float32)
+	m := make(Vocab)
 	AddVocabEmpty(m, "empty", 6, 3, 3)
 	AddVocabPermutedBinary(m, "A", 6, 3, 3, 0.3, 0.5)
 	AddVocabDrift(m, "B", 6, 0.2, "A", 0) // nOn=4*(3*3*0.3); nDrift=nOn*0.5

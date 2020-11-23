@@ -26,7 +26,7 @@ func InitPats(dt *etable.Table, name, desc, inputName, outputName string, listSi
 
 // MixPats mixes patterns using first listSize rows in the vocabulary map
 // poolSource order: left right, bottom up
-func MixPats(dt *etable.Table, mp map[string]*etensor.Float32, colName string, poolSource []string) error {
+func MixPats(dt *etable.Table, mp Vocab, colName string, poolSource []string) error {
 	name := dt.MetaData["name"]
 	listSize := dt.ColByName(colName).Shapes()[0]
 	ySize := dt.ColByName(colName).Shapes()[1]
@@ -63,7 +63,7 @@ func MixPats(dt *etable.Table, mp map[string]*etensor.Float32, colName string, p
 // MixPatsN mixes patterns using specified startVocab and vocabN numbers
 // of vocabulary patterns, inserting starting at specified targRow in table.
 // poolSource order: left right, bottom up
-func MixPatsN(dt *etable.Table, mp map[string]*etensor.Float32, colName string, poolSource []string, targRow, vocabStart, vocabN int) error {
+func MixPatsN(dt *etable.Table, mp Vocab, colName string, poolSource []string, targRow, vocabStart, vocabN int) error {
 	name := dt.MetaData["name"]
 	_ = name
 	ySize := dt.ColByName(colName).Shapes()[1]
