@@ -89,12 +89,16 @@ github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff h1:W71vTCKoxtdXgnm1E
 github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff/go.mod h1:wfqRWLHRBsRgkp5dmbG56SA0DmVtwrF5N3oPdI8t+Aw=
 github.com/goki/gi v1.1.0 h1:boO48CeCdiMtitplfDniCOJB5zj1hJlmJLVgq2ERNc0=
 github.com/goki/gi v1.1.0/go.mod h1:ssRCcYuLBqqm2M4kY/Xj5WwZ2D/eaXmdUoXALIIbfDs=
+github.com/goki/gi v1.1.2 h1:mk1JrNKKlM8aERSERti6kwWB3lz9lBxa8aKwpu6KIcI=
+github.com/goki/gi v1.1.2/go.mod h1:ssRCcYuLBqqm2M4kY/Xj5WwZ2D/eaXmdUoXALIIbfDs=
 github.com/goki/ki v1.0.0 h1:tsg8UII9T9vbEI55tNoJe+Y9MMdsE3b9mMrRWGZBZ4Y=
 github.com/goki/ki v1.0.0/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
 github.com/goki/ki v1.0.2 h1:mupuGLlIFrkpXe28UiZr5tD/2nGMfBEL86/bZclyx8g=
 github.com/goki/ki v1.0.2/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
 github.com/goki/ki v1.0.5 h1:XsCtIyiu/PysmAuRbfY+l+q4Zk1/W7jS3d6GqxO+f9U=
 github.com/goki/ki v1.0.5/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
+github.com/goki/ki v1.0.6 h1:CzkOURxoNPvAJ0e7wjD1Xw2inuAPGdIwpZ3Okux5elg=
+github.com/goki/ki v1.0.6/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
 github.com/goki/mat32 v1.0.2 h1:pWwejsySL7TXcuE+axGVhF6I4U9YBK6RCDyYwgPmucA=
 github.com/goki/mat32 v1.0.2/go.mod h1:SCqUsgLhG48i7wu/Kce9OF62abYJnxCX7YL5TOxZ0K4=
 github.com/goki/pi v1.0.7 h1:7v3FklAhsu2oVBxVOYQ9od3ynVAfjevKHgekEGNmVLc=
