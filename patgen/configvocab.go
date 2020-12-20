@@ -93,10 +93,11 @@ func AddVocabClone(mp Vocab, name string, copyFrom string) (*etensor.Float32, er
 // AddVocabRepeat adds a repeated pool to the vocabulary,
 // copying from given row in existing vocabulary item .
 func AddVocabRepeat(mp Vocab, name string, rows int, copyFrom string, copyRow int) (*etensor.Float32, error) {
-	cp, err := mp.ByNameTry(copyFrom)
+	origItem, err := mp.ByNameTry(copyFrom)
 	if err != nil {
 		return nil, err
 	}
+	cp := origItem.Clone()
 	tsr := &etensor.Float32{}
 	cpshp := cp.Shapes()
 	cpshp[0] = rows
