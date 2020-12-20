@@ -32,15 +32,17 @@ type Prjn interface {
 	// Pattern returns the pattern of connectivity for interconnecting the layers
 	Pattern() prjn.Pattern
 
-	// SetPattern sets the pattern of connectivity for interconnecting the layers
-	SetPattern(pat prjn.Pattern)
+	// SetPattern sets the pattern of connectivity for interconnecting the layers.
+	// Returns Prjn so it can be chained to set other properties too
+	SetPattern(pat prjn.Pattern) Prjn
 
 	// Type returns the functional type of projection according to PrjnType (extensible in
 	// more specialized algorithms)
 	Type() PrjnType
 
 	// SetType sets the functional type of projection according to PrjnType
-	SetType(typ PrjnType)
+	// Returns Prjn so it can be chained to set other properties too
+	SetType(typ PrjnType) Prjn
 
 	// PrjnTypeName returns the string rep of functional type of projection
 	// according to PrjnType (extensible in more specialized algorithms, by
@@ -51,7 +53,8 @@ type Prjn interface {
 	Connect(send, recv Layer, pat prjn.Pattern, typ PrjnType)
 
 	// SetClass sets CSS-style class name(s) for this projection (space-separated if multiple)
-	SetClass(cls string)
+	// Returns Prjn so it can be chained to set other properties too
+	SetClass(cls string) Prjn
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
