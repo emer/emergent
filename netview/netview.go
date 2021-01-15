@@ -620,7 +620,7 @@ func (nv *NetView) ViewConfig() {
 		txt.SetText(vs, ly.Name())
 		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
 		txt.SetProp("text-align", gist.AlignLeft)
-		txt.SetProp("vertical-align", gist.AlignTop)
+		txt.SetProp("text-vertical-align", gist.AlignTop)
 	}
 	vs.InitMeshes()
 	laysGp.UpdateEnd(updt)
