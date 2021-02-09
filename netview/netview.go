@@ -216,7 +216,7 @@ func (nv *NetView) Config() {
 	config.Add(gi.KiT_Layout, "net")
 	config.Add(gi.KiT_Label, "counters")
 	config.Add(gi.KiT_ToolBar, "vbar")
-	mods, updt := nv.ConfigChildren(config, false)
+	mods, updt := nv.ConfigChildren(config)
 	if !mods {
 		updt = nv.UpdateStart()
 	}
@@ -230,7 +230,7 @@ func (nv *NetView) Config() {
 	vncfg := kit.TypeAndNameList{}
 	vncfg.Add(gi.KiT_Frame, "vars")
 	vncfg.Add(gi3d.KiT_Scene, "scene")
-	nlay.ConfigChildren(vncfg, false) // won't do update b/c of above updt
+	nlay.ConfigChildren(vncfg) // won't do update b/c of above updt
 
 	nv.VarsConfig()
 	nv.ViewConfig()
@@ -523,7 +523,7 @@ func (nv *NetView) VarsConfig() {
 	for _, vn := range nv.Vars {
 		config.Add(gi.KiT_Action, vn)
 	}
-	mods, updt := vl.ConfigChildren(config, false)
+	mods, updt := vl.ConfigChildren(config)
 	if !mods {
 		updt = vl.UpdateStart()
 	}
@@ -579,7 +579,7 @@ func (nv *NetView) ViewConfig() {
 	gpConfig.Add(KiT_LayObj, "layer")
 	gpConfig.Add(KiT_LayName, "name")
 
-	_, updt := laysGp.ConfigChildren(layConfig, true)
+	_, updt := laysGp.ConfigChildren(layConfig)
 	// if !mods {
 	// 	updt = laysGp.UpdateStart()
 	// }
@@ -592,7 +592,7 @@ func (nv *NetView) ViewConfig() {
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
 		lg := lgi.(*gi3d.Group)
-		lg.ConfigChildren(gpConfig, false) // won't do update b/c of above
+		lg.ConfigChildren(gpConfig) // won't do update b/c of above
 		lp := ly.Pos()
 		lp.Y = -lp.Y // reverse direction
 		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)
@@ -713,7 +713,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 	for _, ls := range labs {
 		lbConfig.Add(gi3d.KiT_Text2D, ls)
 	}
-	mods, updt := lgp.ConfigChildren(lbConfig, true)
+	mods, updt := lgp.ConfigChildren(lbConfig)
 	if mods {
 		for i, ls := range labs {
 			lb := lgp.ChildByName(ls, i).(*gi3d.Text2D)
