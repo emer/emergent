@@ -287,12 +287,14 @@ func (nd *NetData) SaveJSON(filename gi.FileName) error {
 	ext := filepath.Ext(string(filename))
 	if ext == ".gz" {
 		gzr := gzip.NewWriter(fp)
-		defer gzr.Close()
-		nd.WriteJSON(gzr)
+		err = nd.WriteJSON(gzr)
+		gzr.Close()
 	} else {
-		nd.WriteJSON(bufio.NewWriter(fp))
+		bw := bufio.NewWriter(fp)
+		err = nd.WriteJSON(bw)
+		bw.Flush()
 	}
-	return nil
+	return err
 }
 
 // ReadJSON reads netdata from JSON format
@@ -329,10 +331,9 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", " ")
 	err := enc.Encode(nd)
-	if err == nil {
-		return nil
+	if err != nil {
+		log.Println(err)
 	}
-	log.Println(err)
 	return err
 }
 
