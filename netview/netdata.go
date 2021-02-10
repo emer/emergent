@@ -5,12 +5,22 @@
 package netview
 
 import (
+	"bufio"
+	"compress/gzip"
+	"encoding/json"
+	"io"
+	"log"
 	"math"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/ringidx"
+	"github.com/goki/gi/gi"
+	"github.com/goki/ki/ki"
+	"github.com/goki/ki/kit"
 )
 
 // LayData maintains a record of all the data for a given layer
@@ -24,7 +34,7 @@ type LayData struct {
 // up to a given maximum number of records (updates), using efficient ring index logic
 // with no copying to store in fixed-sized buffers.
 type NetData struct {
-	Net       emer.Network        `desc:"the network that we're viewing"`
+	Net       emer.Network        `json:"-" desc:"the network that we're viewing"`
 	PrjnLay   string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
 	PrjnUnIdx int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
 	PrjnType  string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
@@ -38,6 +48,8 @@ type NetData struct {
 	MaxVar    []float32           `desc:"max values for variable"`
 	Counters  []string            `desc:"counter strings"`
 }
+
+var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)
 
 // Init initializes the main params and configures the data
 func (nd *NetData) Init(net emer.Network, max int) {
@@ -237,4 +249,116 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 		return 0, false
 	}
 	return val, true
+}
+
+////////////////////////////////////////////////////////////////
+//   IO
+
+// OpenJSON opens colors from a JSON-formatted file.
+func (nd *NetData) OpenJSON(filename gi.FileName) error {
+	fp, err := os.Open(string(filename))
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	ext := filepath.Ext(string(filename))
+	if ext == ".gz" {
+		gzr, err := gzip.NewReader(fp)
+		defer gzr.Close()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		return nd.ReadJSON(gzr)
+	} else {
+		return nd.ReadJSON(bufio.NewReader(fp))
+	}
+}
+
+// SaveJSON saves colors to a JSON-formatted file.
+func (nd *NetData) SaveJSON(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	ext := filepath.Ext(string(filename))
+	if ext == ".gz" {
+		gzr := gzip.NewWriter(fp)
+		defer gzr.Close()
+		nd.WriteJSON(gzr)
+	} else {
+		nd.WriteJSON(bufio.NewWriter(fp))
+	}
+	return nil
+}
+
+// ReadJSON reads netdata from JSON format
+func (nd *NetData) ReadJSON(r io.Reader) error {
+	dec := json.NewDecoder(r)
+	err := dec.Decode(nd) // this is way to do it on reader instead of bytes
+	nan := math32.NaN()
+	for _, ld := range nd.LayData {
+		for i := range ld.Data {
+			if ld.Data[i] == NaNSub {
+				ld.Data[i] = nan
+			}
+		}
+	}
+	if err == nil || err == io.EOF {
+		return nil
+	}
+	log.Println(err)
+	return err
+}
+
+// NaNSub is used to replace NaN values for saving -- JSON doesn't handle nan's
+const NaNSub = -1.11e-37
+
+// WriteJSON writes netdata to JSON format
+func (nd *NetData) WriteJSON(w io.Writer) error {
+	for _, ld := range nd.LayData {
+		for i := range ld.Data {
+			if math32.IsNaN(ld.Data[i]) {
+				ld.Data[i] = NaNSub
+			}
+		}
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", " ")
+	err := enc.Encode(nd)
+	if err == nil {
+		return nil
+	}
+	log.Println(err)
+	return err
+}
+
+// func (ld *LayData) MarshalJSON() ([]byte, error) {
+//
+// }
+
+var NetDataProps = ki.Props{
+	"CallMethods": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"desc": "save recorded network view data to file",
+			"icon": "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".netdat,.netdat.gz",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"desc": "open recorded network view data from file",
+			"icon": "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".netdat,.netdat.gz",
+				}},
+			},
+		}},
+	},
 }
