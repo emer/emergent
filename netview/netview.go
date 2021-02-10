@@ -777,25 +777,38 @@ func (nv *NetView) ToolbarConfig() {
 			giv.StructViewDialog(nvv.ViewportSafe(), &nvv.Params, giv.DlgOpts{Title: nvv.Nm + " Params"}, nil, nil)
 		})
 	tbar.AddSeparator("file")
-	tbar.AddAction(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, nv.This(),
+	wtsmen := tbar.AddAction(gi.ActOpts{Label: "Weights", Icon: "file-save"}, nil, nil)
+	wtsmen.Menu.AddAction(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			giv.CallMethod(nvv, "SaveWeights", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
-	tbar.AddAction(gi.ActOpts{Label: "Open Wts", Icon: "file-open"}, nv.This(),
+	wtsmen.Menu.AddAction(gi.ActOpts{Label: "Open Wts", Icon: "file-open"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			giv.CallMethod(nvv, "OpenWeights", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
-	tbar.AddAction(gi.ActOpts{Label: "Non Def Params", Icon: "info", Tooltip: "shows all the parameters that are not at default values -- useful for setting params"}, nv.This(),
+	parsmen := tbar.AddAction(gi.ActOpts{Label: "Params", Icon: "info"}, nil, nil)
+	parsmen.Menu.AddAction(gi.ActOpts{Label: "Non Def Params", Icon: "info", Tooltip: "shows all the parameters that are not at default values -- useful for setting params"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			nvv.ShowNonDefaultParams()
 		})
-	tbar.AddAction(gi.ActOpts{Label: "All Params", Icon: "info", Tooltip: "shows all the parameters in the network"}, nv.This(),
+	parsmen.Menu.AddAction(gi.ActOpts{Label: "All Params", Icon: "info", Tooltip: "shows all the parameters in the network"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			nvv.ShowAllParams()
+		})
+	ndmen := tbar.AddAction(gi.ActOpts{Label: "Net Data", Icon: "file-save"}, nil, nil)
+	ndmen.Menu.AddAction(gi.ActOpts{Label: "Save Net Data", Icon: "file-save"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			giv.CallMethod(&nvv.Data, "SaveJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
+		})
+	ndmen.Menu.AddAction(gi.ActOpts{Label: "Open Net Data", Icon: "file-open"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 
 	vp, ok := nv.VarParams[nv.Var]
