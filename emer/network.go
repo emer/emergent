@@ -102,7 +102,7 @@ type Network interface {
 
 	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
 	// to JSON-formatted output.
-	WriteWtsJSON(w io.Writer)
+	WriteWtsJSON(w io.Writer) error
 
 	// ReadWtsJSON reads network weights (and any other state that adapts with learning)
 	// from JSON-formatted input.  Reads into a temporary weights.Network structure that
