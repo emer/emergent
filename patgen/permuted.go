@@ -15,6 +15,7 @@ import (
 	"github.com/emer/emergent/erand"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/metric"
+	"github.com/goki/ki/ints"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
@@ -57,6 +58,10 @@ func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	}
 }
 
+// MinDiffPrintIters set this to true to see the iteration stats for
+// PermutedBinaryMinDiff -- for large, long-running cases.
+var MinDiffPrintIters = false
+
 // PermutedBinaryMinDiff treats the tensor as a column of rows as in a etable.Table
 // and sets each row to contain nOn onVal values and the remainder are offVal values,
 // using a permuted order of tensor elements (i.e., randomly shuffled or permuted).
@@ -70,12 +75,15 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 		return errors.New("empty tensor")
 	}
 	pord := rand.Perm(cells)
+	iters := 100
+	nunder := make([]int, rows) // per row
 	fails := 0
-	for rw := 0; rw < rows; rw++ {
-		stidx := rw * cells
-		iters := 100 + (10 * (rw + 1)) // 100 plus 10 more for every new rew
-		got := false
-		for itr := 0; itr < iters; itr++ {
+	for itr := 0; itr < iters; itr++ {
+		for rw := 0; rw < rows; rw++ {
+			if itr > 0 && nunder[rw] == 0 {
+				continue
+			}
+			stidx := rw * cells
 			for i := 0; i < cells; i++ {
 				if i < nOn {
 					tsr.Values[stidx+pord[i]] = onVal
@@ -84,22 +92,36 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 				}
 			}
 			erand.PermuteInts(pord)
-			if rw == 0 {
-				got = true
-				break
-			}
-			min, _ := RowVsPrevDist32(tsr, rw, metric.Hamming32)
-			df := int(math.Round(float64(.5 * min))) // diff
-			if df >= minDiff {
-				got = true
-				break
+		}
+		for i := range nunder {
+			nunder[i] = 0
+		}
+		nbad := 0
+		mxnun := 0
+		for r1 := 0; r1 < rows; r1++ {
+			r1v := tsr.SubSpace([]int{r1}).(*etensor.Float32)
+			for r2 := r1 + 1; r2 < rows; r2++ {
+				r2v := tsr.SubSpace([]int{r2}).(*etensor.Float32)
+				dst := metric.Hamming32(r1v.Values, r2v.Values)
+				df := int(math.Round(float64(.5 * dst)))
+				if df < minDiff {
+					nunder[r1]++
+					mxnun = ints.MaxInt(mxnun, nunder[r1])
+					nunder[r2]++
+					mxnun = ints.MaxInt(mxnun, nunder[r2])
+					nbad++
+				}
 			}
 		}
-		if !got {
-			fails++
+		if nbad == 0 {
+			break
+		}
+		fails++
+		if MinDiffPrintIters {
+			fmt.Printf("PermutedBinaryMinDiff: Itr: %d  NBad: %d  MaxN: %d\n", itr, nbad, mxnun)
 		}
 	}
-	if fails > 0 {
+	if fails == iters {
 		err := fmt.Errorf("PermutedBinaryMinDiff: minimum difference of: %d was not met: %d times, rows: %d", minDiff, fails, rows)
 		log.Println(err)
 		return err
