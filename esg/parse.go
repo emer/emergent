@@ -104,7 +104,7 @@ func (rls *Rules) ReadRules(r io.Reader) []error {
 				}
 			}
 			typ := UniformItems
-			switch rnm {
+			switch prp {
 			case "?":
 				typ = CondItems
 			case "|":
