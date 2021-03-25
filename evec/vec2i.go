@@ -14,6 +14,8 @@
 // the int is significantly easier to deal with for layer sizing params etc.
 package evec
 
+import "github.com/goki/mat32"
+
 // Vec2i is a 2D vector/point with X and Y int components.
 type Vec2i struct {
 	X int
@@ -28,6 +30,26 @@ func NewVec2i(x, y int) Vec2i {
 // NewVec2iScalar returns a new Vec2i with all components set to scalar.
 func NewVec2iScalar(s int) Vec2i {
 	return Vec2i{X: s, Y: s}
+}
+
+// NewVec2iFmVec2Round converts from floating point mat32.Vec2 vector to int, using rounding
+func NewVec2iFmVec2Round(v mat32.Vec2) Vec2i {
+	return Vec2i{int(mat32.Round(v.X)), int(mat32.Round(v.Y))}
+}
+
+// NewVec2iFmVec2Floor converts from floating point mat32.Vec2 vector to int, using floor
+func NewVec2iFmVec2Floor(v mat32.Vec2) Vec2i {
+	return Vec2i{int(mat32.Floor(v.X)), int(mat32.Floor(v.Y))}
+}
+
+// NewVec2iFmVec2Ceil converts from floating point mat32.Vec2 vector to int, using ceil
+func NewVec2iFmVec2Ceil(v mat32.Vec2) Vec2i {
+	return Vec2i{X: int(mat32.Ceil(v.X)), Y: int(mat32.Ceil(v.Y))}
+}
+
+// ToVec2 returns floating point mat32.Vec2 from int
+func (v Vec2i) ToVec2() mat32.Vec2 {
+	return mat32.Vec2{X: float32(v.X), Y: float32(v.Y)}
 }
 
 // IsNil returns true if all values are 0 (uninitialized).
@@ -183,7 +205,7 @@ func (v Vec2i) Div(other Vec2i) Vec2i {
 // If scalar is zero, returns zero.
 func (v Vec2i) DivScalar(scalar int) Vec2i {
 	if scalar != 0 {
-		return v.MulScalar(1 / scalar)
+		return Vec2i{v.X / scalar, v.Y / scalar}
 	} else {
 		return Vec2i{}
 	}
