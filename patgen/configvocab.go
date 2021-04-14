@@ -138,11 +138,11 @@ func AddVocabDrift(mp Vocab, name string, rows int, pctDrift float32, copyFrom s
 		trow := tsr.SubSpace([]int{i})
 		trow.CopyFrom(srow)
 		//FlipBits(trow, nDrift, nDrift, 1, 0) //JWA, was uncommented
-		//JWA all below is new
+		//JWA, below new
 		if nDrift > 0 {
 			FlipBits(trow, nDrift, nDrift, 1, 0)
 		}
-		//JWA all above is new
+		//JWA, above new
 	}
 	return tsr, nil
 }
