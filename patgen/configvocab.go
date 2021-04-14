@@ -93,11 +93,10 @@ func AddVocabClone(mp Vocab, name string, copyFrom string) (*etensor.Float32, er
 // AddVocabRepeat adds a repeated pool to the vocabulary,
 // copying from given row in existing vocabulary item .
 func AddVocabRepeat(mp Vocab, name string, rows int, copyFrom string, copyRow int) (*etensor.Float32, error) {
-	origItem, err := mp.ByNameTry(copyFrom)
+	cp, err := mp.ByNameTry(copyFrom)
 	if err != nil {
 		return nil, err
 	}
-	cp := origItem.Clone()
 	tsr := &etensor.Float32{}
 	cpshp := cp.Shapes()
 	cpshp[0] = rows
@@ -131,12 +130,18 @@ func AddVocabDrift(mp Vocab, name string, rows int, pctDrift float32, copyFrom s
 	trow.CopyFrom(cprow)
 	nOn := NOnInTensor(cprow)
 	nDrift := int(math.Round(float64(nOn) * float64(pctDrift)))
-	nDrift = ints.MaxInt(1, nDrift) // ensure at least one
+	//nDrift = ints.MaxInt(1, nDrift) // ensure at least one //JWA, was uncommented
+	nDrift = ints.MaxInt(0, nDrift) // ensure at least one //JWA, new
 	for i := 1; i < rows; i++ {
 		srow := tsr.SubSpace([]int{i - 1})
 		trow := tsr.SubSpace([]int{i})
 		trow.CopyFrom(srow)
-		FlipBits(trow, nDrift, nDrift, 1, 0)
+		//FlipBits(trow, nDrift, nDrift, 1, 0) //JWA, was uncommented
+		//JWA all below is new
+		if nDrift > 0 {
+			FlipBits(trow, nDrift, nDrift, 1, 0)
+		}
+		//JWA all above is new
 	}
 	return tsr, nil
 }
