@@ -120,17 +120,13 @@ func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 						for sui := 0; sui < sNu; sui++ {
 							si := sis + sui
 							off := ri*sNtot + si
-							if off < cons.Len() {
+							if off < cons.Len() && ri < len(rnv) && si < len(snv) {
 								// if !pt.SelfCon && same && ri == si {
 								// 	continue
 								// }
 								cons.Values.Set(off, true)
-								if ri < len(rnv) {
-									rnv[ri]++
-								}
-								if si < len(snv) {
-									snv[si]++
-								}
+								rnv[ri]++
+								snv[si]++
 							}
 						}
 					}
@@ -179,14 +175,10 @@ func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, r
 							si := ris + sui
 							// note: indexes reversed here
 							off := ri*sNtot + si
-							if off < cons.Len() {
+							if off < cons.Len() && ri < len(rnv) && si < len(snv) {
 								cons.Values.Set(off, true)
-								if ri < len(rnv) {
-									rnv[ri]++
-								}
-								if si < len(snv) {
-									snv[si]++
-								}
+								rnv[ri]++
+								snv[si]++
 							}
 						}
 					}
