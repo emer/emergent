@@ -130,13 +130,20 @@ func AddVocabDrift(mp Vocab, name string, rows int, pctDrift float32, copyFrom s
 	trow := tsr.SubSpace([]int{0})
 	trow.CopyFrom(cprow)
 	nOn := NOnInTensor(cprow)
-	nDrift := int(math.Round(float64(nOn) * float64(pctDrift)))
-	nDrift = ints.MaxInt(1, nDrift) // ensure at least one
+	rmdr := 0.0 // remainder carryover in drift, JWA new re: ROR
+	drift := float64(nOn) * float64(pctDrift+derr) // precise fractional amount of drift, JWA new re: ROR
 	for i := 1; i < rows; i++ {
 		srow := tsr.SubSpace([]int{i - 1})
 		trow := tsr.SubSpace([]int{i})
 		trow.CopyFrom(srow)
-		FlipBits(trow, nDrift, nDrift, 1, 0)
+		//JWA, below new
+		curDrift := math.Round(float64(nOn) * (float64(pctDrift)+rmdr))) // integer amount
+		nDrift = int(curDrift)
+		if nDrift > 0 {
+			FlipBits(trow, nDrift, nDrift, 1, 0)
+		}
+		rmdr += drift - curDrift // accumulate remainder
+		//JWA, above new
 	}
 	return tsr, nil
 }
