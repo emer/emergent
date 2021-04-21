@@ -8,5 +8,6 @@ require (
 	github.com/emer/etable v1.0.26
 	github.com/goki/gi v1.2.6
 	github.com/goki/ki v1.1.3
-	github.com/goki/mat32 v1.0.7
+	github.com/goki/mat32 v1.0.8
+	gonum.org/v1/gonum v0.9.0
 )

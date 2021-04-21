@@ -7,7 +7,6 @@
 package efuns
 
 import (
-	"github.com/chewxy/math32"
 	"github.com/goki/mat32"
 )
 
@@ -16,12 +15,12 @@ import (
 // (i.e., max value is 1 at dist = 0)
 func GaussVecDistNoNorm(a, b mat32.Vec2, sigma float32) float32 {
 	dsq := a.DistToSquared(b)
-	return math32.Exp((-0.5 * dsq) / (sigma * sigma))
+	return mat32.FastExp((-0.5 * dsq) / (sigma * sigma))
 }
 
 // Gauss1DNoNorm returns the gaussian of a given x value, without normalizing
 // (i.e., max value is 1 at x = 0)
 func Gauss1DNoNorm(x, sig float32) float32 {
 	x /= sig
-	return math32.Exp(-0.5 * x * x)
+	return mat32.FastExp(-0.5 * x * x)
 }
