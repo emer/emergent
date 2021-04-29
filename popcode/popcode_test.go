@@ -7,7 +7,6 @@ package popcode
 import (
 	"testing"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
@@ -19,7 +18,7 @@ const difTolMulti = float32(1.0e-2)
 
 func CmprFloats(out, cor []float32, msg string, t *testing.T) {
 	for i := range out {
-		dif := math32.Abs(out[i] - cor[i])
+		dif := mat32.Abs(out[i] - cor[i])
 		if dif > difTol { // allow for small numerical diffs
 			t.Errorf("%v err: out: %v, cor: %v, dif: %v\n", msg, out[i], cor[i], dif)
 		}
@@ -47,7 +46,7 @@ func TestPopCode1D(t *testing.T) {
 
 	val := pc.Decode(pat)
 	//fmt.Printf("decode pat for 0.5: %v\n", val)
-	if math32.Abs(val-0.5) > difTol {
+	if mat32.Abs(val-0.5) > difTol {
 		t.Errorf("did not decode properly: val: %v != 0.5", val)
 	}
 }
@@ -69,11 +68,11 @@ func TestPopCode1DMulti(t *testing.T) {
 	// fmt.Printf("decode pat for 0.25, 0.75: %v\n", vals)
 	for _, val := range vals {
 		if val > 0.5 {
-			if math32.Abs(val-0.9) > difTolMulti {
+			if mat32.Abs(val-0.9) > difTolMulti {
 				t.Errorf("did not decode properly: val: %v != 0.9", val)
 			}
 		} else {
-			if math32.Abs(val-0.1) > difTolMulti {
+			if mat32.Abs(val-0.1) > difTolMulti {
 				t.Errorf("did not decode properly: val: %v != 0.1", val)
 			}
 		}
@@ -106,10 +105,10 @@ func TestPopCode2D(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if math32.Abs(val.X-0.3) > difTol {
+	if mat32.Abs(val.X-0.3) > difTol {
 		t.Errorf("did not decode properly: val: %v != 0.3", val)
 	}
-	if math32.Abs(val.Y-0.9) > difTol {
+	if mat32.Abs(val.Y-0.9) > difTol {
 		t.Errorf("did not decode properly: val: %v != 0.9", val)
 	}
 }
@@ -140,11 +139,11 @@ func TestPopCode2DMulti(t *testing.T) {
 		for d := 0; d < 2; d++ {
 			val := valv.Dim(mat32.Dims(d))
 			if val > 0.5 {
-				if math32.Abs(val-0.9) > difTolMulti {
+				if mat32.Abs(val-0.9) > difTolMulti {
 					t.Errorf("did not decode properly: val: %v != 0.9", val)
 				}
 			} else {
-				if math32.Abs(val-0.1) > difTolMulti {
+				if mat32.Abs(val-0.1) > difTolMulti {
 					t.Errorf("did not decode properly: val: %v != 0.1", val)
 				}
 			}
@@ -176,7 +175,7 @@ func TestRing(t *testing.T) {
 
 	val := pc.Decode(pat)
 	// fmt.Printf("decode pat for 180: %v\n", val)
-	if math32.Abs(val-180) > difTolWeak {
+	if mat32.Abs(val-180) > difTolWeak {
 		t.Errorf("did not decode properly: val: %v != 180", val)
 	}
 
@@ -189,7 +188,7 @@ func TestRing(t *testing.T) {
 
 	val = pc.Decode(pat)
 	// fmt.Printf("decode pat for 330: %v\n", val)
-	if math32.Abs(val-330) > difTolWeak {
+	if mat32.Abs(val-330) > difTolWeak {
 		t.Errorf("did not decode properly: val: %v != 330", val)
 	}
 
@@ -202,7 +201,7 @@ func TestRing(t *testing.T) {
 
 	val = pc.Decode(pat)
 	// fmt.Printf("decode pat for 30: %v\n", val)
-	if math32.Abs(val-30) > difTolWeak {
+	if mat32.Abs(val-30) > difTolWeak {
 		t.Errorf("did not decode properly: val: %v != 30", val)
 	}
 }

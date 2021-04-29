@@ -158,7 +158,7 @@ func (ur *PoolUnifRnd) ConnectRnd(send, recv *etensor.Shape, same bool) (sendn, 
 	// recv number is even distribution across recvs plus some imbalance factor
 	// nrMean := float32(rlen*nsend) / float32(slen)
 	// // add 3 * SEM as corrective factor
-	// nrSEM := nrMean / math32.Sqrt(nrMean)
+	// nrSEM := nrMean / mat32.Sqrt(nrMean)
 	// nrecv := int(nrMean + 3*nrSEM)
 	// if nrecv > rlen {
 	// 	nrecv = rlen

@@ -13,7 +13,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/minmax"
 	"github.com/goki/gi/gi"
@@ -172,7 +171,7 @@ func (nv *NetView) UpdateImpl() {
 				}
 			}
 			if vp.ZeroCtr && !vp.Range.FixMin && !vp.Range.FixMax {
-				bmax := math32.Max(math32.Abs(vp.Range.Max), math32.Abs(vp.Range.Min))
+				bmax := mat32.Max(mat32.Abs(vp.Range.Max), mat32.Abs(vp.Range.Min))
 				if !needUpdt {
 					if vp.Range.Max != bmax || vp.Range.Min != -bmax {
 						needUpdt = true

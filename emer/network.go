@@ -66,7 +66,7 @@ type Network interface {
 
 	// UnitVarNames returns a list of variable names available on the units in this network.
 	// This list determines what is shown in the NetView (and the order of vars list).
-	// Not all layers need to support all variables, but must safely return math32.NaN() for
+	// Not all layers need to support all variables, but must safely return mat32.NaN() for
 	// unsupported ones.
 	// This is typically a global list so do not modify!
 	UnitVarNames() []string
@@ -84,7 +84,7 @@ type Network interface {
 
 	// SynVarNames returns the names of all the variables on the synapses in this network.
 	// This list determines what is shown in the NetView (and the order of vars list).
-	// Not all projections need to support all variables, but must safely return math32.NaN() for
+	// Not all projections need to support all variables, but must safely return mat32.NaN() for
 	// unsupported ones.
 	// This is typically a global list so do not modify!
 	SynVarNames() []string

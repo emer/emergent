@@ -4,7 +4,7 @@
 
 package prjn
 
-import "github.com/chewxy/math32"
+import "github.com/goki/mat32"
 
 // Edge returns coordinate value based on either wrapping or clipping at the edge
 // and if not wrapping, if it should be clipped (ignored)
@@ -28,11 +28,11 @@ func Edge(ci, max int, wrap bool) (int, bool) {
 // i.e., if going out beyond max is closer, then returns that coordinate
 // else if going below 0 is closer than not, then returns that coord
 func WrapMinDist(ci, max, ctr float32) float32 {
-	nwd := math32.Abs(ci - ctr) // no-wrap dist
-	if math32.Abs((ci+max)-ctr) < nwd {
+	nwd := mat32.Abs(ci - ctr) // no-wrap dist
+	if mat32.Abs((ci+max)-ctr) < nwd {
 		return ci + max
 	}
-	if math32.Abs((ci-max)-ctr) < nwd {
+	if mat32.Abs((ci-max)-ctr) < nwd {
 		return ci - max
 	}
 	return ci

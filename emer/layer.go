@@ -183,7 +183,7 @@ type Layer interface {
 	// useful when there are multiple projections between two layers.
 	// Returns error on invalid var name.
 	// If the receiving neuron is not connected to the given sending layer or neuron
-	// then the value is set to math32.NaN().
+	// then the value is set to mat32.NaN().
 	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
 	RecvPrjnVals(vals *[]float32, varNm string, sendLay Layer, sendIdx1D int, prjnType string) error
 
@@ -195,7 +195,7 @@ type Layer interface {
 	// useful when there are multiple projections between two layers.
 	// Returns error on invalid var name.
 	// If the sending neuron is not connected to the given receiving layer or neuron
-	// then the value is set to math32.NaN().
+	// then the value is set to mat32.NaN().
 	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
 	SendPrjnVals(vals *[]float32, varNm string, recvLay Layer, recvIdx1D int, prjnType string) error
 

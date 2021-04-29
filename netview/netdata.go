@@ -15,12 +15,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/ringidx"
 	"github.com/goki/gi/gi"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // LayData maintains a record of all the data for a given layer
@@ -161,9 +161,9 @@ func (nd *NetData) Record(ctrs string) {
 			}
 			for ui := range dvals {
 				vl := dvals[ui]
-				if !math32.IsNaN(vl) {
-					*mn = math32.Min(*mn, vl)
-					*mx = math32.Max(*mx, vl)
+				if !mat32.IsNaN(vl) {
+					*mn = mat32.Min(*mn, vl)
+					*mx = mat32.Max(*mx, vl)
 				}
 			}
 		}
@@ -185,8 +185,8 @@ func (nd *NetData) UpdateVarRange() {
 			mmidx := ri * vlen
 			mn := nd.MinPer[mmidx+vi]
 			mx := nd.MaxPer[mmidx+vi]
-			*vmn = math32.Min(*vmn, mn)
-			*vmx = math32.Max(*vmx, mx)
+			*vmn = mat32.Min(*vmn, mn)
+			*vmx = mat32.Max(*vmx, mx)
 		}
 	}
 }
@@ -245,7 +245,7 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 	nvu := vlen * nu
 	idx := ridx*nvu + vi*nu + uidx1d
 	val := ld.Data[idx]
-	if math32.IsNaN(val) {
+	if mat32.IsNaN(val) {
 		return 0, false
 	}
 	return val, true
@@ -301,7 +301,7 @@ func (nd *NetData) SaveJSON(filename gi.FileName) error {
 func (nd *NetData) ReadJSON(r io.Reader) error {
 	dec := json.NewDecoder(r)
 	err := dec.Decode(nd) // this is way to do it on reader instead of bytes
-	nan := math32.NaN()
+	nan := mat32.NaN()
 	for _, ld := range nd.LayData {
 		for i := range ld.Data {
 			if ld.Data[i] == NaNSub {
@@ -323,7 +323,7 @@ const NaNSub = -1.11e-37
 func (nd *NetData) WriteJSON(w io.Writer) error {
 	for _, ld := range nd.LayData {
 		for i := range ld.Data {
-			if math32.IsNaN(ld.Data[i]) {
+			if mat32.IsNaN(ld.Data[i]) {
 				ld.Data[i] = NaNSub
 			}
 		}

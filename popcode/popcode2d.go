@@ -9,7 +9,6 @@ import (
 	"log"
 	"sort"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
@@ -74,11 +73,11 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 			switch pc.Code {
 			case GaussBump:
 				dist := trg.Sub(val).Mul(gnrm)
-				act = math32.Exp(-dist.LengthSq())
+				act = mat32.Exp(-dist.LengthSq())
 			case Localist:
 				dist := trg.Sub(val)
-				dist.X = math32.Abs(dist.X)
-				dist.Y = math32.Abs(dist.Y)
+				dist.X = mat32.Abs(dist.X)
+				dist.Y = mat32.Abs(dist.Y)
 				if dist.X > incr.X || dist.Y > incr.Y {
 					act = 0
 				} else {
@@ -127,7 +126,7 @@ func (pc *TwoD) Decode(pat etensor.Tensor) (mat32.Vec2, error) {
 			sum += act
 		}
 	}
-	sum = math32.Max(sum, pc.MinSum)
+	sum = mat32.Max(sum, pc.MinSum)
 	return avg.DivScalar(sum), nil
 }
 
@@ -243,7 +242,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]mat32.Vec2
 				sum += act
 			}
 		}
-		sum = math32.Max(sum, pc.MinSum)
+		sum = mat32.Max(sum, pc.MinSum)
 		vals[i] = avg.DivScalar(sum)
 	}
 

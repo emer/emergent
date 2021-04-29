@@ -7,7 +7,6 @@ package popcode
 import (
 	"sort"
 
-	"github.com/chewxy/math32"
 	"github.com/goki/mat32"
 )
 
@@ -84,9 +83,9 @@ func (pc *OneD) Encode(pat *[]float32, val float32, n int, add bool) {
 		switch pc.Code {
 		case GaussBump:
 			dist := gnrm * (trg - val)
-			act = math32.Exp(-(dist * dist))
+			act = mat32.Exp(-(dist * dist))
 		case Localist:
-			dist := math32.Abs(trg - val)
+			dist := mat32.Abs(trg - val)
 			if dist > incr {
 				act = 0
 			} else {
@@ -122,7 +121,7 @@ func (pc *OneD) Decode(pat []float32) float32 {
 		avg += trg * act
 		sum += act
 	}
-	sum = math32.Max(sum, pc.MinSum)
+	sum = mat32.Max(sum, pc.MinSum)
 	avg /= sum
 	return avg
 }
@@ -205,7 +204,7 @@ func (pc *OneD) DecodeNPeaks(pat []float32, nvals, width int) []float32 {
 			avg += trg * act
 			sum += act
 		}
-		sum = math32.Max(sum, pc.MinSum)
+		sum = mat32.Max(sum, pc.MinSum)
 		vals[i] = avg / sum
 	}
 

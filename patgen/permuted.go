@@ -11,11 +11,11 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/emergent/erand"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/metric"
 	"github.com/goki/ki/ints"
+	"github.com/goki/mat32"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
@@ -142,8 +142,8 @@ func RowVsPrevDist32(tsr *etensor.Float32, row int, fun metric.Func32) (min, max
 	for i := 0; i <= row-1; i++ {
 		crow := tsr.SubSpace([]int{i}).(*etensor.Float32)
 		dst := fun(lrow.Values, crow.Values)
-		min = math32.Min(min, dst)
-		max = math32.Max(max, dst)
+		min = mat32.Min(min, dst)
+		max = mat32.Max(max, dst)
 	}
 	return
 }
