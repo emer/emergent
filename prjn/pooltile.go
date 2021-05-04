@@ -18,8 +18,8 @@ import (
 // PoolTile implements tiled 2D connectivity between pools within layers, where
 // a 2D rectangular receptive field (defined over pools, not units) is tiled
 // across the sending layer pools, with specified level of overlap.
-// Pools are the outer-most two dimensions of a 4D layer shape, and both layers
-// must have pools.
+// Pools are the outer-most two dimensions of a 4D layer shape.
+// 2D layers are assumed to have 1x1 pool.
 // This is a standard form of convolutional connectivity, where pools are
 // the filters and the outer dims are locations filtered.
 // Various initial weight / scaling patterns are also available -- code
@@ -139,24 +139,35 @@ func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 
 func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
-	if send.NumDims() != 4 || recv.NumDims() != 4 {
-		log.Printf("prjn.PoolTile; only valid if both sending and receiving layer are 4D shape with outer 2D being pools and inner 2D are units within pools")
-		return
-	}
-	sNtot := send.Len()
-	sNpY := recv.Dim(0) // swapped
+	// all these variables are swapped: s from recv, r from send
+	rNtot := send.Len()
+	sNpY := recv.Dim(0)
 	sNpX := recv.Dim(1)
 	rNpY := send.Dim(0)
 	rNpX := send.Dim(1)
-	sNu := send.Dim(2) * send.Dim(3) // todo: support 2D -- but is this correct??
-	rNu := recv.Dim(2) * recv.Dim(3)
-	rnv := recvn.Values
-	snv := sendn.Values
+	sNu := 1
+	rNu := 1
+	if recv.NumDims() == 4 {
+		sNu = recv.Dim(2) * recv.Dim(3)
+	} else {
+		sNpY = 1
+		sNpX = 1
+		sNu = recv.Dim(0) * recv.Dim(1)
+	}
+	if send.NumDims() == 4 {
+		rNu = send.Dim(2) * send.Dim(3)
+	} else {
+		rNpY = 1
+		rNpX = 1
+		rNu = send.Dim(0) * send.Dim(1)
+	}
+	snv := recvn.Values
+	rnv := sendn.Values
 	var clip bool
 	for rpy := 0; rpy < rNpY; rpy++ {
 		for rpx := 0; rpx < rNpX; rpx++ {
 			rpi := rpy*rNpX + rpx
-			ris := rpi * sNu
+			ris := rpi * rNu
 			for fy := 0; fy < pt.Size.Y; fy++ {
 				spy := pt.Start.Y + rpy*pt.Skip.Y + fy
 				if spy, clip = Edge(spy, sNpY, pt.Wrap); clip {
@@ -168,17 +179,16 @@ func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, r
 						continue
 					}
 					spi := spy*sNpX + spx
-					sis := spi * rNu
-					for rui := 0; rui < rNu; rui++ {
-						ri := sis + rui
-						for sui := 0; sui < sNu; sui++ {
-							si := ris + sui
-							// note: indexes reversed here
-							off := ri*sNtot + si
-							if off < cons.Len() && ri < len(rnv) && si < len(snv) {
+					sis := spi * sNu
+					for sui := 0; sui < sNu; sui++ {
+						si := sis + sui
+						for rui := 0; rui < rNu; rui++ {
+							ri := ris + rui
+							off := si*rNtot + ri
+							if off < cons.Len() && si < len(snv) && ri < len(rnv) {
 								cons.Values.Set(off, true)
-								rnv[ri]++
 								snv[si]++
+								rnv[ri]++
 							}
 						}
 					}
