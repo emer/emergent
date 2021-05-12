@@ -24,6 +24,12 @@ func TestSaveWts(t *testing.T) {
 	l1.Layer = "Hidden"
 	l1.SetMetaData("ActMAvg", "0.15")
 	l1.SetMetaData("ActPAvg", "0.18")
+	l1.Units = make(map[string][]float32)
+	un := make([]float32, 10)
+	for i := range un {
+		un[i] = rand.Float32()
+	}
+	l1.Units["TrgAvg"] = un
 	l1.Prjns = make([]Prjn, 1)
 	pj := &l1.Prjns[0]
 	pj.From = "Input"

@@ -21,8 +21,9 @@ func (nt *Network) SetMetaData(key, val string) {
 // Layer is temp structure for holding decoded weights, one for each layer
 type Layer struct {
 	Layer    string
-	MetaData map[string]string // used for optional layer-level params, metadata such as 	ActMAvg, ActPAvg
-	Prjns    []Prjn            // receiving projections
+	MetaData map[string]string    // for optional layer-level params, metadata such as ActMAvg, ActPAvg
+	Units    map[string][]float32 // for unit-level adapting parameters
+	Prjns    []Prjn               // receiving projections
 }
 
 func (ly *Layer) SetMetaData(key, val string) {
