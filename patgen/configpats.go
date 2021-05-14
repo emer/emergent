@@ -18,7 +18,7 @@ func InitPats(dt *etable.Table, name, desc, inputName, outputName string, listSi
 	dt.SetMetaData("name", name)
 	dt.SetMetaData("desc", desc)
 	dt.SetFromSchema(etable.Schema{
-		{"Name", etensor.STRING, []int{1}, []string{"Name"}},
+		{"Name", etensor.STRING, nil, nil},
 		{inputName, etensor.FLOAT32, []int{ySize, xSize, poolY, poolX}, []string{"ySize", "xSize", "poolY", "poolX"}},
 		{outputName, etensor.FLOAT32, []int{ySize, xSize, poolY, poolX}, []string{"ySize", "xSize", "poolY", "poolX"}},
 	}, listSize)
@@ -32,7 +32,7 @@ func MixPats(dt *etable.Table, mp Vocab, colName string, poolSource []string) er
 	ySize := dt.ColByName(colName).Shapes()[1]
 	xSize := dt.ColByName(colName).Shapes()[2]
 	for row := 0; row < listSize; row++ {
-		dt.CellTensor("Name", row).SetString([]int{0}, fmt.Sprint(name, row))
+		dt.SetCellString("Name", row, fmt.Sprint(name, row))
 		npool := 0
 		for iY := 0; iY < ySize; iY++ {
 			for iX := 0; iX < xSize; iX++ {
@@ -71,7 +71,7 @@ func MixPatsN(dt *etable.Table, mp Vocab, colName string, poolSource []string, t
 	for ri := 0; ri < vocabN; ri++ {
 		row := targRow + ri
 		vocIdx := vocabStart + ri
-		dt.CellTensor("Name", row).SetString([]int{0}, fmt.Sprint(name, row))
+		dt.SetCellString("Name", row, fmt.Sprint(name, row))
 		npool := 0
 		for iY := 0; iY < ySize; iY++ {
 			for iX := 0; iX < xSize; iX++ {
