@@ -92,7 +92,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			if len(rw.Si) != nc {
 				rw.Si = make([]int, nc)
 				rw.Wt = make([]float32, nc)
-				rw.Scale = make([]float32, nc)
+				rw.Wt1 = make([]float32, nc)
 			}
 			cidx = 0 // start reading on next ones
 			continue
@@ -134,7 +134,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 				}
 				rw.Si[cidx] = si
 				rw.Wt[cidx] = float32(wt)
-				rw.Scale[cidx] = float32(0)
+				rw.Wt1[cidx] = float32(0)
 				cidx++
 			case 3:
 				si, err := strconv.Atoi(siwts[0])
@@ -151,7 +151,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 				}
 				rw.Si[cidx] = si
 				rw.Wt[cidx] = float32(wt)
-				rw.Scale[cidx] = float32(scale)
+				rw.Wt1[cidx] = float32(scale)
 				cidx++
 			default:
 				err = fmt.Errorf("NetReadCpp: unrecognized input: %v", bs)
