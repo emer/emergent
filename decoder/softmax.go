@@ -15,7 +15,7 @@ import (
 
 // SoftMax is a softmax decoder
 type SoftMax struct {
-	Lrate    float32                     `desc:"learning rate"`
+	Lrate    float32                     `def:"0.1" desc:"learning rate"`
 	Layers   []emer.Layer                `desc:"layers to decode"`
 	NCats    int                         `desc:"number of different categories to decode"`
 	Units    []Unit                      `desc:"unit values"`
@@ -47,7 +47,7 @@ func (sm *SoftMax) InitLayer(ncats int, layers []emer.Layer) {
 // Init initializes detector with number of categories and number of inputs
 func (sm *SoftMax) Init(ncats, ninputs int) {
 	sm.NInputs = ninputs
-	sm.Lrate = 0.01
+	sm.Lrate = 0.1 // seems pretty good
 	sm.NCats = ncats
 	sm.Units = make([]Unit, ncats)
 	sm.Sorted = make([]int, ncats)
