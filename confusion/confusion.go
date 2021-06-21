@@ -6,7 +6,10 @@ package confusion
 
 import (
 	"github.com/emer/etable/etensor"
+	"github.com/emer/etable/simat"
 	"github.com/goki/gi/gi"
+	"github.com/goki/ki/ki"
+	"github.com/goki/ki/kit"
 )
 
 // Matrix computes the confusion matrix, with rows representing
@@ -16,7 +19,10 @@ type Matrix struct {
 	Prob etensor.Float64 `view:"no-inline" desc:"normalized probability of confusion: Row = ground truth class, Col = actual response for that class."`
 	Sum  etensor.Float64 `view:"no-inline" desc:"incremental sums"`
 	N    etensor.Float64 `view:"no-inline" desc:"counts per ground truth (rows)"`
+	Vis  simat.SimMat    `view:"no-inline" desc:"visualization using SimMat"`
 }
+
+var KiT_Matrix = kit.Types.AddType(&Matrix{}, MatrixProps)
 
 // Init initializes the Matrix for given number of classes,
 // and resets the data to zero.
@@ -27,6 +33,13 @@ func (cm *Matrix) Init(n int) {
 	cm.Sum.SetZeros()
 	cm.N.SetShape([]int{n}, nil, []string{"N"})
 	cm.N.SetZeros()
+	cm.Vis.Mat = &cm.Prob
+}
+
+// SetLabels sets the class labels, for visualization in Vis
+func (cm *Matrix) SetLabels(lbls []string) {
+	cm.Vis.Rows = lbls
+	cm.Vis.Cols = lbls
 }
 
 // Incr increments the data for given class ground truth
@@ -65,4 +78,29 @@ func (cm *Matrix) SaveCSV(filename gi.FileName) {
 // OpenCSV opens Prob result from a CSV file, comma separated
 func (cm *Matrix) OpenCSV(filename gi.FileName) {
 	etensor.OpenCSV(&cm.Prob, filename, ',')
+}
+
+var MatrixProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveCSV", ki.Props{
+			"label": "Save CSV...",
+			"icon":  "file-save",
+			"desc":  "Save CSV-formatted confusion probabilities (Probs)",
+			"Args": ki.PropSlice{
+				{"CSV File Name", ki.Props{
+					"ext": ".csv",
+				}},
+			},
+		}},
+		{"OpenCSV", ki.Props{
+			"label": "Open CSV...",
+			"icon":  "file-open",
+			"desc":  "Open CSV-formatted confusion probabilities (Probs)",
+			"Args": ki.PropSlice{
+				{"Weights File Name", ki.Props{
+					"ext": ".csv",
+				}},
+			},
+		}},
+	},
 }
