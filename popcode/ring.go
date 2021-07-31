@@ -42,13 +42,17 @@ func (pc *Ring) Encode(pat *[]float32, val float32, n int) {
 		*pat = make([]float32, n)
 	}
 	pc.AllocVecs(n)
-	half := (pc.Max + pc.Min) / 2
-	if val > half {
+	rng := pc.Max - pc.Min
+	sr := pc.Sigma * rng
+	if mat32.Abs(pc.Max-val) < sr { // close to top
 		pc.EncodeImpl(&pc.LowVec, pc.Min+(val-pc.Max), n) // 0 + (340 - 360) = -20
 		pc.EncodeImpl(&pc.HighVec, val, n)
-	} else {
+	} else if mat32.Abs(val-pc.Min) < sr { // close to bottom
 		pc.EncodeImpl(&pc.LowVec, val, n)                  // 0 + (340 - 360) = -20
 		pc.EncodeImpl(&pc.HighVec, pc.Max+(val-pc.Min), n) // 360 + (20-0) = 380
+	} else {
+		pc.EncodeImpl(pat, val, n)
+		return
 	}
 	for i := 0; i < n; i++ {
 		(*pat)[i] = pc.LowVec[i] + pc.HighVec[i]
@@ -67,7 +71,7 @@ func (pc *Ring) EncodeImpl(pat *[]float32, val float32, n int) {
 	}
 	rng := pc.Max - pc.Min
 	gnrm := 1 / (rng * pc.Sigma)
-	incr := rng / float32(n) // n instead of n-1
+	incr := rng / float32(n-1)
 	for i := 0; i < n; i++ {
 		trg := pc.Min + incr*float32(i)
 		act := float32(0)
@@ -90,31 +94,35 @@ func (pc *Ring) EncodeImpl(pat *[]float32, val float32, n int) {
 // Decode decodes value from a pattern of activation
 // as the activation-weighted-average of the unit's preferred
 // tuning values.
-// must have 2 or more values in pattern pat.
+// pat pattern must be len >= 2
 func (pc *Ring) Decode(pat []float32) float32 {
 	n := len(pat)
 	sn := int(pc.Sigma * float32(n)) // amount on each end to blank
 	hsn := (n - 1) - sn
+	hn := n / 2
 
 	// and record activity in each end region
-	lsum := float32(0)
-	hsum := float32(0)
+	var lsum, hsum, lend, hend float32
 	for i := 0; i < n; i++ {
 		v := pat[i]
 		if i < sn {
-			lsum += v
+			lend += v
 		} else if i >= hsn {
+			hend += v
+		}
+		if i < hn {
+			lsum += v
+		} else {
 			hsum += v
 		}
 	}
-	hn := n / 2
-	half := (pc.Max + pc.Min) / 2
 	rng := pc.Max - pc.Min
-	incr := rng / float32(n) // n instead of n-1
+	half := rng / 2
+	incr := rng / float32(n-1)
 	avg := float32(0)
 	sum := float32(0)
-	thr := float32(sn) * .1       // threshold activity to count as having something in tail
-	if lsum < thr && hsum < thr { // neither has significant activity, use straight decode
+	thr := float32(sn) * pc.Thr   // threshold activity to count as having something in tail
+	if lend < thr && hend < thr { // neither has significant activity, use straight decode
 		for i := 0; i < n; i++ {
 			act := pat[i]
 			trg := pc.Min + incr*float32(i)
@@ -179,7 +187,7 @@ func (pc *Ring) Values(vals *[]float32, n int) {
 		*vals = make([]float32, n)
 	}
 	rng := pc.Max - pc.Min
-	incr := rng / float32(n) // n instead of n-1
+	incr := rng / float32(n-1)
 	for i := 0; i < n; i++ {
 		trg := pc.Min + incr*float32(i)
 		(*vals)[i] = trg

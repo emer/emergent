@@ -15,13 +15,16 @@ import (
 
 // popcode.TwoD provides encoding and decoding of population
 // codes, used to represent two continuous (scalar) values
-// across a 2D population of units / neurons (2 dimensional)
+// across a 2D tensor, using row-major XY encoding:
+// Y = outer, first dim, X = inner, second dim
 type TwoD struct {
 	Code   PopCodes   `desc:"how to encode the value"`
 	Min    mat32.Vec2 `desc:"minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
 	Max    mat32.Vec2 `desc:"maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
 	Sigma  mat32.Vec2 `def:"0.2" viewif:"Code=GaussBump" desc:"sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range"`
-	Clip   bool       `desc:"ensure that encoded and decoded value remains within specified range"`
+	Clip   bool       `desc:"ensure that encoded and decoded value remains within specified range -- generally not useful with wrap"`
+	WrapX  bool       `desc:"x axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
+	WrapY  bool       `desc:"y axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
 	Thr    float32    `def:"0.1" desc:"threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)"`
 	MinSum float32    `def:"0.2" desc:"minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by"`
 }
@@ -57,7 +60,39 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 	if pc.Clip {
 		val.Clamp(pc.Min, pc.Max)
 	}
+	rng := pc.Max.Sub(pc.Min)
+	sr := pc.Sigma.Mul(rng)
+	if pc.WrapX || pc.WrapY {
+		err := pc.EncodeImpl(pat, val, add) // always render first
+		ev := val
+		// relative to min
+		if pc.WrapX && mat32.Abs(pc.Max.X-val.X) < sr.X { // has significant vals near max
+			ev.X = pc.Min.X - (pc.Max.X - val.X) // wrap extra above max around to min
+		}
+		if pc.WrapY && mat32.Abs(pc.Max.Y-val.Y) < sr.Y {
+			ev.Y = pc.Min.Y - (pc.Max.Y - val.Y)
+		}
+		if ev != val {
+			err = pc.EncodeImpl(pat, ev, Add) // always add
+		}
+		// pev := ev
+		ev = val
+		if pc.WrapX && mat32.Abs(val.X-pc.Min.X) < sr.X { // has significant vals near min
+			ev.X = pc.Max.X - (val.X - pc.Min.X) // wrap extra below min around to max
+		}
+		if pc.WrapY && mat32.Abs(val.Y-pc.Min.Y) < sr.Y {
+			ev.Y = pc.Max.Y - (val.Y - pc.Min.Y)
+		}
+		if ev != val {
+			err = pc.EncodeImpl(pat, ev, Add) // always add
+		}
+		return err
+	}
+	return pc.EncodeImpl(pat, val, add)
+}
 
+// EncodeImpl is the implementation of encoding -- e.g., used twice for Wrap
+func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 	rng := pc.Max.Sub(pc.Min)
 
 	gnrm := mat32.NewVec2Scalar(1).Div(rng.Mul(pc.Sigma))
@@ -101,12 +136,98 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 // as the activation-weighted-average of the unit's preferred
 // tuning values.
 func (pc *TwoD) Decode(pat etensor.Tensor) (mat32.Vec2, error) {
-	avg := mat32.Vec2{}
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Decode: pattern must have 2 dimensions")
 		log.Println(err)
-		return avg, err
+		return mat32.Vec2{}, err
 	}
+	if pc.WrapX || pc.WrapY {
+		ny := pat.Dim(0)
+		nx := pat.Dim(1)
+		ys := make([]float32, ny)
+		xs := make([]float32, nx)
+		ydiv := 1.0 / (float32(nx) * pc.Sigma.X)
+		xdiv := 1.0 / (float32(ny) * pc.Sigma.Y)
+		for yi := 0; yi < ny; yi++ {
+			for xi := 0; xi < nx; xi++ {
+				idx := []int{yi, xi}
+				act := float32(pat.FloatVal(idx))
+				if act < pc.Thr {
+					act = 0
+				}
+				ys[yi] += act * ydiv
+				xs[xi] += act * xdiv
+			}
+		}
+		var val mat32.Vec2
+		switch {
+		case pc.WrapX && pc.WrapY:
+			dx := Ring{}
+			dx.Defaults()
+			dx.Min = pc.Min.X
+			dx.Max = pc.Max.X
+			dx.Sigma = pc.Sigma.X
+			dx.Thr = pc.Thr
+			dx.MinSum = pc.MinSum
+			dx.Code = pc.Code
+			dy := Ring{}
+			dy.Defaults()
+			dy.Min = pc.Min.Y
+			dy.Max = pc.Max.Y
+			dy.Sigma = pc.Sigma.Y
+			dy.Thr = pc.Thr
+			dy.MinSum = pc.MinSum
+			dy.Code = pc.Code
+			val.X = dx.Decode(xs)
+			val.Y = dy.Decode(ys)
+		case pc.WrapX:
+			dx := Ring{}
+			dx.Defaults()
+			dx.Min = pc.Min.X
+			dx.Max = pc.Max.X
+			dx.Sigma = pc.Sigma.X
+			dx.Thr = pc.Thr
+			dx.MinSum = pc.MinSum
+			dx.Code = pc.Code
+			dy := OneD{}
+			dy.Defaults()
+			dy.Min = pc.Min.Y
+			dy.Max = pc.Max.Y
+			dy.Sigma = pc.Sigma.Y
+			dy.Thr = pc.Thr
+			dy.MinSum = pc.MinSum
+			dy.Code = pc.Code
+			val.X = dx.Decode(xs)
+			val.Y = dy.Decode(ys)
+		case pc.WrapY:
+			dx := OneD{}
+			dx.Defaults()
+			dx.Min = pc.Min.X
+			dx.Max = pc.Max.X
+			dx.Sigma = pc.Sigma.X
+			dx.Thr = pc.Thr
+			dx.MinSum = pc.MinSum
+			dx.Code = pc.Code
+			dy := Ring{}
+			dy.Defaults()
+			dy.Min = pc.Min.Y
+			dy.Max = pc.Max.Y
+			dy.Sigma = pc.Sigma.Y
+			dy.Thr = pc.Thr
+			dy.MinSum = pc.MinSum
+			dy.Code = pc.Code
+			val.X = dx.Decode(xs)
+			val.Y = dy.Decode(ys)
+		}
+		return val, nil
+	} else {
+		return pc.DecodeImpl(pat)
+	}
+}
+
+// DecodeImpl does direct decoding of x, y simultaneously -- for non-wrap
+func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (mat32.Vec2, error) {
+	avg := mat32.Vec2{}
 	rng := pc.Max.Sub(pc.Min)
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
