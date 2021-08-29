@@ -1,10 +1,10 @@
 module github.com/emer/emergent
 
-go 1.13
+go 1.15
 
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/emer/etable v1.0.34
+	github.com/emer/etable v1.0.35
 	github.com/goki/gi v1.2.11
 	github.com/goki/ki v1.1.3
 	github.com/goki/mat32 v1.0.9
