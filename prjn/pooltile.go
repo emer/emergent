@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/emer/emergent/edge"
 	"github.com/emer/emergent/efuns"
 	"github.com/emer/emergent/evec"
 	"github.com/emer/etable/etensor"
@@ -105,12 +106,12 @@ func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 			ris := rpi * rNu
 			for fy := 0; fy < pt.Size.Y; fy++ {
 				spy := pt.Start.Y + rpy*pt.Skip.Y + fy
-				if spy, clip = Edge(spy, sNpY, pt.Wrap); clip {
+				if spy, clip = edge.Edge(spy, sNpY, pt.Wrap); clip {
 					continue
 				}
 				for fx := 0; fx < pt.Size.X; fx++ {
 					spx := pt.Start.X + rpx*pt.Skip.X + fx
-					if spx, clip = Edge(spx, sNpX, pt.Wrap); clip {
+					if spx, clip = edge.Edge(spx, sNpX, pt.Wrap); clip {
 						continue
 					}
 					spi := spy*sNpX + spx
@@ -170,12 +171,12 @@ func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, r
 			ris := rpi * rNu
 			for fy := 0; fy < pt.Size.Y; fy++ {
 				spy := pt.Start.Y + rpy*pt.Skip.Y + fy
-				if spy, clip = Edge(spy, sNpY, pt.Wrap); clip {
+				if spy, clip = edge.Edge(spy, sNpY, pt.Wrap); clip {
 					continue
 				}
 				for fx := 0; fx < pt.Size.X; fx++ {
 					spx := pt.Start.X + rpx*pt.Skip.X + fx
-					if spx, clip = Edge(spx, sNpX, pt.Wrap); clip {
+					if spx, clip = edge.Edge(spx, sNpX, pt.Wrap); clip {
 						continue
 					}
 					spi := spy*sNpX + spx
@@ -328,8 +329,8 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 					if pt.GaussFull.On {
 						sf := mat32.Vec2{float32(sux), float32(suy)}
 						if pt.GaussFull.Wrap {
-							sf.X = WrapMinDist(sf.X, fsz.X, sfctr.X)
-							sf.Y = WrapMinDist(sf.Y, fsz.Y, sfctr.Y)
+							sf.X = edge.WrapMinDist(sf.X, fsz.X, sfctr.X)
+							sf.Y = edge.WrapMinDist(sf.Y, fsz.Y, sfctr.Y)
 						}
 						fwt = efuns.GaussVecDistNoNorm(sf, sfctr, fsig)
 					}
@@ -337,8 +338,8 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 					if pt.GaussInPool.On {
 						sp := mat32.Vec2{float32(sux), float32(suy)}
 						if pt.GaussInPool.Wrap {
-							sp.X = WrapMinDist(sp.X, psz.X, spctr.X)
-							sp.Y = WrapMinDist(sp.Y, psz.Y, spctr.Y)
+							sp.X = edge.WrapMinDist(sp.X, psz.X, spctr.X)
+							sp.Y = edge.WrapMinDist(sp.Y, psz.Y, spctr.Y)
 						}
 						pwt = efuns.GaussVecDistNoNorm(sp, spctr, psig)
 					}
@@ -418,8 +419,8 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 							if pt.GaussFull.On {
 								sf := mat32.Vec2{float32(fx*sNuX + sux), float32(fy*sNuY + suy)}
 								if pt.GaussFull.Wrap {
-									sf.X = WrapMinDist(sf.X, fsz.X, sfctr.X)
-									sf.Y = WrapMinDist(sf.Y, fsz.Y, sfctr.Y)
+									sf.X = edge.WrapMinDist(sf.X, fsz.X, sfctr.X)
+									sf.Y = edge.WrapMinDist(sf.Y, fsz.Y, sfctr.Y)
 								}
 								fwt = efuns.GaussVecDistNoNorm(sf, sfctr, fsig)
 							}
@@ -427,8 +428,8 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 							if pt.GaussInPool.On {
 								sp := mat32.Vec2{float32(sux), float32(suy)}
 								if pt.GaussInPool.Wrap {
-									sp.X = WrapMinDist(sp.X, psz.X, spctr.X)
-									sp.Y = WrapMinDist(sp.Y, psz.Y, spctr.Y)
+									sp.X = edge.WrapMinDist(sp.X, psz.X, spctr.X)
+									sp.Y = edge.WrapMinDist(sp.Y, psz.Y, spctr.Y)
 								}
 								pwt = efuns.GaussVecDistNoNorm(sp, spctr, psig)
 							}

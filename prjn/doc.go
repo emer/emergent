@@ -26,7 +26,5 @@ instance of given pattern initialized with default values.
 
 Individual Pattern types may have a Defaults() method to initialize default values, but it is
 not mandatory.
-
-Also, the Edge method is handy for dealing with edges and wrap-around etc.
 */
 package prjn

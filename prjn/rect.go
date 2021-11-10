@@ -5,6 +5,7 @@
 package prjn
 
 import (
+	"github.com/emer/emergent/edge"
 	"github.com/emer/emergent/evec"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/ki/ints"
@@ -80,12 +81,12 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 				sst.Y += int(mat32.Floor(float32(ry) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
-				sy, clipy := Edge(sst.Y+y, sNy, cr.Wrap)
+				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)
 				if clipy {
 					continue
 				}
 				for x := 0; x < cr.Size.X; x++ {
-					sx, clipx := Edge(sst.X+x, sNx, cr.Wrap)
+					sx, clipx := edge.Edge(sst.X+x, sNx, cr.Wrap)
 					if clipx {
 						continue
 					}
