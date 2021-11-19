@@ -75,8 +75,8 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 				for sx := 0; sx < sNx; sx++ {
 					sp := mat32.Vec2{float32(sx), float32(sy)}
 					if cr.Wrap {
-						sp.X = edge.WrapMinDist(sp.X, float32(sNx-1), sctr.X)
-						sp.Y = edge.WrapMinDist(sp.Y, float32(sNy-1), sctr.Y)
+						sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
+						sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)
 					}
 					d := int(mat32.Round(sp.DistTo(sctr)))
 					if d <= cr.Radius {
@@ -124,8 +124,8 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 	sctr := mat32.Vec2{float32(rx)*sc.X + float32(cr.Start.X), float32(ry)*sc.Y + float32(cr.Start.Y)}
 	sp := mat32.Vec2{float32(sx), float32(sy)}
 	if cr.Wrap {
-		sp.X = edge.WrapMinDist(sp.X, float32(sNx-1), sctr.X)
-		sp.Y = edge.WrapMinDist(sp.Y, float32(sNy-1), sctr.Y)
+		sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
+		sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)
 	}
 	wt := cr.MaxWt * efuns.GaussVecDistNoNorm(sp, sctr, fsig)
 	return wt
