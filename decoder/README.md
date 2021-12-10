@@ -8,4 +8,7 @@ The `SoftMax` decoder is the best choice for a 1-hot classification decoder.
 
 Call `Init` to initialize with number of categories and layers for input.
 
-Call `Decode`
+Call `Decode` with variable name to record that variable from layers, and decode based on the current state info for that variable.
+
+# Vote
+
