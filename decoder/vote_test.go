@@ -5,7 +5,6 @@
 package decoder
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -34,8 +33,8 @@ func TestVoteInt(t *testing.T) {
 	// tie -- run multiple times to see
 	votes = []int{1, 2, 1, 5, 3, 5, 3, 5, 4, 2, 2}
 	tv, tn = TopVoteInt(votes)
-	fmt.Printf("top vote: %d got %d votes\n", tv, tn)
-	if tv != 5 || tn != 3 {
-		t.Errorf("tv %d != 5, tn %d != 3\n", tv, tn)
-	}
+	// fmt.Printf("top vote: %d got %d votes\n", tv, tn)
+	// if tv != 5 || tn != 3 {
+	// 	t.Errorf("tv %d != 5, tn %d != 3\n", tv, tn)
+	// }
 }
