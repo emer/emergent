@@ -5,38 +5,36 @@
 package decoder
 
 import (
-	"math"
-	"sort"
+	"fmt"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
 
-// SoftMax is a softmax decoder, which is the best choice for a 1-hot classification
-// using the widely-used SoftMax function: https://en.wikipedia.org/wiki/Softmax_function
-type SoftMax struct {
+// Sigmoid is a sigmoidal activation function decoder, which is the best choice
+// for factorial, independent categories where any number of them might be active at a time.
+// It learns using the delta rule for each output unit.
+type Sigmoid struct {
 	Lrate    float32                     `def:"0.1" desc:"learning rate"`
 	Layers   []emer.Layer                `desc:"layers to decode"`
 	NCats    int                         `desc:"number of different categories to decode"`
-	Units    []SoftMaxUnit               `desc:"unit values"`
-	Sorted   []int                       `desc:"sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act"`
+	Units    []SigmoidUnit               `desc:"unit values -- read this for decoded output"`
 	NInputs  int                         `desc:"number of inputs -- total sizes of layer inputs"`
 	Inputs   []float32                   `desc:"input values, copied from layers"`
-	Targ     int                         `desc:"current target index of correct category"`
 	ValsTsrs map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
 	Weights  etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 }
 
-// SoftMaxUnit has variables for softmax decoder unit
-type SoftMaxUnit struct {
-	Act float32 `desc:"final activation = e^Ge / sum e^Ge"`
-	Net float32 `desc:"net input = sum x * w"`
-	Exp float32 `desc:"exp(Net)"`
+// SigmoidUnit has variables for Sigmoid decoder unit
+type SigmoidUnit struct {
+	Targ float32 `desc:"target activation value -- typically 0 or 1 but can be within that range too"`
+	Act  float32 `desc:"final activation = 1 / (1 + e^-Net) -- this is the decoded output"`
+	Net  float32 `desc:"net input = sum x * w"`
 }
 
 // InitLayer initializes detector with number of categories and layers
-func (sm *SoftMax) InitLayer(ncats int, layers []emer.Layer) {
+func (sm *Sigmoid) InitLayer(ncats int, layers []emer.Layer) {
 	sm.Layers = layers
 	nin := 0
 	for _, ly := range sm.Layers {
@@ -46,37 +44,57 @@ func (sm *SoftMax) InitLayer(ncats int, layers []emer.Layer) {
 }
 
 // Init initializes detector with number of categories and number of inputs
-func (sm *SoftMax) Init(ncats, ninputs int) {
+func (sm *Sigmoid) Init(ncats, ninputs int) {
 	sm.NInputs = ninputs
 	sm.Lrate = 0.1 // seems pretty good
 	sm.NCats = ncats
-	sm.Units = make([]SoftMaxUnit, ncats)
-	sm.Sorted = make([]int, ncats)
+	sm.Units = make([]SigmoidUnit, ncats)
 	sm.Inputs = make([]float32, sm.NInputs)
 	sm.Weights.SetShape([]int{sm.NCats, sm.NInputs}, nil, []string{"Cats", "Inputs"})
 	for i := range sm.Weights.Values {
-		sm.Weights.Values[i] = .1
+		sm.Weights.Values[i] = 0.1
 	}
 }
 
-// Decode decodes the given variable name from layers (forward pass)
-// See Sorted list of indexes for the decoding output -- i.e., Sorted[0]
-// is the most likely -- that is returned here as a convenience.
-func (sm *SoftMax) Decode(varNm string) int {
+// Decode decodes the given variable name from layers (forward pass).
+// Decoded values are in Units[i].Act -- see also Output to get into a []float32
+func (sm *Sigmoid) Decode(varNm string) {
 	sm.Input(varNm)
 	sm.Forward()
-	sm.Sort()
-	return sm.Sorted[0]
 }
 
-// Train trains the decoder with given target correct answer (0..NCats-1)
-func (sm *SoftMax) Train(targ int) {
-	sm.Targ = targ
+// Output returns the resulting Decoded output activation values into given slice
+// which is automatically resized if not of sufficient size.
+func (sm *Sigmoid) Output(acts *[]float32) {
+	if cap(*acts) < sm.NCats {
+		*acts = make([]float32, sm.NCats)
+	} else if len(*acts) != sm.NCats {
+		*acts = (*acts)[:sm.NCats]
+	}
+	for ui := range sm.Units {
+		u := &sm.Units[ui]
+		(*acts)[ui] = u.Act
+	}
+}
+
+// Train trains the decoder with given target correct answers, as []float32 values
+// Returns and prints an error if targets are not sufficient length for NCats.
+func (sm *Sigmoid) Train(targs []float32) error {
+	if len(targs) < sm.NCats {
+		err := fmt.Errorf("decoder.Sigmoid: number of targets < NCats: %d < %d", len(targs), sm.NCats)
+		fmt.Println(err)
+		return err
+	}
+	for ui := range sm.Units {
+		u := &sm.Units[ui]
+		u.Targ = targs[ui]
+	}
 	sm.Back()
+	return nil
 }
 
 // ValsTsr gets value tensor of given name, creating if not yet made
-func (sm *SoftMax) ValsTsr(name string) *etensor.Float32 {
+func (sm *Sigmoid) ValsTsr(name string) *etensor.Float32 {
 	if sm.ValsTsrs == nil {
 		sm.ValsTsrs = make(map[string]*etensor.Float32)
 	}
@@ -89,7 +107,7 @@ func (sm *SoftMax) ValsTsr(name string) *etensor.Float32 {
 }
 
 // Input grabs the input from given variable in layers
-func (sm *SoftMax) Input(varNm string) {
+func (sm *Sigmoid) Input(varNm string) {
 	off := 0
 	for _, ly := range sm.Layers {
 		tsr := sm.ValsTsr(ly.Name())
@@ -102,8 +120,7 @@ func (sm *SoftMax) Input(varNm string) {
 }
 
 // Forward compute the forward pass from input
-func (sm *SoftMax) Forward() {
-	max := float32(-math.MaxFloat32)
+func (sm *Sigmoid) Forward() {
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
 		net := float32(0)
@@ -112,46 +129,16 @@ func (sm *SoftMax) Forward() {
 			net += sm.Weights.Values[off+j] * in
 		}
 		u.Net = net
-		if net > max {
-			max = net
-		}
+		u.Act = 1.0 / (1.0 + mat32.FastExp(-u.Net))
 	}
-	sum := float32(0)
-	for ui := range sm.Units {
-		u := &sm.Units[ui]
-		u.Net -= max
-		u.Exp = mat32.FastExp(u.Net)
-		sum += u.Exp
-	}
-	for ui := range sm.Units {
-		u := &sm.Units[ui]
-		u.Act = u.Exp / sum
-	}
-}
-
-// Sort updates Sorted indexes of the current Unit category activations sorted
-// from highest to lowest.  i.e., the 0-index value has the strongest
-// decoded output category, 1 the next-strongest, etc.
-func (sm *SoftMax) Sort() {
-	for i := range sm.Sorted {
-		sm.Sorted[i] = i
-	}
-	sort.Slice(sm.Sorted, func(i, j int) bool {
-		return sm.Units[sm.Sorted[i]].Act > sm.Units[sm.Sorted[j]].Act
-	})
 }
 
 // Back compute the backward error propagation pass
-func (sm *SoftMax) Back() {
+func (sm *Sigmoid) Back() {
 	lr := sm.Lrate
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
-		var del float32
-		if ui == sm.Targ {
-			del = lr * (1 - u.Act)
-		} else {
-			del = -lr * u.Act
-		}
+		del := lr * (u.Targ - u.Act)
 		off := ui * sm.NInputs
 		for j, in := range sm.Inputs {
 			sm.Weights.Values[off+j] += del * in
