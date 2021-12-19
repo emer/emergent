@@ -1,4 +1,4 @@
-# Decoder
+[GoDoc](https://pkg.go.dev/github.com/emer/emergent/decoder)
 
 The decoder package provides standalone decoders that can sample variables from `emer` network layers and provide a supervised one-layer categorical decoding of what is being represented in those layers.  This can provide an important point of reference relative to whatever the network itself is generating, and is especially useful for more self-organizing networks that may not have supervised training at all.
 

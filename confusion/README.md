@@ -1,3 +1,5 @@
+[GoDoc](https://pkg.go.dev/github.com/emer/emergent/confusion)
+
 Confusion implements a confusion matrix: records output responses for discrete categories / classes.
 
 * Rows (outer dimension) are for each class as the ground truth, correct answer.

@@ -1,4 +1,4 @@
-Visit the [GoDoc](https://godoc.org/github.com/emer/emergent/stepper) link for a detailed description of the `Stepper` API.
+Visit the [GoDoc](https://pkg.go.dev/github.com/emer/emergent/stepper) link for a detailed description of the `Stepper` API.
 
 # Stepper
 
