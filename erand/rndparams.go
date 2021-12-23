@@ -22,7 +22,7 @@ type RndParams struct {
 
 // Gen generates a random variable according to current parameters.
 // (0 <= thr < 100) specifies thread or dmem proc number for parallel safe random sequences
-// (-1 = taMisc::dmem_proc for auto-safe dmem)
+// (-1 = auto-safe dmem)
 func (rp *RndParams) Gen(thr int) float64 {
 	switch rp.Dist {
 	case Uniform:
