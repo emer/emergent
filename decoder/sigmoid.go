@@ -77,20 +77,21 @@ func (sm *Sigmoid) Output(acts *[]float32) {
 	}
 }
 
-// Train trains the decoder with given target correct answers, as []float32 values
-// Returns and prints an error if targets are not sufficient length for NCats.
-func (sm *Sigmoid) Train(targs []float32) error {
+// Train trains the decoder with given target correct answers, as []float32 values.
+// Returns SSE (sum squared error) of difference between targets and outputs.
+// Also returns and prints an error if targets are not sufficient length for NCats.
+func (sm *Sigmoid) Train(targs []float32) (float32, error) {
 	if len(targs) < sm.NCats {
 		err := fmt.Errorf("decoder.Sigmoid: number of targets < NCats: %d < %d", len(targs), sm.NCats)
 		fmt.Println(err)
-		return err
+		return 0, err
 	}
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
 		u.Targ = targs[ui]
 	}
-	sm.Back()
-	return nil
+	sse := sm.Back()
+	return sse, nil
 }
 
 // ValsTsr gets value tensor of given name, creating if not yet made
@@ -134,14 +135,19 @@ func (sm *Sigmoid) Forward() {
 }
 
 // Back compute the backward error propagation pass
-func (sm *Sigmoid) Back() {
+// Returns SSE (sum squared error) of difference between targets and outputs.
+func (sm *Sigmoid) Back() float32 {
 	lr := sm.Lrate
+	var sse float32
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
-		del := lr * (u.Targ - u.Act)
+		err := (u.Targ - u.Act)
+		sse += err * err
+		del := lr * err
 		off := ui * sm.NInputs
 		for j, in := range sm.Inputs {
 			sm.Weights.Values[off+j] += del * in
 		}
 	}
+	return sse
 }

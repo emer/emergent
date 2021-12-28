@@ -5,7 +5,6 @@
 package decoder
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -15,6 +14,7 @@ func TestSigmoid(t *testing.T) {
 	dec.Lrate = .1
 	trgs := []float32{0, 1}
 	outs := []float32{0, 0}
+	var lastsse float32
 	for i := 0; i < 100; i++ {
 		if i%2 == 0 {
 			dec.Inputs[0] = 1
@@ -33,7 +33,7 @@ func TestSigmoid(t *testing.T) {
 		// for j := 0; j < 2; j++ {
 		// 	fmt.Printf("\t%g", dec.Units[j].Act)
 		// }
-		fmt.Printf("\n")
+		// fmt.Printf("\n")
 		if i > 2 {
 			if i%2 == 0 {
 				if outs[0] < outs[1] {
@@ -45,6 +45,16 @@ func TestSigmoid(t *testing.T) {
 				}
 			}
 		}
-		dec.Train(trgs)
+		sse, err := dec.Train(trgs)
+		if err != nil {
+			t.Error(err)
+		}
+		if i > 2 {
+			if sse > lastsse {
+				t.Errorf("error: %d\t sse now is *larger* than previoust: %g > %g\n", i, sse, lastsse)
+			}
+		}
+		lastsse = sse
+		// fmt.Printf("%d\t%g\n", i, sse)
 	}
 }
