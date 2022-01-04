@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/params)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/params)
 
 See [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for detailed docs.
 

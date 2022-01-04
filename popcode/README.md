@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/popcode)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/popcode)
 
 Package `popcode` provides population code encoding and decoding support functionality, in 1D and 2D.
 

@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/prjn)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/prjn)
 
 See [Wiki Params](https://github.com/emer/emergent/wiki/Prjns) page for detailed docs.
 

@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/confusion)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/confusion)
 
 Confusion implements a confusion matrix: records output responses for discrete categories / classes.
 

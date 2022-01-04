@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/env)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/env)
 
 See [Wiki Env](https://github.com/emer/emergent/wiki/Env) page for detailed docs.
 

@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/actrf)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/actrf)
 
 Package actrf provides activation-based receptive field computation, otherwise known as *reverse correlation* or *spike-triggered averaging*.  It simply computes the activation weighted average of other *source* patterns of activation -- i.e., sum(act * src) / sum(src) which then shows you the patterns of source activity for which a given unit was active.
 

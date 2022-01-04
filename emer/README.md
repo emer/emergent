@@ -1,4 +1,4 @@
-[GoDoc](https://pkg.go.dev/github.com/emer/emergent/emer)
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/emer)
 
 Package emer provides minimal interfaces for the basic structural elements of neural networks
 including:
