@@ -6,7 +6,7 @@ package chem
 
 // Enz models an enzyme-catalyzed reaction based on the Michaelis-Menten kinetics
 // that transforms S = substrate into P product via SE bound C complex
-//       K1     K3
+//       K1         K3
 // S + E --> C(SE) ---> P + E
 //      <-- K2
 // S = substrate, E = enzyme, C = SE complex, P = product
@@ -14,8 +14,6 @@ package chem
 // but calculations take place using N's, and the forward direction has
 // two factors while reverse only has one, so a corrective volume factor needs
 // to be divided out to set the actual forward factor.
-// This is different for the PSD (smaller) vs. Cyt, so PSD constants are higher
-// by a factor of 4 = CytVol / PSDVol
 type Enz struct {
 	K1 float64 `desc:"S+E forward rate constant, in μM-1 msec-1"`
 	K2 float64 `desc:"SE backward rate constant, in μM-1 msec-1"`

@@ -46,7 +46,7 @@ where Kf is the forward and Kb is the backward time constant.  The source Kf and
 `Enz` models an enzyme-catalyzed reaction based on the Michaelis-Menten kinetics that transforms S = substrate into P product via SE bound C complex:
 
 ```
-      K1     K3
+      K1        K3
 S + E --> C(SE) ---> P + E
      <-- K2
 ```

@@ -7,7 +7,7 @@ package chem
 // IntegrationDt is the time step of integration
 // for Urakubo et al, 2008: uses 5e-5, 2e-4 is barely stable, 5e-4 is not
 // The AC1act dynamics in particular are not stable due to large ATP, AMP numbers
-const IntegrationDt = 5e-5
+var IntegrationDt = 5.0e-5
 
 // Integrate adds delta to current value with integration rate constant IntegrationDt
 // new value cannot go below 0
