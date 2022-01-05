@@ -13,9 +13,16 @@ type Diffuse struct {
 	Kb float64 `desc:"B -> A backward diffusion rate constant, sec-1"`
 }
 
+// Set sets both diffusion rates
 func (rt *Diffuse) Set(kf, kb float64) {
 	rt.Kf = kf
 	rt.Kb = kb
+}
+
+// SetSym sets symmetric diffusion rate (Kf == Kb)
+func (rt *Diffuse) SetSym(kfb float64) {
+	rt.Kf = kfb
+	rt.Kb = kfb
 }
 
 // Step computes delta A and B values based on current A, B values
