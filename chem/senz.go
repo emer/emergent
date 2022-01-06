@@ -17,9 +17,32 @@ type SimpleEnz struct {
 	Kf float64 `desc:"S->P forward rate constant, in μM-1 msec-1"`
 }
 
+// SetVol sets reaction forward / backward time constants in seconds,
+// dividing forward Kf by volume to compensate for 2 volume-based concentrations
+// occurring in forward component, vs just 1 in back
+func (rt *SimpleEnz) SetVol(f, vol float64) {
+	rt.Kf = CoFmN(f, vol)
+}
+
 // Step computes delta S and P values based on current S, E values
 func (rt *SimpleEnz) Step(cs, ce float64, ds, dp *float64) {
 	df := rt.Kf * cs * ce // forward
+	*ds -= df
+	*dp += df
+}
+
+// StepCo computes delta S and P values based on current S, E values
+// based on concentration
+func (rt *SimpleEnz) StepCo(cs, ce, vol float64, ds, dp *float64) {
+	df := rt.Kf * CoFmN(cs, vol) * CoFmN(ce, vol) // forward
+	*ds -= df
+	*dp += df
+}
+
+// StepK computes delta S and P values based on current S, E values
+// K version has additional rate multiplier for Kf
+func (rt *SimpleEnz) StepK(kf, cs, ce float64, ds, dp *float64) {
+	df := kf * rt.Kf * cs * ce // forward
 	*ds -= df
 	*dp += df
 }
