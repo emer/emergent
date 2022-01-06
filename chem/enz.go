@@ -5,7 +5,7 @@
 package chem
 
 // Enz models an enzyme-catalyzed reaction based on the Michaelis-Menten kinetics
-// that transforms S = substrate into P product via SE bound C complex
+// that transforms S = substrate into P product via SE-bound C complex
 //       K1         K3
 // S + E --> C(SE) ---> P + E
 //      <-- K2
@@ -18,7 +18,7 @@ type Enz struct {
 	K1 float64 `desc:"S+E forward rate constant, in μM-1 msec-1"`
 	K2 float64 `desc:"SE backward rate constant, in μM-1 msec-1"`
 	K3 float64 `desc:"SE -> P + E catalyzed rate constant, in μM-1 msec-1"`
-	Km float64 `inactive:"+" desc:"Michaelis constant = (K2 + K3) / K1 -- goes into the rate"`
+	Km float64 `inactive:"+" desc:"Michaelis constant = (K2 + K3) / K1"`
 }
 
 func (rt *Enz) Update() {
