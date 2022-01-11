@@ -10,6 +10,7 @@ package netview
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -526,12 +527,19 @@ func (nv *NetView) VarsConfig() {
 	if !mods {
 		updt = vl.UpdateStart()
 	}
+	unprops := nv.Net.UnitVarProps()
 	for i, vbi := range *vl.Children() {
 		vb := vbi.(*gi.Action)
 		vb.SetProp("margin", 0)
 		vb.SetProp("max-width", -1)
 		vn := nv.Vars[i]
 		vb.SetText(vn)
+		if pstr, has := unprops[vn]; has {
+			rstr := reflect.StructTag(pstr)
+			if desc, ok := rstr.Lookup("desc"); ok {
+				vb.Tooltip = desc
+			}
+		}
 		if vn == nv.Var {
 			vb.SetSelected()
 		} else {

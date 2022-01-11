@@ -122,6 +122,7 @@ type Layer interface {
 	// min:"##" max:"##" = min, max display range
 	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
 	// zeroctr:"+" or "-" = control whether zero-centering is used
+	// desc:"txt" tooltip description of the variable
 	// Note: this is a global list so do not modify!
 	UnitVarProps() map[string]string
 
