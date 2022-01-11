@@ -528,16 +528,23 @@ func (nv *NetView) VarsConfig() {
 		updt = vl.UpdateStart()
 	}
 	unprops := nv.Net.UnitVarProps()
+	prjnprops := nv.Net.SynVarProps()
 	for i, vbi := range *vl.Children() {
 		vb := vbi.(*gi.Action)
 		vb.SetProp("margin", 0)
 		vb.SetProp("max-width", -1)
 		vn := nv.Vars[i]
 		vb.SetText(vn)
-		if pstr, has := unprops[vn]; has {
+		pstr := ""
+		if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
+			pstr = prjnprops[vn[2:]]
+		} else {
+			pstr = unprops[vn]
+		}
+		if pstr != "" {
 			rstr := reflect.StructTag(pstr)
 			if desc, ok := rstr.Lookup("desc"); ok {
-				vb.Tooltip = desc
+				vb.Tooltip = vn + ": " + desc
 			}
 		}
 		if vn == nv.Var {
