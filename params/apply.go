@@ -60,6 +60,58 @@ func (pr *Params) Apply(obj interface{}, setMsg bool) error {
 }
 
 ///////////////////////////////////////////////////////////////////////
+//  Hypers
+
+// TargetType returns the first part of the path, indicating what type of
+// object the params apply to.  Uses the first item in the map (which is random)
+// everything in the map must have the same target.
+func (pr *Hypers) TargetType() string {
+	for pt := range *pr {
+		return strings.Split(pt, ".")[0]
+	}
+	return ""
+}
+
+// Path returns the second part of the path after the target type,
+// indicating the path to the specific parameter being set.
+func (pr *Hypers) Path(path string) string {
+	return strings.Join(strings.Split(path, ".")[1:], ".")
+}
+
+// Apply applies all parameter values to given object.
+// Object must already be the appropriate target type based on
+// the first element of the path (see TargetType method).
+// If setMsg is true, then it will log a confirmation that the parameter
+// was set (it always prints an error message if it fails to set the
+// parameter at given path, and returns error if so).
+func (pr *Hypers) Apply(obj interface{}, setMsg bool) error {
+	objNm := ""
+	if stylr, has := obj.(Styler); has {
+		objNm = stylr.Name()
+	} else if lblr, has := obj.(gi.Labeler); has {
+		objNm = lblr.Label()
+	}
+	var rerr error
+	for pt, v := range *pr {
+		path := pr.Path(pt)
+		val, ok := v["Val"]
+		if !ok {
+			log.Printf("%v Hypers path %v does not contain 'Val' key\n", objNm, pt)
+			continue
+		}
+		err := SetParam(obj, path, val)
+		if err == nil {
+			if setMsg {
+				log.Printf("%v Set hypers path: %v to value: %v\n", objNm, pt, v)
+			}
+		} else {
+			rerr = err // could accumulate but..
+		}
+	}
+	return rerr
+}
+
+///////////////////////////////////////////////////////////////////////
 //  Sel
 
 // Apply checks if Sel selector applies to this object according to (.Class, #Name, Type)
@@ -75,8 +127,12 @@ func (ps *Sel) Apply(obj interface{}, setMsg bool) (bool, error) {
 	if !ps.SelMatch(obj) {
 		return false, nil
 	}
-	err := ps.Params.Apply(obj, setMsg)
-	return true, err
+	errp := ps.Params.Apply(obj, setMsg)
+	errh := ps.Hypers.Apply(obj, setMsg)
+	if errp != nil {
+		return true, errp
+	}
+	return true, errh
 }
 
 // TargetTypeMatch return true if target type applies to object
@@ -88,8 +144,15 @@ func (ps *Sel) TargetTypeMatch(obj interface{}) bool {
 			return true
 		}
 	}
+	trgh := ps.Hypers.TargetType()
+	if stylr, has := obj.(Styler); has {
+		tnm := stylr.TypeName()
+		if tnm == trgh {
+			return true
+		}
+	}
 	tnm := kit.NonPtrType(reflect.TypeOf(obj)).Name()
-	return tnm == trg
+	return tnm == trg || tnm == trgh
 }
 
 // SelMatch returns true if Sel selector matches the target object properties

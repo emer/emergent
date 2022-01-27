@@ -52,6 +52,8 @@ var paramSets = Sets{
 			{Sel: "Sim", Desc: "takes longer -- generally doesn't finish..",
 				Params: Params{
 					"Sim.MaxEpcs": "100",
+				}, Hypers: Hypers{
+					"Sim.MaxEps": {"Val": "90", "Min": "40", "Max": "2000"},
 				}},
 		},
 	}},
@@ -114,6 +116,8 @@ var trgCode = `params.Sets{
 			{Sel: "Sim", Desc: "takes longer -- generally doesn't finish..",
 				Params: params.Params{
 					"Sim.MaxEpcs": "100",
+				}params.Hypers{
+					"Sim.MaxEps": map["Max":"2000" "Min":"40" "Val":"90"],
 				}},
 		},
 	}},

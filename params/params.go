@@ -52,6 +52,40 @@ var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 
 ///////////////////////////////////////////////////////////////////////
 
+// Hypers is a parallel structure to Params which stores information relevant
+// to hyperparameter search as well as the values.
+// Use the key "Val" for the default value. This is equivalant to the value in
+// Params. "Min" and "Max" guid the range, and "Sigma" describes a Gaussian.
+type Hypers map[string]map[string]string
+
+// ParamByNameTry returns given parameter, by name.
+// Returns error if not found.
+func (pr *Hypers) ParamByNameTry(name string) (map[string]string, error) {
+	vl, ok := (*pr)[name]
+	if !ok {
+		err := fmt.Errorf("params.Params: parameter named %v not found", name)
+		log.Println(err)
+		return map[string]string{}, err
+	}
+	return vl, nil
+}
+
+// ParamByName returns given parameter by name (just does the map access)
+// Returns "" if not found -- use Try version for error
+func (pr *Hypers) ParamByName(name string) map[string]string {
+	return (*pr)[name]
+}
+
+// SetParamByName sets given parameter by name to given value.
+// (just a wrapper around map set function)
+func (pr *Hypers) SetParamByName(name string, value map[string]string) {
+	(*pr)[name] = value
+}
+
+var KiT_Hypers = kit.Types.AddType(&Hypers{}, HypersProps)
+
+///////////////////////////////////////////////////////////////////////
+
 // params.Sel specifies a selector for the scope of application of a set of
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
@@ -59,6 +93,7 @@ type Sel struct {
 	Sel    string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
 	Desc   string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
 	Params Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
+	Hypers Hypers `desc:"Put your hyperparams here"`
 }
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)

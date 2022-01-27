@@ -98,6 +98,78 @@ func (pr *Params) SaveGoCode(filename gi.FileName) error {
 }
 
 /////////////////////////////////////////////////////////
+//   Hypers
+
+// OpenJSON opens hypers from a JSON-formatted file.
+func (pr *Hypers) OpenJSON(filename gi.FileName) error {
+	*pr = make(Hypers) // reset
+	b, err := ioutil.ReadFile(string(filename))
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, pr)
+}
+
+// SaveJSON saves hypers to a JSON-formatted file.
+func (pr *Hypers) SaveJSON(filename gi.FileName) error {
+	b, err := json.MarshalIndent(pr, "", "  ")
+	if err != nil {
+		log.Println(err) // unlikely
+		return err
+	}
+	err = ioutil.WriteFile(string(filename), b, 0644)
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
+		log.Println(err)
+	}
+	return err
+}
+
+// WriteGoCode writes hypers to corresponding Go initializer code.
+func (pr *Hypers) WriteGoCode(w io.Writer, depth int) {
+	w.Write([]byte(fmt.Sprintf("params.Hypers{\n")))
+	depth++
+	paths := make([]string, len(*pr)) // alpha-sort paths for consistent output
+	ctr := 0
+	for pt := range *pr {
+		paths[ctr] = pt
+		ctr++
+	}
+	sort.StringSlice(paths).Sort()
+	for _, pt := range paths {
+		pv := (*pr)[pt]
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("%q: %q,\n", pt, pv)))
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}"))
+}
+
+// StringGoCode returns Go initializer code as a byte string.
+func (pr *Hypers) StringGoCode() []byte {
+	var buf bytes.Buffer
+	pr.WriteGoCode(&buf, 0)
+	return buf.Bytes()
+}
+
+// SaveGoCode saves hypers to corresponding Go initializer code.
+func (pr *Hypers) SaveGoCode(filename gi.FileName) error {
+	fp, err := os.Create(string(filename))
+	defer fp.Close()
+	if err != nil {
+		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
+		log.Println(err)
+		return err
+	}
+	WriteGoPrelude(fp, "SavedHypers")
+	pr.WriteGoCode(fp, 0)
+	return nil
+}
+
+/////////////////////////////////////////////////////////
 //   Sel
 
 // OpenJSON opens params from a JSON-formatted file.
@@ -133,6 +205,9 @@ func (pr *Sel) WriteGoCode(w io.Writer, depth int) {
 	w.Write(indent.TabBytes(depth))
 	w.Write([]byte("Params: "))
 	pr.Params.WriteGoCode(w, depth)
+	if len(pr.Hypers) > 0 {
+		pr.Hypers.WriteGoCode(w, depth)
+	}
 }
 
 // StringGoCode returns Go initializer code as a byte string.
@@ -418,6 +493,48 @@ func (pr *Sets) SaveGoCode(filename gi.FileName) error {
 }
 
 var ParamsProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"SaveJSON", ki.Props{
+			"label": "Save As...",
+			"desc":  "save to JSON formatted file",
+			"icon":  "file-save",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"OpenJSON", ki.Props{
+			"label": "Open...",
+			"desc":  "open from JSON formatted file",
+			"icon":  "file-open",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".params",
+				}},
+			},
+		}},
+		{"sep-gocode", ki.BlankProp{}},
+		{"SaveGoCode", ki.Props{
+			"label": "Save Code As...",
+			"desc":  "save to Go-formatted initializer code in file",
+			"icon":  "go",
+			"Args": ki.PropSlice{
+				{"File Name", ki.Props{
+					"ext": ".go",
+				}},
+			},
+		}},
+		{"StringGoCode", ki.Props{
+			"label":       "Show Code",
+			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
+			"icon":        "go",
+			"show-return": true,
+		}},
+	},
+}
+
+var HypersProps = ki.Props{
 	"ToolBar": ki.PropSlice{
 		{"SaveJSON", ki.Props{
 			"label": "Save As...",
