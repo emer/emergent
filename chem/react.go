@@ -48,3 +48,11 @@ func (rt *React) StepK(kf, ca, cb, cab float64, da, db, dab *float64) {
 	*da -= df
 	*db -= df
 }
+
+// StepCB computes delta A, AB values based on current A, B, and AB values
+// assumes B does not change -- does not compute db
+func (rt *React) StepCB(ca, cb, cab float64, da, dab *float64) {
+	df := rt.Kf*ca*cb - rt.Kb*cab
+	*dab += df
+	*da -= df
+}
