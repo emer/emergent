@@ -11,3 +11,5 @@ so that those can be purely encoded in the implementation structs.
 At this point, given the extra complexity it would require, these interfaces do not support
 the ability to build or modify networks.
 
+Also added support for managing parameters in the `emer.Params` object, which handles standard parameter set logic and support for applying to networks, and the new `NetSize` map for configuring network size.
+
