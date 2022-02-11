@@ -219,7 +219,7 @@ func TestFlexHypers(t *testing.T) {
 		FlexVal{Nm: "Output", Type: "Layer", Cls: "Target", Obj: Hypers{}},
 	})
 	basenet := paramSets.SetByName("Base").Sheets["Network"]
-	hypers.ApplySheet(basenet)
+	hypers.ApplySheet(basenet, false)
 
 	dfs := hypers.JSONString()
 	// fmt.Printf("%s", dfs)
