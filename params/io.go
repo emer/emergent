@@ -33,7 +33,6 @@ func (pr *Params) OpenJSON(filename gi.FileName) error {
 	*pr = make(Params) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -49,7 +48,6 @@ func (pr *Params) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -88,7 +86,6 @@ func (pr *Params) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -105,7 +102,6 @@ func (pr *Hypers) OpenJSON(filename gi.FileName) error {
 	*pr = make(Hypers) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -121,7 +117,6 @@ func (pr *Hypers) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -160,7 +155,6 @@ func (pr *Hypers) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -176,7 +170,6 @@ func (pr *Hypers) SaveGoCode(filename gi.FileName) error {
 func (pr *Sel) OpenJSON(filename gi.FileName) error {
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -192,7 +185,6 @@ func (pr *Sel) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -222,7 +214,6 @@ func (pr *Sel) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -239,7 +230,6 @@ func (pr *Sheet) OpenJSON(filename gi.FileName) error {
 	*pr = make(Sheet, 0) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -255,7 +245,6 @@ func (pr *Sheet) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -288,7 +277,6 @@ func (pr *Sheet) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -305,7 +293,6 @@ func (pr *Sheets) OpenJSON(filename gi.FileName) error {
 	*pr = make(Sheets) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -321,7 +308,6 @@ func (pr *Sheets) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -361,7 +347,6 @@ func (pr *Sheets) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -377,7 +362,6 @@ func (pr *Sheets) SaveGoCode(filename gi.FileName) error {
 func (pr *Set) OpenJSON(filename gi.FileName) error {
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -393,7 +377,6 @@ func (pr *Set) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -417,7 +400,6 @@ func (pr *Set) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -434,7 +416,6 @@ func (pr *Sets) OpenJSON(filename gi.FileName) error {
 	*pr = make(Sets, 0, 10) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "File Not Found", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}
@@ -450,7 +431,6 @@ func (pr *Sets) SaveJSON(filename gi.FileName) error {
 	}
 	err = ioutil.WriteFile(string(filename), b, 0644)
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 	}
 	return err
@@ -483,7 +463,6 @@ func (pr *Sets) SaveGoCode(filename gi.FileName) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		gi.PromptDialog(nil, gi.DlgOpts{Title: "Could not Save to File", Prompt: err.Error()}, gi.AddOk, gi.NoCancel, nil, nil)
 		log.Println(err)
 		return err
 	}

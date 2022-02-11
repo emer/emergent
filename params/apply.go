@@ -41,6 +41,9 @@ func (pr *Params) Apply(obj interface{}, setMsg bool) error {
 	objNm := ""
 	if stylr, has := obj.(Styler); has {
 		objNm = stylr.Name()
+		if styob, has := obj.(StylerObj); has {
+			obj = styob.Object()
+		}
 	} else if lblr, has := obj.(gi.Labeler); has {
 		objNm = lblr.Label()
 	}
@@ -88,6 +91,9 @@ func (pr *Hypers) Apply(obj interface{}, setMsg bool) error {
 	objNm := ""
 	if stylr, has := obj.(Styler); has {
 		objNm = stylr.Name()
+		if styob, has := obj.(StylerObj); has {
+			obj = styob.Object()
+		}
 	} else if lblr, has := obj.(gi.Labeler); has {
 		objNm = lblr.Label()
 	}
@@ -160,6 +166,9 @@ func (ps *Sel) SelMatch(obj interface{}) bool {
 	stylr, has := obj.(Styler)
 	if !has {
 		return true // default match if no styler..
+	}
+	if styob, has := obj.(StylerObj); has {
+		obj = styob.Object()
 	}
 	gotyp := kit.NonPtrType(reflect.TypeOf(obj)).Name()
 	return SelMatch(ps.Sel, stylr.Name(), stylr.Class(), stylr.TypeName(), gotyp)
@@ -246,6 +255,12 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 // converts the string param val as appropriate for target type.
 // returns error if path not found or cannot set (always logged).
 func SetParam(obj interface{}, path string, val string) error {
+	npv := kit.NonPtrValue(reflect.ValueOf(obj))
+	if npv.Kind() == reflect.Map { // only for string maps
+		npv.SetMapIndex(reflect.ValueOf(path), reflect.ValueOf(val))
+		return nil
+	}
+
 	fld, err := FindParam(reflect.ValueOf(obj), path)
 	if err != nil {
 		return err

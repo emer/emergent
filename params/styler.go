@@ -27,3 +27,13 @@ type Styler interface {
 	// unique.  Note, do not include the # prefix in the Styler name.
 	Name() string
 }
+
+// The params.StylerObj interface extends Styler to include an arbitary
+// function to access the underlying object type.
+type StylerObj interface {
+	Styler
+
+	//	Object recturns the object that will have its field values set by
+	// the params specifications.
+	Object() interface{}
+}

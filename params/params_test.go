@@ -6,6 +6,7 @@ package params
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/andreyvit/diff"
@@ -24,7 +25,11 @@ var paramSets = Sets{
 			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
 				Params: Params{
 					"Layer.Inhib.Layer.Gi": "1.8",
-				}},
+				},
+				Hypers: Hypers{
+					"Layer.Inhib.Layer.Gi": {"Min": "0.5", "StdDev": "0.1"},
+				},
+			},
 			{Sel: "#Output", Desc: "output definitely needs lower inhib -- true for smaller layers in general",
 				Params: Params{
 					"Layer.Inhib.Layer.Gi": "1.4",
@@ -88,6 +93,8 @@ var trgCode = `params.Sets{
 			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
 				Params: params.Params{
 					"Layer.Inhib.Layer.Gi": "1.8",
+				}params.Hypers{
+					"Layer.Inhib.Layer.Gi": map["Min":"0.5" "StdDev":"0.1"],
 				}},
 			{Sel: "#Output", Desc: "output definitely needs lower inhib -- true for smaller layers in general",
 				Params: params.Params{
@@ -151,5 +158,24 @@ func TestParamSetsWriteGo(t *testing.T) {
 		t.Errorf("ParamStyle output incorrect at: %v!\n", diff.LineDiff(dfs, trgCode))
 		// t.Errorf("ParamStyle output incorrect!\n%v\n", dfs)
 	}
+}
 
+func TestFlexHypers(t *testing.T) {
+	hypers := &Flex{}
+	hypers.Init([]FlexVal{
+		FlexVal{Nm: "Input", Type: "Layer", Cls: "Input", Obj: HyperVals{}},
+		FlexVal{Nm: "Hidden1", Type: "Layer", Cls: "Hidden", Obj: HyperVals{}},
+		FlexVal{Nm: "Hidden2", Type: "Layer", Cls: "Hidden", Obj: HyperVals{}},
+		FlexVal{Nm: "Output", Type: "Layer", Cls: "Target", Obj: HyperVals{}},
+	})
+	basenet := paramSets.SetByName("Base").Sheets["Network"]
+	basenet.Apply(hypers, false)
+
+	// TODO not actually setting the objects
+
+	var buf bytes.Buffer
+	hypers.WriteJSON(&buf)
+	dfb := buf.Bytes()
+	dfs := string(dfb)
+	fmt.Printf("%v\n", dfs)
 }
