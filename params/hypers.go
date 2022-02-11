@@ -5,6 +5,8 @@
 package params
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -13,6 +15,29 @@ import (
 
 // HyperVals is a string-value map for storing hyperparameter values
 type HyperVals map[string]string
+
+// JSONString returns hyper values as a JSON formatted string
+func (hv *HyperVals) JSONString() string {
+	var buf bytes.Buffer
+	b, _ := json.Marshal(hv)
+	buf.Write(b)
+	return buf.String()
+}
+
+// SetJSONString sets from a JSON_formatted string
+func (hv *HyperVals) SetJSONString(str string) error {
+	return json.Unmarshal([]byte(str), hv)
+}
+
+// CopyFrom copies from another HyperVals
+func (hv *HyperVals) CopyFrom(cp HyperVals) {
+	if *hv == nil {
+		*hv = make(HyperVals, len(cp))
+	}
+	for k, v := range cp {
+		(*hv)[k] = v
+	}
+}
 
 // Hypers is a parallel structure to Params which stores information relevant
 // to hyperparameter search as well as the values.
@@ -42,6 +67,35 @@ func (pr *Hypers) ParamByName(name string) map[string]string {
 // (just a wrapper around map set function)
 func (pr *Hypers) SetParamByName(name string, value map[string]string) {
 	(*pr)[name] = value
+}
+
+// CopyFrom copies hyper vals from source
+func (pr *Hypers) CopyFrom(cp Hypers) {
+	if *pr == nil {
+		*pr = make(Hypers, len(cp))
+	}
+	for path, hv := range cp {
+		if shv, has := (*pr)[path]; has {
+			shv.CopyFrom(hv)
+		} else {
+			shv := HyperVals{}
+			shv.CopyFrom(hv)
+			(*pr)[path] = shv
+		}
+	}
+}
+
+// DeleteValOnly deletes entries that only have a "Val" entry.
+// This happens when applying a param Sheet using Flex params
+// to compile values using styling logic
+func (pr *Hypers) DeleteValOnly() {
+	for path, hv := range *pr {
+		if len(hv) == 1 {
+			if _, has := (hv)["Val"]; has {
+				delete(*pr, path)
+			}
+		}
+	}
 }
 
 var KiT_Hypers = kit.Types.AddType(&Hypers{}, HypersProps)

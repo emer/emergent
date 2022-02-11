@@ -50,6 +50,14 @@ func (pr *Params) Apply(obj interface{}, setMsg bool) error {
 	var rerr error
 	for pt, v := range *pr {
 		path := pr.Path(pt)
+		if hv, ok := obj.(Hypers); ok {
+			if cv, has := hv[pt]; has { // full path
+				cv["Val"] = v
+			} else {
+				hv[pt] = HyperVals{"Val": v}
+			}
+			continue
+		}
 		err := SetParam(obj, path, v)
 		if err == nil {
 			if setMsg {
@@ -97,12 +105,15 @@ func (pr *Hypers) Apply(obj interface{}, setMsg bool) error {
 	} else if lblr, has := obj.(gi.Labeler); has {
 		objNm = lblr.Label()
 	}
+	if hv, ok := obj.(Hypers); ok {
+		hv.CopyFrom(*pr)
+		return nil
+	}
 	var rerr error
 	for pt, v := range *pr {
 		path := pr.Path(pt)
 		val, ok := v["Val"]
 		if !ok {
-			log.Printf("%v Hypers path %v does not contain 'Val' key\n", objNm, pt)
 			continue
 		}
 		err := SetParam(obj, path, val)

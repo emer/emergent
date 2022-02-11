@@ -6,7 +6,6 @@ package params
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
 	"github.com/andreyvit/diff"
@@ -160,22 +159,72 @@ func TestParamSetsWriteGo(t *testing.T) {
 	}
 }
 
+var trgHypers = `{
+  "Hidden1": {
+    "Nm": "Hidden1",
+    "Type": "Layer",
+    "Cls": "Hidden",
+    "Obj": {
+      "Layer.Inhib.Layer.Gi": {
+        "Min": "0.5",
+        "StdDev": "0.1",
+        "Val": "1.8"
+      }
+    }
+  },
+  "Hidden2": {
+    "Nm": "Hidden2",
+    "Type": "Layer",
+    "Cls": "Hidden",
+    "Obj": {
+      "Layer.Inhib.Layer.Gi": {
+        "Min": "0.5",
+        "StdDev": "0.1",
+        "Val": "1.8"
+      }
+    }
+  },
+  "Input": {
+    "Nm": "Input",
+    "Type": "Layer",
+    "Cls": "Input",
+    "Obj": {
+      "Layer.Inhib.Layer.Gi": {
+        "Min": "0.5",
+        "StdDev": "0.1",
+        "Val": "1.8"
+      }
+    }
+  },
+  "Output": {
+    "Nm": "Output",
+    "Type": "Layer",
+    "Cls": "Target",
+    "Obj": {
+      "Layer.Inhib.Layer.Gi": {
+        "Min": "0.5",
+        "StdDev": "0.1",
+        "Val": "1.4"
+      }
+    }
+  }
+}`
+
 func TestFlexHypers(t *testing.T) {
-	hypers := &Flex{}
+	hypers := Flex{}
 	hypers.Init([]FlexVal{
-		FlexVal{Nm: "Input", Type: "Layer", Cls: "Input", Obj: HyperVals{}},
-		FlexVal{Nm: "Hidden1", Type: "Layer", Cls: "Hidden", Obj: HyperVals{}},
-		FlexVal{Nm: "Hidden2", Type: "Layer", Cls: "Hidden", Obj: HyperVals{}},
-		FlexVal{Nm: "Output", Type: "Layer", Cls: "Target", Obj: HyperVals{}},
+		FlexVal{Nm: "Input", Type: "Layer", Cls: "Input", Obj: Hypers{}},
+		FlexVal{Nm: "Hidden1", Type: "Layer", Cls: "Hidden", Obj: Hypers{}},
+		FlexVal{Nm: "Hidden2", Type: "Layer", Cls: "Hidden", Obj: Hypers{}},
+		FlexVal{Nm: "Output", Type: "Layer", Cls: "Target", Obj: Hypers{}},
 	})
 	basenet := paramSets.SetByName("Base").Sheets["Network"]
-	basenet.Apply(hypers, false)
+	hypers.ApplySheet(basenet)
 
-	// TODO not actually setting the objects
-
-	var buf bytes.Buffer
-	hypers.WriteJSON(&buf)
-	dfb := buf.Bytes()
-	dfs := string(dfb)
-	fmt.Printf("%v\n", dfs)
+	dfs := hypers.JSONString()
+	// fmt.Printf("%s", dfs)
+	if dfs != trgHypers {
+		t.Errorf("Param hypers output incorrect at: %v!\n", diff.LineDiff(dfs, trgHypers))
+		// t.Errorf("ParamStyle output incorrect!\n%v\n", dfs)
+	}
 }
