@@ -139,9 +139,15 @@ type Network interface {
 	// requires Build.
 	ConnectLayers(send, recv Layer, pat prjn.Pattern, typ PrjnType) Prjn
 
+	// Build constructs the network units and synapses based on current layers, projections
+	Build() error
+
 	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
 	Bounds() (min, max mat32.Vec3)
 
 	// VarRange returns the min / max values for given variable
 	VarRange(varNm string) (min, max float32, err error)
+
+	// LayersByType returns a list of layer names by given type(s) -- compiled when built
+	LayersByType(types ...LayerType) []string
 }
