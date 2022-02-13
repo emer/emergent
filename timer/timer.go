@@ -15,8 +15,9 @@ type Time struct {
 	N     int           `desc:"the number of start/stops"`
 }
 
-// Reset resets the overall accumulated Total and N counters
+// Reset resets the overall accumulated Total and N counters and start time to zero
 func (t *Time) Reset() {
+	t.St = time.Time{}
 	t.Total = 0
 	t.N = 0
 }
@@ -26,8 +27,19 @@ func (t *Time) Start() {
 	t.St = time.Now()
 }
 
+// ResetStart reset then start the timer
+func (t *Time) ResetStart() {
+	t.Reset()
+	t.Start()
+}
+
 // Stop stops the timer and accumulates the latest start - stop interval, and also returns it
 func (t *Time) Stop() time.Duration {
+	if t.St.IsZero() {
+		t.Total = 0
+		t.N = 0
+		return 0
+	}
 	iv := time.Now().Sub(t.St)
 	t.Total += iv
 	t.N++
@@ -49,6 +61,14 @@ func (t *Time) AvgSecs() float64 {
 		return 0
 	}
 	return float64(t.Total) / (float64(t.N) * float64(time.Second))
+}
+
+// AvgMSecs returns the average start / stop interval as a float64 of milliseconds
+func (t *Time) AvgMSecs() float64 {
+	if t.N == 0 {
+		return 0
+	}
+	return float64(t.Total) / (float64(t.N) * float64(time.Millisecond))
 }
 
 // TotalSecs returns the total start / stop intervals as a float64 of seconds.
