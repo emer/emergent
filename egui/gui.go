@@ -1,7 +1,7 @@
 package egui
 
 import (
-	"github.com/Astera-org/models/library/elog"
+	"github.com/emer/emergent/elog"
 	"github.com/emer/emergent/netview"
 	"github.com/emer/etable/eplot"
 	"github.com/emer/etable/etensor"
@@ -35,6 +35,17 @@ type GUI struct {
 func (gui *GUI) UpdateWindow() {
 	gui.ViewPort.SetNeedsFullRender()
 
+}
+
+// Stopped is called when a run method stops running -- updates the IsRunning flag and toolbar
+func (gui *GUI) Stopped() {
+	gui.IsRunning = false
+	if gui.Win != nil {
+		if gui.ToolBar != nil {
+			gui.ToolBar.UpdateActions()
+		}
+		gui.UpdateWindow()
+	}
 }
 
 // MakeWindow specifies default window settings that are largely used in all windwos

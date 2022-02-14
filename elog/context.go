@@ -7,8 +7,8 @@ package elog
 import (
 	"fmt"
 
-	"github.com/Astera-org/models/library/estats"
 	"github.com/emer/emergent/emer"
+	"github.com/emer/emergent/estats"
 	"github.com/emer/etable/agg"
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"

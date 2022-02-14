@@ -10,8 +10,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Astera-org/models/library/estats"
 	"github.com/emer/emergent/emer"
+	"github.com/emer/emergent/estats"
 	"github.com/emer/etable/etable"
 )
 
