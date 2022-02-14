@@ -88,6 +88,12 @@ Here are some of the additional supporting packages, most important first then a
 
 * `erand` has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
 
+* `elog` comprehensive support for logging data at different time scales and evaluation modes -- saves a lot of boilerplate code for configuring, updating.
+
+* `estats` manages statistics as maps of name, value for various types, along with network-relevant statistics such as `ClosestPat`, PCA stats, and raster plots.
+
+* `egui` implements a standard simulation GUI, with a toolbar, tabs of different views, and a Sim struct view on the left.
+
 * `esg` is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
 
 * `evec` has `Vec2i` which uses plain `int` X, Y fields, whereas the `mat32` package uses `int32` which are needed for graphics but int is more convenient in models.

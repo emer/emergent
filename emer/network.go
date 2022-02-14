@@ -148,6 +148,7 @@ type Network interface {
 	// VarRange returns the min / max values for given variable
 	VarRange(varNm string) (min, max float32, err error)
 
-	// LayersByType returns a list of layer names by given type(s) -- compiled when built
+	// LayersByType returns a list of layer names by given type(s) -- compiled when built.
+	// If no types are passed, all layer names in order are returned.
 	LayersByType(types ...LayerType) []string
 }
