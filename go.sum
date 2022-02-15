@@ -93,8 +93,8 @@ github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5m
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
-github.com/emer/etable v1.0.41 h1:VYQvna4DNyXPG2L/dR6zZ35LMuwaVVa3dkWSbDGUkpY=
-github.com/emer/etable v1.0.41/go.mod h1:ZAUxQL6J4f9iJd6uUw6xy35pKZNg0kOGU9ychrz90Io=
+github.com/emer/etable v1.0.42 h1:EsTMb86ubQomxeiyViwfp3w0jivIF/08+xUgs5JWsg4=
+github.com/emer/etable v1.0.42/go.mod h1:lCkFYgIL7Co29qMm79vSUxjjuO/mx6PJsZxTxCmzp1s=
 github.com/envoyproxy/go-control-plane v0.6.9/go.mod h1:SBwIajubJHhxtWwsL9s8ss4safvEdbitLhGGK48rN6g=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
@@ -151,7 +151,6 @@ github.com/gogo/protobuf v1.2.0/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7a
 github.com/gogo/protobuf v1.2.1/go.mod h1:hp+jE20tsWTFYpLwKvXlhS1hjn+gTNwPg2I6zVXpSg4=
 github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff h1:W71vTCKoxtdXgnm1ECDFkfQnpdqAO00zzGXLA5yaEX8=
 github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff/go.mod h1:wfqRWLHRBsRgkp5dmbG56SA0DmVtwrF5N3oPdI8t+Aw=
-github.com/goki/gi v1.2.15/go.mod h1:OrPe2CCUMKrCEBRzoQRmw+33B4wpdaR2iuoJGmpHeWM=
 github.com/goki/gi v1.2.16 h1:aKTZqjskjhxyKKfyV2e0AQ5enX9woMyEQ6t0p4tXx4U=
 github.com/goki/gi v1.2.16/go.mod h1:2xzlvuUYCcSjONcXue4nyE9wVNFiZ9J1i8rtskY5Vl8=
 github.com/goki/ki v1.0.0/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
@@ -160,7 +159,6 @@ github.com/goki/ki v1.1.5 h1:rna/vojrgCkpXt71bL6x9j8g4VtQEyTPwFwmWREPo2k=
 github.com/goki/ki v1.1.5/go.mod h1:8CF/Hl5lI5x09rlPLfJtw9w2XW/K6FK9eodjpeAKmNU=
 github.com/goki/mat32 v1.0.9 h1:Xx805FVRn9+vtY9nEY5MBVziKS4CA7Z2/Eo0Y4zifxU=
 github.com/goki/mat32 v1.0.9/go.mod h1:hCV5RDI64Gg16Dc0smHZyLjlJB7oB3LbEmweaWcTiII=
-github.com/goki/pi v1.0.15/go.mod h1:95MCb0ytWSFzJUkon7UWOVp8Y6QBd1IkPQfYwbxFYyo=
 github.com/goki/pi v1.0.17 h1:eYrCI0HluQfK6YynOUkA++2L6BXNuD7vFWS9Vz1rYp8=
 github.com/goki/pi v1.0.17/go.mod h1:95MCb0ytWSFzJUkon7UWOVp8Y6QBd1IkPQfYwbxFYyo=
 github.com/goki/prof v0.0.0-20180502205428-54bc71b5d09b h1:3zU6niF8uvEaNtRBhOkmgbE/Fx7D6xuALotArTpycNc=
