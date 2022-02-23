@@ -23,6 +23,15 @@ func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string) *etenso
 	return tsr
 }
 
+// SetLayerRepTensor sets tensor of representative Unit values on a layer for given variable
+// to a F32Tensor with name = layNm
+func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string) *etensor.Float32 {
+	ly := net.LayerByName(layNm)
+	tsr := st.F32Tensor(layNm)
+	ly.UnitValsRepTensor(tsr, unitVar)
+	return tsr
+}
+
 // ClosestStat finds the closest pattern in given column of given table of possible patterns,
 // compared to layer activation pattern using given variable.  Returns the row number,
 // correlation value, and value of a column named namecol for that row if non-empty.
