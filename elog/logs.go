@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/emer/emergent/emer"
@@ -17,6 +18,9 @@ import (
 
 // LogPrec is precision for saving float values in logs
 const LogPrec = 4
+
+// LogDir is a directory that is prefixed for saving log files
+var LogDir = ""
 
 // Logs contains all logging state and API for doing logging.
 // do AddItem to add any number of items, at different eval mode, time scopes.
@@ -237,8 +241,11 @@ func (lg *Logs) ResetLog(mode EvalModes, time Times) {
 // SetLogFile sets the log filename for given scope
 func (lg *Logs) SetLogFile(mode EvalModes, time Times, fnm string) {
 	lt := lg.TableDetails(mode, time)
+	if LogDir != "" {
+		fnm = filepath.Join(LogDir, fnm)
+	}
 	var err error
-	lt.File, err = os.Create("logs/" + fnm)
+	lt.File, err = os.Create(fnm)
 	if err != nil {
 		log.Println(err)
 		lt.File = nil
