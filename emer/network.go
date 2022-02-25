@@ -39,7 +39,7 @@ type Network interface {
 	LayerByName(name string) Layer
 
 	// LayerByNameTry returns layer of given name,
-	// returns error and emits a log message if not found.
+	// returns error if not found.
 	// Layer names must be unique and a map is used so this is a fast operation
 	LayerByNameTry(name string) (Layer, error)
 

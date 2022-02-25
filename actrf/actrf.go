@@ -29,15 +29,27 @@ type RF struct {
 // tensors representing the activations and source values.
 func (af *RF) Init(name string, act, src etensor.Tensor) {
 	af.Name = name
+	af.InitShape(act, src)
+	af.Reset()
+}
+
+// InitShape initializes shape for this RF based on shapes of given
+// tensors representing the activations and source values.
+// does nothing if shape is already correct.
+// return shape ints
+func (af *RF) InitShape(act, src etensor.Tensor) []int {
 	aNy, aNx, _, _ := etensor.Prjn2DShape(act.ShapeObj(), false)
 	sNy, sNx, _, _ := etensor.Prjn2DShape(src.ShapeObj(), false)
 	oshp := []int{aNy, aNx, sNy, sNx}
+	if etensor.EqualInts(af.RF.Shp, oshp) {
+		return oshp
+	}
 	snm := []string{"ActY", "ActX", "SrcY", "SrcX"}
 	af.RF.SetShape(oshp, nil, snm)
 	af.NormRF.SetShape(oshp, nil, snm)
 	af.SumProd.SetShape(oshp, nil, snm)
 	af.SumSrc.SetShape(oshp, nil, snm)
-	af.Reset()
+	return oshp
 }
 
 // Reset reinitializes the Sum accumulators -- must have called Init first
@@ -51,8 +63,8 @@ func (af *RF) Reset() {
 // thr is a threshold value on sources below which values are not added (prevents
 // numerical issues with very small numbers)
 func (af *RF) Add(act, src etensor.Tensor, thr float32) {
-	aNy, aNx, _, _ := etensor.Prjn2DShape(act.ShapeObj(), false)
-	sNy, sNx, _, _ := etensor.Prjn2DShape(src.ShapeObj(), false)
+	shp := af.InitShape(act, src) // ensure
+	aNy, aNx, sNy, sNx := shp[0], shp[1], shp[2], shp[3]
 	for sy := 0; sy < sNy; sy++ {
 		for sx := 0; sx < sNx; sx++ {
 			tv := float32(etensor.Prjn2DVal(src, false, sy, sx))
