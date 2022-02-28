@@ -824,6 +824,12 @@ func (nv *NetView) ToolbarConfig() {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
+	ndmen.Menu.AddSeparator("plotneur")
+	ndmen.Menu.AddAction(gi.ActOpts{Label: "Plot Selected Unit", Icon: "image", Tooltip: "opens up a window with a plot of all saved data for currently-selected unit"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.PlotSelectedUnit()
+		})
 
 	vp, ok := nv.VarParams[nv.Var]
 	if !ok {
