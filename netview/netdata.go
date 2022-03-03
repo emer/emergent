@@ -8,15 +8,20 @@ import (
 	"bufio"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"math"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/ringidx"
+	"github.com/emer/etable/eplot"
+	"github.com/emer/etable/etable"
+	"github.com/emer/etable/etensor"
 	"github.com/goki/gi/gi"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
@@ -340,6 +345,96 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // func (ld *LayData) MarshalJSON() ([]byte, error) {
 //
 // }
+
+// PlotSelectedUnit opens a window with a plot of all the data for the
+// currently-selected unit.
+// Useful for replaying detailed trace for units of interest.
+func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D) {
+	width := 1600
+	height := 1200
+
+	nd := &nv.Data
+
+	if nd.PrjnLay == "" || nd.PrjnUnIdx < 0 {
+		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
+		return nil, nil, nil
+	}
+
+	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIdx)
+
+	win := gi.NewMainWindow("netview-selectedunit", "NetView SelectedUnit Plot: "+selnm, width, height)
+	vp := win.WinViewport2D()
+	updt := vp.UpdateStart()
+	mfr := win.SetMainFrame()
+
+	plt := mfr.AddNewChild(eplot.KiT_Plot2D, "plot").(*eplot.Plot2D)
+	plt.Params.Title = "NetView " + selnm
+	plt.Params.XAxisCol = "Rec"
+
+	dt := nd.SelectedUnitTable()
+
+	plt.SetTable(dt)
+
+	for _, vnm := range nd.Vars {
+		vp, ok := nv.VarParams[vnm]
+		if !ok {
+			continue
+		}
+		disp := (vnm == nv.Var)
+		plt.SetColParams(vnm, disp, vp.Range.FixMin, float64(vp.Range.Min), vp.Range.FixMax, float64(vp.Range.Max))
+	}
+
+	vp.UpdateEndNoSig(updt)
+	win.GoStartEventLoop() // in a separate goroutine
+	return win, dt, plt
+}
+
+// SelectedUnitTable returns a table with all of the data for the
+// currently-selected unit.
+func (nd *NetData) SelectedUnitTable() *etable.Table {
+	if nd.PrjnLay == "" || nd.PrjnUnIdx < 0 {
+		fmt.Printf("NetView:SelectedUnitTable -- no unit selected\n")
+		return nil
+	}
+
+	ld, ok := nd.LayData[nd.PrjnLay]
+	if !ok {
+		fmt.Printf("NetView:SelectedUnitTable -- layer name incorrect\n")
+		return nil
+	}
+
+	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIdx)
+
+	dt := &etable.Table{}
+	dt.SetMetaData("name", "NetView: "+selnm)
+	dt.SetMetaData("read-only", "true")
+	dt.SetMetaData("precision", strconv.Itoa(4))
+
+	ln := nd.Ring.Len
+	vlen := len(nd.Vars)
+	nu := ld.NUnits
+	nvu := vlen * nu
+	uidx1d := nd.PrjnUnIdx
+
+	sch := etable.Schema{
+		{"Rec", etensor.INT64, nil, nil},
+	}
+	for _, vnm := range nd.Vars {
+		sch = append(sch, etable.Column{vnm, etensor.FLOAT64, nil, nil})
+	}
+	dt.SetFromSchema(sch, ln)
+
+	for ri := 0; ri < ln; ri++ {
+		ridx := nd.RecIdx(ri)
+		dt.SetCellFloatIdx(0, ri, float64(ri))
+		for vi := 0; vi < vlen; vi++ {
+			idx := ridx*nvu + vi*nu + uidx1d
+			val := ld.Data[idx]
+			dt.SetCellFloatIdx(vi+1, ri, float64(val))
+		}
+	}
+	return dt
+}
 
 var NetDataProps = ki.Props{
 	"CallMethods": ki.PropSlice{

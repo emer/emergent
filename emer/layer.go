@@ -153,6 +153,29 @@ type Layer interface {
 	// Returns error on invalid var name.
 	UnitValsTensor(tsr etensor.Tensor, varNm string) error
 
+	// UnitValsRepTensor fills in values of given variable name on unit
+	// for a smaller subset of representative units in the layer, into given tensor.
+	// This is used for computationally intensive stats or displays that work
+	// much better with a smaller number of units.
+	// The set of representative units are defined by SetRepIdxs -- all units
+	// are used if no such subset has been defined.
+	// If tensor is not already big enough to hold the values, it is
+	// set to a 1D shape to hold all the values if subset is defined,
+	// otherwise it calls UnitValsTensor and is identical to that.
+	// Returns error on invalid var name.
+	UnitValsRepTensor(tsr etensor.Tensor, varNm string) error
+
+	// SetRepIdxs sets the indexes of the smaller subset of units
+	// that represent the behavior of the layer, for computationally
+	// intensive statistics and displays (e.g., PCA, spike rasters).
+	// See utility function CenterPoolIdxs that returns indexes of
+	// units in the central pools of a 4D layer.
+	SetRepIdxs(idxs []int)
+
+	// RepIdxs returns the current set of representative unit indexes.
+	// Returns nil if none has been set (in which case all units should be used).
+	RepIdxs() []int
+
 	// UnitVal returns value of given variable name on given unit,
 	// using shape-based dimensional index.
 	// Returns NaN on invalid var name or index.
@@ -250,6 +273,30 @@ var LayerDimNames2D = []string{"Y", "X"}
 // LayerDimNames4D provides the standard Shape dimension names for 4D layers
 // which have Pools and then neurons within pools.
 var LayerDimNames4D = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
+
+// CenterPoolIdxs returns the indexes for n x n center pools of given 4D layer.
+// Useful for SetRepIdxs on Layer.
+// Will crash if called on non-4D layers.
+func CenterPoolIdxs(ly Layer, n int) []int {
+	nPy := ly.Shape().Dim(0)
+	nPx := ly.Shape().Dim(1)
+	sPy := (nPy - n) / 2
+	sPx := (nPx - n) / 2
+	nu := ly.Shape().Dim(2) * ly.Shape().Dim(3)
+	nt := n * n * nu
+	idxs := make([]int, nt)
+	ix := 0
+	for py := 0; py < n; py++ {
+		for px := 0; px < n; px++ {
+			si := ((py+sPy)*nPx + px + sPx) * nu
+			for ui := 0; ui < nu; ui++ {
+				idxs[ix+ui] = si + ui
+			}
+			ix += nu
+		}
+	}
+	return idxs
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //  Layers

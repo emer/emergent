@@ -7,6 +7,7 @@ package estats
 import (
 	"fmt"
 
+	"github.com/emer/emergent/actrf"
 	"github.com/emer/emergent/timer"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/pca"
@@ -23,6 +24,7 @@ type Stats struct {
 	F64Tensors map[string]*etensor.Float64 `desc:"float64 tensor as needed for other computations"`
 	SimMats    map[string]*simat.SimMat    `desc:"similarity matrix for comparing pattern similarities"`
 	PCA        pca.PCA                     `desc:"one PCA object can be reused for all PCA computations"`
+	ActRFs     actrf.RFs                   `view:"no-inline" desc:"activation-based receptive fields"`
 	Timers     map[string]*timer.Time      `desc:"named timers available for timing how long different computations take (wall-clock time)"`
 }
 
@@ -121,6 +123,18 @@ func (st *Stats) F64Tensor(name string) *etensor.Float64 {
 		st.F64Tensors[name] = tsr
 	}
 	return tsr
+}
+
+// SetF32Tensor sets a float32 tensor of given name.
+// Just does: st.F32Tensors[name] = tsr
+func (st *Stats) SetF32Tensor(name string, tsr *etensor.Float32) {
+	st.F32Tensors[name] = tsr
+}
+
+// SetF64Tensor sets a float64 tensor of given name.
+// Just does: st.F64Tensors[name] = tsr
+func (st *Stats) SetF64Tensor(name string, tsr *etensor.Float64) {
+	st.F64Tensors[name] = tsr
 }
 
 // SimMat returns a SimMat similarity matrix of given name, creating if not yet made

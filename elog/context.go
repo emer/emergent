@@ -167,6 +167,15 @@ func (ctx *Context) SetLayerTensor(layNm, unitVar string) *etensor.Float32 {
 	return tsr
 }
 
+// SetLayerRepTensor sets tensor of representative Unit values on a layer for given variable
+func (ctx *Context) SetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
+	ly := ctx.Layer(layNm)
+	tsr := ctx.Stats.F32Tensor(layNm)
+	ly.UnitValsRepTensor(tsr, unitVar)
+	ctx.SetTensor(tsr)
+	return tsr
+}
+
 // ClosestPat finds the closest pattern in given column of given pats table to
 // given layer activation pattern using given variable.  Returns the row number,
 // correlation value, and value of a column named namecol for that row if non-empty.

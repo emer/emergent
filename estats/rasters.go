@@ -16,7 +16,11 @@ func (st *Stats) ConfigRasters(net emer.Network, layers []string) {
 	for _, lnm := range layers {
 		ly := net.LayerByName(lnm)
 		sr := st.F32Tensor("Raster_" + lnm)
-		sr.SetShape([]int{ly.Shape().Len(), ncy}, nil, []string{"Nrn", "Cyc"})
+		nu := len(ly.RepIdxs())
+		if nu == 0 {
+			nu = ly.Shape().Len()
+		}
+		sr.SetShape([]int{nu, ncy}, nil, []string{"Nrn", "Cyc"})
 	}
 }
 
@@ -31,7 +35,7 @@ func (st *Stats) SetRasterCol(sr, tsr *etensor.Float32, col int) {
 // for given cycle number (X axis index)
 func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string, layers []string) {
 	for _, lnm := range layers {
-		tsr := st.SetLayerTensor(net, lnm, varNm)
+		tsr := st.SetLayerRepTensor(net, lnm, varNm)
 		sr := st.F32Tensor("Raster_" + lnm)
 		st.SetRasterCol(sr, tsr, cyc)
 	}
