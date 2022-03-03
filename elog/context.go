@@ -207,6 +207,9 @@ func (ctx *Context) LastNRowsScope(sk ScopeKey, n int) *etable.IdxView {
 	if n > ix.Len()-1 {
 		n = ix.Len() - 1
 	}
+	if ix.Idxs == nil {
+		ix.Idxs = make([]int, ix.Table.Rows)
+	}
 	ix.Idxs = ix.Idxs[ix.Len()-n:]
 	return ix
 }
