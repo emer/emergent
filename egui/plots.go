@@ -7,6 +7,7 @@ package egui
 import (
 	"github.com/emer/emergent/elog"
 	"github.com/emer/etable/eplot"
+	"github.com/goki/gi/gi"
 )
 
 // AddPlots adds plots based on the unique tables we have, currently assumes they should always be plotted
@@ -27,13 +28,20 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 		plt := gui.TabView.AddNewTab(eplot.KiT_Plot2D, mode+" "+time+" Plot").(*eplot.Plot2D)
 		gui.Plots[key] = plt
 		plt.SetTable(lt.Table)
+		plt.Params.FmMetaMap(lt.Meta)
 
 		for _, item := range lg.Items {
 			_, ok := item.Write[key]
 			if !ok {
 				continue
 			}
-			plt.SetColParams(item.Name, item.Plot.ToBool(), item.FixMin.ToBool(), item.Range.Min, item.FixMax.ToBool(), item.Range.Max)
+			cp := plt.SetColParams(item.Name, item.Plot.ToBool(), item.FixMin.ToBool(), item.Range.Min, item.FixMax.ToBool(), item.Range.Max)
+
+			if item.Color != "" {
+				cp.ColorName = gi.ColorName(item.Color)
+			}
+			cp.TensorIdx = item.TensorIdx
+			cp.ErrCol = item.ErrCol
 
 			plt.Params.Title = title + " " + time + " Plot"
 			plt.Params.XAxisCol = time

@@ -36,6 +36,9 @@ type Item struct {
 	Range     minmax.F64   `desc:"The minimum and maximum values, for plotting"`
 	FixMin    DefaultBool  `desc:"Whether to fix the minimum in the display"`
 	FixMax    DefaultBool  `desc:"Whether to fix the maximum in the display"`
+	ErrCol    string       `desc:"Name of other item that has the error bar values for this item -- for plotting"`
+	TensorIdx int          `desc:"index of tensor to plot -- defaults to 0 -- use -1 to plot all"`
+	Color     string       `desc:"specific color for plot -- uses default ordering of colors if empty"`
 
 	// following are updated in final Process step
 	Modes map[string]bool `desc:"map of eval modes that this item has a Write function for"`

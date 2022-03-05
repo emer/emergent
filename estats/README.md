@@ -1,6 +1,6 @@
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/estats)
 
-`estats.Stats` provides maps for storing statistics as named scalar and tensor values.  These stats are available in the `elog.Context` for use during logging -- see [elog Docs](https://pkg.go.dev/github.com/emer/emergent/elog).
+`estats.Stats` provides maps for storing statistics as named scalar and tensor values.  These stats are available in the `elog.Context` for use during logging -- see [elog](https://github.com/emer/emergent/tree/master/elog) for example code.
 
 To make relevant stats visible to users, call the `Print` function with a list of stat names -- this can be passed to the `Netview` Record method to show these stats at the bottom of the network view, and / or displayed in a Sims field.
 
@@ -14,7 +14,7 @@ A common use-case for example is to use `F32Tensor` to manage a tensor that is r
 
 ```Go
     ly := ctxt.Net.LayerByName(lnm)
-    tsr := ctxt.Stats.F32TEnsorr(lnm)
+    tsr := ctxt.Stats.F32Tensor(lnm)
     ly.UnitValsTensor(tsr, "Act")
     // tsr now has the "Act" values from given layer -- can be logged, computed on, etc..
 ```

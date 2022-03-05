@@ -381,7 +381,11 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 			continue
 		}
 		disp := (vnm == nv.Var)
-		plt.SetColParams(vnm, disp, vp.Range.FixMin, float64(vp.Range.Min), vp.Range.FixMax, float64(vp.Range.Max))
+		min := vp.Range.Min
+		if min < 0 && vp.Range.FixMin && vp.MinMax.Min >= 0 {
+			min = 0 // netview uses -1..1 but not great for graphs unless needed
+		}
+		plt.SetColParams(vnm, disp, vp.Range.FixMin, float64(min), vp.Range.FixMax, float64(vp.Range.Max))
 	}
 
 	vp.UpdateEndNoSig(updt)
