@@ -294,7 +294,7 @@ This item creates a tensor column that records the average error for each catego
         DimNames:  []string{"Cat"},
         Plot:      elog.DTrue,
         Range:     minmax.F64{Min: 0},
-        // TensorIdx: -1, // plot all values
+        TensorIdx: -1, // plot all values
         Write: elog.WriteMap{
             elog.Scope(elog.Test, elog.Epoch): func(ctx *elog.Context) {
                 ix := ctx.Logs.IdxView(elog.Test, elog.Trial)
@@ -305,6 +305,9 @@ This item creates a tensor column that records the average error for each catego
                 ctx.SetTensor(cats.Cols[1])
             }}})
 ```
+
+## Confusion matricies
+
 
 ## Closest Pattern Stat
 
@@ -352,7 +355,7 @@ At the relevant `Trial` level, call the function to update the RF data based on 
 
 Here's a `TestAll` function that manages the testing of a large number of inputs to compute the RFs (often need a large amount of testing data to sample the space sufficiently to get meaningful results):
 
-```
+```Go
 // TestAll runs through the full set of testing items
 func (ss *Sim) TestAll() {
     ss.TestEnv.Init(ss.TrainEnv.Run.Cur)
@@ -370,5 +373,8 @@ func (ss *Sim) TestAll() {
 }
 ```
 
-## Confusion matricies
+## Representational Similarity Analysis (SimMat)
+
+## Cluster Plots
+
 
