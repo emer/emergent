@@ -64,6 +64,21 @@ type Sel struct {
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
 
+// SetParamFloat sets the value of given parameter
+func (sl *Sel) SetParamFloat(param string, val float64) {
+	sl.Params.SetParamByName(param, fmt.Sprintf("%g", val))
+}
+
+// SetParamString sets the value of given parameter
+func (sl *Sel) SetParamString(param string, val string) {
+	sl.Params.SetParamByName(param, val)
+}
+
+// ParamVal returns the value of given parameter
+func (sl *Sel) ParamVal(param string) (string, error) {
+	return sl.Params.ParamByNameTry(param)
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 // Sheet is a CSS-like style-sheet of params.Sel values, each of which represents
@@ -107,6 +122,35 @@ func (sh *Sheet) SelByName(sel string) *Sel {
 		}
 	}
 	return nil
+}
+
+// SetParamFloat sets the value of given parameter, in selection sel
+func (sh *Sheet) SetParamFloat(sel, param string, val float64) error {
+	sp, err := sh.SelByNameTry(sel)
+	if err != nil {
+		return err
+	}
+	sp.SetParamFloat(param, val)
+	return nil
+}
+
+// SetParamString sets the value of given parameter, in selection sel
+func (sh *Sheet) SetParamString(sel, param string, val string) error {
+	sp, err := sh.SelByNameTry(sel)
+	if err != nil {
+		return err
+	}
+	sp.SetParamString(param, val)
+	return nil
+}
+
+// ParamVal returns the value of given parameter, in selection sel
+func (sh *Sheet) ParamVal(sel, param string) (string, error) {
+	sp, err := sh.SelByNameTry(sel)
+	if err != nil {
+		return "", err
+	}
+	return sp.ParamVal(param)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -186,6 +230,36 @@ func (ps *Set) ValidateSheets(valids []string) error {
 	return nil
 }
 
+// SetParamFloat sets the value of given parameter, in selection sel,
+// in sheet
+func (ps *Set) SetParamFloat(sheet, sel, param string, val float64) error {
+	sp, err := ps.SheetByNameTry(sheet)
+	if err != nil {
+		return err
+	}
+	return sp.SetParamFloat(sel, param, val)
+}
+
+// SetParamString sets the value of given parameter, in selection sel,
+// in sheet
+func (ps *Set) SetParamString(sheet, sel, param string, val string) error {
+	sp, err := ps.SheetByNameTry(sheet)
+	if err != nil {
+		return err
+	}
+	return sp.SetParamString(sel, param, val)
+}
+
+// ParamVal returns the value of given parameter, in selection sel,
+// in sheet
+func (ps *Set) ParamVal(sheet, sel, param string) (string, error) {
+	sp, err := ps.SheetByNameTry(sheet)
+	if err != nil {
+		return "", err
+	}
+	return sp.ParamVal(sel, param)
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 // Sets is a collection of Set's that can be chosen among
@@ -233,4 +307,34 @@ func (ps *Sets) ValidateSheets(valids []string) error {
 // ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
 func (ps *Sets) ElemLabel(idx int) string {
 	return (*ps)[idx].Name
+}
+
+// SetParamFloat sets the value of given parameter, in selection sel,
+// in sheet and set.
+func (ps *Sets) SetParamFloat(set, sheet, sel, param string, val float64) error {
+	sp, err := ps.SetByNameTry(set)
+	if err != nil {
+		return err
+	}
+	return sp.SetParamFloat(sheet, sel, param, val)
+}
+
+// SetParamString sets the value of given parameter, in selection sel,
+// in sheet and set.  Returns error if anything is not found.
+func (ps *Sets) SetParamString(set, sheet, sel, param string, val string) error {
+	sp, err := ps.SetByNameTry(set)
+	if err != nil {
+		return err
+	}
+	return sp.SetParamString(sheet, sel, param, val)
+}
+
+// ParamVal returns the value of given parameter, in selection sel,
+// in sheet and set.  Returns error if anything is not found.
+func (ps *Sets) ParamVal(set, sheet, sel, param string) (string, error) {
+	sp, err := ps.SetByNameTry(set)
+	if err != nil {
+		return "", err
+	}
+	return sp.ParamVal(sheet, sel, param)
 }

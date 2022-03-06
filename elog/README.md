@@ -190,6 +190,27 @@ Overall summary performance statistics have multiple Write functions for differe
             }}})
 ```
 
+## Copy Stats from Testing (or any other log)
+
+It is often convenient to have just one log file with both training and testing performance recorded -- this code copies over relevant stats from the testing epoch log to the training epoch log:
+
+```Go
+    // Copy over Testing items
+    stats := []string{"UnitErr", "PctErr", "PctCor", "PctErr2", "CosDiff"}
+    for _, st := range stats {
+        stnm := st
+        tstnm := "Tst" + st
+        ss.Logs.AddItem(&elog.Item{
+            Name: tstnm,
+            Type: etensor.FLOAT64,
+            Plot: elog.DFalse,
+            Write: elog.WriteMap{
+                elog.Scope(elog.Train, elog.Epoch): func(ctx *elog.Context) {
+                    ctx.SetFloat64(ctx.ItemFloat(elog.Test, elog.Epoch, stnm))
+                }}})
+    }
+```
+
 ## Layer Stats
 
 Iterate over layers of interest (use `LayersByClass` function). It is *essential* to create a local variable inside the loop for the `lnm` variable, which is then captured by the closure (see https://github.com/golang/go/wiki/CommonMistakes):
@@ -212,6 +233,23 @@ Iterate over layers of interest (use `LayersByClass` function). It is *essential
                 }}})
           ...
     }
+```
+
+Here's how to log a projection variable:
+
+```Go
+    ss.Logs.AddItem(&elog.Item{
+        Name:  clnm + "_FF_AvgMaxG",
+        Type:  etensor.FLOAT64,
+        Plot:  elog.DFalse,
+        Range: minmax.F64{Max: 1},
+        Write: elog.WriteMap{
+            elog.Scope(elog.Train, elog.Trial): func(ctx *elog.Context) {
+                ffpj := cly.RecvPrjn(0).(*axon.Prjn)
+                ctx.SetFloat32(ffpj.GScale.AvgMax)
+            }, elog.Scope(elog.AllModes, elog.Epoch): func(ctx *elog.Context) {
+                ctx.SetAgg(ctx.Mode, elog.Trial, agg.AggMean)
+            }}})
 ```
 
 ## Layer Activity Patterns
@@ -308,6 +346,7 @@ This item creates a tensor column that records the average error for each catego
 
 ## Confusion matricies
 
+The [estats](https://github.com/emer/emergent/tree/master/estats) package has a `Confusion` object to manage computation of a confusion matirx -- see [confusion](https://github.com/emer/emergent/tree/master/confusion)  for more info.
 
 ## Closest Pattern Stat
 

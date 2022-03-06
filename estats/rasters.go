@@ -9,18 +9,18 @@ import (
 	"github.com/emer/etable/etensor"
 )
 
-// ConfigRasters configures spike rasters
-func (st *Stats) ConfigRasters(net emer.Network, layers []string) {
-	ncy := 200 // max cycles
-	// spike rast
-	for _, lnm := range layers {
+// ConfigRasters configures spike rasters for given maximum number of cycles
+// and layer names.
+func (st *Stats) ConfigRasters(net emer.Network, maxCyc int, layers []string) {
+	st.Rasters = layers
+	for _, lnm := range st.Rasters {
 		ly := net.LayerByName(lnm)
 		sr := st.F32Tensor("Raster_" + lnm)
 		nu := len(ly.RepIdxs())
 		if nu == 0 {
 			nu = ly.Shape().Len()
 		}
-		sr.SetShape([]int{nu, ncy}, nil, []string{"Nrn", "Cyc"})
+		sr.SetShape([]int{nu, maxCyc}, nil, []string{"Nrn", "Cyc"})
 	}
 }
 
@@ -31,12 +31,15 @@ func (st *Stats) SetRasterCol(sr, tsr *etensor.Float32, col int) {
 	}
 }
 
-// RasterRec records data from given layers, variable name to raster
-// for given cycle number (X axis index)
-func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string, layers []string) {
-	for _, lnm := range layers {
+// RasterRec records data from layers configured with ConfigRasters
+// using variable name, for given cycle number (X axis index)
+func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string) {
+	for _, lnm := range st.Rasters {
 		tsr := st.SetLayerRepTensor(net, lnm, varNm)
 		sr := st.F32Tensor("Raster_" + lnm)
+		if sr.Dim(1) <= cyc {
+			continue
+		}
 		st.SetRasterCol(sr, tsr, cyc)
 	}
 }

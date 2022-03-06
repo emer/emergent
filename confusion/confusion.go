@@ -5,6 +5,8 @@
 package confusion
 
 import (
+	"fmt"
+
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/simat"
 	"github.com/goki/gi/gi"
@@ -28,18 +30,35 @@ var KiT_Matrix = kit.Types.AddType(&Matrix{}, MatrixProps)
 // and resets the data to zero.
 func (cm *Matrix) Init(n int) {
 	cm.Prob.SetShape([]int{n, n}, nil, []string{"N", "N"})
-	cm.Prob.SetZeros()
 	cm.Sum.SetShape([]int{n, n}, nil, []string{"N", "N"})
-	cm.Sum.SetZeros()
 	cm.N.SetShape([]int{n}, nil, []string{"N"})
-	cm.N.SetZeros()
 	cm.Vis.Mat = &cm.Prob
+	cm.Reset()
+}
+
+// Reset resets the data to zero
+func (cm *Matrix) Reset() {
+	cm.Prob.SetZeros()
+	cm.Sum.SetZeros()
+	cm.N.SetZeros()
 }
 
 // SetLabels sets the class labels, for visualization in Vis
 func (cm *Matrix) SetLabels(lbls []string) {
 	cm.Vis.Rows = lbls
 	cm.Vis.Cols = lbls
+}
+
+// InitFromLabels does initialization based on given labels.
+// Calls Init on len(lbls) and SetLabels.
+// Default fontSize = 12 if 0 or -1 passed
+func (cm *Matrix) InitFromLabels(lbls []string, fontSize int) {
+	cm.Init(len(lbls))
+	cm.SetLabels(lbls)
+	if fontSize <= 0 {
+		fontSize = 12
+	}
+	cm.Prob.SetMetaData("font-size", fmt.Sprintf("%d", fontSize))
 }
 
 // Incr increments the data for given class ground truth

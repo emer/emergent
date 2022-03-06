@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/emer/emergent/actrf"
+	"github.com/emer/emergent/confusion"
 	"github.com/emer/emergent/timer"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/pca"
@@ -22,9 +23,11 @@ type Stats struct {
 	Ints       map[string]int
 	F32Tensors map[string]*etensor.Float32 `desc:"float32 tensor used for grabbing values from layers"`
 	F64Tensors map[string]*etensor.Float64 `desc:"float64 tensor as needed for other computations"`
+	Confusion  confusion.Matrix            `view:"no-inline" desc:"confusion matrix"`
 	SimMats    map[string]*simat.SimMat    `desc:"similarity matrix for comparing pattern similarities"`
 	PCA        pca.PCA                     `desc:"one PCA object can be reused for all PCA computations"`
 	ActRFs     actrf.RFs                   `view:"no-inline" desc:"activation-based receptive fields"`
+	Rasters    []string                    `desc:"list of layer names configured for recording raster plots"`
 	Timers     map[string]*timer.Time      `desc:"named timers available for timing how long different computations take (wall-clock time)"`
 }
 

@@ -4,7 +4,37 @@ See [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for detaile
 
 Package `params` provides general-purpose parameter management functionality for organizing multiple sets of parameters efficiently, and basic IO for saving / loading from JSON files and generating Go code to embed into applications, and a basic GUI for viewing and editing.
 
-The main overall unit that is generally operated upon at run-time is the `params.Set`, which is a collection of `params.Sheet`'s (akin to CSS style sheets) that constitute a coherent set of parameters.
+The main overall unit that is generally operated upon at run-time is the `params.Set`, which is a collection of `params.Sheet`'s (akin to CSS style sheets) that constitute a coherent set of parameters.  Here's the structure:
+
+```
+Sets {
+    Set: "Base" {
+        Sheets {
+            "Network": {
+                Sel: "Layer" {
+                    Params: {
+                        "Layer.Inhib.Layer.Gi": "1.1",
+                        ...
+                    }
+                },
+                Sel: ".Back" {
+                    Params: {
+                        "Prjn.PrjnScale.Rel": "0.2",
+                        ...
+                    }
+                }
+            },
+            "Sim": {
+                ...
+            }
+        }
+    },
+    Set: "Option1" {
+        ...
+    }
+}        
+```
+
 
 A good strategy is to have a "Base" Set that has all the best parameters so far, and then other sets can modify specific params relative to that one. Order of application is critical, as subsequent params applications overwrite earlier ones, and the typical order is:
 
@@ -30,7 +60,14 @@ There is a params.Styler interface with methods that any Go type can implement t
 
 Otherwise, the Apply method will just directly apply params to a given struct type if it does not implement the Styler interface.
 
-Parameter values are limited to float64 values *only*.  These can be specified using "enum" style const integer values, and can be applied to any numeric type (they will be automatically converted), but internally this is the only parameter value type, which greatly simplifies the overall interface, and handles the vast majority of use-cases (especially because named options are just integers and can be set as such).
+Parameter values are stored as strings, which can represent any value.
 
 Finally, there are methods to show where params.Set's set the same parameter differently, and to compare with the default settings on a given object type using go struct field tags of the form def:"val1[,val2...]".
+
+# Providing direct access to specific params
+
+The best way to provide the user direct access to specific parameter values through the Params mechanisms is to put the relevant params in the `Sim` object, where they will be editable fields, and then call `SetParamFloat` or `SetParamString` as appropriate with the path to the parameter in question, followed by a call to apply the params.
+
+The current value can be obtained by the `ParamVal` methods.
+
 

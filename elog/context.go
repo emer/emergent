@@ -133,6 +133,9 @@ func (ctx *Context) ItemFloat(mode EvalModes, time Times, itemNm string) float64
 // in log for given scope.
 func (ctx *Context) ItemFloatScope(scope ScopeKey, itemNm string) float64 {
 	dt := ctx.Logs.TableScope(scope)
+	if dt.Rows == 0 {
+		return 0
+	}
 	return dt.CellFloat(itemNm, dt.Rows-1)
 }
 
@@ -146,6 +149,9 @@ func (ctx *Context) ItemString(mode EvalModes, time Times, itemNm string) string
 // in log for given scope.
 func (ctx *Context) ItemStringScope(scope ScopeKey, itemNm string) string {
 	dt := ctx.Logs.TableScope(scope)
+	if dt.Rows == 0 {
+		return ""
+	}
 	return dt.CellString(itemNm, dt.Rows-1)
 }
 

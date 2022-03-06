@@ -159,6 +159,49 @@ func TestParamSetsWriteGo(t *testing.T) {
 	}
 }
 
+func TestParamSetsSet(t *testing.T) {
+	cval, err := paramSets.ParamVal("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On")
+	if err != nil {
+		t.Error(err)
+	}
+	// fmt.Printf("current value: %s\n", cval)
+	if cval != "false" {
+		t.Errorf("value should have been false: %s\n", cval)
+	}
+	err = paramSets.SetParamString("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", "true")
+	if err != nil {
+		t.Error(err)
+	}
+	cval, err = paramSets.ParamVal("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On")
+	// fmt.Printf("new value: %s\n", cval)
+	if cval != "true" {
+		t.Errorf("value should have been true: %s\n", cval)
+	}
+	err = paramSets.SetParamFloat("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", 5.1)
+	if err != nil {
+		t.Error(err)
+	}
+	cval, err = paramSets.ParamVal("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On")
+	// fmt.Printf("new value: %s\n", cval)
+	if cval != "5.1" {
+		t.Errorf("value should have been 5.1: %s\n", cval)
+	}
+	cval, err = paramSets.ParamVal("Basre", "Network2", "Prjn", "Prjn.Learn.WtBal.On")
+	if err == nil {
+		t.Errorf("Should have had an error")
+	}
+	// fmt.Printf("error: %s\n", err)
+	cval, err = paramSets.ParamVal("Base", "Network2", "Prjn", "Prjn.Learn.WtBal.On")
+	if err == nil {
+		t.Errorf("Should have had an error")
+	}
+	cval, err = paramSets.ParamVal("Base", "Network", "Prjns", "Prjn.Learn.WtBal.On")
+	if err == nil {
+		t.Errorf("Should have had an error")
+	}
+	// fmt.Printf("error: %s\n", err)
+}
+
 var trgHypers = `{
   "Hidden1": {
     "Nm": "Hidden1",

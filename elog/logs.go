@@ -13,6 +13,8 @@ import (
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/estats"
+	"github.com/emer/empi/empi"
+	"github.com/emer/empi/mpi"
 	"github.com/emer/etable/etable"
 )
 
@@ -230,12 +232,31 @@ func (lg *Logs) LogRowScope(sk ScopeKey, row int) *etable.Table {
 
 // ResetLog resets the log for given mode, time, at given row.
 // by setting number of rows = 0
+// The IdxViews are reset too.
 func (lg *Logs) ResetLog(mode EvalModes, time Times) {
 	sk := Scope(mode, time)
 	lt := lg.Tables[sk]
 	dt := lt.Table
 	dt.SetNumRows(0)
-	lt.IdxView = nil // dirty that so it is regenerated later when needed
+	lt.ResetIdxViews()
+}
+
+// MPIGatherTableRows calls empi.GatherTableRows on the given log table
+// using an "MPI" suffixed MiscTable that is then switched out with the main table.
+// The IdxViews are reset too.
+func (lg *Logs) MPIGatherTableRows(mode EvalModes, time Times, comm *mpi.Comm) {
+	sk := Scope(mode, time)
+	lt := lg.Tables[sk]
+	dt := lt.Table
+	skm := string(sk + "MPI")
+	mt, has := lg.MiscTables[skm]
+	if !has {
+		mt = &etable.Table{}
+	}
+	empi.GatherTableRows(mt, dt, comm)
+	lt.Table = mt
+	lg.MiscTables[skm] = dt // note: actual underlying tables are always being swapped
+	lt.ResetIdxViews()
 }
 
 // SetLogFile sets the log filename for given scope
