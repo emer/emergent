@@ -242,8 +242,11 @@ func (lg *Logs) ResetLog(mode EvalModes, time Times) {
 }
 
 // MPIGatherTableRows calls empi.GatherTableRows on the given log table
-// using an "MPI" suffixed MiscTable that is then switched out with the main table.
-// The IdxViews are reset too.
+// using an "MPI" suffixed MiscTable that is then switched out with the main table,
+// so that any subsequent aggregation etc operates as usual on the full set of data.
+// IMPORTANT: this switch means that the number of rows in the table MUST be reset
+// back to either 0 (e.g., ResetLog) or the target number of rows, after the table
+// is used, otherwise it will grow exponentially!
 func (lg *Logs) MPIGatherTableRows(mode EvalModes, time Times, comm *mpi.Comm) {
 	sk := Scope(mode, time)
 	lt := lg.Tables[sk]

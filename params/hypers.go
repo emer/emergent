@@ -63,9 +63,9 @@ func (pr *Hypers) ParamByName(name string) map[string]string {
 	return (*pr)[name]
 }
 
-// SetParamByName sets given parameter by name to given value.
+// SetByName sets given parameter by name to given value.
 // (just a wrapper around map set function)
-func (pr *Hypers) SetParamByName(name string, value map[string]string) {
+func (pr *Hypers) SetByName(name string, value map[string]string) {
 	(*pr)[name] = value
 }
 

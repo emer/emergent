@@ -168,7 +168,7 @@ func TestParamSetsSet(t *testing.T) {
 	if cval != "false" {
 		t.Errorf("value should have been false: %s\n", cval)
 	}
-	err = paramSets.SetParamString("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", "true")
+	err = paramSets.SetString("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", "true")
 	if err != nil {
 		t.Error(err)
 	}
@@ -177,7 +177,7 @@ func TestParamSetsSet(t *testing.T) {
 	if cval != "true" {
 		t.Errorf("value should have been true: %s\n", cval)
 	}
-	err = paramSets.SetParamFloat("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", 5.1)
+	err = paramSets.SetFloat("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", 5.1)
 	if err != nil {
 		t.Error(err)
 	}

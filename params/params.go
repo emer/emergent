@@ -42,9 +42,9 @@ func (pr *Params) ParamByName(name string) string {
 	return (*pr)[name]
 }
 
-// SetParamByName sets given parameter by name to given value.
+// SetByName sets given parameter by name to given value.
 // (just a wrapper around map set function)
-func (pr *Params) SetParamByName(name, value string) {
+func (pr *Params) SetByName(name, value string) {
 	(*pr)[name] = value
 }
 
@@ -64,14 +64,14 @@ type Sel struct {
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
 
-// SetParamFloat sets the value of given parameter
-func (sl *Sel) SetParamFloat(param string, val float64) {
-	sl.Params.SetParamByName(param, fmt.Sprintf("%g", val))
+// SetFloat sets the value of given parameter
+func (sl *Sel) SetFloat(param string, val float64) {
+	sl.Params.SetByName(param, fmt.Sprintf("%g", val))
 }
 
-// SetParamString sets the value of given parameter
-func (sl *Sel) SetParamString(param string, val string) {
-	sl.Params.SetParamByName(param, val)
+// SetString sets the value of given parameter
+func (sl *Sel) SetString(param string, val string) {
+	sl.Params.SetByName(param, val)
 }
 
 // ParamVal returns the value of given parameter
@@ -124,23 +124,23 @@ func (sh *Sheet) SelByName(sel string) *Sel {
 	return nil
 }
 
-// SetParamFloat sets the value of given parameter, in selection sel
-func (sh *Sheet) SetParamFloat(sel, param string, val float64) error {
+// SetFloat sets the value of given parameter, in selection sel
+func (sh *Sheet) SetFloat(sel, param string, val float64) error {
 	sp, err := sh.SelByNameTry(sel)
 	if err != nil {
 		return err
 	}
-	sp.SetParamFloat(param, val)
+	sp.SetFloat(param, val)
 	return nil
 }
 
-// SetParamString sets the value of given parameter, in selection sel
-func (sh *Sheet) SetParamString(sel, param string, val string) error {
+// SetString sets the value of given parameter, in selection sel
+func (sh *Sheet) SetString(sel, param string, val string) error {
 	sp, err := sh.SelByNameTry(sel)
 	if err != nil {
 		return err
 	}
-	sp.SetParamString(param, val)
+	sp.SetString(param, val)
 	return nil
 }
 
@@ -230,24 +230,24 @@ func (ps *Set) ValidateSheets(valids []string) error {
 	return nil
 }
 
-// SetParamFloat sets the value of given parameter, in selection sel,
+// SetFloat sets the value of given parameter, in selection sel,
 // in sheet
-func (ps *Set) SetParamFloat(sheet, sel, param string, val float64) error {
+func (ps *Set) SetFloat(sheet, sel, param string, val float64) error {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return err
 	}
-	return sp.SetParamFloat(sel, param, val)
+	return sp.SetFloat(sel, param, val)
 }
 
-// SetParamString sets the value of given parameter, in selection sel,
+// SetString sets the value of given parameter, in selection sel,
 // in sheet
-func (ps *Set) SetParamString(sheet, sel, param string, val string) error {
+func (ps *Set) SetString(sheet, sel, param string, val string) error {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return err
 	}
-	return sp.SetParamString(sel, param, val)
+	return sp.SetString(sel, param, val)
 }
 
 // ParamVal returns the value of given parameter, in selection sel,
@@ -309,24 +309,24 @@ func (ps *Sets) ElemLabel(idx int) string {
 	return (*ps)[idx].Name
 }
 
-// SetParamFloat sets the value of given parameter, in selection sel,
+// SetFloat sets the value of given parameter, in selection sel,
 // in sheet and set.
-func (ps *Sets) SetParamFloat(set, sheet, sel, param string, val float64) error {
+func (ps *Sets) SetFloat(set, sheet, sel, param string, val float64) error {
 	sp, err := ps.SetByNameTry(set)
 	if err != nil {
 		return err
 	}
-	return sp.SetParamFloat(sheet, sel, param, val)
+	return sp.SetFloat(sheet, sel, param, val)
 }
 
-// SetParamString sets the value of given parameter, in selection sel,
+// SetString sets the value of given parameter, in selection sel,
 // in sheet and set.  Returns error if anything is not found.
-func (ps *Sets) SetParamString(set, sheet, sel, param string, val string) error {
+func (ps *Sets) SetString(set, sheet, sel, param string, val string) error {
 	sp, err := ps.SetByNameTry(set)
 	if err != nil {
 		return err
 	}
-	return sp.SetParamString(sheet, sel, param, val)
+	return sp.SetString(sheet, sel, param, val)
 }
 
 // ParamVal returns the value of given parameter, in selection sel,

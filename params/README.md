@@ -66,7 +66,7 @@ Finally, there are methods to show where params.Set's set the same parameter dif
 
 # Providing direct access to specific params
 
-The best way to provide the user direct access to specific parameter values through the Params mechanisms is to put the relevant params in the `Sim` object, where they will be editable fields, and then call `SetParamFloat` or `SetParamString` as appropriate with the path to the parameter in question, followed by a call to apply the params.
+The best way to provide the user direct access to specific parameter values through the Params mechanisms is to put the relevant params in the `Sim` object, where they will be editable fields, and then call `SetFloat` or `SetString` as appropriate with the path to the parameter in question, followed by a call to apply the params.
 
 The current value can be obtained by the `ParamVal` methods.
 
