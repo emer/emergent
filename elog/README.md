@@ -99,6 +99,30 @@ func (ss *Sim) Log(mode elog.EvalModes, time elog.Times) {
 }
 ```
 
+### Resetting logs
+
+Often, at the end of the `Log` function, you need to reset logs at a lower level, after the data has been aggregated.  This is critical for logs that add rows incrementally, and also when using MPI aggregation.
+
+```Go
+	if time == elog.Epoch { // Reset Trial log after Epoch
+		ss.Logs.ResetLog(mode, elog.Trial)
+	}
+```
+
+### MPI Aggregation
+
+When splitting trials across different processors using [mpi](https://github.com/emer/empi), you typically need to gather the trial-level data for aggregating at the epoch level.  There is a function that handles this:
+
+```Go
+	if ss.UseMPI && time == elog.Epoch { // Must gather data for trial level if doing epoch level
+		ss.Logs.MPIGatherTableRows(mode, elog.Trial, ss.Comm)
+	}
+```
+
+The function switches the aggregated table in place of the local table, so that all the usual functions accessing the trial data will work properly.  Because of this, it is essential to do the `ResetLog` or otherwise call `SetNumRows` to restore the trial log back to the proper number of rows -- otherwise it will grow exponentially!
+
+### Additional stats
+
 There are various additional analysis functions called here, for example this one that generates summary statistics about the overall performance across runs -- these are stored in the `MiscTables` in the `Logs` object:
 
 ```Go
