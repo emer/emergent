@@ -21,8 +21,9 @@ type Stats struct {
 	Floats     map[string]float64
 	Strings    map[string]string
 	Ints       map[string]int
-	F32Tensors map[string]*etensor.Float32 `desc:"float32 tensor used for grabbing values from layers"`
-	F64Tensors map[string]*etensor.Float64 `desc:"float64 tensor as needed for other computations"`
+	F32Tensors map[string]*etensor.Float32 `desc:"float32 tensors used for grabbing values from layers"`
+	F64Tensors map[string]*etensor.Float64 `desc:"float64 tensors as needed for other computations"`
+	IntTensors map[string]*etensor.Int     `desc:"int tensors as needed for other computations"`
 	Confusion  confusion.Matrix            `view:"no-inline" desc:"confusion matrix"`
 	SimMats    map[string]*simat.SimMat    `desc:"similarity matrix for comparing pattern similarities"`
 	PCA        pca.PCA                     `desc:"one PCA object can be reused for all PCA computations"`
@@ -38,6 +39,7 @@ func (st *Stats) Init() {
 	st.Ints = make(map[string]int)
 	st.F32Tensors = make(map[string]*etensor.Float32)
 	st.F64Tensors = make(map[string]*etensor.Float64)
+	st.IntTensors = make(map[string]*etensor.Int)
 	st.SimMats = make(map[string]*simat.SimMat)
 	st.Timers = make(map[string]*timer.Time)
 }
@@ -128,6 +130,16 @@ func (st *Stats) F64Tensor(name string) *etensor.Float64 {
 	return tsr
 }
 
+// IntTensor returns a int tensor of given name, creating if not yet made
+func (st *Stats) IntTensor(name string) *etensor.Int {
+	tsr, has := st.IntTensors[name]
+	if !has {
+		tsr = &etensor.Int{}
+		st.IntTensors[name] = tsr
+	}
+	return tsr
+}
+
 // SetF32Tensor sets a float32 tensor of given name.
 // Just does: st.F32Tensors[name] = tsr
 func (st *Stats) SetF32Tensor(name string, tsr *etensor.Float32) {
@@ -138,6 +150,12 @@ func (st *Stats) SetF32Tensor(name string, tsr *etensor.Float32) {
 // Just does: st.F64Tensors[name] = tsr
 func (st *Stats) SetF64Tensor(name string, tsr *etensor.Float64) {
 	st.F64Tensors[name] = tsr
+}
+
+// SetIntTensor sets a int tensor of given name.
+// Just does: st.IntTensors[name] = tsr
+func (st *Stats) SetIntTensor(name string, tsr *etensor.Int) {
+	st.IntTensors[name] = tsr
 }
 
 // SimMat returns a SimMat similarity matrix of given name, creating if not yet made
