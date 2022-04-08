@@ -18,22 +18,22 @@ func TestStack(t *testing.T) {
 
 	run := 0
 	lp := trn.Loop(etime.Run)
-	lp.OnStart.Add(func() {
+	lp.Start.Add(func() {
 		run = 0
 		fmt.Printf("Run Start: %d\n", run)
 	})
-	lp.RunPre.Add(func() {
+	lp.Pre.Add(func() {
 		fmt.Printf("Run Pre: %d\n", run)
 	})
-	lp.RunPost.Add(func() {
+	lp.Post.Add(func() {
 		run++
 		fmt.Printf("Run Post: %d\n", run)
 	})
-	lp.OnEnd.Add(func() {
+	lp.End.Add(func() {
 		fmt.Printf("Run End: %d\n", run)
 	})
 	lp.Stop.Add(func() bool {
-		if run >= 3 {
+		if run >= 2 {
 			fmt.Printf("Run Stop: %d\n", run)
 			return true
 		}
@@ -42,23 +42,23 @@ func TestStack(t *testing.T) {
 
 	epoch := 0
 	lp = trn.Loop(etime.Epoch)
-	lp.OnStart.Add(func() {
+	lp.Start.Add(func() {
 		epoch = 0
-		fmt.Printf("Epoch Start: %d\n", epoch)
+		fmt.Printf("\tEpoch Start: %d\n", epoch)
 	})
-	lp.RunPre.Add(func() {
-		fmt.Printf("Epoch Pre: %d\n", epoch)
+	lp.Pre.Add(func() {
+		fmt.Printf("\tEpoch Pre: %d\n", epoch)
 	})
-	lp.RunPost.Add(func() {
+	lp.Post.Add(func() {
 		epoch++
-		fmt.Printf("Epoch Post: %d\n", epoch)
+		fmt.Printf("\tEpoch Post: %d\n", epoch)
 	})
-	lp.OnEnd.Add(func() {
-		fmt.Printf("Epoch End: %d\n", epoch)
+	lp.End.Add(func() {
+		fmt.Printf("\tEpoch End: %d\n", epoch)
 	})
 	lp.Stop.Add(func() bool {
 		if epoch >= 3 {
-			fmt.Printf("Epoch Stop: %d\n", epoch)
+			fmt.Printf("\tEpoch Stop: %d\n", epoch)
 			return true
 		}
 		return false
@@ -66,23 +66,23 @@ func TestStack(t *testing.T) {
 
 	trial := 0
 	lp = trn.Loop(etime.Trial)
-	lp.OnStart.Add(func() {
+	lp.Start.Add(func() {
 		trial = 0
-		fmt.Printf("Trial Start: %d\n", trial)
+		fmt.Printf("\t\tTrial Start: %d\n", trial)
 	})
-	lp.RunPre.Add(func() {
-		fmt.Printf("Trial Pre: %d\n", trial)
+	lp.Pre.Add(func() {
+		fmt.Printf("\t\tTrial Pre: %d\n", trial)
 	})
-	lp.RunPost.Add(func() {
+	lp.Post.Add(func() {
 		trial++
-		fmt.Printf("Trial Post: %d\n", trial)
+		fmt.Printf("\t\tTrial Post: %d\n", trial)
 	})
-	lp.OnEnd.Add(func() {
-		fmt.Printf("Trial End: %d\n", trial)
+	lp.End.Add(func() {
+		fmt.Printf("\t\tTrial End: %d\n", trial)
 	})
 	lp.Stop.Add(func() bool {
 		if trial >= 3 {
-			fmt.Printf("Trial Stop: %d\n", trial)
+			fmt.Printf("\t\tTrial Stop: %d\n", trial)
 			return true
 		}
 		return false

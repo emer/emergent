@@ -8,12 +8,12 @@ import "github.com/emer/emergent/etime"
 
 // Loop represents one loop
 type Loop struct {
-	Scope   etime.ScopeKey `desc:"level of this loop"`
-	OnStart Funcs          `desc:"functions to call at start of loop"`
-	RunPre  Funcs          `desc:"functions to call inside each iteration, prior to looping at lower level"`
-	RunPost Funcs          `desc:"functions to call inside each iteration, after looping at lower level"`
-	Stop    BoolFuncs      `desc:"functions that cause the loop to stop"`
-	OnEnd   Funcs          `desc:"functions to run at the end of the loop"`
+	Scope etime.ScopeKey `desc:"level of this loop"`
+	Start Funcs          `desc:"functions to call at start of loop"`
+	Pre   Funcs          `desc:"functions to call inside each iteration, prior to looping at lower level"`
+	Post  Funcs          `desc:"functions to call inside each iteration, after looping at lower level -- any counters should be incremented here"`
+	Stop  BoolFuncs      `desc:"functions that cause the loop to stop -- if any return true, it stops"`
+	End   Funcs          `desc:"functions to run at the end of the loop, after it has stopped"`
 }
 
 func NewLoop(sc etime.ScopeKey) *Loop {

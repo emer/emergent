@@ -50,23 +50,23 @@ func (st *Stack) Level(lev int) *Loop {
 func (st *Stack) Run(set *Set) {
 	lev := 0
 	lp := st.Level(lev)
-	lp.OnStart.Run()
+	lp.Start.Run()
 	var nlp *Loop
 	for {
-		lp.RunPre.Run()
+		lp.Pre.Run()
 		lev++
 		nlp = st.Level(lev)
 		if nlp != nil {
 			lp = nlp
-			lp.OnStart.Run()
+			lp.Start.Run()
 			continue
 		}
 		lev--
 	post:
-		lp.RunPost.Run()
+		lp.Post.Run()
 		stop := lp.Stop.Run()
 		if stop || set.StopFlag {
-			lp.OnEnd.Run()
+			lp.End.Run()
 			lev--
 			nlp = st.Level(lev)
 			if nlp == nil || set.StopFlag {
