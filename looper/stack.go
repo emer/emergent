@@ -74,25 +74,34 @@ func (st *Stack) StepCheck(lp *Loop) bool {
 	return st.Step.StopCheck(lp.Scope)
 }
 
+// StepIsScope returns true if stepping is happening at scope level of given loop
+func (st *Stack) StepIsScope(lp *Loop) bool {
+	return st.Step.IsScope(lp.Scope)
+}
+
 func (st *Stack) Run(set *Set) {
 	lev := 0
 	lp := st.Level(lev)
-	lp.Start.Run()
-	var nlp *Loop
+	stepStopNext := false
 	for {
-		lp.Pre.Run()
 		lev++
-		nlp = st.Level(lev)
+		nlp := st.Level(lev)
 		if nlp != nil {
+			if stepStopNext && st.StepIsScope(nlp) {
+				stepStopNext = false
+				break
+			}
 			lp = nlp
-			lp.Start.Run()
 			continue
 		}
 		lev--
-	post:
-		lp.Post.Run()
+	main:
+		lp.Main.Run()
 		stop := st.StopCheck(set, lp)
 		if stop {
+			if st.StepCheck(lp) {
+				stepStopNext = true // can't stop now, do it next time..
+			}
 			lp.End.Run()
 			lev--
 			nlp = st.Level(lev)
@@ -100,7 +109,7 @@ func (st *Stack) Run(set *Set) {
 				break
 			}
 			lp = nlp
-			goto post
+			goto main
 		} else {
 			if st.StepCheck(lp) {
 				break

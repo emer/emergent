@@ -6,7 +6,7 @@ package looper
 
 import "github.com/emer/emergent/etime"
 
-func StdTrainTestCycle() *Set {
+func StdTrainTestPhaseCycle() *Set {
 	set := NewSet()
 
 	trn := NewStack(etime.Train, etime.Run, etime.Epoch, etime.Trial, etime.Phase, etime.Cycle)
