@@ -13,7 +13,7 @@ import (
 
 func TestStack(t *testing.T) {
 	set := NewSet()
-	trn := NewStack(etime.Train, etime.Run, etime.Epoch, etime.Trial)
+	trn := NewStack(etime.Train.String(), etime.Run, etime.Epoch, etime.Trial)
 	set.AddStack(trn)
 
 	run := 0

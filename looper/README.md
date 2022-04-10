@@ -28,8 +28,7 @@ End()                      // Reset counters here so next pass starts over
 
 To make this work, an initialization function must be run prior to starting, which puts the system in a ready-to-run state.  The `End()` function at each level must likewise ensure that it is ready to start again properly the next time through.
 
-The 
-
+The [envlp](https://github.com/emer/emergent/tree/master/envlp) Env is designed to work in concert with the looper control, where the Env holds counter values, and looper automatically increments and uses these counters to stop looping at a given level.
 
 # Concrete Example of Looping Logic
 
