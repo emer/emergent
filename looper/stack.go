@@ -5,14 +5,17 @@
 package looper
 
 import (
-	"github.com/emer/emergent/env"
+	"github.com/emer/emergent/envlp"
 	"github.com/emer/emergent/etime"
 )
 
-// Stack contains one stack of nested loops, associated with one EvalMode
+// Stack contains one stack of nested loops,
+// associated with one evaluation Mode, and, optionally, envlp.Env.
+// If the Env is set, then counters at corresponding Scope levels
+// are incremented, checked for stopping, and reset to control looping.
 type Stack struct {
 	Mode  string                   `desc:"eval mode for this stack"`
-	Env   env.Env                  `desc:"environment used by default for loop iteration, stopping, if set"`
+	Env   envlp.Env                `desc:"environment used by default for loop iteration, stopping, if set"`
 	Order []etime.ScopeKey         `desc:"order of the loops"`
 	Loops map[etime.ScopeKey]*Loop `desc:"the loops by scope"`
 	Step  Step                     `desc:"stepping state"`
@@ -60,11 +63,26 @@ func (st *Stack) Level(lev int) *Loop {
 	return st.Loops[st.Order[lev]]
 }
 
-// StopCheck checks if it is time to stop, based on set.StopFlag,
-// Env counters (if set), and loop Stop functions
-func (st *Stack) StopCheck(set *Set, lp *Loop) bool {
+// MainRun runs Main functions on loop, and then increments Env counter
+// at same Scope level (if Env)
+func (st *Stack) MainRun(lp *Loop) {
+	lp.Main.Run()
 	if st.Env != nil {
-		// todo
+		if ctr, ok := st.Env.Counters()[lp.Scope]; ok {
+			ctr.Incr()
+		}
+	}
+}
+
+// StopCheck checks if it is time to stop, based on Env counters (if Env),
+// and loop Stop functions.
+func (st *Stack) StopCheck(lp *Loop) bool {
+	if st.Env != nil {
+		if ctr, ok := st.Env.Counters()[lp.Scope]; ok {
+			if ctr.IsOverMax() {
+				return true
+			}
+		}
 	}
 	return lp.Stop.Run()
 }
@@ -79,6 +97,19 @@ func (st *Stack) StepIsScope(lp *Loop) bool {
 	return st.Step.IsScope(lp.Scope)
 }
 
+// EndRun runs End functions on loop, and then resets Env counter
+// at same Scope level (if Env)
+func (st *Stack) EndRun(lp *Loop) {
+	lp.End.Run()
+	if st.Env != nil {
+		if ctr, ok := st.Env.Counters()[lp.Scope]; ok {
+			ctr.ResetIfOverMax()
+		}
+	}
+}
+
+// Run runs the stack of looping functions.  It will stop at any existing
+// Step settings -- call StepClear to clear those.
 func (st *Stack) Run(set *Set) {
 	lev := 0
 	lp := st.Level(lev)
@@ -96,13 +127,13 @@ func (st *Stack) Run(set *Set) {
 		}
 		lev--
 	main:
-		lp.Main.Run()
-		stop := st.StopCheck(set, lp)
+		st.MainRun(lp)
+		stop := st.StopCheck(lp)
 		if stop {
 			if st.StepCheck(lp) {
 				stepStopNext = true // can't stop now, do it next time..
 			}
-			lp.End.Run()
+			st.EndRun(lp)
 			lev--
 			nlp = st.Level(lev)
 			if nlp == nil {

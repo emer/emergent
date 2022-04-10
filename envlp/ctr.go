@@ -35,6 +35,17 @@ func (ct *Ctr) IsOverMax() bool {
 	return ct.Max > 0 && ct.Cur >= ct.Max
 }
 
+// ResetIfOverMax resets the current counter value to 0,
+// if counter is at or over Max (only if Max > 0).
+// returns true if reset
+func (ct *Ctr) ResetIfOverMax() bool {
+	if ct.IsOverMax() {
+		ct.Set(0)
+		return true
+	}
+	return false
+}
+
 // Set sets the Cur value if different from Cur, while preserving previous value.
 // Returns true if changed
 func (ct *Ctr) Set(cur int) bool {
@@ -46,7 +57,7 @@ func (ct *Ctr) Set(cur int) bool {
 	return true
 }
 
-////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 // Ctrs
 
 // Ctrs is a map of counters by scope, used to manage counters in the Env.

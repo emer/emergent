@@ -22,7 +22,7 @@ import "github.com/emer/emergent/etime"
 //
 type Loop struct {
 	Scope etime.ScopeKey `desc:"scope level of this loop"`
-	Main  Funcs          `desc:"main functions to call inside each iteration, after looping at lower level for non-terminal levels -- any counters should be incremented here"`
+	Main  Funcs          `desc:"main functions to call inside each iteration, after looping at lower level for non-terminal levels -- any counters should be incremented here -- if there is an Env set for the Stack, then any counter in the Env at the corresponding Scope will automatically be incremented *after* these Main functions are run"`
 	Stop  BoolFuncs      `desc:"functions that cause the loop to stop -- if any return true, it stops"`
 	End   Funcs          `desc:"functions to run at the end of the loop, after it has stopped.  counters should be reset here, so next iteration starts over."`
 }

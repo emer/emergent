@@ -28,6 +28,11 @@ End()                      // Reset counters here so next pass starts over
 
 To make this work, an initialization function must be run prior to starting, which puts the system in a ready-to-run state.  The `End()` function at each level must likewise ensure that it is ready to start again properly the next time through.
 
+The 
+
+
+# Concrete Example of Looping Logic
+
 The `stack_test.go` output shows the logic of the looping functions:
 
 Here's the trace of a Run with 2 Run iterations, 3 Epoch iterations, and 3 Trials per epoch:
