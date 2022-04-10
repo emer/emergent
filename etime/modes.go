@@ -6,19 +6,19 @@ package etime
 
 import "github.com/goki/ki/kit"
 
-// EvalModes the mode enum
-type EvalModes int32
+// Modes are evaluation modes (Training, Testing, etc)
+type Modes int32
 
-//go:generate stringer -type=EvalModes
+//go:generate stringer -type=Modes
 
-var KiT_EvalModes = kit.Enums.AddEnum(EvalModesN, kit.NotBitFlag, nil)
+var KiT_Modes = kit.Enums.AddEnum(ModesN, kit.NotBitFlag, nil)
 
-func (ev EvalModes) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *EvalModes) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+func (ev Modes) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
+func (ev *Modes) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
 
 // The evaluation modes
 const (
-	NoEvalMode EvalModes = iota
+	NoEvalMode Modes = iota
 
 	// AllModes indicates that the log should occur over all modes present in other items.
 	AllModes
@@ -35,7 +35,7 @@ const (
 	// Analyze when analyzing the representations and behavior of the network
 	Analyze
 
-	EvalModesN
+	ModesN
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

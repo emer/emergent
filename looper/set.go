@@ -28,7 +28,7 @@ func (set *Set) AddStack(st *Stack) {
 }
 
 // Stack returns Stack defined by given top-level scope
-func (set *Set) Stack(mode etime.EvalModes, time etime.Times) (*Stack, error) {
+func (set *Set) Stack(mode etime.Modes, time etime.Times) (*Stack, error) {
 	return set.StackScope(etime.Scope(mode, time))
 }
 
@@ -44,7 +44,7 @@ func (set *Set) StackScope(scope etime.ScopeKey) (*Stack, error) {
 }
 
 // Run Runs Stack defined by given top-level scope
-func (set *Set) Run(mode etime.EvalModes, time etime.Times) {
+func (set *Set) Run(mode etime.Modes, time etime.Times) {
 	set.RunScope(etime.Scope(mode, time))
 }
 
@@ -61,7 +61,7 @@ func (set *Set) RunScope(scope etime.ScopeKey) (*Stack, error) {
 
 // Step Steps Stack defined by given top-level scope, at given step level,
 // Stepping n times (n = 0 turns off stepping)
-func (set *Set) Step(mode etime.EvalModes, time etime.Times, step etime.Times, n int) (*Stack, error) {
+func (set *Set) Step(mode etime.Modes, time etime.Times, step etime.Times, n int) (*Stack, error) {
 	return set.StepScope(etime.Scope(mode, time), etime.Scope(mode, step), n)
 }
 
