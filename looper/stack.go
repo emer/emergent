@@ -18,10 +18,10 @@ type Stack struct {
 	Step  Step                     `desc:"stepping state"`
 }
 
-func NewStack(mode etime.EvalModes, times ...etime.Times) *Stack {
+func NewStack(mode string, times ...etime.Times) *Stack {
 	ord := make([]etime.ScopeKey, len(times))
 	for i, t := range times {
-		ord[i] = etime.Scope(mode, t)
+		ord[i] = etime.ScopeStr(mode, t.String())
 	}
 	return NewStackScope(ord...)
 }

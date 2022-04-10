@@ -9,8 +9,8 @@ import "github.com/emer/emergent/etime"
 func StdTrainTestPhaseCycle() *Set {
 	set := NewSet()
 
-	trn := NewStack(etime.Train, etime.Run, etime.Epoch, etime.Trial, etime.Phase, etime.Cycle)
-	tst := NewStack(etime.Test, etime.Epoch, etime.Trial, etime.Phase, etime.Cycle)
+	trn := NewStack(etime.Train.String(), etime.Run, etime.Epoch, etime.Trial, etime.Phase, etime.Cycle)
+	tst := NewStack(etime.Test.String(), etime.Epoch, etime.Trial, etime.Phase, etime.Cycle)
 
 	set.AddStack(trn)
 	set.AddStack(tst)
