@@ -5,7 +5,6 @@
 package envlp
 
 import (
-	"github.com/emer/emergent/estats"
 	"github.com/emer/emergent/etime"
 )
 
@@ -55,44 +54,4 @@ func (ct *Ctr) Set(cur int) bool {
 	ct.Prv = ct.Cur
 	ct.Cur = cur
 	return true
-}
-
-///////////////////////////////////////////////////////////////////////
-// Ctrs
-
-// Ctrs is a map of counters by scope, used to manage counters in the Env.
-type Ctrs map[etime.ScopeKey]*Ctr
-
-// NewCtrs returns a new Ctrs map based on times and given mode
-func NewCtrs(mode string, times ...etime.Times) Ctrs {
-	ord := make([]etime.ScopeKey, len(times))
-	for i, t := range times {
-		ord[i] = etime.ScopeStr(mode, t.String())
-	}
-	return NewCtrsScope(ord...)
-}
-
-// NewCtrsScope returns a new Ctrs map based on scopes
-func NewCtrsScope(scopes ...etime.ScopeKey) Ctrs {
-	ct := make(map[etime.ScopeKey]*Ctr, len(scopes))
-	for _, sc := range scopes {
-		ct[sc] = &Ctr{}
-	}
-	return ct
-}
-
-// Init does Init on all the counters
-func (cs *Ctrs) Init() {
-	for _, ct := range *cs {
-		ct.Init()
-	}
-}
-
-// CtrsToStats sets the current counter values to estats Int values
-// by their time names only (no eval Mode).
-func (cs *Ctrs) CtrsToStats(stats *estats.Stats) {
-	for _, ct := range *cs {
-		_, tm := ct.Scope.ModesAndTimes()
-		stats.SetInt(tm[0], ct.Cur)
-	}
 }

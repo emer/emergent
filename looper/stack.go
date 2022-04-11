@@ -16,7 +16,7 @@ import (
 type Stack struct {
 	Mode  string                   `desc:"eval mode for this stack"`
 	Env   envlp.Env                `desc:"environment used by default for loop iteration, stopping, if set"`
-	Order []etime.ScopeKey         `desc:"order of the loops"`
+	Order []etime.ScopeKey         `desc:"ordered list of the loops, from outer-most (highest) to inner-most (lowest)"`
 	Loops map[etime.ScopeKey]*Loop `desc:"the loops by scope"`
 	Step  Step                     `desc:"stepping state"`
 }
@@ -31,13 +31,20 @@ func NewStack(mode string, times ...etime.Times) *Stack {
 
 func NewStackScope(scopes ...etime.ScopeKey) *Stack {
 	st := &Stack{}
-	st.Order = scopes
+	st.Order = etime.CloneScopeSlice(scopes)
 	md, _ := st.Order[0].ModesAndTimes()
 	st.Mode = md[0]
 	st.Loops = make(map[etime.ScopeKey]*Loop, len(st.Order))
 	for _, sc := range st.Order {
 		st.Loops[sc] = NewLoop(sc)
 	}
+	return st
+}
+
+func NewStackEnv(ev envlp.Env) *Stack {
+	ctrs := ev.Counters()
+	st := NewStackScope(ctrs.Order...)
+	st.Env = ev
 	return st
 }
 
@@ -68,7 +75,7 @@ func (st *Stack) Level(lev int) *Loop {
 func (st *Stack) MainRun(lp *Loop) {
 	lp.Main.Run()
 	if st.Env != nil {
-		if ctr, ok := st.Env.Counters()[lp.Scope]; ok {
+		if ctr, err := st.Env.Counters().ByScopeTry(lp.Scope); err == nil {
 			ctr.Incr()
 		}
 	}
@@ -78,7 +85,7 @@ func (st *Stack) MainRun(lp *Loop) {
 // and loop Stop functions.
 func (st *Stack) StopCheck(lp *Loop) bool {
 	if st.Env != nil {
-		if ctr, ok := st.Env.Counters()[lp.Scope]; ok {
+		if ctr, err := st.Env.Counters().ByScopeTry(lp.Scope); err == nil {
 			if ctr.IsOverMax() {
 				return true
 			}
@@ -102,7 +109,7 @@ func (st *Stack) StepIsScope(lp *Loop) bool {
 func (st *Stack) EndRun(lp *Loop) {
 	lp.End.Run()
 	if st.Env != nil {
-		if ctr, ok := st.Env.Counters()[lp.Scope]; ok {
+		if ctr, err := st.Env.Counters().ByScopeTry(lp.Scope); err == nil {
 			ctr.ResetIfOverMax()
 		}
 	}

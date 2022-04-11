@@ -38,12 +38,12 @@ type FixedTable struct {
 	GroupCol   string          `desc:"name of the Group column -- defaults to 'Group'"`
 }
 
-func (ft *FixedTable) Name() string   { return ft.Nm }
-func (ft *FixedTable) Desc() string   { return ft.Dsc }
-func (ft *FixedTable) Mode() string   { return ft.EMode }
-func (ft *FixedTable) Counters() Ctrs { return ft.Ctrs }
+func (ft *FixedTable) Name() string    { return ft.Nm }
+func (ft *FixedTable) Desc() string    { return ft.Dsc }
+func (ft *FixedTable) Mode() string    { return ft.EMode }
+func (ft *FixedTable) Counters() *Ctrs { return &ft.Ctrs }
 func (ft *FixedTable) Counter(time etime.Times) *Ctr {
-	return ft.Ctrs[etime.ScopeStr(ft.EMode, time.String())]
+	return ft.Ctrs.ByScope(etime.ScopeStr(ft.EMode, time.String()))
 }
 func (ft *FixedTable) String() string { return ft.TrialName.Cur }
 func (ft *FixedTable) CtrsToStats(stats *estats.Stats) {
@@ -59,7 +59,7 @@ func (ft *FixedTable) CtrsToStats(stats *estats.Stats) {
 func (ft *FixedTable) Config(tbl *etable.IdxView, mode string) {
 	ft.Table = tbl
 	ft.EMode = mode
-	ft.Ctrs = NewCtrs(mode, etime.Run, etime.Epoch, etime.Trial)
+	ft.Ctrs.SetTimes(mode, etime.Run, etime.Epoch, etime.Trial)
 	ft.NameCol = "Name"
 	ft.GroupCol = "Group"
 }

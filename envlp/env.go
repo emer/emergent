@@ -67,8 +67,8 @@ type Env interface {
 	Step()
 
 	// Counters returns the full map of counters used in the Env.
-	// A specific scope counter can be accessed as Counters()[scope]
-	Counters() Ctrs
+	// A specific scope counter can be accessed as Counters().ByScope(scope)
+	Counters() *Ctrs
 
 	// Counter returns counter for given standard etime.Times value, using
 	// the Mode set for this environment to generate a ScopeKey string.

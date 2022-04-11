@@ -26,4 +26,62 @@ The `States32` type is convenient for managing named env states.
 
 Here's some standard boilerplate code used in most Env implementations:
 
+```Go
+// MyEnv is a skeleton environment to use as a starting point for custom envs
+type MyEnv struct {
+	Nm    string     `desc:"name of this environment"`
+	Dsc   string     `desc:"description of this environment"`
+	EMode string     `desc:"eval mode for this env"`
+	Ctrs  envlp.Ctrs `desc:"counters for this environment"`
+}
+
+func (ev *MyEnv) Name() string          { return ev.Nm }
+func (ev *MyEnv) Desc() string          { return ev.Dsc }
+func (ev *MyEnv) Mode() string          { return ev.EMode }
+func (ev *MyEnv) Counters() *envlp.Ctrs { return &ev.Ctrs }
+func (ev *MyEnv) Counter(time etime.Times) *envlp.Ctr {
+	return ev.Ctrs.ByScope(etime.ScopeStr(ev.EMode, time.String()))
+}
+func (ev *MyEnv) String() string { return "" }
+func (ev *MyEnv) CtrsToStats(stats *estats.Stats) {
+	ev.Ctrs.CtrsToStats(stats)
+}
+
+func (ev *MyEnv) Config(mode string) {
+	ev.EMode = mode
+	ev.Ctrs.SetTimes(mode, etime.Run, etime.Epoch, etime.Trial)
+}
+
+func (ev *MyEnv) Validate() error {
+	return nil
+}
+
+func (ev *MyEnv) Init() {
+	run := 0
+	rc := ev.Counter(etime.Run)
+	if rc != nil {
+		run = rc.Cur
+	}
+	ev.Ctrs.Init()
+	if rc != nil {
+		rc.Set(run)
+	}
+}
+
+func (ev *MyEnv) Step() {
+	tc := ev.Counter(etime.Trial)
+	tc.Incr()
+}
+
+func (ev *MyEnv) State(element string) etensor.Tensor {
+	return nil
+}
+
+func (ev *MyEnv) Action(element string, input etensor.Tensor) {
+	// nop
+}
+
+// Compile-time check that implements Env interface
+var _ envlp.Env = (*MyEnv)(nil)
+```
 

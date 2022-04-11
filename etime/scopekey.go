@@ -201,3 +201,12 @@ func SortScopes(scopes []ScopeKey) []ScopeKey {
 	})
 	return scopes
 }
+
+// CloneScopeSlice returns a copy of given ScopeKey slice
+func CloneScopeSlice(ss []ScopeKey) []ScopeKey {
+	cp := make([]ScopeKey, len(ss))
+	for i, sc := range ss {
+		cp[i] = sc
+	}
+	return cp
+}
