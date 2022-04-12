@@ -25,15 +25,34 @@ func NewSet() *Set {
 
 func (set *Set) AddStack(st *Stack) {
 	set.Stacks[st.Scope()] = st
+	st.Set = set
+}
+
+// AddLevels adds given levels to all Stacks.
+// For algorithms to add mechanism inner loops.
+func (set *Set) AddLevels(times ...etime.Times) {
+	for _, st := range set.Stacks {
+		st.AddLevels(times...)
+	}
 }
 
 // Stack returns Stack defined by given top-level scope
-func (set *Set) Stack(mode etime.Modes, time etime.Times) (*Stack, error) {
+func (set *Set) Stack(mode etime.Modes, time etime.Times) *Stack {
 	return set.StackScope(etime.Scope(mode, time))
 }
 
 // StackScope returns Stack defined by given top-level scope
-func (set *Set) StackScope(scope etime.ScopeKey) (*Stack, error) {
+func (set *Set) StackScope(scope etime.ScopeKey) *Stack {
+	return set.Stacks[scope]
+}
+
+// StackTry returns Stack defined by given top-level scope
+func (set *Set) StackTry(mode etime.Modes, time etime.Times) (*Stack, error) {
+	return set.StackScopeTry(etime.Scope(mode, time))
+}
+
+// StackScopeTry returns Stack defined by given top-level scope
+func (set *Set) StackScopeTry(scope etime.ScopeKey) (*Stack, error) {
 	st, ok := set.Stacks[scope]
 	if !ok {
 		err := fmt.Errorf("Set StackScope: scope: %s not found", scope)
@@ -51,11 +70,11 @@ func (set *Set) Run(mode etime.Modes, time etime.Times) {
 // RunScope Runs Stack defined by given top-level scope
 func (set *Set) RunScope(scope etime.ScopeKey) (*Stack, error) {
 	set.StopFlag = false
-	st, err := set.StackScope(scope)
+	st, err := set.StackScopeTry(scope)
 	if err != nil {
 		return st, err
 	}
-	st.Run(set)
+	st.Run()
 	return st, err
 }
 
@@ -69,11 +88,11 @@ func (set *Set) Step(mode etime.Modes, time etime.Times, step etime.Times, n int
 // Stepping n times (n = 0 turns off stepping)
 func (set *Set) StepScope(scope, step etime.ScopeKey, n int) (*Stack, error) {
 	set.StopFlag = false
-	st, err := set.StackScope(scope)
+	st, err := set.StackScopeTry(scope)
 	if err != nil {
 		return st, err
 	}
 	st.SetStepScope(step, n)
-	st.Run(set)
+	st.Run()
 	return st, err
 }

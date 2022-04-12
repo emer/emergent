@@ -74,38 +74,20 @@ func TestEnvStack(t *testing.T) {
 	ev := &TestEnv{}
 	ev.Config(etime.Train.String())
 
-	set := NewSet()
-	trn := NewStackEnv(ev)
-	set.AddStack(trn)
-
 	ev.Counter(etime.Run).Max = 2
 	ev.Counter(etime.Epoch).Max = 3
 	ev.Counter(etime.Trial).Max = 3
 
 	ev.Init()
-	lp := trn.Loop(etime.Run)
-	lp.Main.Add(func() {
-		fmt.Printf("Run Main: %d\n", ev.Counter(etime.Run).Cur)
-	})
-	lp.End.Add(func() {
-		fmt.Printf("Run End: %d\n", ev.Counter(etime.Run).Cur)
-	})
 
-	lp = trn.Loop(etime.Epoch)
-	lp.Main.Add(func() {
-		fmt.Printf("\tEpoch Main: %d\n", ev.Counter(etime.Epoch).Cur)
-	})
-	lp.End.Add(func() {
-		fmt.Printf("\tEpoch End: %d\n", ev.Counter(etime.Epoch).Cur)
-	})
+	set := NewSet()
+	trn := NewStackEnv(ev)
+	set.AddStack(trn)
+	trn.Step.LoopTrace = true
+	// trn.Step.FuncTrace = true
 
-	lp = trn.Loop(etime.Trial)
-	lp.Main.Add(func() {
-		fmt.Printf("\t\tTrial Main: %d\n", ev.Counter(etime.Trial).Cur)
-	})
-	lp.End.Add(func() {
-		fmt.Printf("\t\tTrial End: %d\n", ev.Counter(etime.Trial).Cur)
-	})
+	fmt.Println(trn.DocString())
+	fmt.Println("##########################")
 
 	set.Run(etime.Train, etime.Run)
 

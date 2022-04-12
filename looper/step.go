@@ -6,11 +6,13 @@ package looper
 
 import "github.com/emer/emergent/etime"
 
-// Step manages stepping state
+// Step manages stepping state.  Also trace flag
 type Step struct {
-	Scope etime.ScopeKey `desc:"stepping level"`
-	N     int            `desc:"number of times to iterate at StepScope level, no stepping if 0"`
-	Cnt   int            `desc:"counter for number of times through loop"`
+	Scope     etime.ScopeKey `desc:"stepping level"`
+	N         int            `desc:"number of times to iterate at StepScope level, no stepping if 0"`
+	Cnt       int            `desc:"counter for number of times through loop"`
+	LoopTrace bool           `desc:"if true, print out a trace of looping stages as they run"`
+	FuncTrace bool           `desc:"if true, print out a trace of functions as they run -- implies LoopTrace"`
 }
 
 // Set sets the stepping scope and n -- 0 = no stepping

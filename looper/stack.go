@@ -5,9 +5,16 @@
 package looper
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/emer/emergent/envlp"
 	"github.com/emer/emergent/etime"
+	"github.com/goki/ki/indent"
 )
+
+// IndentSize is number of spaces to indent for output
+var IndentSize = 4
 
 // Stack contains one stack of nested loops,
 // associated with one evaluation Mode, and, optionally, envlp.Env.
@@ -19,8 +26,10 @@ type Stack struct {
 	Order []etime.ScopeKey         `desc:"ordered list of the loops, from outer-most (highest) to inner-most (lowest)"`
 	Loops map[etime.ScopeKey]*Loop `desc:"the loops by scope"`
 	Step  Step                     `desc:"stepping state"`
+	Set   *Set                     `desc:"Set of Stacks that we belong to"`
 }
 
+// NewStack returns new stack for given mode and times
 func NewStack(mode string, times ...etime.Times) *Stack {
 	ord := make([]etime.ScopeKey, len(times))
 	for i, t := range times {
@@ -29,6 +38,7 @@ func NewStack(mode string, times ...etime.Times) *Stack {
 	return NewStackScope(ord...)
 }
 
+// NewStack returns new stack for given list of scopes
 func NewStackScope(scopes ...etime.ScopeKey) *Stack {
 	st := &Stack{}
 	st.Order = etime.CloneScopeSlice(scopes)
@@ -36,16 +46,30 @@ func NewStackScope(scopes ...etime.ScopeKey) *Stack {
 	st.Mode = md[0]
 	st.Loops = make(map[etime.ScopeKey]*Loop, len(st.Order))
 	for _, sc := range st.Order {
-		st.Loops[sc] = NewLoop(sc)
+		st.Loops[sc] = NewLoop(sc, st)
 	}
 	return st
 }
 
+// NewStackEnv returns new stack with loops matching those in
+// the given environment. Adds standard Env counter funcs to
+// manage updating of counters, with Step at the lowest level.
 func NewStackEnv(ev envlp.Env) *Stack {
 	ctrs := ev.Counters()
 	st := NewStackScope(ctrs.Order...)
 	st.Env = ev
+	st.AddEnvFuncs()
 	return st
+}
+
+// AddLevels adds given levels to stack.
+// For algorithms to add mechanism inner loops.
+func (st *Stack) AddLevels(times ...etime.Times) {
+	for _, tm := range times {
+		sc := etime.ScopeStr(st.Mode, tm.String())
+		st.Order = append(st.Order, sc)
+		st.Loops[sc] = NewLoop(sc, st)
+	}
 }
 
 // Scope returns the top-level scope for this stack
@@ -70,33 +94,38 @@ func (st *Stack) Level(lev int) *Loop {
 	return st.Loops[st.Order[lev]]
 }
 
-// MainRun runs Main functions on loop, and then increments Env counter
-// at same Scope level (if Env)
-func (st *Stack) MainRun(lp *Loop) {
-	lp.Main.Run()
-	if st.Env != nil {
-		if ctr, err := st.Env.Counters().ByScopeTry(lp.Scope); err == nil {
-			ctr.Incr()
-		}
+// MainRun runs Main functions on loop
+func (st *Stack) MainRun(lp *Loop, level int) {
+	if st.Step.LoopTrace || st.Step.FuncTrace {
+		fmt.Println(lp.StageString("Main", level))
+	}
+	if st.Step.FuncTrace {
+		lp.Main.RunTrace(level + 1)
+	} else {
+		lp.Main.Run()
 	}
 }
 
-// StopCheck checks if it is time to stop, based on Env counters (if Env),
-// and loop Stop functions.
-func (st *Stack) StopCheck(lp *Loop) bool {
-	if st.Env != nil {
-		if ctr, err := st.Env.Counters().ByScopeTry(lp.Scope); err == nil {
-			if ctr.IsOverMax() {
-				return true
-			}
-		}
+// StopCheck checks if it is time to stop, based on loop Stop functions.
+func (st *Stack) StopCheck(lp *Loop, level int) bool {
+	if st.Step.FuncTrace {
+		fmt.Println(lp.StageString("Stop", level))
+		return lp.Stop.RunTrace(level + 1)
 	}
-	return lp.Stop.Run()
+	stp := lp.Stop.Run()
+	if stp && st.Step.LoopTrace {
+		fmt.Println(lp.StageString("Stop", level))
+	}
+	return stp
 }
 
 // StepCheck checks if it is time to stop based on stepping
-func (st *Stack) StepCheck(lp *Loop) bool {
-	return st.Step.StopCheck(lp.Scope)
+func (st *Stack) StepCheck(lp *Loop, level int) bool {
+	stp := st.Step.StopCheck(lp.Scope)
+	if stp && st.Step.LoopTrace {
+		fmt.Println(lp.StageString("Step", level))
+	}
+	return stp
 }
 
 // StepIsScope returns true if stepping is happening at scope level of given loop
@@ -106,18 +135,20 @@ func (st *Stack) StepIsScope(lp *Loop) bool {
 
 // EndRun runs End functions on loop, and then resets Env counter
 // at same Scope level (if Env)
-func (st *Stack) EndRun(lp *Loop) {
-	lp.End.Run()
-	if st.Env != nil {
-		if ctr, err := st.Env.Counters().ByScopeTry(lp.Scope); err == nil {
-			ctr.ResetIfOverMax()
-		}
+func (st *Stack) EndRun(lp *Loop, level int) {
+	if st.Step.LoopTrace || st.Step.FuncTrace {
+		fmt.Println(lp.StageString("End", level))
+	}
+	if st.Step.FuncTrace {
+		lp.End.RunTrace(level + 1)
+	} else {
+		lp.End.Run()
 	}
 }
 
 // Run runs the stack of looping functions.  It will stop at any existing
 // Step settings -- call StepClear to clear those.
-func (st *Stack) Run(set *Set) {
+func (st *Stack) Run() {
 	lev := 0
 	lp := st.Level(lev)
 	stepStopNext := false
@@ -134,13 +165,13 @@ func (st *Stack) Run(set *Set) {
 		}
 		lev--
 	main:
-		st.MainRun(lp)
-		stop := st.StopCheck(lp)
+		st.MainRun(lp, lev)
+		stop := st.StopCheck(lp, lev)
 		if stop {
-			if st.StepCheck(lp) {
+			if st.StepCheck(lp, lev) {
 				stepStopNext = true // can't stop now, do it next time..
 			}
-			st.EndRun(lp)
+			st.EndRun(lp, lev)
 			lev--
 			nlp = st.Level(lev)
 			if nlp == nil {
@@ -149,10 +180,10 @@ func (st *Stack) Run(set *Set) {
 			lp = nlp
 			goto main
 		} else {
-			if st.StepCheck(lp) {
+			if st.StepCheck(lp, lev) {
 				break
 			}
-			if set.StopFlag {
+			if st.Set.StopFlag {
 				break
 			}
 		}
@@ -175,4 +206,18 @@ func (st *Stack) SetStepScope(scope etime.ScopeKey, n int) {
 // StepClear resets stepping
 func (st *Stack) StepClear() {
 	st.Step.Clear()
+}
+
+// DocString returns an indented summary of the loops and functions in the stack
+func (st *Stack) DocString() string {
+	var sb strings.Builder
+	sb.WriteString("Stack: " + st.Mode + "\n")
+	for i, sc := range st.Order {
+		lp := st.Loops[sc]
+		sb.WriteString(indent.Spaces(i, IndentSize) + string(lp.Scope) + ":\n")
+		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  Main: " + lp.Main.String() + "\n")
+		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  Stop: " + lp.Stop.String() + "\n")
+		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  End:  " + lp.End.String() + "\n")
+	}
+	return sb.String()
 }

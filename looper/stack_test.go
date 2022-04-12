@@ -15,60 +15,56 @@ func TestStack(t *testing.T) {
 	set := NewSet()
 	trn := NewStack(etime.Train.String(), etime.Run, etime.Epoch, etime.Trial)
 	set.AddStack(trn)
+	trn.Step.LoopTrace = true
+	// trn.Step.FuncTrace = true
 
 	run := 0
 	lp := trn.Loop(etime.Run)
-	lp.Main.Add(func() {
+	lp.Main.Add("TestRun:Main", func() {
 		run++
-		fmt.Printf("Run Main: %d\n", run)
 	})
-	lp.Stop.Add(func() bool {
+	lp.Stop.Add("TestRun:Stop", func() bool {
 		if run >= 2 {
-			fmt.Printf("Run Stop: %d\n", run)
 			return true
 		}
 		return false
 	})
-	lp.End.Add(func() {
+	lp.End.Add("TestRun:End", func() {
 		run = 0
-		fmt.Printf("Run End: %d\n", run)
 	})
 
 	epoch := 0
 	lp = trn.Loop(etime.Epoch)
-	lp.Main.Add(func() {
+	lp.Main.Add("TestEpoch:Main", func() {
 		epoch++
-		fmt.Printf("\tEpoch Main: %d\n", epoch)
 	})
-	lp.Stop.Add(func() bool {
+	lp.Stop.Add("TestEpoch:Stop", func() bool {
 		if epoch >= 3 {
-			fmt.Printf("\tEpoch Stop: %d\n", epoch)
 			return true
 		}
 		return false
 	})
-	lp.End.Add(func() {
+	lp.End.Add("TestEpoch:End", func() {
 		epoch = 0
-		fmt.Printf("\tEpoch End: %d\n", epoch)
 	})
 
 	trial := 0
 	lp = trn.Loop(etime.Trial)
-	lp.Main.Add(func() {
+	lp.Main.Add("TestTrial:Main", func() {
 		trial++
-		fmt.Printf("\t\tTrial Main: %d\n", trial)
 	})
-	lp.Stop.Add(func() bool {
+	lp.Stop.Add("TestTrial:Stop", func() bool {
 		if trial >= 3 {
-			fmt.Printf("\t\tTrial Stop: %d\n", trial)
 			return true
 		}
 		return false
 	})
-	lp.End.Add(func() {
+	lp.End.Add("TestTrial:End", func() {
 		trial = 0
-		fmt.Printf("\t\tTrial End: %d\n", trial)
 	})
+
+	fmt.Println(trn.DocString())
+	fmt.Println("##########################")
 
 	set.Run(etime.Train, etime.Run)
 

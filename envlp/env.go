@@ -66,7 +66,7 @@ type Env interface {
 	// the Trial (stepping level) counter reset back to 0.
 	Step()
 
-	// Counters returns the full map of counters used in the Env.
+	// Counters returns the full set of counters used in the Env.
 	// A specific scope counter can be accessed as Counters().ByScope(scope)
 	Counters() *Ctrs
 
