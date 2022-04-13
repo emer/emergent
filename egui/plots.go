@@ -6,13 +6,14 @@ package egui
 
 import (
 	"github.com/emer/emergent/elog"
+	"github.com/emer/emergent/etime"
 	"github.com/emer/etable/eplot"
 	"github.com/goki/gi/gi"
 )
 
 // AddPlots adds plots based on the unique tables we have, currently assumes they should always be plotted
 func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
-	gui.Plots = make(map[elog.ScopeKey]*eplot.Plot2D)
+	gui.Plots = make(map[etime.ScopeKey]*eplot.Plot2D)
 	// for key, table := range Log.Tables {
 	for _, key := range lg.TableOrder {
 		modes, times := key.ModesAndTimes()
@@ -56,12 +57,12 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 }
 
 // Plot returns plot for mode, time scope
-func (gui *GUI) Plot(mode elog.EvalModes, time elog.Times) *eplot.Plot2D {
-	return gui.PlotScope(elog.Scope(mode, time))
+func (gui *GUI) Plot(mode etime.Modes, time etime.Times) *eplot.Plot2D {
+	return gui.PlotScope(etime.Scope(mode, time))
 }
 
 // PlotScope returns plot for given scope
-func (gui *GUI) PlotScope(scope elog.ScopeKey) *eplot.Plot2D {
+func (gui *GUI) PlotScope(scope etime.ScopeKey) *eplot.Plot2D {
 	if !gui.Active {
 		return nil
 	}
@@ -74,15 +75,15 @@ func (gui *GUI) PlotScope(scope elog.ScopeKey) *eplot.Plot2D {
 }
 
 // SetPlot stores given plot in Plots map
-func (gui *GUI) SetPlot(scope elog.ScopeKey, plt *eplot.Plot2D) {
+func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *eplot.Plot2D) {
 	if gui.Plots == nil {
-		gui.Plots = make(map[elog.ScopeKey]*eplot.Plot2D)
+		gui.Plots = make(map[etime.ScopeKey]*eplot.Plot2D)
 	}
 	gui.Plots[scope] = plt
 }
 
 // UpdatePlot updates plot for given mode, time scope
-func (gui *GUI) UpdatePlot(mode elog.EvalModes, time elog.Times) *eplot.Plot2D {
+func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *eplot.Plot2D {
 	plot := gui.Plot(mode, time)
 	if plot != nil {
 		plot.GoUpdate()
@@ -91,7 +92,7 @@ func (gui *GUI) UpdatePlot(mode elog.EvalModes, time elog.Times) *eplot.Plot2D {
 }
 
 // UpdatePlotScope updates plot at given scope
-func (gui *GUI) UpdatePlotScope(scope elog.ScopeKey) *eplot.Plot2D {
+func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *eplot.Plot2D {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
 		plot.GoUpdate()
@@ -101,8 +102,8 @@ func (gui *GUI) UpdatePlotScope(scope elog.ScopeKey) *eplot.Plot2D {
 
 // UpdateCyclePlot updates cycle plot for given mode.
 // only updates every CycleUpdateInterval
-func (gui *GUI) UpdateCyclePlot(mode elog.EvalModes, cycle int) *eplot.Plot2D {
-	plot := gui.Plot(mode, elog.Cycle)
+func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *eplot.Plot2D {
+	plot := gui.Plot(mode, etime.Cycle)
 	if plot == nil {
 		return plot
 	}

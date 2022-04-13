@@ -24,10 +24,7 @@ func TestStack(t *testing.T) {
 		run++
 	})
 	lp.Stop.Add("TestRun:Stop", func() bool {
-		if run >= 2 {
-			return true
-		}
-		return false
+		return run >= 2
 	})
 	lp.End.Add("TestRun:End", func() {
 		run = 0
@@ -66,47 +63,47 @@ func TestStack(t *testing.T) {
 	fmt.Println(trn.DocString())
 	fmt.Println("##########################")
 
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
+
+	fmt.Printf("\n##############\nInit\n")
+	set.Init(etime.Train)
 
 	// stepping
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	run = 0
-	epoch = 0
-	trial = 0
-	set.Step(etime.Train, etime.Run, etime.Trial, 1)
+	set.Step(etime.Train, etime.Trial, 1)
 	// stepping
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 
 	// stepping
+	fmt.Printf("\n##############\nInit\n")
+	set.Init(etime.Train)
+
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	run = 0
-	epoch = 0
-	trial = 0
-	set.Step(etime.Train, etime.Run, etime.Trial, 2)
+	set.Step(etime.Train, etime.Trial, 2)
 	// stepping
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 
 	// stepping
+	fmt.Printf("\n##############\nInit\n")
+	set.Init(etime.Train)
+
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	run = 0
-	epoch = 0
-	trial = 0
-	set.Step(etime.Train, etime.Run, etime.Epoch, 1)
+	set.Step(etime.Train, etime.Epoch, 1)
 	// stepping
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 }

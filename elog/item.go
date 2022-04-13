@@ -5,6 +5,7 @@
 package elog
 
 import (
+	"github.com/emer/emergent/etime"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/minmax"
 )
@@ -22,7 +23,7 @@ func (db *DefaultBool) ToBool() bool {
 }
 
 // WriteMap holds log writing functions for scope keys
-type WriteMap map[ScopeKey]WriteFunc
+type WriteMap map[etime.ScopeKey]WriteFunc
 
 // Item describes one item to be logged -- has all the info
 // for this item, across all scopes where it is relevant.
@@ -46,7 +47,7 @@ type Item struct {
 }
 
 func (item *Item) WriteFunc(mode, time string) (WriteFunc, bool) {
-	val, ok := item.Write[ScopeStr(mode, time)]
+	val, ok := item.Write[etime.ScopeStr(mode, time)]
 	return val, ok
 }
 
@@ -55,23 +56,23 @@ func (item *Item) WriteFunc(mode, time string) (WriteFunc, bool) {
 func (item *Item) SetWriteFuncAll(theFunc WriteFunc) {
 	for mode := range item.Modes {
 		for time := range item.Times {
-			item.Write[ScopeStr(mode, time)] = theFunc
+			item.Write[etime.ScopeStr(mode, time)] = theFunc
 		}
 	}
 }
 
 // SetWriteFuncOver sets the Write function over range of modes and times
-func (item *Item) SetWriteFuncOver(modes []EvalModes, times []Times, theFunc WriteFunc) {
+func (item *Item) SetWriteFuncOver(modes []etime.Modes, times []etime.Times, theFunc WriteFunc) {
 	for _, mode := range modes {
 		for _, time := range times {
-			item.Write[Scope(mode, time)] = theFunc
+			item.Write[etime.Scope(mode, time)] = theFunc
 		}
 	}
 }
 
 // SetWriteFunc sets Write function for one mode, time
-func (item *Item) SetWriteFunc(mode EvalModes, time Times, theFunc WriteFunc) {
-	item.SetWriteFuncOver([]EvalModes{mode}, []Times{time}, theFunc)
+func (item *Item) SetWriteFunc(mode etime.Modes, time etime.Times, theFunc WriteFunc) {
+	item.SetWriteFuncOver([]etime.Modes{mode}, []etime.Times{time}, theFunc)
 }
 
 // SetEachScopeKey updates the Write map so that it only contains entries
@@ -86,7 +87,7 @@ func (item *Item) SetEachScopeKey() {
 			doReplace = true
 			for _, m := range modes {
 				for _, t := range times {
-					newWrite[ScopeStr(m, t)] = c
+					newWrite[etime.ScopeStr(m, t)] = c
 				}
 			}
 		} else {
@@ -114,12 +115,12 @@ func (item *Item) CompileScopes() {
 	}
 }
 
-func (item *Item) HasMode(mode EvalModes) bool {
+func (item *Item) HasMode(mode etime.Modes) bool {
 	_, has := item.Modes[mode.String()]
 	return has
 }
 
-func (item *Item) HasTime(time Times) bool {
+func (item *Item) HasTime(time etime.Times) bool {
 	_, has := item.Times[time.String()]
 	return has
 }

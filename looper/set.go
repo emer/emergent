@@ -13,18 +13,25 @@ import (
 
 // Set contains a set of interconnected loop Stacks (e.g., Train, Test, etc)
 type Set struct {
-	Stacks   map[etime.ScopeKey]*Stack `desc:"the collection of loop stacks"`
-	StopFlag bool                      `desc:"if true, running will stop at soonest opportunity"`
+	Stacks   map[string]*Stack `desc:"the collection of loop stacks -- key is typically etime.Mode"`
+	StopFlag bool              `desc:"if true, running will stop at soonest opportunity"`
 }
 
 func NewSet() *Set {
 	set := &Set{}
-	set.Stacks = make(map[etime.ScopeKey]*Stack)
+	set.InitMap()
 	return set
 }
 
+func (set *Set) InitMap() {
+	if set.Stacks == nil {
+		set.Stacks = make(map[string]*Stack)
+	}
+}
+
 func (set *Set) AddStack(st *Stack) {
-	set.Stacks[st.Scope()] = st
+	set.InitMap()
+	set.Stacks[st.Mode] = st
 	st.Set = set
 }
 
@@ -36,41 +43,59 @@ func (set *Set) AddLevels(times ...etime.Times) {
 	}
 }
 
-// Stack returns Stack defined by given top-level scope
-func (set *Set) Stack(mode etime.Modes, time etime.Times) *Stack {
-	return set.StackScope(etime.Scope(mode, time))
+// Stack returns Stack defined by given mode
+func (set *Set) Stack(mode etime.Modes) *Stack {
+	return set.Stacks[mode.String()]
 }
 
-// StackScope returns Stack defined by given top-level scope
-func (set *Set) StackScope(scope etime.ScopeKey) *Stack {
-	return set.Stacks[scope]
+// StackTry returns Stack defined by given mode, returning err if not found
+func (set *Set) StackTry(mode etime.Modes) (*Stack, error) {
+	return set.StackNameTry(mode.String())
 }
 
-// StackTry returns Stack defined by given top-level scope
-func (set *Set) StackTry(mode etime.Modes, time etime.Times) (*Stack, error) {
-	return set.StackScopeTry(etime.Scope(mode, time))
-}
-
-// StackScopeTry returns Stack defined by given top-level scope
-func (set *Set) StackScopeTry(scope etime.ScopeKey) (*Stack, error) {
-	st, ok := set.Stacks[scope]
+// StackNameTry returns Stack based on name key, returning err if not found
+func (set *Set) StackNameTry(name string) (*Stack, error) {
+	st, ok := set.Stacks[name]
 	if !ok {
-		err := fmt.Errorf("Set StackScope: scope: %s not found", scope)
+		err := fmt.Errorf("Set StackNameTry: name: %s not found", name)
 		log.Println(err)
 		return nil, err
 	}
 	return st, nil
 }
 
-// Run Runs Stack defined by given top-level scope
-func (set *Set) Run(mode etime.Modes, time etime.Times) {
-	set.RunScope(etime.Scope(mode, time))
+// InitAll runs Init on all Stacks
+func (set *Set) InitAll() {
+	for _, st := range set.Stacks {
+		st.Init()
+	}
 }
 
-// RunScope Runs Stack defined by given top-level scope
-func (set *Set) RunScope(scope etime.ScopeKey) (*Stack, error) {
+// Init initializes Stack defined by given mode
+func (set *Set) Init(mode etime.Modes) {
+	set.InitName(mode.String())
+}
+
+// InitName initializes Stack of given name
+func (set *Set) InitName(name string) (*Stack, error) {
 	set.StopFlag = false
-	st, err := set.StackScopeTry(scope)
+	st, err := set.StackNameTry(name)
+	if err != nil {
+		return st, err
+	}
+	st.Init()
+	return st, err
+}
+
+// Run runs Stack defined by given mode
+func (set *Set) Run(mode etime.Modes) {
+	set.RunName(mode.String())
+}
+
+// RunName runs Stack of given name
+func (set *Set) RunName(name string) (*Stack, error) {
+	set.StopFlag = false
+	st, err := set.StackNameTry(name)
 	if err != nil {
 		return st, err
 	}
@@ -78,17 +103,17 @@ func (set *Set) RunScope(scope etime.ScopeKey) (*Stack, error) {
 	return st, err
 }
 
-// Step Steps Stack defined by given top-level scope, at given step level,
+// Step Steps Stack defined by given mode, at given step level,
 // Stepping n times (n = 0 turns off stepping)
-func (set *Set) Step(mode etime.Modes, time etime.Times, step etime.Times, n int) (*Stack, error) {
-	return set.StepScope(etime.Scope(mode, time), etime.Scope(mode, step), n)
+func (set *Set) Step(mode etime.Modes, step etime.Times, n int) (*Stack, error) {
+	return set.StepName(mode.String(), etime.Scope(mode, step), n)
 }
 
-// StepScope Steps Stack defined by given top-level scope, at given step level,
+// StepName Steps Stack of given name, at given step level,
 // Stepping n times (n = 0 turns off stepping)
-func (set *Set) StepScope(scope, step etime.ScopeKey, n int) (*Stack, error) {
+func (set *Set) StepName(name string, step etime.ScopeKey, n int) (*Stack, error) {
 	set.StopFlag = false
-	st, err := set.StackScopeTry(scope)
+	st, err := set.StackNameTry(name)
 	if err != nil {
 		return st, err
 	}

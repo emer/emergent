@@ -25,6 +25,7 @@ type Stack struct {
 	Env   envlp.Env                `desc:"environment used by default for loop iteration, stopping, if set"`
 	Order []etime.ScopeKey         `desc:"ordered list of the loops, from outer-most (highest) to inner-most (lowest)"`
 	Loops map[etime.ScopeKey]*Loop `desc:"the loops by scope"`
+	Ctxt  map[string]interface{}   `desc:"named context data that can hold state relevant for this stack (e.g., Time struct that holds counters for algorithm inner loops)"`
 	Step  Step                     `desc:"stepping state"`
 	Set   *Set                     `desc:"Set of Stacks that we belong to"`
 }
@@ -45,6 +46,7 @@ func NewStackScope(scopes ...etime.ScopeKey) *Stack {
 	md, _ := st.Order[0].ModesAndTimes()
 	st.Mode = md[0]
 	st.Loops = make(map[etime.ScopeKey]*Loop, len(st.Order))
+	st.Ctxt = make(map[string]interface{})
 	for _, sc := range st.Order {
 		st.Loops[sc] = NewLoop(sc, st)
 	}
@@ -143,6 +145,22 @@ func (st *Stack) EndRun(lp *Loop, level int) {
 		lp.End.RunTrace(level + 1)
 	} else {
 		lp.End.Run()
+	}
+}
+
+// Init runs End functions for all levels in the Stack,
+// to reset state for a fresh Run.
+func (st *Stack) Init() {
+	for i, sc := range st.Order {
+		lp := st.Loops[sc]
+		if st.Step.LoopTrace || st.Step.FuncTrace {
+			fmt.Println(lp.StageString("Init", i))
+		}
+		if st.Step.FuncTrace {
+			lp.End.RunTrace(i + 1)
+		} else {
+			lp.End.Run()
+		}
 	}
 }
 

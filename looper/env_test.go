@@ -89,44 +89,53 @@ func TestEnvStack(t *testing.T) {
 	fmt.Println(trn.DocString())
 	fmt.Println("##########################")
 
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
+
+	fmt.Printf("\n##############\nInit\n")
+	set.Init(etime.Train)
+	ev.Init()
 
 	// stepping
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	ev.Init()
 	ev.Counter(etime.Run).Init()
-	set.Step(etime.Train, etime.Run, etime.Trial, 1)
+	set.Step(etime.Train, etime.Trial, 1)
 	// stepping
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 
 	// stepping
-	fmt.Printf("\n##############\nStep Trial 2\n")
+	fmt.Printf("\n##############\nInit\n")
+	set.Init(etime.Train)
 	ev.Init()
+
+	fmt.Printf("\n##############\nStep Trial 2\n")
 	ev.Counter(etime.Run).Init()
-	set.Step(etime.Train, etime.Run, etime.Trial, 2)
+	set.Step(etime.Train, etime.Trial, 2)
 	// stepping
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Trial 2\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 
 	// stepping
-	fmt.Printf("\n##############\nStep Epoch 1\n")
+	fmt.Printf("\n##############\nInit\n")
+	set.Init(etime.Train)
 	ev.Init()
+
+	fmt.Printf("\n##############\nStep Epoch 1\n")
 	ev.Counter(etime.Run).Init()
-	set.Step(etime.Train, etime.Run, etime.Epoch, 1)
+	set.Step(etime.Train, etime.Epoch, 1)
 	// stepping
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 	fmt.Printf("\n##############\nStep Epoch 1\n")
-	set.Run(etime.Train, etime.Run)
+	set.Run(etime.Train)
 }

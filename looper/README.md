@@ -28,7 +28,13 @@ End()                      // Reset counters here so next pass starts over
 
 To make this work, an initialization function must be run prior to starting, which puts the system in a ready-to-run state.  The `End()` function at each level must likewise ensure that it is ready to start again properly the next time through.
 
-The [envlp](https://github.com/emer/emergent/tree/master/envlp) Env is designed to work in concert with the looper control, where the Env holds counter values, and looper automatically increments and uses these counters to stop looping at a given level.
+The [envlp](https://github.com/emer/emergent/tree/master/envlp) Env is designed to work in concert with the looper control, where the Env holds counter values, and looper automatically increments and uses these counters to stop looping at a given level.  Each `Stack` of loops is associated with a given `etime.Mode`, corresponding to that of the Env.
+
+# Algorithm and Sim Integration
+
+Specific algorithms use `AddLevels` to add inner, lower levels of loops to implement specific algorithm code (typically `Phase` and `Cycle`).  Leabra and Axon use the `Time` struct as a context for holding the relevant counters and mode, which is then accessed directly in the callback functions as needed.
+
+In cases where something must be done prior to looping through cycles (e.g., `ApplyInputs` and new phase startup methods), trigger it on the first cycle, before calling other functions, using a provided `AddCycle0` function.
 
 # Concrete Example of Looping Logic
 
@@ -164,7 +170,4 @@ Step Epoch 1
 	Epoch Main: 1
 ```
 
-# LoopEnv integration
-
-Each `Stack` of loops is associated with a given `etime.EvalMode` and, optionally, an associated `env.LoopEnv` environment.  If the Env is set, then counters on the environment are automatically updated and used for the Stop criterion.
 

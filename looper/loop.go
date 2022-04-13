@@ -28,7 +28,7 @@ type Loop struct {
 	Scope etime.ScopeKey `desc:"scope level of this loop"`
 	Main  Funcs          `desc:"main functions to call inside each iteration, after looping at lower level for non-terminal levels -- any counters should be incremented here -- if there is an Env set for the Stack, then any counter in the Env at the corresponding Scope will automatically be incremented via Env:Incr or Env:Step functions added automatically"`
 	Stop  BoolFuncs      `desc:"functions that cause the loop to stop -- if any return true, it stops"`
-	End   Funcs          `desc:"functions to run at the end of the loop, after it has stopped.  counters should be reset here, so next iteration starts over."`
+	End   Funcs          `desc:"functions to run at the end of the loop, after it has stopped.  counters etc should be reset here, so next iteration starts over afresh.  the Init function calls these to initialize before running."`
 }
 
 func NewLoop(sc etime.ScopeKey, st *Stack) *Loop {

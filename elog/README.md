@@ -20,21 +20,21 @@ The `Context` object is passed to the Item Write functions, and has all the info
 
 # Scopes
 
-Everything is organized according to a `ScopeKey`, which is just a `string`, that is formatted to represent two factors: an **evaluation mode** (standard versions defined by `EvalModes` enum) and a **time scale** (`Times` enum).
+Everything is organized according to a `etime.ScopeKey`, which is just a `string`, that is formatted to represent two factors: an **evaluation mode** (standard versions defined by `etime.Modes` enum) and a **time scale** (`etime.Times` enum).
 
-Standard `EvalModes` are:
+Standard `etime.Modes` are:
 * `Train`
 * `Test`
 * `Validate`
 * `Analyze` -- used for internal representational analysis functions such as PCA, ActRF, SimMat, etc.
 
-Standard `Times` are based on the [Env](https://github.com/emer/emergent/wiki/Env) `TimeScales` augmented with Leabra / Axon finer-grained scales, including:
+Standard `etime.Times` are based on the [Env](https://github.com/emer/emergent/wiki/Env) `TimeScales` augmented with Leabra / Axon finer-grained scales, including:
 * `Cycle`
 * `Trial`
 * `Epoch`
 * `Run`
 
-Other arbitrary scope values can be used -- there are `Scope` versions of every method that take an arbitrary `ScopeKey` that can be composed using the `ScopeStr` method from any two strings, along with the "plain" versions of these methods that take the standard `mode` and `time` enums for convenience.  These enums can themselves also be extended but it is probably easier to just use strings.
+Other arbitrary scope values can be used -- there are `Scope` versions of every method that take an arbitrary `etime.ScopeKey` that can be composed using the `ScopeStr` method from any two strings, along with the "plain" versions of these methods that take the standard `mode` and `time` enums for convenience.  These enums can themselves also be extended but it is probably easier to just use strings.
 
 # Examples
 
@@ -50,50 +50,50 @@ func (ss *Sim) ConfigLogs() {
     ss.Logs.CreateTables()
     ss.Logs.SetContext(&ss.Stats, ss.Net)
     // don't plot certain combinations we don't use
-    ss.Logs.NoPlot(elog.Train, elog.Cycle)
-    ss.Logs.NoPlot(elog.Test, elog.Run)
+    ss.Logs.NoPlot(etime.Train, etime.Cycle)
+    ss.Logs.NoPlot(etime.Test, etime.Run)
     // note: Analyze not plotted by default
-    ss.Logs.SetMeta(elog.Train, elog.Run, "LegendCol", "Params")
+    ss.Logs.SetMeta(etime.Train, etime.Run, "LegendCol", "Params")
     ss.Stats.ConfigRasters(ss.Net, ss.Net.LayersByClass())
 }
 ```
 
-There is one master `Log` function that handles any details associated with different levels of logging -- it is called with the scope elements, e.g., `ss.Log(elog.Train, elog.Trial)`
+There is one master `Log` function that handles any details associated with different levels of logging -- it is called with the scope elements, e.g., `ss.Log(etime.Train, etime.Trial)`
 
 ```Go
 // Log is the main logging function, handles special things for different scopes
-func (ss *Sim) Log(mode elog.EvalModes, time elog.Times) {
+func (ss *Sim) Log(mode etime.Modes, time etime.Times) {
     dt := ss.Logs.Table(mode, time)
     row := dt.Rows
     switch {
-    case mode == elog.Test && time == elog.Epoch:
+    case mode == etime.Test && time == etime.Epoch:
         ss.LogTestErrors()
-    case mode == elog.Train && time == elog.Epoch:
+    case mode == etime.Train && time == etime.Epoch:
         epc := ss.TrainEnv.Epoch.Cur
         if (ss.PCAInterval > 0) && ((epc-1)%ss.PCAInterval == 0) { // -1 so runs on first epc
             ss.PCAStats()
         }
-    case time == elog.Cycle:
+    case time == etime.Cycle:
         row = ss.Stats.Int("Cycle")
-    case time == elog.Trial:
+    case time == etime.Trial:
         row = ss.Stats.Int("Trial")
     }
 
     ss.Logs.LogRow(mode, time, row) // also logs to file, etc
-    if time == elog.Cycle {
-        ss.GUI.UpdateCyclePlot(elog.Test, ss.Time.Cycle)
+    if time == etime.Cycle {
+        ss.GUI.UpdateCyclePlot(etime.Test, ss.Time.Cycle)
     } else {
         ss.GUI.UpdatePlot(mode, time)
     }
 
     // post-logging special statistics
     switch {
-    case mode == elog.Train && time == elog.Run:
+    case mode == etime.Train && time == etime.Run:
         ss.LogRunStats()
-    case mode == elog.Train && time == elog.Trial:
+    case mode == etime.Train && time == etime.Trial:
         epc := ss.TrainEnv.Epoch.Cur
         if (ss.PCAInterval > 0) && (epc%ss.PCAInterval == 0) {
-            ss.Log(elog.Analyze, elog.Trial)
+            ss.Log(etime.Analyze, etime.Trial)
         }
     }
 }
@@ -104,8 +104,8 @@ func (ss *Sim) Log(mode elog.EvalModes, time elog.Times) {
 Often, at the end of the `Log` function, you need to reset logs at a lower level, after the data has been aggregated.  This is critical for logs that add rows incrementally, and also when using MPI aggregation.
 
 ```Go
-	if time == elog.Epoch { // Reset Trial log after Epoch
-		ss.Logs.ResetLog(mode, elog.Trial)
+	if time == etime.Epoch { // Reset Trial log after Epoch
+		ss.Logs.ResetLog(mode, etime.Trial)
 	}
 ```
 
@@ -114,8 +114,8 @@ Often, at the end of the `Log` function, you need to reset logs at a lower level
 When splitting trials across different processors using [mpi](https://github.com/emer/empi), you typically need to gather the trial-level data for aggregating at the epoch level.  There is a function that handles this:
 
 ```Go
-	if ss.UseMPI && time == elog.Epoch { // Must gather data for trial level if doing epoch level
-		ss.Logs.MPIGatherTableRows(mode, elog.Trial, ss.Comm)
+	if ss.UseMPI && time == etime.Epoch { // Must gather data for trial level if doing epoch level
+		ss.Logs.MPIGatherTableRows(mode, etime.Trial, ss.Comm)
 	}
 ```
 
@@ -128,7 +128,7 @@ There are various additional analysis functions called here, for example this on
 ```Go
 // LogRunStats records stats across all runs, at Train Run scope
 func (ss *Sim) LogRunStats() {
-    sk := elog.Scope(elog.Train, elog.Run)
+    sk := etime.Scope(etime.Train, etime.Run)
     lt := ss.Logs.TableDetailsScope(sk)
     ix, _ := lt.NamedIdxView("RunStats")
 
@@ -168,7 +168,7 @@ Then they are easily logged -- just showing different Scope expressions here:
         Type: etensor.INT64,
         Plot: elog.DFalse,
         Write: elog.WriteMap{
-            elog.Scope(elog.AllModes, elog.AllTimes): func(ctx *elog.Context) {
+            etime.Scope(etime.AllModes, etime.AllTimes): func(ctx *elog.Context) {
                 ctx.SetStatInt("Run")
             }}})
 ```
@@ -179,7 +179,7 @@ Then they are easily logged -- just showing different Scope expressions here:
         Type: etensor.INT64,
         Plot: elog.DFalse,
         Write: elog.WriteMap{
-            elog.Scopes([]elog.EvalModes{elog.AllModes}, []elog.Times{elog.Epoch, elog.Trial}): func(ctx *elog.Context) {
+            etime.Scopes([]etime.Modes{etime.AllModes}, []etime.Times{etime.Epoch, etime.Trial}): func(ctx *elog.Context) {
                 ctx.SetStatInt("Epoch")
             }}})
 ```            
@@ -189,7 +189,7 @@ Then they are easily logged -- just showing different Scope expressions here:
         Name: "Trial",
         Type: etensor.INT64,
         Write: elog.WriteMap{
-            elog.Scope(elog.AllModes, elog.Trial): func(ctx *elog.Context) {
+            etime.Scope(etime.AllModes, etime.Trial): func(ctx *elog.Context) {
                 ctx.SetStatInt("Trial")
             }}})
 ```
@@ -204,12 +204,12 @@ Overall summary performance statistics have multiple Write functions for differe
         Type: etensor.FLOAT64,
         Plot: elog.DFalse,
         Write: elog.WriteMap{
-            elog.Scope(elog.AllModes, elog.Trial): func(ctx *elog.Context) {
+            etime.Scope(etime.AllModes, etime.Trial): func(ctx *elog.Context) {
                 ctx.SetStatFloat("TrlUnitErr")
-            }, elog.Scope(elog.AllModes, elog.Epoch): func(ctx *elog.Context) {
-                ctx.SetAgg(ctx.Mode, elog.Trial, agg.AggMean)
-            }, elog.Scope(elog.AllModes, elog.Run): func(ctx *elog.Context) {
-                ix := ctx.LastNRows(ctx.Mode, elog.Epoch, 5)
+            }, etime.Scope(etime.AllModes, etime.Epoch): func(ctx *elog.Context) {
+                ctx.SetAgg(ctx.Mode, etime.Trial, agg.AggMean)
+            }, etime.Scope(etime.AllModes, etime.Run): func(ctx *elog.Context) {
+                ix := ctx.LastNRows(ctx.Mode, etime.Epoch, 5)
                 ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
             }}})
 ```
@@ -229,8 +229,8 @@ It is often convenient to have just one log file with both training and testing 
             Type: etensor.FLOAT64,
             Plot: elog.DFalse,
             Write: elog.WriteMap{
-                elog.Scope(elog.Train, elog.Epoch): func(ctx *elog.Context) {
-                    ctx.SetFloat64(ctx.ItemFloat(elog.Test, elog.Epoch, stnm))
+                etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
+                    ctx.SetFloat64(ctx.ItemFloat(etime.Test, etime.Epoch, stnm))
                 }}})
     }
 ```
@@ -251,7 +251,7 @@ Iterate over layers of interest (use `LayersByClass` function). It is *essential
             FixMax: elog.DFalse,
             Range:  minmax.F64{Max: 1},
             Write: elog.WriteMap{
-                elog.Scope(elog.Train, elog.Epoch): func(ctx *elog.Context) {
+                etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
                     ly := ctx.Layer(clnm).(axon.AxonLayer).AsAxon()
                     ctx.SetFloat32(ly.ActAvg.ActMAvg)
                 }}})
@@ -268,11 +268,11 @@ Here's how to log a projection variable:
         Plot:  elog.DFalse,
         Range: minmax.F64{Max: 1},
         Write: elog.WriteMap{
-            elog.Scope(elog.Train, elog.Trial): func(ctx *elog.Context) {
+            etime.Scope(etime.Train, etime.Trial): func(ctx *elog.Context) {
                 ffpj := cly.RecvPrjn(0).(*axon.Prjn)
                 ctx.SetFloat32(ffpj.GScale.AvgMax)
-            }, elog.Scope(elog.AllModes, elog.Epoch): func(ctx *elog.Context) {
-                ctx.SetAgg(ctx.Mode, elog.Trial, agg.AggMean)
+            }, etime.Scope(etime.AllModes, etime.Epoch): func(ctx *elog.Context) {
+                ctx.SetAgg(ctx.Mode, etime.Trial, agg.AggMean)
             }}})
 ```
 
@@ -293,7 +293,7 @@ A log column can be a tensor of any shape -- the `SetLayerTensor` method on the 
             FixMax:    elog.DTrue,
             Range:     minmax.F64{Max: 1},
             Write: elog.WriteMap{
-                elog.Scope(elog.Test, elog.Trial): func(ctx *elog.Context) {
+                etime.Scope(etime.Test, etime.Trial): func(ctx *elog.Context) {
                     ctx.SetLayerTensor(clnm, "Act")
                 }}})
 ```
@@ -306,8 +306,8 @@ Computing stats on the principal components of variance (PCA) across different i
 // PCAStats computes PCA statistics on recorded hidden activation patterns
 // from Analyze, Trial log data
 func (ss *Sim) PCAStats() {
-    ss.Stats.PCAStats(ss.Logs.IdxView(elog.Analyze, elog.Trial), "ActM", ss.Net.LayersByClass("Hidden"))
-    ss.Logs.ResetLog(elog.Analyze, elog.Trial)
+    ss.Stats.PCAStats(ss.Logs.IdxView(etime.Analyze, etime.Trial), "ActM", ss.Net.LayersByClass("Hidden"))
+    ss.Logs.ResetLog(etime.Analyze, etime.Trial)
 }
 ```
 
@@ -326,7 +326,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
             FixMax:    elog.DTrue,
             Range:     minmax.F64{Max: 1},
             Write: elog.WriteMap{
-                elog.Scope(elog.Analyze, elog.Trial): func(ctx *elog.Context) {
+                etime.Scope(etime.Analyze, etime.Trial): func(ctx *elog.Context) {
                     ctx.SetLayerTensor(clnm, "ActM")
                 }}})
         ss.Logs.AddItem(&elog.Item{
@@ -334,10 +334,10 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
             Type: etensor.FLOAT64,
             Plot: elog.DFalse,
             Write: elog.WriteMap{
-                elog.Scope(elog.Train, elog.Epoch): func(ctx *elog.Context) {
+                etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
                     ctx.SetStatFloat(ctx.Item.Name)
-                }, elog.Scope(elog.AllModes, elog.Run): func(ctx *elog.Context) {
-                    ix := ctx.LastNRows(ctx.Mode, elog.Epoch, 5)
+                }, etime.Scope(etime.AllModes, etime.Run): func(ctx *elog.Context) {
+                    ix := ctx.LastNRows(ctx.Mode, etime.Epoch, 5)
                     ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
                 }}})
        ...
@@ -358,8 +358,8 @@ This item creates a tensor column that records the average error for each catego
         Range:     minmax.F64{Min: 0},
         TensorIdx: -1, // plot all values
         Write: elog.WriteMap{
-            elog.Scope(elog.Test, elog.Epoch): func(ctx *elog.Context) {
-                ix := ctx.Logs.IdxView(elog.Test, elog.Trial)
+            etime.Scope(etime.Test, etime.Epoch): func(ctx *elog.Context) {
+                ix := ctx.Logs.IdxView(etime.Test, etime.Trial)
                 spl := split.GroupBy(ix, []string{"Cat"})
                 split.AggTry(spl, "Err", agg.AggMean)
                 cats := spl.AggsToTable(etable.ColNameOnly)

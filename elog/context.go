@@ -9,6 +9,7 @@ import (
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/estats"
+	"github.com/emer/emergent/etime"
 	"github.com/emer/etable/agg"
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
@@ -24,20 +25,20 @@ type WriteFunc func(ctxt *Context)
 // Provides various convenience functions for setting log values
 // and other commonly-used operations.
 type Context struct {
-	Logs     *Logs         `desc:"pointer to the Logs object with all log data"`
-	Stats    *estats.Stats `desc:"pointer to stats"`
-	Net      emer.Network  `desc:"network"`
-	Item     *Item         `desc:"current log Item"`
-	Scope    ScopeKey      `desc:"current scope key"`
-	Mode     EvalModes     `desc:"current scope eval mode (if standard)"`
-	Time     Times         `desc:"current scope timescale (if standard)"`
-	LogTable *LogTable     `desc:"LogTable with extra data for the table"`
-	Table    *etable.Table `desc:"current table to record value to"`
-	Row      int           `desc:"current row in table to write to"`
+	Logs     *Logs          `desc:"pointer to the Logs object with all log data"`
+	Stats    *estats.Stats  `desc:"pointer to stats"`
+	Net      emer.Network   `desc:"network"`
+	Item     *Item          `desc:"current log Item"`
+	Scope    etime.ScopeKey `desc:"current scope key"`
+	Mode     etime.Modes    `desc:"current scope eval mode (if standard)"`
+	Time     etime.Times    `desc:"current scope timescale (if standard)"`
+	LogTable *LogTable      `desc:"LogTable with extra data for the table"`
+	Table    *etable.Table  `desc:"current table to record value to"`
+	Row      int            `desc:"current row in table to write to"`
 }
 
 // SetTable sets the current table & scope -- called by WriteItems
-func (ctx *Context) SetTable(sk ScopeKey, lt *LogTable, row int) {
+func (ctx *Context) SetTable(sk etime.ScopeKey, lt *LogTable, row int) {
 	ctx.Scope = sk
 	ctx.LogTable = lt
 	ctx.Table = lt.Table
@@ -91,28 +92,28 @@ func (ctx *Context) SetTensor(val etensor.Tensor) {
 // SetAgg sets an aggregated scalar value computed from given eval mode
 // and time scale with same Item name, to current item, row.
 // returns aggregated value
-func (ctx *Context) SetAgg(mode EvalModes, time Times, ag agg.Aggs) float64 {
-	return ctx.SetAggScope(Scope(mode, time), ag)
+func (ctx *Context) SetAgg(mode etime.Modes, time etime.Times, ag agg.Aggs) float64 {
+	return ctx.SetAggScope(etime.Scope(mode, time), ag)
 }
 
 // SetAggScope sets an aggregated scalar value computed from
 // another scope (ScopeKey) with same Item name, to current item, row
 // returns aggregated value
-func (ctx *Context) SetAggScope(scope ScopeKey, ag agg.Aggs) float64 {
+func (ctx *Context) SetAggScope(scope etime.ScopeKey, ag agg.Aggs) float64 {
 	return ctx.SetAggItemScope(scope, ctx.Item.Name, ag)
 }
 
 // SetAggItem sets an aggregated scalar value computed from given eval mode
 // and time scale with given Item name, to current item, row.
 // returns aggregated value
-func (ctx *Context) SetAggItem(mode EvalModes, time Times, itemNm string, ag agg.Aggs) float64 {
-	return ctx.SetAggItemScope(Scope(mode, time), itemNm, ag)
+func (ctx *Context) SetAggItem(mode etime.Modes, time etime.Times, itemNm string, ag agg.Aggs) float64 {
+	return ctx.SetAggItemScope(etime.Scope(mode, time), itemNm, ag)
 }
 
 // SetAggItemScope sets an aggregated scalar value computed from
 // another scope (ScopeKey) with given Item name, to current item, row.
 // returns aggregated value
-func (ctx *Context) SetAggItemScope(scope ScopeKey, itemNm string, ag agg.Aggs) float64 {
+func (ctx *Context) SetAggItemScope(scope etime.ScopeKey, itemNm string, ag agg.Aggs) float64 {
 	ix := ctx.Logs.IdxViewScope(scope)
 	vals := agg.Agg(ix, itemNm, ag)
 	if len(vals) == 0 {
@@ -125,13 +126,13 @@ func (ctx *Context) SetAggItemScope(scope ScopeKey, itemNm string, ag agg.Aggs) 
 
 // ItemFloat returns a float64 value of the last row of given item name
 // in log for given mode, time
-func (ctx *Context) ItemFloat(mode EvalModes, time Times, itemNm string) float64 {
-	return ctx.ItemFloatScope(Scope(mode, time), itemNm)
+func (ctx *Context) ItemFloat(mode etime.Modes, time etime.Times, itemNm string) float64 {
+	return ctx.ItemFloatScope(etime.Scope(mode, time), itemNm)
 }
 
 // ItemFloatScope returns a float64 value of the last row of given item name
 // in log for given scope.
-func (ctx *Context) ItemFloatScope(scope ScopeKey, itemNm string) float64 {
+func (ctx *Context) ItemFloatScope(scope etime.ScopeKey, itemNm string) float64 {
 	dt := ctx.Logs.TableScope(scope)
 	if dt.Rows == 0 {
 		return 0
@@ -141,13 +142,13 @@ func (ctx *Context) ItemFloatScope(scope ScopeKey, itemNm string) float64 {
 
 // ItemString returns a string value of the last row of given item name
 // in log for given mode, time
-func (ctx *Context) ItemString(mode EvalModes, time Times, itemNm string) string {
-	return ctx.ItemStringScope(Scope(mode, time), itemNm)
+func (ctx *Context) ItemString(mode etime.Modes, time etime.Times, itemNm string) string {
+	return ctx.ItemStringScope(etime.Scope(mode, time), itemNm)
 }
 
 // ItemStringScope returns a string value of the last row of given item name
 // in log for given scope.
-func (ctx *Context) ItemStringScope(scope ScopeKey, itemNm string) string {
+func (ctx *Context) ItemStringScope(scope etime.ScopeKey, itemNm string) string {
 	dt := ctx.Logs.TableScope(scope)
 	if dt.Rows == 0 {
 		return ""
@@ -206,15 +207,15 @@ func (ctx *Context) ClosestPat(layNm, unitVar string, pats *etable.Table, colnm,
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
 // NamedIdxView functions.
-func (ctx *Context) LastNRows(mode EvalModes, time Times, n int) *etable.IdxView {
-	return ctx.LastNRowsScope(Scope(mode, time), n)
+func (ctx *Context) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IdxView {
+	return ctx.LastNRowsScope(etime.Scope(mode, time), n)
 }
 
 // LastNRowsScope returns an IdxView onto table for given scope with the last
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
 // NamedIdxView functions.
-func (ctx *Context) LastNRowsScope(sk ScopeKey, n int) *etable.IdxView {
+func (ctx *Context) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IdxView {
 	ix, isnew := ctx.Logs.NamedIdxViewScope(sk, "LastNRows")
 	if !isnew {
 		return ix

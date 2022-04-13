@@ -5,7 +5,7 @@
 package egui
 
 import (
-	"github.com/emer/emergent/elog"
+	"github.com/emer/emergent/etime"
 	"github.com/emer/emergent/netview"
 	"github.com/emer/etable/eplot"
 	"github.com/emer/etable/etview"
@@ -23,8 +23,8 @@ type GUI struct {
 	IsRunning           bool   `view:"-" desc:"true if sim is running"`
 	StopNow             bool   `view:"-" desc:"flag to stop running"`
 
-	Plots map[elog.ScopeKey]*eplot.Plot2D `desc:"plots by scope"`
-	Grids map[string]*etview.TensorGrid   `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
+	Plots map[etime.ScopeKey]*eplot.Plot2D `desc:"plots by scope"`
+	Grids map[string]*etview.TensorGrid    `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
 
 	NetView    *netview.NetView `view:"-" desc:"the network viewer"`
 	NetData    *netview.NetData `view:"-" desc:"net data for recording in nogui mode, if !nil"`

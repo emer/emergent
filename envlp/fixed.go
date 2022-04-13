@@ -53,13 +53,18 @@ func (ft *FixedTable) CtrsToStats(stats *estats.Stats) {
 }
 
 // Config configures the environment to use given table IndexView and
-// evaluation mode (e.g., etime.Train.String())
+// evaluation mode (e.g., etime.Train.String()).  If mode is Train
+// then a Run counter is added, otherwise just Epoch and Trial.
 // NameCol and GroupCol are initialized to "Name" and "Group"
 // so set these to something else after this if needed.
 func (ft *FixedTable) Config(tbl *etable.IdxView, mode string) {
 	ft.Table = tbl
 	ft.EMode = mode
-	ft.Ctrs.SetTimes(mode, etime.Run, etime.Epoch, etime.Trial)
+	if mode == "Train" {
+		ft.Ctrs.SetTimes(mode, etime.Run, etime.Epoch, etime.Trial)
+	} else {
+		ft.Ctrs.SetTimes(mode, etime.Epoch, etime.Trial)
+	}
 	ft.NameCol = "Name"
 	ft.GroupCol = "Group"
 }
