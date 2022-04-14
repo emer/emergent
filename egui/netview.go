@@ -6,17 +6,41 @@ package egui
 
 import (
 	"github.com/emer/emergent/emer"
+	"github.com/emer/emergent/etime"
 	"github.com/emer/emergent/netview"
 	"github.com/goki/gi/gi"
 )
 
-// UpdateNetView updates the gui visualization of the network
-// set the NetViewText field prior to updating
+// UpdateNetView updates the gui visualization of the network.
+// Set the NetViewText field prior to updating
 func (gui *GUI) UpdateNetView() {
 	if gui.NetView != nil && gui.NetView.IsVisible() {
 		gui.NetView.Record(gui.NetViewText)
 		// note: essential to use Go version of update when called from another goroutine
 		gui.NetView.GoUpdate() // note: using counters is significantly slower..
+	}
+}
+
+// UpdateNetViewCycle updates the gui visualization of the network
+// at given time scale relative to given cycle.  For all times
+// longer than cycle intervals (ThetaCycle and above), it returns.
+// Set the NetViewText field prior to updating
+func (gui *GUI) UpdateNetViewCycle(time etime.Times, cyc int) {
+	switch time {
+	case etime.Cycle:
+		gui.UpdateNetView()
+	case etime.FastSpike:
+		if cyc%10 == 0 {
+			gui.UpdateNetView()
+		}
+	case etime.GammaCycle:
+		if cyc%25 == 0 {
+			gui.UpdateNetView()
+		}
+	case etime.AlphaCycle:
+		if cyc%100 == 0 {
+			gui.UpdateNetView()
+		}
 	}
 }
 

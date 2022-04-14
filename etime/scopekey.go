@@ -86,6 +86,14 @@ func (sk *ScopeKey) ModesAndTimes() (modes, times []string) {
 	return
 }
 
+// ModeAndTimeStr returns the mode and time as strings
+// from the current key value.  Returns the first of each
+// if there are multiple (intended for case when only 1).
+func (sk *ScopeKey) ModeAndTimeStr() (mode, time string) {
+	md, tm := sk.ModesAndTimes()
+	return md[0], tm[0]
+}
+
 // ModeAndTime returns the singular mode and time as enums from a
 // concrete scope key having one of each (No* cases if not standard)
 func (sk *ScopeKey) ModeAndTime() (mode Modes, time Times) {

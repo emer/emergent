@@ -35,7 +35,7 @@ func (cs *Ctrs) SetScopes(scopes ...etime.ScopeKey) {
 	cs.Order = etime.CloneScopeSlice(scopes)
 	cs.Ctrs = make(map[etime.ScopeKey]*Ctr, len(scopes))
 	for _, sc := range scopes {
-		cs.Ctrs[sc] = &Ctr{}
+		cs.Ctrs[sc] = &Ctr{Scope: sc}
 	}
 }
 
@@ -65,7 +65,7 @@ func (cs *Ctrs) Init() {
 // by their time names only (no eval Mode).
 func (cs *Ctrs) CtrsToStats(stats *estats.Stats) {
 	for _, ct := range cs.Ctrs {
-		_, tm := ct.Scope.ModesAndTimes()
-		stats.SetInt(tm[0], ct.Cur)
+		_, tm := ct.Scope.ModeAndTimeStr()
+		stats.SetInt(tm, ct.Cur)
 	}
 }

@@ -8,17 +8,18 @@ import "github.com/emer/emergent/etime"
 
 // Step manages stepping state.  Also trace flag
 type Step struct {
-	Scope     etime.ScopeKey `desc:"stepping level"`
-	N         int            `desc:"number of times to iterate at StepScope level, no stepping if 0"`
-	Cnt       int            `desc:"counter for number of times through loop"`
-	LoopTrace bool           `desc:"if true, print out a trace of looping stages as they run"`
-	FuncTrace bool           `desc:"if true, print out a trace of functions as they run -- implies LoopTrace"`
+	Time      string `desc:"stepping level, time string"`
+	Default   string `desc:"default stepping level"`
+	N         int    `desc:"number of times to iterate at StepScope level, no stepping if 0"`
+	Cnt       int    `desc:"counter for number of times through loop"`
+	LoopTrace bool   `desc:"if true, print out a trace of looping stages as they run"`
+	FuncTrace bool   `desc:"if true, print out a trace of functions as they run -- implies LoopTrace"`
 }
 
-// Set sets the stepping scope and n -- 0 = no stepping
+// Set sets the stepping time and n -- 0 = no stepping
 // resets counter.
-func (st *Step) Set(scope etime.ScopeKey, n int) {
-	st.Scope = scope
+func (st *Step) Set(time string, n int) {
+	st.Time = time
 	st.N = n
 	st.Cnt = 0
 }
@@ -30,7 +31,8 @@ func (st *Step) Clear() {
 
 // IsScope checks if given scope is stepping scope
 func (st *Step) IsScope(scope etime.ScopeKey) bool {
-	return st.Scope == scope
+	_, tm := scope.ModeAndTimeStr()
+	return st.Time == tm
 }
 
 // StopCheck checks if it is time to stop for this scope

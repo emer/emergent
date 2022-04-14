@@ -113,10 +113,14 @@ func (ft *FixedTable) PermuteOrder() {
 // already de-referenced through the IdxView's indexes to get the actual row in the table.
 func (ft *FixedTable) Row() int {
 	tc := ft.Counter(etime.Trial)
-	if ft.Sequential {
-		return ft.Table.Idxs[tc.Cur]
+	cur := tc.Cur
+	if cur >= tc.Max { // can be incr'd past end
+		cur = 0
 	}
-	return ft.Table.Idxs[ft.Order[tc.Cur]]
+	if ft.Sequential {
+		return ft.Table.Idxs[cur]
+	}
+	return ft.Table.Idxs[ft.Order[cur]]
 }
 
 // SetTrialNames sets the TrialName and GroupName

@@ -43,8 +43,8 @@ func NewStack(mode string, times ...etime.Times) *Stack {
 func NewStackScope(scopes ...etime.ScopeKey) *Stack {
 	st := &Stack{}
 	st.Order = etime.CloneScopeSlice(scopes)
-	md, _ := st.Order[0].ModesAndTimes()
-	st.Mode = md[0]
+	md, _ := st.Order[0].ModeAndTimeStr()
+	st.Mode = md
 	st.Loops = make(map[etime.ScopeKey]*Loop, len(st.Order))
 	st.Ctxt = make(map[string]interface{})
 	for _, sc := range st.Order {
@@ -167,6 +167,7 @@ func (st *Stack) Init() {
 // Run runs the stack of looping functions.  It will stop at any existing
 // Step settings -- call StepClear to clear those.
 func (st *Stack) Run() {
+	st.Set.StopFlag = false
 	lev := 0
 	lp := st.Level(lev)
 	stepStopNext := false
@@ -211,14 +212,13 @@ func (st *Stack) Run() {
 // SetStep sets the stepping scope and n -- 0 = no stepping
 // resets counter.
 func (st *Stack) SetStep(time etime.Times, n int) {
-	sc := etime.ScopeStr(st.Mode, time.String())
-	st.SetStepScope(sc, n)
+	st.SetStepTime(time.String(), n)
 }
 
-// SetStepScope sets the stepping scope and n -- 0 = no stepping
+// SetStepTime sets the stepping time and n -- 0 = no stepping
 // resets counter.
-func (st *Stack) SetStepScope(scope etime.ScopeKey, n int) {
-	st.Step.Set(scope, n)
+func (st *Stack) SetStepTime(time string, n int) {
+	st.Step.Set(time, n)
 }
 
 // StepClear resets stepping
@@ -226,7 +226,8 @@ func (st *Stack) StepClear() {
 	st.Step.Clear()
 }
 
-// DocString returns an indented summary of the loops and functions in the stack
+// DocString returns an indented summary of the loops
+// and functions in the stack
 func (st *Stack) DocString() string {
 	var sb strings.Builder
 	sb.WriteString("Stack: " + st.Mode + "\n")
@@ -238,4 +239,14 @@ func (st *Stack) DocString() string {
 		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  End:  " + lp.End.String() + "\n")
 	}
 	return sb.String()
+}
+
+// Times returns a list of Times strings for loops
+func (st *Stack) Times() []string {
+	tms := make([]string, len(st.Order))
+	for i, sc := range st.Order {
+		_, tm := sc.ModeAndTimeStr()
+		tms[i] = tm
+	}
+	return tms
 }

@@ -38,18 +38,21 @@ type GUI struct {
 // UpdateWindow renders the viewport associated with the main window
 func (gui *GUI) UpdateWindow() {
 	gui.ViewPort.SetNeedsFullRender()
-
 }
 
 // Stopped is called when a run method stops running -- updates the IsRunning flag and toolbar
 func (gui *GUI) Stopped() {
 	gui.IsRunning = false
-	if gui.Win != nil {
-		if gui.ToolBar != nil {
-			gui.ToolBar.UpdateActions()
-		}
-		gui.UpdateWindow()
+	if gui.Win == nil {
+		return
 	}
+	if gui.NetView != nil {
+		gui.UpdateNetView()
+	}
+	if gui.ToolBar != nil {
+		gui.ToolBar.UpdateActions()
+	}
+	gui.UpdateWindow()
 }
 
 // MakeWindow specifies default window settings that are largely used in all windwos
@@ -79,11 +82,17 @@ func (gui *GUI) MakeWindow(sim interface{}, appname, title, about string) {
 
 	gui.TabView = gi.AddNewTabView(split, "tv")
 
-	gui.NetView = gui.TabView.AddNewTab(netview.KiT_NetView, "NetView").(*netview.NetView)
-	gui.NetView.Var = "Act"
-
 	split.SetSplits(.2, .8)
+}
 
+// AddNetView adds NetView in tab with given name
+func (gui *GUI) AddNetView(tabName string) *netview.NetView {
+	nv := gui.TabView.AddNewTab(netview.KiT_NetView, tabName).(*netview.NetView)
+	if gui.NetView == nil {
+		gui.NetView = nv
+	}
+	nv.Var = "Act"
+	return nv
 }
 
 // FinalizeGUI wraps the end functionality of the GUI

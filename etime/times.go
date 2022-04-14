@@ -35,8 +35,9 @@ const (
 	// GammaCycle is typically 25 cycles = 25 msec (40hz)
 	GammaCycle
 
-	// Phase is either Minus or Plus phase, where plus phase is bursting / outcome
+	// Phase is typically a Minus or Plus phase, where plus phase is bursting / outcome
 	// that drives positive learning relative to prediction in minus phase.
+	// It can also be used for other time scales involving multiple Cycles.
 	Phase
 
 	// BetaCycle is typically 50 cycles = 50 msec (20 hz) = one beta-frequency cycle.

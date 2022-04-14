@@ -106,18 +106,18 @@ func (set *Set) RunName(name string) (*Stack, error) {
 // Step Steps Stack defined by given mode, at given step level,
 // Stepping n times (n = 0 turns off stepping)
 func (set *Set) Step(mode etime.Modes, step etime.Times, n int) (*Stack, error) {
-	return set.StepName(mode.String(), etime.Scope(mode, step), n)
+	return set.StepName(mode.String(), step.String(), n)
 }
 
-// StepName Steps Stack of given name, at given step level,
+// StepName Steps Stack of given name, at given step time level,
 // Stepping n times (n = 0 turns off stepping)
-func (set *Set) StepName(name string, step etime.ScopeKey, n int) (*Stack, error) {
+func (set *Set) StepName(name string, step string, n int) (*Stack, error) {
 	set.StopFlag = false
 	st, err := set.StackNameTry(name)
 	if err != nil {
 		return st, err
 	}
-	st.SetStepScope(step, n)
+	st.SetStepTime(step, n)
 	st.Run()
 	return st, err
 }
