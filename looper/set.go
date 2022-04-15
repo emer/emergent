@@ -14,7 +14,7 @@ import (
 // Set contains a set of interconnected loop Stacks (e.g., Train, Test, etc)
 type Set struct {
 	Stacks   map[string]*Stack `desc:"the collection of loop stacks -- key is typically etime.Mode"`
-	StopFlag bool              `desc:"if true, running will stop at soonest opportunity"`
+	StopFlag bool              `view:"-" desc:"if true, running will stop at soonest opportunity"`
 }
 
 func NewSet() *Set {

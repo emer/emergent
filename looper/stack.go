@@ -27,7 +27,7 @@ type Stack struct {
 	Loops map[etime.ScopeKey]*Loop `desc:"the loops by scope"`
 	Ctxt  map[string]interface{}   `desc:"named context data that can hold state relevant for this stack (e.g., Time struct that holds counters for algorithm inner loops)"`
 	Step  Step                     `desc:"stepping state"`
-	Set   *Set                     `desc:"Set of Stacks that we belong to"`
+	Set   *Set                     `view:"-" desc:"Set of Stacks that we belong to"`
 }
 
 // NewStack returns new stack for given mode and times
