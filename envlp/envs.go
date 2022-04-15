@@ -4,6 +4,8 @@
 
 package envlp
 
+import "github.com/emer/emergent/etime"
+
 // Envs is a map of environments organized according
 // to the evaluation mode string (recommended key value)
 type Envs map[string]Env
@@ -21,4 +23,10 @@ func (es *Envs) Add(evs ...Env) {
 	for _, ev := range evs {
 		(*es)[ev.Mode()] = ev
 	}
+}
+
+// ByMode returns env by etime.Modes evaluation mode as the map key.
+// returns nil if not found
+func (es *Envs) ByMode(mode etime.Modes) Env {
+	return (*es)[mode.String()]
 }
