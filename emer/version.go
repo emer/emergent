@@ -3,7 +3,7 @@
 package emer
 
 const (
-	Version     = "v1.2.1"
-	GitCommit   = "0c89c24"          // the commit JUST BEFORE the release
-	VersionDate = "2022-04-14 08:21" // UTC
+	Version     = "v1.2.2"
+	GitCommit   = "a3ea6ea"          // the commit JUST BEFORE the release
+	VersionDate = "2022-04-16 22:48" // UTC
 )
