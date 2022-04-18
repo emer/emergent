@@ -9,6 +9,18 @@ import (
 	"github.com/goki/ki/indent"
 )
 
+type LoopState string
+
+const (
+	Cycle LoopState = "Axon:Cycle"
+	Phase LoopState = "Axon:Phase"
+	Epoch LoopState = "Axon:Epoch"
+)
+
+func (loop LoopState) String() string {
+	return string(loop)
+}
+
 // Loop represents one level of looping, with arbitrary functions
 // called at 3 different points in the loop, corresponding to a
 // do..while loop logic, with no initialization, which is necessary
