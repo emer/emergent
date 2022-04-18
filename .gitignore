@@ -14,3 +14,9 @@
 # mac thing
 .DS_Store
 
+.idea/
+.DS_Store
+*.pt
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
