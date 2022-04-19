@@ -9,7 +9,7 @@ import (
 	"github.com/goki/ki/indent"
 )
 
-//THIS IS EXPERIMENTAL and UNFINISHED
+//THIS IS EXPERIMENTAL and UNFINISHED AND LIKELY WILL CHANGE
 type LoopPart string
 type LoopState string
 
@@ -19,14 +19,8 @@ const (
 	Main LoopPart = "MAIN"
 )
 
-const (
-	Cycle LoopState = "Cycle"
-	Phase LoopState = "Phase"
-	Epoch LoopState = "Epoch"
-)
-
-func (loop LoopState) String(part LoopPart) string {
-	return string(loop) + ":" + string(part)
+func (loop LoopPart) String(part etime.Times) string {
+	return string(part) + ":" + string(loop)
 }
 
 // Loop represents one level of looping, with arbitrary functions
