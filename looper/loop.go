@@ -11,7 +11,6 @@ import (
 
 //THIS IS EXPERIMENTAL and UNFINISHED AND LIKELY WILL CHANGE
 type LoopPart string
-type LoopState string
 
 const (
 	End  LoopPart = "END"
