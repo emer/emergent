@@ -16,6 +16,7 @@ const (
 	End  LoopPart = "END"
 	Stop LoopPart = "STOP"
 	Main LoopPart = "MAIN"
+	Init LoopPart = "Cycle0"
 )
 
 func (loop LoopPart) String(part etime.Times) string {
