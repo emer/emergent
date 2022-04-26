@@ -23,26 +23,9 @@ import (
 // etensor.Tensor chunk of values that can be obtained by the model.
 // Likewise, Actions provide tensor elements as input to the Env.
 type Env interface {
-	// Name returns a name for this environment, which can be useful
-	// for selecting from a list of options etc.
-	Name() string
-
-	// Desc returns an (optional) brief description of this environment.
-	Desc() string
-
 	// Mode returns the evaluation mode (etime.Modes) for this environment
 	// (Train, Test, etc). This is used for the Scope of the counters.
 	Mode() string
-
-	// Validate checks if the various specific parameters for this
-	// Env have been properly set -- if not, error message(s) will
-	// be returned.  If everything is OK, nil is returned, in which
-	// case calls to Counters(), States(), and Actions() should all
-	// return valid data.  It is essential that a model *always* check
-	// this as a first step, because the Env will not generally check
-	// for errors on any subsequent calls (for greater efficiency
-	// and simplicity).
-	Validate() error
 
 	// Init initializes the environment at start of a new Run, preserving
 	// the current Run level counter value, if that counter is present, but
@@ -74,25 +57,12 @@ type Env interface {
 	// the Mode set for this environment to generate a ScopeKey string.
 	Counter(time etime.Times) *Ctr
 
-	// String returns a string representation of the current step contents.
-	// This is typically saved as a TrialName in the CtrsToStats function,
-	// and satisfies the standard Stringer interface.
-	String() string
-
 	// State returns the given element's worth of tensor data from the environment
 	// based on the current state of the env (prepared by Init or the last Step).
 	// If no output is available on that element, then nil is returned.
 	// The returned tensor must be treated as read-only as it likely points to original
 	// source data -- please make a copy before modifying (e.g., Clone() method)
 	State(element string) etensor.Tensor
-
-	// Action sends tensor data about e.g., responses from model back to act
-	// on the environment and influence its subsequent evolution.
-	// The nature and timing of this input is paradigm dependent, but
-	// in general it should happen prior to the Step() call, so that
-	// Action sets values on the Env that are then used in the Step call
-	// to generate the appropriate next state values.
-	Action(element string, input etensor.Tensor)
 
 	// CtrsToStats sets the current counter values to estats Int values
 	// by their time names only (no eval Mode).  These values can then
