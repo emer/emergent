@@ -14,3 +14,4 @@
 # mac thing
 .DS_Store
 
+*.idea
