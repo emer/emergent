@@ -6,11 +6,10 @@ package looper
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/emer/emergent/envlp"
 	"github.com/emer/emergent/etime"
 	"github.com/goki/ki/indent"
+	"strings"
 )
 
 // IndentSize is number of spaces to indent for output
@@ -28,40 +27,6 @@ type Stack struct {
 	Ctxt  map[string]interface{}   `desc:"named context data that can hold state relevant for this stack (e.g., Time struct that holds counters for algorithm inner loops)"`
 	Step  Step                     `desc:"stepping state"`
 	Set   *Set                     `view:"-" desc:"Set of Stacks that we belong to"`
-}
-
-// NewStack returns new stack for given mode and times
-func NewStack(mode string, times ...etime.Times) *Stack {
-	ord := make([]etime.ScopeKey, len(times))
-	for i, t := range times {
-		ord[i] = etime.ScopeStr(mode, t.String())
-	}
-	return NewStackScope(ord...)
-}
-
-// NewStack returns new stack for given list of scopes
-func NewStackScope(scopes ...etime.ScopeKey) *Stack {
-	st := &Stack{}
-	st.Order = etime.CloneScopeSlice(scopes)
-	md, _ := st.Order[0].ModeAndTimeStr()
-	st.Mode = md
-	st.Loops = make(map[etime.ScopeKey]*Loop, len(st.Order))
-	st.Ctxt = make(map[string]interface{})
-	for _, sc := range st.Order {
-		st.Loops[sc] = NewLoop(sc, st)
-	}
-	return st
-}
-
-// NewStackEnv returns new stack with loops matching those in
-// the given environment. Adds standard Env counter funcs to
-// manage updating of counters, with Step at the lowest level.
-func NewStackEnv(ev envlp.Env) *Stack {
-	ctrs := ev.Counters()
-	st := NewStackScope(ctrs.Order...)
-	st.Env = ev
-	st.AddEnvFuncs()
-	return st
 }
 
 // AddLevels adds given levels to stack.
@@ -249,4 +214,38 @@ func (st *Stack) Times() []string {
 		tms[i] = tm
 	}
 	return tms
+}
+
+// NewStack returns new stack for given mode and times
+func NewStack(mode string, times ...etime.Times) *Stack {
+	ord := make([]etime.ScopeKey, len(times))
+	for i, t := range times {
+		ord[i] = etime.ScopeStr(mode, t.String())
+	}
+	return NewStackScope(ord...)
+}
+
+// NewStack returns new stack for given list of scopes
+func NewStackScope(scopes ...etime.ScopeKey) *Stack {
+	st := &Stack{}
+	st.Order = etime.CloneScopeSlice(scopes)
+	md, _ := st.Order[0].ModeAndTimeStr()
+	st.Mode = md
+	st.Loops = make(map[etime.ScopeKey]*Loop, len(st.Order))
+	st.Ctxt = make(map[string]interface{})
+	for _, sc := range st.Order {
+		st.Loops[sc] = NewLoop(sc, st)
+	}
+	return st
+}
+
+// NewStackEnv returns new stack with loops matching those in
+// the given environment. Adds standard Env counter funcs to
+// manage updating of counters, with Step at the lowest level.
+func NewStackEnv(ev envlp.Env) *Stack {
+	ctrs := ev.Counters()
+	st := NewStackScope(ctrs.Order...)
+	st.Env = ev
+	st.AddEnvFuncs()
+	return st
 }

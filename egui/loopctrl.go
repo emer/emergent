@@ -12,45 +12,49 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(st *looper.Stack) {
-	gui.ToolBar.AddAction(gi.ActOpts{Label: st.Mode + " Run", Icon: "play", Tooltip: "Run the " + st.Mode + " process", UpdateFunc: func(act *gi.Action) {
+func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *looper.Stepper) {
+	gui.ToolBar.AddAction(gi.ActOpts{Label: stepper.Mode.String() + " Run", Icon: "play", Tooltip: "Run the " + stepper.Mode.String() + " process", UpdateFunc: func(act *gi.Action) {
 		act.SetActiveStateUpdt(!gui.IsRunning)
 	}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		if !gui.IsRunning {
 			gui.IsRunning = true
 			gui.ToolBar.UpdateActions()
 			go func() {
-				st.StepClear()
-				st.Run()
+				//evalLoops.StepClear() // DO NOT SUBMIT Is this necessary? Also check comments below.
+				stepper.Run()
 				gui.Stopped()
 			}()
 		}
 	})
 
-	stepLevel := st.Step.Default
+	//stepLevel := evalLoops.Step.Default
 	stepN := make(map[string]int)
-	steps := st.Times()
+	steps := evalLoops.Order
 	for _, st := range steps {
-		stepN[st] = 1
+		stepN[st.String()] = 1
 	}
 
-	gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + st.Mode + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
+	gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + stepper.Mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
 		act.SetActiveStateUpdt(!gui.IsRunning)
 	}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		if !gui.IsRunning {
 			gui.IsRunning = true
 			gui.ToolBar.UpdateActions()
 			go func() {
-				st.SetStepTime(stepLevel, stepN[stepLevel])
-				st.Run()
+				//evalLoops.SetStepTime(stepLevel, stepN[stepLevel])
+				stepper.Run()
 				gui.Stopped()
 			}()
 		}
 	})
 
 	scb := gi.AddNewComboBox(gui.ToolBar, "step")
-	scb.ItemsFromStringList(steps, false, 30)
-	scb.SetCurVal(stepLevel)
+	stepStrs := []string{}
+	for _, s := range steps {
+		stepStrs = append(stepStrs, s.String())
+	}
+	scb.ItemsFromStringList(stepStrs, false, 30)
+	scb.SetCurVal(stepper.StopLevel)
 
 	sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
 	sb.Defaults()
@@ -60,11 +64,11 @@ func (gui *GUI) AddLooperCtrl(st *looper.Stack) {
 	sb.Min = 1
 	sb.Value = 1
 	sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		stepN[stepLevel] = int(data.(float32))
+		stepN[stepper.StopLevel.String()] = int(data.(float32))
 	})
 
 	scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		stepLevel = data.(string)
-		sb.Value = float32(stepN[stepLevel])
+		//stepper.StopLevel = etime.Times(data.(string)) // TODO From string
+		sb.Value = float32(stepN[stepper.StopLevel.String()])
 	})
 }
