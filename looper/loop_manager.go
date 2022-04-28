@@ -196,7 +196,7 @@ func (stepper *Stepper) Init(loopman *LoopManager) {
 }
 
 func (stepper *Stepper) Run() {
-	stepper.StopFlag = false // TODO Will this not work right?
+	//stepper.StopFlag = false // TODO Will this not work right?
 	st := stepper.Loops.Stacks[stepper.Mode]
 	if stepper.currentLevel >= len(st.Order) {
 		stepper.currentLevel -= 1
@@ -209,6 +209,7 @@ func (stepper *Stepper) Run() {
 		//stopAtLevel := st.Order[stepper.currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
 		if stepper.StopFlag { //} || stopAtLevel {//DO NOT SUBMIT Whoops!
 			// This should occur before ctr incrementing and before functions.
+
 			return
 		}
 

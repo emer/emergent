@@ -21,6 +21,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.ToolBar.UpdateActions()
 			go func() {
 				//evalLoops.StepClear() // DO NOT SUBMIT Is this necessary? Also check comments below.
+				stepper.StopFlag = false
 				stepper.Run()
 				gui.Stopped()
 			}()
@@ -42,6 +43,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.ToolBar.UpdateActions()
 			go func() {
 				//evalLoops.SetStepTime(stepLevel, stepN[stepLevel])
+				stepper.StopFlag = false
 				stepper.Run()
 				gui.Stopped()
 			}()
