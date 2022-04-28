@@ -18,7 +18,7 @@ func (funcs *orderedMapFuncs) Add(name string, fun func()) *orderedMapFuncs {
 	return funcs
 }
 
-type ThetaPhase struct {
+type Phase struct {
 	Name             string // Might be plus or minus for example
 	Duration         int
 	IsPlusPhase      bool
@@ -36,13 +36,13 @@ type LoopStructure struct {
 	OnEnd  orderedMapFuncs
 	IsDone map[string]func() bool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
 
-	Phases []ThetaPhase `desc:"Only use Phases at the Theta Cycle timescale (200ms)."`
+	Phases []Phase `desc:"Only use Phases at the Theta Cycle timescale (200ms)."`
 	// TODO Add an axon.time here but move it to etimes
 
 	Counter *envlp.Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
 }
 
-func (loops *LoopStructure) AddPhases(phases ...ThetaPhase) {
+func (loops *LoopStructure) AddPhases(phases ...Phase) {
 	for _, phase := range phases {
 		loops.Phases = append(loops.Phases, phase)
 		phase.OnMillisecondEnd = orderedMapFuncs{}
@@ -199,7 +199,6 @@ func (stepper *Stepper) Run() {
 	//stepper.StopFlag = false // TODO Will this not work right?
 	st := stepper.Loops.Stacks[stepper.Mode]
 	if stepper.currentLevel >= len(st.Order) {
-		stepper.currentLevel -= 1
 		return // Stack overflow
 	}
 	loop := st.Loops[st.Order[stepper.currentLevel]]
@@ -209,7 +208,6 @@ func (stepper *Stepper) Run() {
 		//stopAtLevel := st.Order[stepper.currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
 		if stepper.StopFlag { //} || stopAtLevel {//DO NOT SUBMIT Whoops!
 			// This should occur before ctr incrementing and before functions.
-
 			return
 		}
 
@@ -219,7 +217,10 @@ func (stepper *Stepper) Run() {
 
 		// Recursion!
 		stepper.currentLevel += 1 // Go down a level
+		stepper.phaseLogic(loop)
 		stepper.Run()
+		stepper.currentLevel -= 1 //after running through every thing
+
 		ctr.Cur = ctr.Cur + 1 // Increment
 
 		for _, fun := range loop.Main {
@@ -231,12 +232,43 @@ func (stepper *Stepper) Run() {
 		}
 		for _, fun := range loop.IsDone {
 			if fun() {
-				goto exitLoop // Exit multiple for loops without flag variable.
+				//goto exitLoop // Exit multiple for loops without flag variable.
 			}
 		}
+
 	}
-exitLoop:
+
+	//exitLoop:
 	// Only get to this point if this loop is done.
 	ctr.Cur = 0
-	stepper.currentLevel -= 1 // Go up a level
+	//stepper.currentLevel -= 1 // Go up a level
+}
+
+// phaseLogic N cycles are broken up into phases, basic is a plus, and minus, so if in cycle phase, special logic has to be added
+func (stepper *Stepper) phaseLogic(loop *LoopStructure) { //Todo: should discuss, this should be changed out
+	ctr := loop.Counter
+	amount := 0
+	for _, phase := range loop.Phases {
+		amount += phase.Duration
+		if ctr.Cur == (amount - phase.Duration) { //if start of a phase
+			for _, function := range phase.PhaseStart {
+				function.Func()
+			}
+			break
+		}
+
+		if ctr.Cur < amount { //In between on start and on End
+			for _, function := range phase.OnMillisecondEnd {
+				function.Func()
+			}
+			break
+		}
+
+		if ctr.Cur == (amount) { //if end of a phase
+			for _, function := range phase.PhaseEnd {
+				function.Func()
+			}
+			break
+		}
+	}
 }

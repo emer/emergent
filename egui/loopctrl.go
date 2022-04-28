@@ -13,6 +13,18 @@ import (
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
 func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *looper.Stepper) {
+	//Todo added stopper here
+	gui.AddToolbarItem(ToolbarItem{Label: "Stop",
+		Icon:    "stop",
+		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
+		Active:  ActiveRunning,
+		Func: func() {
+			stepper.StopFlag = true
+			gui.StopNow = true
+			gui.Stopped()
+		},
+	})
+
 	gui.ToolBar.AddAction(gi.ActOpts{Label: stepper.Mode.String() + " Run", Icon: "play", Tooltip: "Run the " + stepper.Mode.String() + " process", UpdateFunc: func(act *gi.Action) {
 		act.SetActiveStateUpdt(!gui.IsRunning)
 	}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
