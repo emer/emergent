@@ -63,6 +63,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.ToolBar.UpdateActions()
 			go func() {
 				stepper.StopLevel = lastSelectedScbTimeScale
+				stepper.StepIterations = stepN[stepper.StopLevel.String()]
 				stepper.StopFlag = false
 				stepper.StopNext = true
 				stepper.Run()
@@ -87,8 +88,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 	sb.Min = 1
 	sb.Value = 1
 	sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		// TODO Implement
-		stepN[stepper.StopLevel.String()] = int(data.(float32))
+		stepN[scb.CurVal.(string)] = int(data.(float32))
 	})
 
 	scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {

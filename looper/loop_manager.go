@@ -185,9 +185,10 @@ type Stepper struct {
 	StopFlag  bool        `desc:"If true, stop model ASAP."`
 	StopNext  bool        `desc:"If true, stop model after next stop level."`
 	StopLevel etime.Times `desc:"Time level to stop at the end of."`
-	//currentLevel int          `desc:"An internal variable representing our place in the stack of loops."` // TODO Is this necessary?
-	Loops *LoopManager `desc:"The information about loops."`
-	Mode  etime.Modes  `desc:"The current evaluation mode."`
+	//currentLevel int          `desc:"An internal variable representing our place in the stack of loops."`
+	StepIterations int          `desc:"How many steps to do."`
+	Loops          *LoopManager `desc:"The information about loops."`
+	Mode           etime.Modes  `desc:"The current evaluation mode."`
 
 	lastStoppedLevel int `desc:"The level at which a stop interrupted flow."`
 	internalStop     bool
@@ -231,9 +232,12 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 			return false // Don't continue above, e.g. Stop functions
 		}
 		if stepper.StopNext && st.Order[currentLevel] == stepper.StopLevel {
-			stepper.StopNext = false
-			stepper.StopFlag = true
-			stepper.lastStoppedLevel = -1
+			stepper.StepIterations -= 1
+			if stepper.StepIterations <= 0 {
+				stepper.StopNext = false
+				stepper.StopFlag = true
+				stepper.lastStoppedLevel = -1
+			}
 		}
 
 		if currentLevel >= stepper.lastStoppedLevel {
