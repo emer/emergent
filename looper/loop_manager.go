@@ -183,6 +183,7 @@ func (loopman LoopManager) GetLooperStack() *Set {
 
 type Stepper struct {
 	StopFlag  bool        `desc:"If true, stop model ASAP."`
+	StopNext  bool        `desc:"If true, stop model after next stop level."`
 	StopLevel etime.Times `desc:"Time level to stop at the end of."`
 	//currentLevel int          `desc:"An internal variable representing our place in the stack of loops."` // TODO Is this necessary?
 	Loops *LoopManager `desc:"The information about loops."`
@@ -227,6 +228,10 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 			stepper.internalStop = true
 			stepper.StopFlag = false
 			return
+		}
+		if stepper.StopNext && st.Order[currentLevel] == stepper.StopLevel {
+			stepper.StopNext = false
+			stepper.StopFlag = true
 		}
 
 		if currentLevel > stepper.lastStoppedLevel+1 {
@@ -273,7 +278,7 @@ exitLoop:
 	}
 }
 
-// phaseLogic N cycles are broken up into phases, basic is a plus, and minus, so if in cycle phase, special logic has to be added
+// phaseLogic a loop can be broken up into discrete segments, so in a certain window you may want distinct behavior
 func (stepper *Stepper) phaseLogic(loop *LoopStructure) {
 	ctr := loop.Counter
 	amount := 0
