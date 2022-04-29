@@ -22,7 +22,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 		Active:  ActiveRunning,
 		Func: func() {
 			stepper.StopFlag = true
-			//stepper.StopLevel = etime.Cycle
+			stepper.StopLevel = etime.Cycle
 			fmt.Println("Stop time!")
 			gui.StopNow = true
 			gui.Stopped()
