@@ -272,7 +272,7 @@ exitLoop:
 	}
 }
 
-// phaseLogic N cycles are broken up into phases, basic is a plus, and minus, so if in cycle phase, special logic has to be added
+// phaseLogic a loop can be broken up into discrete segments, so in a certain window you may want distinct behavior
 func (stepper *Stepper) phaseLogic(loop *LoopStructure) {
 	ctr := loop.Counter
 	amount := 0

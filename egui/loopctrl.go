@@ -21,9 +21,8 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
-			stepper.StopLevel = etime.Cycle
 			stepper.StopFlag = true
-			stepper.StopLevel = etime.Cycle
+			//stepper.StopLevel = etime.Cycle
 			fmt.Println("Stop time!")
 			gui.StopNow = true
 			gui.Stopped()
@@ -61,8 +60,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.IsRunning = true
 			gui.ToolBar.UpdateActions()
 			go func() {
-
-				stepper.StopFlag = true
+				stepper.StopFlag = false
 				stepper.Run()
 				gui.Stopped()
 			}()
