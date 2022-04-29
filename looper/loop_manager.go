@@ -225,27 +225,24 @@ func (stepper *Stepper) Run() {
 
 		for _, fun := range loop.Main {
 			fun.Func()
-			// TODO Could do no recursion if there are Main functions
 		}
 		for _, fun := range loop.OnEnd {
 			fun.Func()
 		}
 		for _, fun := range loop.IsDone {
 			if fun() {
-				//goto exitLoop // Exit multiple for loops without flag variable.
+				goto exitLoop // Exit multiple for loops without flag variable.
 			}
 		}
-
 	}
 
-	//exitLoop:
+exitLoop:
 	// Only get to this point if this loop is done.
 	ctr.Cur = 0
-	//stepper.currentLevel -= 1 // Go up a level
 }
 
 // phaseLogic N cycles are broken up into phases, basic is a plus, and minus, so if in cycle phase, special logic has to be added
-func (stepper *Stepper) phaseLogic(loop *LoopStructure) { //Todo: should discuss, this should be changed out
+func (stepper *Stepper) phaseLogic(loop *LoopStructure) {
 	ctr := loop.Counter
 	amount := 0
 	for _, phase := range loop.Phases {
@@ -254,21 +251,16 @@ func (stepper *Stepper) phaseLogic(loop *LoopStructure) { //Todo: should discuss
 			for _, function := range phase.PhaseStart {
 				function.Func()
 			}
-			break
 		}
-
-		if ctr.Cur < amount { //In between on start and on End
+		if ctr.Cur <= amount { //In between on Start and on End, inclusive
 			for _, function := range phase.OnMillisecondEnd {
 				function.Func()
 			}
-			break
 		}
-
 		if ctr.Cur == (amount) { //if end of a phase
 			for _, function := range phase.PhaseEnd {
 				function.Func()
 			}
-			break
 		}
 	}
 }
