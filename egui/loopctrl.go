@@ -21,6 +21,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
+			stepper.StopLevel = etime.Cycle
 			stepper.StopFlag = true
 			stepper.StopLevel = etime.Cycle
 			fmt.Println("Stop time!")
@@ -74,7 +75,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 		stepStrs = append(stepStrs, s.String())
 	}
 	scb.ItemsFromStringList(stepStrs, false, 30)
-	scb.SetCurVal(stepper.StopLevel)
+	scb.SetCurVal(stepper.StopLevel.String())
 
 	sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
 	sb.Defaults()
