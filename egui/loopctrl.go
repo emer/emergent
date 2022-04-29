@@ -53,6 +53,8 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 		stringToEnumTime[st.String()] = st
 	}
 
+	lastSelectedScbTimeScale := etime.Run
+
 	gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + stepper.Mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
 		act.SetActiveStateUpdt(!gui.IsRunning)
 	}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
@@ -60,6 +62,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.IsRunning = true
 			gui.ToolBar.UpdateActions()
 			go func() {
+				stepper.StopLevel = lastSelectedScbTimeScale
 				stepper.StopFlag = false
 				stepper.StopNext = true
 				stepper.Run()
@@ -84,11 +87,12 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 	sb.Min = 1
 	sb.Value = 1
 	sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		// TODO Implement
 		stepN[stepper.StopLevel.String()] = int(data.(float32))
 	})
 
 	scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		stepper.StopLevel = stringToEnumTime[data.(string)]
+		lastSelectedScbTimeScale = stringToEnumTime[scb.CurVal.(string)]
 		sb.Value = float32(stepN[stepper.StopLevel.String()])
 	})
 }

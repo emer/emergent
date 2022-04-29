@@ -217,7 +217,6 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 	}
 	time := st.Order[currentLevel]
 	loop := st.Loops[time]
-	//loop.hasStarted = false
 	ctr := loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
@@ -240,7 +239,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 		if currentLevel >= stepper.lastStoppedLevel {
 			// Loop flow was interrupted, and we should not start again.
 			stepper.lastStoppedLevel = -1
-			if time > etime.Cycle {
+			if time > etime.Trial {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnStart {
@@ -252,12 +251,11 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 		stepper.phaseLogic(loop)
 		runComplete := stepper.runLevel(currentLevel + 1)
 
-		if runComplete { // currentLevel > stepper.lastStoppedLevel {
-			stepper.lastStoppedLevel = -1
+		if runComplete {
 			for _, fun := range loop.Main {
 				fun.Func()
 			}
-			if time > etime.Cycle {
+			if time > etime.Trial {
 				fmt.Println(time.String() + ":End:  " + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnEnd {
