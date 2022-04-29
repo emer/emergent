@@ -47,8 +47,10 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 	//stepLevel := evalLoops.Step.Default
 	stepN := make(map[string]int)
 	steps := evalLoops.Order
+	stringToEnumTime := make(map[string]etime.Times)
 	for _, st := range steps {
 		stepN[st.String()] = 1
+		stringToEnumTime[st.String()] = st
 	}
 
 	gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + stepper.Mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
@@ -58,9 +60,8 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.IsRunning = true
 			gui.ToolBar.UpdateActions()
 			go func() {
-				//evalLoops.SetStepTime(stepLevel, stepN[stepLevel])
-				stepper.StopFlag = false
-				stepper.StopLevel = etime.Trial
+
+				stepper.StopFlag = true
 				stepper.Run()
 				gui.Stopped()
 			}()
@@ -87,7 +88,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 	})
 
 	scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		//stepper.StopLevel = etime.Times(data.(string)) // TODO From string
+		stepper.StopLevel = stringToEnumTime[data.(string)]
 		sb.Value = float32(stepN[stepper.StopLevel.String()])
 	})
 }
