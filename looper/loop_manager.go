@@ -202,7 +202,6 @@ func (stepper *Stepper) Init(loopman *LoopManager) {
 func (stepper *Stepper) Run() {
 	// Reset internal variables
 	stepper.internalStop = false
-	stepper.lastStoppedLevel = -2
 
 	// 0 Means the top level loop, probably Run
 	stepper.runLevel(0)
@@ -232,6 +231,7 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 
 		if currentLevel > stepper.lastStoppedLevel+1 {
 			// Loop flow was interrupted, and we should not start again.
+			stepper.lastStoppedLevel = -2
 			if time > etime.Trial {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
@@ -245,6 +245,7 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 		stepper.runLevel(currentLevel + 1)
 
 		if currentLevel > stepper.lastStoppedLevel {
+			stepper.lastStoppedLevel = -2
 			for _, fun := range loop.Main {
 				fun.Func()
 			}
