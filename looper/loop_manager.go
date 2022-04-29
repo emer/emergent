@@ -1,6 +1,7 @@
 package looper
 
 import (
+	"fmt"
 	"github.com/emer/emergent/envlp"
 	"github.com/emer/emergent/etime"
 	"strconv"
@@ -181,64 +182,90 @@ func (loopman LoopManager) GetLooperStack() *Set {
 // Running
 
 type Stepper struct {
-	StopFlag     bool         `desc:"If true, stop model ASAP."`
-	StopLevel    etime.Times  `desc:"Time level to stop at the end of."`
-	currentLevel int          `desc:"An internal variable representing our place in the stack of loops."` // TODO Is this necessary?
-	Loops        *LoopManager `desc:"The information about loops."`
-	Mode         etime.Modes  `desc:"The current evaluation mode."`
+	StopFlag  bool        `desc:"If true, stop model ASAP."`
+	StopLevel etime.Times `desc:"Time level to stop at the end of."`
+	//currentLevel int          `desc:"An internal variable representing our place in the stack of loops."` // TODO Is this necessary?
+	Loops *LoopManager `desc:"The information about loops."`
+	Mode  etime.Modes  `desc:"The current evaluation mode."`
+
+	lastStoppedLevel int `desc:"The level at which a stop interrupted flow."`
+	internalStop     bool
 }
 
 func (stepper *Stepper) Init(loopman *LoopManager) {
 	stepper.Loops = loopman
 	stepper.StopLevel = etime.Run
 	stepper.Mode = etime.Train
-	stepper.currentLevel = 0
+	stepper.lastStoppedLevel = -2 // -2 or less is necessary
 }
 
 func (stepper *Stepper) Run() {
+	stepper.runLevel(0)
+}
+
+func (stepper *Stepper) runLevel(currentLevel int) {
 	//stepper.StopFlag = false // TODO Will this not work right?
 	st := stepper.Loops.Stacks[stepper.Mode]
-	if stepper.currentLevel >= len(st.Order) {
+	if currentLevel >= len(st.Order) {
 		return // Stack overflow
 	}
-	loop := st.Loops[st.Order[stepper.currentLevel]]
+	time := st.Order[currentLevel]
+	loop := st.Loops[time]
 	ctr := loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
-		//stopAtLevel := st.Order[stepper.currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
-		if stepper.StopFlag { //} || stopAtLevel {//DO NOT SUBMIT Whoops!
+		stopAtLevel := st.Order[currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
+		if stepper.StopFlag && stopAtLevel {
 			// This should occur before ctr incrementing and before functions.
+			//fmt.Println("Stop! " + time.String()) // DO NOT SUBMIT Remove these
+			stepper.lastStoppedLevel = currentLevel
+			stepper.internalStop = true
 			return
 		}
 
-		for _, fun := range loop.OnStart {
-			fun.Func()
+		if currentLevel > stepper.lastStoppedLevel+1 {
+			stepper.lastStoppedLevel = -2
+			// Loop flow was interrupted, and we should not start again.
+			if time > etime.Trial {
+				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
+			}
+			for _, fun := range loop.OnStart {
+				fun.Func()
+			}
 		}
 
 		// Recursion!
-		stepper.currentLevel += 1 // Go down a level
+		//stepper.currentLevel += 1 // Go down a level
 		stepper.phaseLogic(loop)
-		stepper.Run()
-		stepper.currentLevel -= 1 //after running through every thing
+		stepper.runLevel(currentLevel + 1)
+		//stepper.currentLevel -= 1 //after running through every thing
 
-		ctr.Cur = ctr.Cur + 1 // Increment
-
-		for _, fun := range loop.Main {
-			fun.Func()
-		}
-		for _, fun := range loop.OnEnd {
-			fun.Func()
-		}
-		for _, fun := range loop.IsDone {
-			if fun() {
-				goto exitLoop // Exit multiple for loops without flag variable.
+		if currentLevel > stepper.lastStoppedLevel {
+			stepper.lastStoppedLevel = -2
+			for _, fun := range loop.Main {
+				fun.Func()
 			}
+			if time > etime.Trial {
+				fmt.Println(time.String() + ":End:  " + strconv.Itoa(ctr.Cur))
+			}
+			for _, fun := range loop.OnEnd {
+				fun.Func()
+			}
+			for name, fun := range loop.IsDone {
+				if fun() {
+					_ = name      // For debugging
+					goto exitLoop // Exit multiple for loops without flag variable.
+				}
+			}
+			ctr.Cur = ctr.Cur + 1 // Increment
 		}
 	}
 
 exitLoop:
 	// Only get to this point if this loop is done.
-	ctr.Cur = 0
+	if !stepper.StopFlag { // DO NOT SUBMIT Is this going to mess up with StepLevel? maybe use internalstop
+		ctr.Cur = 0
+	}
 }
 
 // phaseLogic N cycles are broken up into phases, basic is a plus, and minus, so if in cycle phase, special logic has to be added
