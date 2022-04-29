@@ -194,15 +194,17 @@ type Stepper struct {
 
 func (stepper *Stepper) Init(loopman *LoopManager) {
 	stepper.Loops = loopman
-	stepper.StopLevel = etime.Run
+	stepper.StopLevel = etime.Trial
 	stepper.Mode = etime.Train
 	stepper.lastStoppedLevel = -2 // -2 or less is necessary
 }
 
 func (stepper *Stepper) Run() {
 	stepper.runLevel(0)
+	stepper.internalStop = false
 }
 
+// runLevel implements nested for loops recursively. It is set up so that it can be stopped and resumed at any point.
 func (stepper *Stepper) runLevel(currentLevel int) {
 	//stepper.StopFlag = false // TODO Will this not work right?
 	st := stepper.Loops.Stacks[stepper.Mode]
@@ -215,11 +217,12 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
 		stopAtLevel := st.Order[currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
-		if stepper.StopFlag && stopAtLevel {
+		if stepper.internalStop || (stepper.StopFlag && stopAtLevel) {
 			// This should occur before ctr incrementing and before functions.
 			//fmt.Println("Stop! " + time.String()) // DO NOT SUBMIT Remove these
 			stepper.lastStoppedLevel = currentLevel
 			stepper.internalStop = true
+			stepper.StopFlag = false
 			return
 		}
 
@@ -253,17 +256,21 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 			}
 			for name, fun := range loop.IsDone {
 				if fun() {
-					_ = name      // For debugging
+					_ = name // For debugging
+					ctr.Cur = 0
 					goto exitLoop // Exit multiple for loops without flag variable.
 				}
 			}
 			ctr.Cur = ctr.Cur + 1 // Increment
+			//if ctr.Cur >= ctr.Max {
+			//	ctr.Cur = 0
+			//}
 		}
 	}
 
 exitLoop:
 	// Only get to this point if this loop is done.
-	if !stepper.StopFlag { // DO NOT SUBMIT Is this going to mess up with StepLevel? maybe use internalstop
+	if !stepper.internalStop {
 		ctr.Cur = 0
 	}
 }
