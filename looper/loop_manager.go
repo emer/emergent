@@ -194,14 +194,18 @@ type Stepper struct {
 
 func (stepper *Stepper) Init(loopman *LoopManager) {
 	stepper.Loops = loopman
-	stepper.StopLevel = etime.Trial
+	stepper.StopLevel = etime.Run
 	stepper.Mode = etime.Train
 	stepper.lastStoppedLevel = -2 // -2 or less is necessary
 }
 
 func (stepper *Stepper) Run() {
-	stepper.runLevel(0)
+	// Reset internal variables
 	stepper.internalStop = false
+	stepper.lastStoppedLevel = -2
+
+	// 0 Means the top level loop, probably Run
+	stepper.runLevel(0)
 }
 
 // runLevel implements nested for loops recursively. It is set up so that it can be stopped and resumed at any point.
@@ -227,7 +231,6 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 		}
 
 		if currentLevel > stepper.lastStoppedLevel+1 {
-			stepper.lastStoppedLevel = -2
 			// Loop flow was interrupted, and we should not start again.
 			if time > etime.Trial {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
@@ -238,13 +241,10 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 		}
 
 		// Recursion!
-		//stepper.currentLevel += 1 // Go down a level
 		stepper.phaseLogic(loop)
 		stepper.runLevel(currentLevel + 1)
-		//stepper.currentLevel -= 1 //after running through every thing
 
 		if currentLevel > stepper.lastStoppedLevel {
-			stepper.lastStoppedLevel = -2
 			for _, fun := range loop.Main {
 				fun.Func()
 			}
@@ -262,9 +262,6 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 				}
 			}
 			ctr.Cur = ctr.Cur + 1 // Increment
-			//if ctr.Cur >= ctr.Max {
-			//	ctr.Cur = 0
-			//}
 		}
 	}
 
