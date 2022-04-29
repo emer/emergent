@@ -61,6 +61,7 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 			gui.ToolBar.UpdateActions()
 			go func() {
 				stepper.StopFlag = false
+				stepper.StopNext = true
 				stepper.Run()
 				gui.Stopped()
 			}()

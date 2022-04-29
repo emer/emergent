@@ -183,6 +183,7 @@ func (loopman LoopManager) GetLooperStack() *Set {
 
 type Stepper struct {
 	StopFlag  bool        `desc:"If true, stop model ASAP."`
+	StopNext  bool        `desc:"If true, stop model after next stop level."`
 	StopLevel etime.Times `desc:"Time level to stop at the end of."`
 	//currentLevel int          `desc:"An internal variable representing our place in the stack of loops."` // TODO Is this necessary?
 	Loops *LoopManager `desc:"The information about loops."`
@@ -228,6 +229,10 @@ func (stepper *Stepper) runLevel(currentLevel int) {
 			stepper.internalStop = true
 			stepper.StopFlag = false
 			return
+		}
+		if stepper.StopNext && st.Order[currentLevel] == stepper.StopLevel {
+			stepper.StopNext = false
+			stepper.StopFlag = true
 		}
 
 		if currentLevel > stepper.lastStoppedLevel+1 {
