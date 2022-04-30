@@ -27,6 +27,17 @@ func (loopman *LoopManager) Validate() *LoopManager {
 	return loopman
 }
 
+// TODO Use this in ra25.go
+func (LoopManager *LoopManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
+	for _, m := range []etime.Modes{etime.Train, etime.Test} {
+		curMode := m // For closures.
+		for _, t := range []etime.Times{etime.Trial, etime.Epoch} {
+			curTime := t
+			fun(curMode, curTime)
+		}
+	}
+}
+
 // DocString returns an indented summary of the loops
 // and functions in the stack
 func (loopman LoopManager) DocString() string {
