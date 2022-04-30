@@ -269,7 +269,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 				if fun() {
 					_ = name // For debugging
 					ctr.Cur = 0
-					goto exitLoop // Exit multiple for loops without flag variable.
+					goto exitLoop // Exit multiple for-loops without flag variable.
 				}
 			}
 			ctr.Cur = ctr.Cur + 1 // Increment
