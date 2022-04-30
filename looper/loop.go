@@ -51,5 +51,5 @@ func NewLoop(sc etime.ScopeKey, st *Stack) *Loop {
 
 // StageString returns a string for given stage of loop, indented to level
 func (lp *Loop) StageString(stage string, level int) string {
-	return indent.Spaces(level, IndentSize) + string(lp.Scope) + ": " + stage
+	return indent.Spaces(level, indentSize) + string(lp.Scope) + ": " + stage
 }

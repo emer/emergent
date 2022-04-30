@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-// IndentSize is number of spaces to indent for output
-var IndentSize = 4
+// indentSize is number of spaces to indent for output
+var indentSize = 4
 
 // Stack contains one stack of nested loops,
 // associated with one evaluation Mode, and, optionally, envlp.Env.
@@ -198,10 +198,10 @@ func (st *Stack) DocString() string {
 	sb.WriteString("Stack: " + st.Mode + "\n")
 	for i, sc := range st.Order {
 		lp := st.Loops[sc]
-		sb.WriteString(indent.Spaces(i, IndentSize) + string(lp.Scope) + ":\n")
-		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  Main: " + lp.Main.String() + "\n")
-		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  Stop: " + lp.Stop.String() + "\n")
-		sb.WriteString(indent.Spaces(i+1, IndentSize) + "  End:  " + lp.End.String() + "\n")
+		sb.WriteString(indent.Spaces(i, indentSize) + string(lp.Scope) + ":\n")
+		sb.WriteString(indent.Spaces(i+1, indentSize) + "  Main: " + lp.Main.String() + "\n")
+		sb.WriteString(indent.Spaces(i+1, indentSize) + "  Stop: " + lp.Stop.String() + "\n")
+		sb.WriteString(indent.Spaces(i+1, indentSize) + "  End:  " + lp.End.String() + "\n")
 	}
 	return sb.String()
 }

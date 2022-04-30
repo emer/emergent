@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/emer/emergent/envlp"
 	"github.com/emer/emergent/etime"
+	"github.com/goki/ki/indent"
 	"strconv"
+	"strings"
 )
 
 type namedFunc struct {
@@ -17,6 +19,16 @@ type orderedMapFuncs []namedFunc
 func (funcs *orderedMapFuncs) Add(name string, fun func()) *orderedMapFuncs {
 	*funcs = append(*funcs, namedFunc{Name: name, Func: fun})
 	return funcs
+}
+
+func (funcs orderedMapFuncs) String() string {
+	s := ""
+	if len(funcs) > 0 {
+		for _, f := range funcs {
+			s = s + f.Name + " "
+		}
+	}
+	return s
 }
 
 type Phase struct {
@@ -99,85 +111,40 @@ func (loopman *LoopManager) Validate() *LoopManager {
 	return loopman
 }
 
-func (loopman *LoopManager) DocString() string {
-	s := ""
-	for evalMode, stack := range loopman.Stacks {
-		s = s + "\nStack: " + evalMode.String()
-		for _, time := range stack.Order {
-			loop := stack.Loops[time]
-			s = s + "\n\tScale: " + time.String() + "\tMax: " + strconv.Itoa(loop.Counter.Max)
-			if len(loop.OnStart) > 0 {
-				s = s + "\n\t\tOnStart: "
-				for _, f := range loop.OnStart {
-					s = s + f.Name + ", "
+// DocString returns an indented summary of the loops
+// and functions in the stack
+func (loopman LoopManager) DocString() string {
+	var sb strings.Builder
+
+	// indentSize is number of spaces to indent for output
+	var indentSize = 4
+
+	for evalMode, st := range loopman.Stacks {
+		sb.WriteString("Stack: " + evalMode.String() + "\n")
+		for i, t := range st.Order {
+			lp := st.Loops[t]
+			sb.WriteString(indent.Spaces(i, indentSize) + evalMode.String() + ":" + t.String() + ":\n")
+			sb.WriteString(indent.Spaces(i+1, indentSize) + "  Start:  " + lp.OnStart.String() + "\n")
+			sb.WriteString(indent.Spaces(i+1, indentSize) + "  Main:  " + lp.Main.String() + "\n")
+			if len(lp.IsDone) > 0 {
+				s := ""
+				for nm, _ := range lp.IsDone {
+					s = s + nm + " "
 				}
+				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Stop:  " + s + "\n")
 			}
-			if len(loop.OnEnd) > 0 {
-				s = s + "\n\t\tOnEnd: "
-				for _, f := range loop.OnEnd {
-					s = s + f.Name + ", "
+			sb.WriteString(indent.Spaces(i+1, indentSize) + "  End:   " + lp.OnEnd.String() + "\n")
+			if len(lp.Phases) > 0 {
+				s := ""
+				for _, ph := range lp.Phases {
+					s = s + ph.Name + "(" + strconv.Itoa(ph.Duration) + ") "
 				}
-			}
-			if len(loop.IsDone) > 0 {
-				s = s + "\n\t\tIsDone: "
-				for name, _ := range loop.IsDone {
-					s = s + name + ", "
-				}
-			}
-			if len(loop.Phases) > 0 {
-				s = s + "\n\t\tPhases: "
-				for _, phase := range loop.Phases {
-					s = s + phase.Name + ", "
-				}
-				// Also print out phase details
+				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Phases:" + s + "\n")
 			}
 		}
 	}
-	return s
+	return sb.String()
 }
-
-//// DO NOT SUBMIT Delete
-//func (loopman LoopManager) GetLooperStack() *Set {
-//	set := NewSet()
-//
-//	for m, loops := range loopman.Stacks {
-//		scopes := []etime.ScopeKey{}
-//		for _, t := range loops.Order {
-//			scopes = append(scopes, etime.Scope(m, t))
-//		}
-//		st := NewStackScope(scopes...)
-//		set.Stacks[m.String()] = st
-//		st.Mode = m.String()
-//		// TODO Env
-//		for _, t := range loops.Order {
-//			//st.Order = append(st.Order, etime.Scope(m, t))
-//			//loop := Loop{}
-//			//st.Loops[etime.Scope(m, t)] = &loop
-//			//loop.Stack = st
-//			//loop.Scope = etime.Scope(m, t)
-//			loop := st.Loop(t)
-//			ourloop := loops.Loops[t]
-//			// TODO Putting these both in Main?
-//			// TODO Check time == 0 here
-//			for _, nf := range ourloop.OnStart {
-//				loop.Main.Add(nf.Name, nf.Func)
-//			}
-//			for _, nf := range ourloop.Main {
-//				loop.Main.Add(nf.Name, nf.Func)
-//			}
-//			for _, nf := range ourloop.OnEnd {
-//				loop.End.Add(nf.Name, nf.Func)
-//			}
-//			for nm, fn := range ourloop.IsDone {
-//				loop.Stop.Add(nm, fn)
-//			}
-//		}
-//		st.Step.Default = loops.Order[0].String()
-//		st.Set = set
-//	}
-//
-//	return set
-//}
 
 //////////////////////////////////////////////////////////////////////
 // Running

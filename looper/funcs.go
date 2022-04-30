@@ -31,7 +31,7 @@ func (fs *Funcs) Run() {
 // RunTrace runs the list of functions in order, printing a trace before each as they run
 func (fs *Funcs) RunTrace(level int) {
 	for _, fn := range *fs {
-		fmt.Printf("%s%s:\n", indent.Spaces(level, IndentSize), fn.Name)
+		fmt.Printf("%s%s:\n", indent.Spaces(level, indentSize), fn.Name)
 		fn.Func()
 	}
 }
@@ -160,7 +160,7 @@ func (fs *BoolFuncs) Run() bool {
 // Prints a trace before each as they run
 func (fs *BoolFuncs) RunTrace(level int) bool {
 	for _, fn := range *fs {
-		fmt.Printf("%s%s:\n", indent.Spaces(level, IndentSize), fn.Name)
+		fmt.Printf("%s%s:\n", indent.Spaces(level, indentSize), fn.Name)
 		bv := fn.Func()
 		if bv {
 			return true
