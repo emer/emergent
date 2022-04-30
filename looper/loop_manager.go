@@ -295,12 +295,12 @@ func (stepper *Stepper) phaseLogic(loop *LoopStructure) {
 				function.Func()
 			}
 		}
-		if ctr.Cur <= amount { //In between on Start and on End, inclusive
+		if ctr.Cur < amount { //In between on Start and on End, inclusive
 			for _, function := range phase.OnMillisecondEnd {
 				function.Func()
 			}
 		}
-		if ctr.Cur == (amount) { //if end of a phase
+		if ctr.Cur == amount-1 { //if end of a phase
 			for _, function := range phase.PhaseEnd {
 				function.Func()
 			}
