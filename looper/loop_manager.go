@@ -136,47 +136,48 @@ func (loopman *LoopManager) DocString() string {
 	return s
 }
 
-func (loopman LoopManager) GetLooperStack() *Set {
-	set := NewSet()
-
-	for m, loops := range loopman.Stacks {
-		scopes := []etime.ScopeKey{}
-		for _, t := range loops.Order {
-			scopes = append(scopes, etime.Scope(m, t))
-		}
-		st := NewStackScope(scopes...)
-		set.Stacks[m.String()] = st
-		st.Mode = m.String()
-		// TODO Env
-		for _, t := range loops.Order {
-			//st.Order = append(st.Order, etime.Scope(m, t))
-			//loop := Loop{}
-			//st.Loops[etime.Scope(m, t)] = &loop
-			//loop.Stack = st
-			//loop.Scope = etime.Scope(m, t)
-			loop := st.Loop(t)
-			ourloop := loops.Loops[t]
-			// TODO Putting these both in Main?
-			// TODO Check time == 0 here
-			for _, nf := range ourloop.OnStart {
-				loop.Main.Add(nf.Name, nf.Func)
-			}
-			for _, nf := range ourloop.Main {
-				loop.Main.Add(nf.Name, nf.Func)
-			}
-			for _, nf := range ourloop.OnEnd {
-				loop.End.Add(nf.Name, nf.Func)
-			}
-			for nm, fn := range ourloop.IsDone {
-				loop.Stop.Add(nm, fn)
-			}
-		}
-		st.Step.Default = loops.Order[0].String()
-		st.Set = set
-	}
-
-	return set
-}
+//// DO NOT SUBMIT Delete
+//func (loopman LoopManager) GetLooperStack() *Set {
+//	set := NewSet()
+//
+//	for m, loops := range loopman.Stacks {
+//		scopes := []etime.ScopeKey{}
+//		for _, t := range loops.Order {
+//			scopes = append(scopes, etime.Scope(m, t))
+//		}
+//		st := NewStackScope(scopes...)
+//		set.Stacks[m.String()] = st
+//		st.Mode = m.String()
+//		// TODO Env
+//		for _, t := range loops.Order {
+//			//st.Order = append(st.Order, etime.Scope(m, t))
+//			//loop := Loop{}
+//			//st.Loops[etime.Scope(m, t)] = &loop
+//			//loop.Stack = st
+//			//loop.Scope = etime.Scope(m, t)
+//			loop := st.Loop(t)
+//			ourloop := loops.Loops[t]
+//			// TODO Putting these both in Main?
+//			// TODO Check time == 0 here
+//			for _, nf := range ourloop.OnStart {
+//				loop.Main.Add(nf.Name, nf.Func)
+//			}
+//			for _, nf := range ourloop.Main {
+//				loop.Main.Add(nf.Name, nf.Func)
+//			}
+//			for _, nf := range ourloop.OnEnd {
+//				loop.End.Add(nf.Name, nf.Func)
+//			}
+//			for nm, fn := range ourloop.IsDone {
+//				loop.Stop.Add(nm, fn)
+//			}
+//		}
+//		st.Step.Default = loops.Order[0].String()
+//		st.Set = set
+//	}
+//
+//	return set
+//}
 
 //////////////////////////////////////////////////////////////////////
 // Running

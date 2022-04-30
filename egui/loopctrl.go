@@ -14,8 +14,8 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *looper.Stepper) {
-	//Todo added stopper here
+func (gui *GUI) AddLooperCtrl(loops *looper.LoopManager, modes []etime.Modes) {
+	stepper := loops.Steps
 	gui.AddToolbarItem(ToolbarItem{Label: "Stop",
 		Icon:    "stop",
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
@@ -29,70 +29,73 @@ func (gui *GUI) AddLooperCtrl(evalLoops *looper.EvaluationModeLoops, stepper *lo
 		},
 	})
 
-	gui.ToolBar.AddAction(gi.ActOpts{Label: stepper.Mode.String() + " Run", Icon: "play", Tooltip: "Run the " + stepper.Mode.String() + " process", UpdateFunc: func(act *gi.Action) {
-		act.SetActiveStateUpdt(!gui.IsRunning)
-	}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if !gui.IsRunning {
-			gui.IsRunning = true
-			gui.ToolBar.UpdateActions()
-			go func() {
-				//evalLoops.StepClear() // DO NOT SUBMIT Is this necessary? Also check comments below.
-				stepper.StopFlag = false
-				stepper.Run()
-				gui.Stopped()
-			}()
+	for _, m := range modes {
+		mode := m
+
+		gui.ToolBar.AddAction(gi.ActOpts{Label: mode.String() + " Run", Icon: "play", Tooltip: "Run the " + mode.String() + " process", UpdateFunc: func(act *gi.Action) {
+			act.SetActiveStateUpdt(!gui.IsRunning)
+		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+			if !gui.IsRunning {
+				gui.IsRunning = true
+				gui.ToolBar.UpdateActions()
+				go func() {
+					stepper.StopFlag = false
+					stepper.Run()
+					gui.Stopped()
+				}()
+			}
+		})
+
+		//stepLevel := evalLoops.Step.Default
+		stepN := make(map[string]int)
+		steps := loops.Stacks[mode].Order
+		stringToEnumTime := make(map[string]etime.Times)
+		for _, st := range steps {
+			stepN[st.String()] = 1
+			stringToEnumTime[st.String()] = st
 		}
-	})
 
-	//stepLevel := evalLoops.Step.Default
-	stepN := make(map[string]int)
-	steps := evalLoops.Order
-	stringToEnumTime := make(map[string]etime.Times)
-	for _, st := range steps {
-		stepN[st.String()] = 1
-		stringToEnumTime[st.String()] = st
-	}
+		lastSelectedScbTimeScale := etime.Run
 
-	lastSelectedScbTimeScale := etime.Run
+		gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
+			act.SetActiveStateUpdt(!gui.IsRunning)
+		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+			if !gui.IsRunning {
+				gui.IsRunning = true
+				gui.ToolBar.UpdateActions()
+				go func() {
+					stepper.StopLevel = lastSelectedScbTimeScale
+					stepper.StepIterations = stepN[stepper.StopLevel.String()]
+					stepper.StopFlag = false
+					stepper.StopNext = true
+					stepper.Run()
+					gui.Stopped()
+				}()
+			}
+		})
 
-	gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + stepper.Mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
-		act.SetActiveStateUpdt(!gui.IsRunning)
-	}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if !gui.IsRunning {
-			gui.IsRunning = true
-			gui.ToolBar.UpdateActions()
-			go func() {
-				stepper.StopLevel = lastSelectedScbTimeScale
-				stepper.StepIterations = stepN[stepper.StopLevel.String()]
-				stepper.StopFlag = false
-				stepper.StopNext = true
-				stepper.Run()
-				gui.Stopped()
-			}()
+		scb := gi.AddNewComboBox(gui.ToolBar, "step")
+		stepStrs := []string{}
+		for _, s := range steps {
+			stepStrs = append(stepStrs, s.String())
 		}
-	})
+		scb.ItemsFromStringList(stepStrs, false, 30)
+		scb.SetCurVal(stepper.StopLevel.String())
 
-	scb := gi.AddNewComboBox(gui.ToolBar, "step")
-	stepStrs := []string{}
-	for _, s := range steps {
-		stepStrs = append(stepStrs, s.String())
+		sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
+		sb.Defaults()
+		sb.Tooltip = "number of iterations per step"
+		sb.SetProp("step", 1)
+		sb.HasMin = true
+		sb.Min = 1
+		sb.Value = 1
+		sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+			stepN[scb.CurVal.(string)] = int(data.(float32))
+		})
+
+		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+			lastSelectedScbTimeScale = stringToEnumTime[scb.CurVal.(string)]
+			sb.Value = float32(stepN[stepper.StopLevel.String()])
+		})
 	}
-	scb.ItemsFromStringList(stepStrs, false, 30)
-	scb.SetCurVal(stepper.StopLevel.String())
-
-	sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
-	sb.Defaults()
-	sb.Tooltip = "number of iterations per step"
-	sb.SetProp("step", 1)
-	sb.HasMin = true
-	sb.Min = 1
-	sb.Value = 1
-	sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		stepN[scb.CurVal.(string)] = int(data.(float32))
-	})
-
-	scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		lastSelectedScbTimeScale = stringToEnumTime[scb.CurVal.(string)]
-		sb.Value = float32(stepN[stepper.StopLevel.String()])
-	})
 }
