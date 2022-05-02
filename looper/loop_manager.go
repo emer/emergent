@@ -3,7 +3,6 @@ package looper
 import (
 	"github.com/emer/emergent/etime"
 	"github.com/goki/ki/indent"
-	"strconv"
 	"strings"
 )
 
@@ -70,11 +69,10 @@ func (loopman LoopManager) DocString() string {
 			}
 			sb.WriteString(indent.Spaces(i+1, indentSize) + "  End:   " + lp.OnEnd.String() + "\n")
 			if len(lp.Phases) > 0 {
-				s := ""
+				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Phases:\n")
 				for _, ph := range lp.Phases {
-					s = s + ph.Name + "(" + strconv.Itoa(ph.Duration) + ") "
+					sb.WriteString(indent.Spaces(i+2, indentSize) + ph.String() + "\n")
 				}
-				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Phases:" + s + "\n")
 			}
 		}
 	}
