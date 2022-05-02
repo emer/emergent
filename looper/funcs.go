@@ -4,19 +4,19 @@
 
 package looper
 
-type namedFunc struct {
+type NamedFunc struct {
 	Name string
 	Func func()
 }
 
-type orderedMapFuncs []namedFunc
+type NamedFuncs []NamedFunc
 
-func (funcs *orderedMapFuncs) Add(name string, fun func()) *orderedMapFuncs {
-	*funcs = append(*funcs, namedFunc{Name: name, Func: fun})
+func (funcs *NamedFuncs) Add(name string, fun func()) *NamedFuncs {
+	*funcs = append(*funcs, NamedFunc{Name: name, Func: fun})
 	return funcs
 }
 
-func (funcs orderedMapFuncs) String() string {
+func (funcs NamedFuncs) String() string {
 	s := ""
 	if len(funcs) > 0 {
 		for _, f := range funcs {
