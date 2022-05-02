@@ -28,13 +28,21 @@ func (loopman *LoopManager) Validate() *LoopManager {
 }
 
 // TODO Use this in ra25.go
-func (LoopManager *LoopManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
+func (loopman *LoopManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
 	for _, m := range []etime.Modes{etime.Train, etime.Test} {
 		curMode := m // For closures.
 		for _, t := range []etime.Times{etime.Trial, etime.Epoch} {
 			curTime := t
 			fun(curMode, curTime)
 		}
+	}
+}
+
+func (loopman *LoopManager) AddPhaseAllModes(t etime.Times, phase Phase) {
+	// Note that phase is copied
+	for mode, _ := range loopman.Stacks {
+		stack := loopman.Stacks[mode]
+		stack.Loops[t].AddPhases(phase)
 	}
 }
 
