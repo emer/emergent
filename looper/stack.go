@@ -9,29 +9,29 @@ import (
 	"github.com/emer/emergent/etime"
 )
 
-type EvaluationModeLoops struct {
-	Loops map[etime.Times]*LoopStructure
+type LoopStack struct {
+	Loops map[etime.Times]*Loop
 	Order []etime.Times // This should be managed internally.
 }
 
-func (loops *EvaluationModeLoops) Init() *EvaluationModeLoops {
-	loops.Loops = map[etime.Times]*LoopStructure{}
+func (loops *LoopStack) Init() *LoopStack {
+	loops.Loops = map[etime.Times]*Loop{}
 	return loops
 }
 
-func (loops *EvaluationModeLoops) AddTimeScales(times ...etime.Times) *EvaluationModeLoops {
+func (loops *LoopStack) AddTimeScales(times ...etime.Times) *LoopStack {
 	if loops.Loops == nil {
-		loops.Loops = map[etime.Times]*LoopStructure{}
+		loops.Loops = map[etime.Times]*Loop{}
 	}
 	for _, time := range times {
-		loops.Loops[time] = &LoopStructure{}
+		loops.Loops[time] = &Loop{}
 		loops.Order = append(loops.Order, time)
 	}
 	return loops
 }
 
-func (loops *EvaluationModeLoops) AddTime(time etime.Times, max int) *EvaluationModeLoops {
-	loops.Loops[time] = &LoopStructure{Counter: &envlp.Ctr{Max: max}, IsDone: map[string]func() bool{}}
+func (loops *LoopStack) AddTime(time etime.Times, max int) *LoopStack {
+	loops.Loops[time] = &Loop{Counter: &envlp.Ctr{Max: max}, IsDone: map[string]func() bool{}}
 	loops.Order = append(loops.Order, time)
 	return loops
 }

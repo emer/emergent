@@ -7,16 +7,16 @@ import (
 )
 
 type LoopManager struct {
-	Stacks map[etime.Modes]*EvaluationModeLoops
+	Stacks map[etime.Modes]*LoopStack
 	Steps  Stepper
 }
 
-func (loopman *LoopManager) GetLoop(modes etime.Modes, times etime.Times) *LoopStructure {
+func (loopman *LoopManager) GetLoop(modes etime.Modes, times etime.Times) *Loop {
 	return loopman.Stacks[modes].Loops[times]
 }
 
 func (loopman LoopManager) Init() *LoopManager {
-	loopman.Stacks = map[etime.Modes]*EvaluationModeLoops{}
+	loopman.Stacks = map[etime.Modes]*LoopStack{}
 	return &loopman
 }
 
@@ -37,7 +37,7 @@ func (loopman *LoopManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etim
 	}
 }
 
-func (loopman *LoopManager) AddPhaseAllModes(t etime.Times, phase Phase) {
+func (loopman *LoopManager) AddPhaseAllModes(t etime.Times, phase LoopSegment) {
 	// Note that phase is copied
 	for mode, _ := range loopman.Stacks {
 		stack := loopman.Stacks[mode]

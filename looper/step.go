@@ -116,18 +116,13 @@ exitLoop:
 }
 
 // phaseLogic a loop can be broken up into discrete segments, so in a certain window you may want distinct behavior
-func (stepper *Stepper) phaseLogic(loop *LoopStructure) {
+func (stepper *Stepper) phaseLogic(loop *Loop) {
 	ctr := loop.Counter
 	amount := 0
 	for _, phase := range loop.Phases {
 		amount += phase.Duration
 		if ctr.Cur == (amount - phase.Duration) { //if start of a phase
 			for _, function := range phase.PhaseStart {
-				function.Func()
-			}
-		}
-		if ctr.Cur < amount { //In between on Start and on End, inclusive
-			for _, function := range phase.OnMillisecondEnd {
 				function.Func()
 			}
 		}
