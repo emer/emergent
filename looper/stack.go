@@ -31,7 +31,7 @@ func (loops *LoopStack) AddTimeScales(times ...etime.Times) *LoopStack {
 }
 
 func (loops *LoopStack) AddTime(time etime.Times, max int) *LoopStack {
-	loops.Loops[time] = &Loop{Counter: &envlp.Ctr{Max: max}, IsDone: map[string]func() bool{}}
+	loops.Loops[time] = &Loop{Counter: envlp.Ctr{Max: max}, IsDone: map[string]func() bool{}}
 	loops.Order = append(loops.Order, time)
 	return loops
 }

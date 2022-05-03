@@ -17,7 +17,7 @@ type Loop struct {
 
 	Phases []LoopSegment `desc:"Only use Phases at the Theta Cycle timescale (200ms)."`
 
-	Counter *envlp.Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
+	Counter envlp.Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
 }
 
 func (loops *Loop) AddPhases(phases ...LoopSegment) {

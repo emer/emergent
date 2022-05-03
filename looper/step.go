@@ -21,15 +21,16 @@ type Stepper struct {
 	Mode           etime.Modes  `desc:"The current evaluation mode."`
 
 	// For internal use
-	lastStoppedLevel int `desc:"The level at which a stop interrupted flow."`
-	internalStop     bool
+	//lastStartedLevel int                 `desc:"The level at which we last called the Start functions."`
+	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
+	internalStop   bool
 }
 
 func (stepper *Stepper) Init(loopman *LoopManager) {
 	stepper.Loops = loopman
 	stepper.StopLevel = etime.Run
 	stepper.Mode = etime.Train
-	stepper.lastStoppedLevel = -1
+	stepper.lastStartedCtr = map[etime.ScopeKey]int{}
 }
 
 func (stepper *Stepper) Run() {
@@ -42,20 +43,18 @@ func (stepper *Stepper) Run() {
 
 // runLevel implements nested for loops recursively. It is set up so that it can be stopped and resumed at any point.
 func (stepper *Stepper) runLevel(currentLevel int) bool {
-	//stepper.StopFlag = false // TODO Will this not work right?
 	st := stepper.Loops.Stacks[stepper.Mode]
 	if currentLevel >= len(st.Order) {
 		return true // Stack overflow, expected at bottom of stack.
 	}
 	time := st.Order[currentLevel]
 	loop := st.Loops[time]
-	ctr := loop.Counter
+	ctr := &loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
 		stopAtLevel := st.Order[currentLevel] == stepper.StopLevel // Based on conversion of etime.Times to int
 		if stepper.StopFlag && stopAtLevel {
 			stepper.internalStop = true
-			stepper.lastStoppedLevel = currentLevel
 		}
 		if stepper.internalStop {
 			// This should occur before ctr incrementing and before functions.
@@ -67,19 +66,21 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 			if stepper.StepIterations <= 0 {
 				stepper.StopNext = false
 				stepper.StopFlag = true
-				stepper.lastStoppedLevel = -1
 			}
 		}
 
-		if currentLevel >= stepper.lastStoppedLevel {
-			// Loop flow was interrupted, and we should not start again.
-			stepper.lastStoppedLevel = -1
+		// Don't ever Start the same iteration of the same level twice.
+		lastCtr, ok := stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)]
+		if !ok || ctr.Cur > lastCtr {
+			stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)] = ctr.Cur
 			if printControlFlow && time > etime.Trial {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnStart {
 				fun.Func()
 			}
+		} else if printControlFlow && time > etime.Trial {
+			fmt.Println("Skipping start: " + time.String() + ":" + strconv.Itoa(ctr.Cur))
 		}
 
 		// Recursion!
@@ -98,8 +99,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 			}
 			for name, fun := range loop.IsDone {
 				if fun() {
-					_ = name // For debugging
-					ctr.Cur = 0
+					_ = name      // For debugging
 					goto exitLoop // Exit multiple for-loops without flag variable.
 				}
 			}
@@ -111,13 +111,14 @@ exitLoop:
 	// Only get to this point if this loop is done.
 	if !stepper.internalStop {
 		ctr.Cur = 0
+		stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)] = -1
 	}
 	return true
 }
 
 // phaseLogic a loop can be broken up into discrete segments, so in a certain window you may want distinct behavior
 func (stepper *Stepper) phaseLogic(loop *Loop) {
-	ctr := loop.Counter
+	ctr := &loop.Counter
 	amount := 0
 	for _, phase := range loop.Phases {
 		amount += phase.Duration
