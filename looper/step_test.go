@@ -19,7 +19,7 @@ func TestStep(t *testing.T) {
 	manager := LoopManager{}.Init()
 	manager.Stacks[etime.Train] = &LoopStack{}
 	manager.Stacks[etime.Train].Init().AddTime(etime.Run, 2).AddTime(etime.Epoch, 5).AddTime(etime.Trial, 4).AddTime(etime.Cycle, 200)
-	manager.GetLoop(etime.Train, etime.Trial).OnStart.Add("Count Cycles", func() { trialCount += 1 })
+	manager.GetLoop(etime.Train, etime.Trial).OnStart.Add("Count Trials", func() { trialCount += 1 })
 
 	manager.Steps.Init(manager)
 

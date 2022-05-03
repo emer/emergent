@@ -40,6 +40,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.LoopManager, modes []etime.Modes) {
 				gui.ToolBar.UpdateActions()
 				go func() {
 					stepper.StopFlag = false
+					stepper.Mode = mode
 					stepper.Run()
 					gui.Stopped()
 				}()
@@ -68,6 +69,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.LoopManager, modes []etime.Modes) {
 					stepper.StepIterations = stepN[stepper.StopLevel.String()]
 					stepper.StopFlag = false
 					stepper.StopNext = true
+					stepper.Mode = mode
 					stepper.Run()
 					gui.Stopped()
 				}()
