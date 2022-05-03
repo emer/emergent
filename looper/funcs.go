@@ -4,6 +4,8 @@
 
 package looper
 
+import "strings"
+
 type NamedFunc struct {
 	Name string
 	Func func()
@@ -24,4 +26,13 @@ func (funcs NamedFuncs) String() string {
 		}
 	}
 	return s
+}
+
+func (funcs NamedFuncs) HasNameLike(nameSubstring string) bool {
+	for _, nf := range funcs {
+		if strings.Contains(nf.Name, nameSubstring) {
+			return true
+		}
+	}
+	return false
 }
