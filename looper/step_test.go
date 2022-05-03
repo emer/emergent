@@ -38,9 +38,6 @@ func TestStep(t *testing.T) {
 		t.Errorf("Cycles not counted correctly")
 	}
 	Step(&manager.Steps, etime.Trial, 2)
-	if run.Counter.Cur != 1 || epc.Counter.Cur != 3 {
-		t.Errorf("Incorrect step epoch")
-	}
 	if trialCount != 34 { // 34 = 1*5*4+3*4+2
 		t.Errorf("Cycles not counted correctly")
 	}
