@@ -4,10 +4,6 @@
 
 package looper
 
-import (
-	"github.com/emer/emergent/envlp"
-)
-
 type Loop struct {
 	OnStart NamedFuncs
 	// Either Main or the inner loop occurs between OnStart and OnEnd
@@ -17,7 +13,7 @@ type Loop struct {
 
 	Phases []LoopSegment `desc:"Only use Phases at the Theta Cycle timescale (200ms)."`
 
-	Counter envlp.Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
+	Counter Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
 }
 
 func (loops *Loop) AddPhases(phases ...LoopSegment) {

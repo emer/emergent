@@ -5,7 +5,6 @@
 package looper
 
 import (
-	"github.com/emer/emergent/envlp"
 	"github.com/emer/emergent/etime"
 )
 
@@ -31,7 +30,7 @@ func (loops *LoopStack) AddTimeScales(times ...etime.Times) *LoopStack {
 }
 
 func (loops *LoopStack) AddTime(time etime.Times, max int) *LoopStack {
-	loops.Loops[time] = &Loop{Counter: envlp.Ctr{Max: max}, IsDone: map[string]func() bool{}}
+	loops.Loops[time] = &Loop{Counter: Ctr{Max: max}, IsDone: map[string]func() bool{}}
 	loops.Order = append(loops.Order, time)
 	return loops
 }

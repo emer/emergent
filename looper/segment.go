@@ -1,7 +1,6 @@
 package looper
 
 import (
-	"github.com/emer/emergent/envlp"
 	"strconv"
 )
 
@@ -11,8 +10,6 @@ type LoopSegment struct {
 	IsPlusPhase bool
 	PhaseStart  NamedFuncs
 	PhaseEnd    NamedFuncs
-
-	Counter *envlp.Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
 }
 
 func (phase LoopSegment) String() string {
