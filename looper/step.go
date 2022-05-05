@@ -19,11 +19,16 @@ type Stepper struct {
 	StepIterations int          `desc:"How many steps to do."`
 	Loops          *LoopManager `desc:"The information about loops."`
 	Mode           etime.Modes  `desc:"The current evaluation mode."`
+	isRunning      bool         `desc:"Set to true while looping, false when done. Read only."`
 
 	// For internal use
 	//lastStartedLevel int                 `desc:"The level at which we last called the Start functions."`
 	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
 	internalStop   bool
+}
+
+func (stepper Stepper) IsRunning() bool {
+	return stepper.isRunning
 }
 
 func (stepper *Stepper) Init(loopman *LoopManager) {
@@ -34,11 +39,15 @@ func (stepper *Stepper) Init(loopman *LoopManager) {
 }
 
 func (stepper *Stepper) Run() {
+	stepper.isRunning = true
+
 	// Reset internal variables
 	stepper.internalStop = false
 
 	// 0 Means the top level loop, probably Run
 	stepper.runLevel(0)
+
+	stepper.isRunning = false
 }
 
 // runLevel implements nested for loops recursively. It is set up so that it can be stopped and resumed at any point.
