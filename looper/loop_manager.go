@@ -20,13 +20,6 @@ func (loopman LoopManager) Init() *LoopManager {
 	return &loopman
 }
 
-func (loopman *LoopManager) Validate() *LoopManager {
-	// TODO Make sure there are no duplicates.
-	// TODO Print a note if there's a negative Max which will translate to looping forever.
-	return loopman
-}
-
-// TODO Use this in ra25.go
 func (loopman *LoopManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
 	for _, m := range []etime.Modes{etime.Train, etime.Test} {
 		curMode := m // For closures.
@@ -37,11 +30,11 @@ func (loopman *LoopManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etim
 	}
 }
 
-func (loopman *LoopManager) AddPhaseAllModes(t etime.Times, phase LoopSegment) {
+func (loopman *LoopManager) AddSegmentAllModes(t etime.Times, loopSegment LoopSegment) {
 	// Note that phase is copied
 	for mode, _ := range loopman.Stacks {
 		stack := loopman.Stacks[mode]
-		stack.Loops[t].AddPhases(phase)
+		stack.Loops[t].AddSegments(loopSegment)
 	}
 }
 
@@ -68,9 +61,9 @@ func (loopman LoopManager) DocString() string {
 				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Stop:  " + s + "\n")
 			}
 			sb.WriteString(indent.Spaces(i+1, indentSize) + "  End:   " + lp.OnEnd.String() + "\n")
-			if len(lp.Phases) > 0 {
+			if len(lp.Segments) > 0 {
 				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Phases:\n")
-				for _, ph := range lp.Phases {
+				for _, ph := range lp.Segments {
 					sb.WriteString(indent.Spaces(i+2, indentSize) + ph.String() + "\n")
 				}
 			}

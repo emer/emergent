@@ -5,21 +5,20 @@ import (
 )
 
 type LoopSegment struct {
-	Name        string // Might be plus or minus for example
-	Duration    int
-	IsPlusPhase bool
-	PhaseStart  NamedFuncs
-	PhaseEnd    NamedFuncs
+	Name     string // Might be "plus" or "minus" for example
+	Duration int
+	OnStart  NamedFuncs
+	OnEnd    NamedFuncs
 }
 
-func (phase LoopSegment) String() string {
-	s := phase.Name + ": "
-	s = s + "(duration=" + strconv.Itoa(phase.Duration) + ") "
-	if len(phase.PhaseStart) > 0 {
-		s = s + "\tOnStart: " + phase.PhaseStart.String()
+func (loopSegment LoopSegment) String() string {
+	s := loopSegment.Name + ": "
+	s = s + "(duration=" + strconv.Itoa(loopSegment.Duration) + ") "
+	if len(loopSegment.OnStart) > 0 {
+		s = s + "\tOnStart: " + loopSegment.OnStart.String()
 	}
-	if len(phase.PhaseEnd) > 0 {
-		s = s + "\tOnEnd: " + phase.PhaseEnd.String()
+	if len(loopSegment.OnEnd) > 0 {
+		s = s + "\tOnEnd: " + loopSegment.OnEnd.String()
 	}
 	return s
 }

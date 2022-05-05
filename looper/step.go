@@ -120,15 +120,15 @@ exitLoop:
 func (stepper *Stepper) phaseLogic(loop *Loop) {
 	ctr := &loop.Counter
 	amount := 0
-	for _, phase := range loop.Phases {
+	for _, phase := range loop.Segments {
 		amount += phase.Duration
 		if ctr.Cur == (amount - phase.Duration) { //if start of a phase
-			for _, function := range phase.PhaseStart {
+			for _, function := range phase.OnStart {
 				function.Func()
 			}
 		}
 		if ctr.Cur == amount-1 { //if end of a phase
-			for _, function := range phase.PhaseEnd {
+			for _, function := range phase.OnEnd {
 				function.Func()
 			}
 		}
