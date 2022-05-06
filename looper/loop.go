@@ -4,22 +4,28 @@
 
 package looper
 
+// Loop contains one level of a multi-level iteration scheme. It wraps around an inner loop recorded in a Stack, or around Main functions. It records how many times the loop should be repeated in the Counter. It records what happens at the beginning and end of each loop.
+// For example, a loop with 1 start, 1 end, and a Counter with max=3 will do:
+// Start, Inner, End, Start, Inner, End, Start, Inner, End
+// Where the Inner loop is specified by a Stack or by Main, and Start and End are functions on the loop.
+// See Stack for more details on how loops are combined.
 type Loop struct {
-	OnStart NamedFuncs
+	Counter Ctr `desc:"Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first."`
+
+	OnStart NamedFuncs `desc:"OnStart is called at the beginning of each loop."`
 	// Either Main or the inner loop occurs between OnStart and OnEnd
-	Main   NamedFuncs
-	OnEnd  NamedFuncs
-	IsDone map[string]func() bool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
+	Main   NamedFuncs     `desc:"OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here."`
+	OnEnd  NamedFuncs     `desc:"OnStart is called at the end of each loop."`
+	IsDone NamedFuncsBool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
 
-	Segments []LoopSegment `desc:"Only use Phases at the Theta Cycle timescale (200ms)."`
-
-	Counter Ctr `desc:"Tracks time within the loop. Also tracks the maximum."`
+	Spans []Span `desc:"Spans represent distinct Lengths of time across the loop. They were initially intended for use at the Theta Cycle timescale (200ms), where network behavior is predicted to be different at different phases of a neural oscillation. But they might be useful in other contexts also."`
 }
 
-func (loops *Loop) AddSegments(loopSegments ...LoopSegment) {
-	for _, loopSegment := range loopSegments {
-		loops.Segments = append(loops.Segments, loopSegment)
-		loopSegment.OnStart = NamedFuncs{}
-		loopSegment.OnEnd = NamedFuncs{}
+// AddSpans to the list.
+func (loops *Loop) AddSpans(loopSpans ...Span) {
+	for _, loopSpan := range loopSpans {
+		loops.Spans = append(loops.Spans, loopSpan)
+		loopSpan.OnStart = NamedFuncs{}
+		loopSpan.OnEnd = NamedFuncs{}
 	}
 }

@@ -14,7 +14,7 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(loops *looper.LoopManager, modes []etime.Modes) {
+func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
 	stepper := loops.Steps
 	gui.AddToolbarItem(ToolbarItem{Label: "Stop",
 		Icon:    "stop",

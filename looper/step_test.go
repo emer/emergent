@@ -16,8 +16,8 @@ func Step(stepper *Stepper, stopLevel etime.Times, iters int) {
 func TestStep(t *testing.T) {
 	trialCount := 0
 
-	manager := LoopManager{}.Init()
-	manager.Stacks[etime.Train] = &LoopStack{}
+	manager := DataManager{}.Init()
+	manager.Stacks[etime.Train] = &Stack{}
 	manager.Stacks[etime.Train].Init().AddTime(etime.Run, 2).AddTime(etime.Epoch, 5).AddTime(etime.Trial, 4).AddTime(etime.Cycle, 200)
 	manager.GetLoop(etime.Train, etime.Trial).OnStart.Add("Count Trials", func() { trialCount += 1 })
 

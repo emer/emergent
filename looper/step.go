@@ -10,34 +10,38 @@ import (
 	"strconv"
 )
 
-var printControlFlow = true
+// If you want to debug the flow of time, set this to true.
+var printControlFlow = false
 
+// Stepper is a control object for stepping through a looper.DataManager filled with Stacks of Loops. It doesn't directly contain any data about what the flow of nested loops should be, only data about how the flow is going.
 type Stepper struct {
 	StopFlag       bool         `desc:"If true, stop model ASAP."`
-	StopNext       bool         `desc:"If true, stop model after next stop level."`
+	StopNext       bool         `desc:"If true, stop model at the end of the current StopLevel."`
 	StopLevel      etime.Times  `desc:"Time level to stop at the end of."`
 	StepIterations int          `desc:"How many steps to do."`
-	Loops          *LoopManager `desc:"The information about loops."`
+	Loops          *DataManager `desc:"The information about loops."`
 	Mode           etime.Modes  `desc:"The current evaluation mode."`
 	isRunning      bool         `desc:"Set to true while looping, false when done. Read only."`
 
 	// For internal use
-	//lastStartedLevel int                 `desc:"The level at which we last called the Start functions."`
 	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
 	internalStop   bool
 }
 
+// IsRunning is True if running.
 func (stepper Stepper) IsRunning() bool {
 	return stepper.isRunning
 }
 
-func (stepper *Stepper) Init(loopman *LoopManager) {
+// Init sets some default values.
+func (stepper *Stepper) Init(loopman *DataManager) {
 	stepper.Loops = loopman
 	stepper.StopLevel = etime.Run
 	stepper.Mode = etime.Train
 	stepper.lastStartedCtr = map[etime.ScopeKey]int{}
 }
 
+// Run runs the loops contained within the stepper. If you want it to stop before the full end of the loop, set variables on the Stepper.
 func (stepper *Stepper) Run() {
 	stepper.isRunning = true
 
@@ -129,7 +133,7 @@ exitLoop:
 func (stepper *Stepper) phaseLogic(loop *Loop) {
 	ctr := &loop.Counter
 	amount := 0
-	for _, phase := range loop.Segments {
+	for _, phase := range loop.Spans {
 		amount += phase.Duration
 		if ctr.Cur == (amount - phase.Duration) { //if start of a phase
 			for _, function := range phase.OnStart {
