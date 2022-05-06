@@ -6,21 +6,25 @@ import (
 	"strings"
 )
 
+// DataManager holds data relating to multiple stacks of loops, as well as the logic for stepping through it. It also holds helper methods for constructing the data.
 type DataManager struct {
 	Stacks map[etime.Modes]*Stack
 	Steps  Stepper
 }
 
+// GetLoop returns the Loop associated with an evaluation mode and timescale.
 func (loopman *DataManager) GetLoop(modes etime.Modes, times etime.Times) *Loop {
 	return loopman.Stacks[modes].Loops[times]
 }
 
+// Init initializes variables on the DataManager.
 func (loopman DataManager) Init() *DataManager {
 	loopman.Stacks = map[etime.Modes]*Stack{}
 	return &loopman
 }
 
-func (loopman *DataManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
+// ApplyAcrossAllModesAndTimes applies a function across all evaluation modes and timescales within the DataManager. The function might call GetLoop(curMode, curTime) and modify it.
+func (loopman *DataManager) ApplyAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
 	for _, m := range []etime.Modes{etime.Train, etime.Test} {
 		curMode := m // For closures.
 		for _, t := range []etime.Times{etime.Trial, etime.Epoch} {
@@ -30,16 +34,16 @@ func (loopman *DataManager) AddAcrossAllModesAndTimes(fun func(etime.Modes, etim
 	}
 }
 
-func (loopman *DataManager) AddSegmentAllModes(t etime.Times, loopSegment Span) {
+// AddSpanAllModes adds a Span to the stack for all modes.
+func (loopman *DataManager) AddSpanAllModes(t etime.Times, loopSpan Span) {
 	// Note that phase is copied
 	for mode, _ := range loopman.Stacks {
 		stack := loopman.Stacks[mode]
-		stack.Loops[t].AddSpans(loopSegment)
+		stack.Loops[t].AddSpans(loopSpan)
 	}
 }
 
-// DocString returns an indented summary of the loops
-// and functions in the stack
+// DocString returns an indented summary of the loops and functions in the stack.
 func (loopman DataManager) DocString() string {
 	var sb strings.Builder
 
