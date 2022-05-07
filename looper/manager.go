@@ -34,12 +34,12 @@ func (loopman *DataManager) ApplyAcrossAllModesAndTimes(fun func(etime.Modes, et
 	}
 }
 
-// AddSpanAllModes adds a Span to the stack for all modes.
-func (loopman *DataManager) AddSpanAllModes(t etime.Times, loopSpan Span) {
+// AddEventAllModes adds a Event to the stack for all modes.
+func (loopman *DataManager) AddEventAllModes(t etime.Times, event Event) {
 	// Note that phase is copied
 	for mode, _ := range loopman.Stacks {
 		stack := loopman.Stacks[mode]
-		stack.Loops[t].AddSpans(loopSpan)
+		stack.Loops[t].AddEvents(event)
 	}
 }
 
@@ -65,9 +65,9 @@ func (loopman DataManager) DocString() string {
 				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Stop:  " + s + "\n")
 			}
 			sb.WriteString(indent.Spaces(i+1, indentSize) + "  End:   " + lp.OnEnd.String() + "\n")
-			if len(lp.Spans) > 0 {
+			if len(lp.Events) > 0 {
 				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Phases:\n")
-				for _, ph := range lp.Spans {
+				for _, ph := range lp.Events {
 					sb.WriteString(indent.Spaces(i+2, indentSize) + ph.String() + "\n")
 				}
 			}

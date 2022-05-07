@@ -4,23 +4,19 @@ import (
 	"strconv"
 )
 
-// A Span represents a length of time within a loop, if behavior is expected to change in distinct phases.
-type Span struct {
-	Name     string     `desc:"Might be 'plus' or 'minus' for example."`
-	Duration int        `desc:"The length of this Span."`
-	OnStart  NamedFuncs `desc:"Called at the start of the Span."`
-	OnEnd    NamedFuncs `desc:"Called at the end of the Span."`
+// A Event represents a length of time within a loop, if behavior is expected to change in distinct phases.
+type Event struct {
+	Name      string     `desc:"Might be 'plus' or 'minus' for example."`
+	OccurTime int        `desc:"The length of this Event."`
+	OnOccur   NamedFuncs `desc:"Called at the start of the Event."`
 }
 
-// String describes the Span in human readable text.
-func (loopSegment Span) String() string {
-	s := loopSegment.Name + ": "
-	s = s + "(duration=" + strconv.Itoa(loopSegment.Duration) + ") "
-	if len(loopSegment.OnStart) > 0 {
-		s = s + "\tOnStart: " + loopSegment.OnStart.String()
-	}
-	if len(loopSegment.OnEnd) > 0 {
-		s = s + "\tOnEnd: " + loopSegment.OnEnd.String()
+// String describes the Event in human readable text.
+func (event Event) String() string {
+	s := event.Name + ": "
+	s = s + "(at " + strconv.Itoa(event.OccurTime) + ") "
+	if len(event.OnOccur) > 0 {
+		s = s + "\tEvents: " + event.OnOccur.String()
 	}
 	return s
 }

@@ -18,14 +18,13 @@ type Loop struct {
 	OnEnd  NamedFuncs     `desc:"OnStart is called at the end of each loop."`
 	IsDone NamedFuncsBool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
 
-	Spans []Span `desc:"Spans represent distinct Lengths of time across the loop. They were initially intended for use at the Theta Cycle timescale (200ms), where network behavior is predicted to be different at different phases of a neural oscillation. But they might be useful in other contexts also."`
+	Events []Event `desc:"Events occur when Ctr.Cur gets to their OccurTime."`
 }
 
-// AddSpans to the list.
-func (loops *Loop) AddSpans(loopSpans ...Span) {
-	for _, loopSpan := range loopSpans {
-		loops.Spans = append(loops.Spans, loopSpan)
-		loopSpan.OnStart = NamedFuncs{}
-		loopSpan.OnEnd = NamedFuncs{}
+// AddEvents to the list.
+func (loops *Loop) AddEvents(events ...Event) {
+	for _, event := range events {
+		loops.Events = append(loops.Events, event)
+		event.OnOccur = NamedFuncs{}
 	}
 }

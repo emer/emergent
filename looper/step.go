@@ -97,7 +97,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 		}
 
 		// Recursion!
-		stepper.phaseLogic(loop)
+		stepper.eventLogic(loop)
 		runComplete := stepper.runLevel(currentLevel + 1)
 
 		if runComplete {
@@ -129,19 +129,12 @@ exitLoop:
 	return true
 }
 
-// phaseLogic a loop can be broken up into discrete segments, so in a certain window you may want distinct behavior
-func (stepper *Stepper) phaseLogic(loop *Loop) {
+// eventLogic handles events that occur at specific timesteps.
+func (stepper *Stepper) eventLogic(loop *Loop) {
 	ctr := &loop.Counter
-	amount := 0
-	for _, phase := range loop.Spans {
-		amount += phase.Duration
-		if ctr.Cur == (amount - phase.Duration) { //if start of a phase
-			for _, function := range phase.OnStart {
-				function.Func()
-			}
-		}
-		if ctr.Cur == amount-1 { //if end of a phase
-			for _, function := range phase.OnEnd {
+	for _, phase := range loop.Events {
+		if ctr.Cur == phase.OccurTime {
+			for _, function := range phase.OnOccur {
 				function.Func()
 			}
 		}
