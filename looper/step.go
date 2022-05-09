@@ -133,8 +133,8 @@ exitLoop:
 func (stepper *Stepper) eventLogic(loop *Loop) {
 	ctr := &loop.Counter
 	for _, phase := range loop.Events {
-		if ctr.Cur == phase.OccurTime {
-			for _, function := range phase.OnOccur {
+		if ctr.Cur == phase.AtCtr {
+			for _, function := range phase.OnEvent {
 				function.Func()
 			}
 		}

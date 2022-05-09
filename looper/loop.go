@@ -25,6 +25,6 @@ type Loop struct {
 func (loops *Loop) AddEvents(events ...Event) {
 	for _, event := range events {
 		loops.Events = append(loops.Events, event)
-		event.OnOccur = NamedFuncs{}
+		event.OnEvent = NamedFuncs{}
 	}
 }
