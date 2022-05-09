@@ -6,12 +6,18 @@ package looper
 
 import (
 	"fmt"
-	"github.com/emer/emergent/etime"
 	"strconv"
+
+	"github.com/emer/emergent/etime"
 )
 
-// If you want to debug the flow of time, set this to true.
-var printControlFlow = false
+var (
+	// If you want to debug the flow of time, set this to true.
+	PrintControlFlow = false
+
+	// If PrintControlFlow = true, this cuts off printing at this time scale and below -- default is to print all
+	NoPrintBelow = etime.AllTimes
+)
 
 // Stepper is a control object for stepping through a looper.DataManager filled with Stacks of Loops. It doesn't directly contain any data about what the flow of nested loops should be, only data about how the flow is going.
 type Stepper struct {
@@ -86,13 +92,13 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 		lastCtr, ok := stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)]
 		if !ok || ctr.Cur > lastCtr {
 			stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)] = ctr.Cur
-			if printControlFlow && time > etime.Trial {
+			if PrintControlFlow && time > NoPrintBelow {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnStart {
 				fun.Func()
 			}
-		} else if printControlFlow && time > etime.Trial {
+		} else if PrintControlFlow && time > NoPrintBelow {
 			fmt.Println("Skipping start: " + time.String() + ":" + strconv.Itoa(ctr.Cur))
 		}
 
@@ -104,7 +110,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 			for _, fun := range loop.Main {
 				fun.Func()
 			}
-			if printControlFlow && time > etime.Trial {
+			if PrintControlFlow && time > NoPrintBelow {
 				fmt.Println(time.String() + ":End:  " + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnEnd {
