@@ -14,15 +14,14 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
-	stepper := loops.Steps
+func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 	gui.AddToolbarItem(ToolbarItem{Label: "Stop",
 		Icon:    "stop",
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
-			stepper.StopFlag = true
-			stepper.StopLevel = etime.Cycle
+			loops.StopFlag = true
+			loops.StopLevel = etime.Cycle
 			fmt.Println("Stop time!")
 			gui.StopNow = true
 			gui.Stopped()
@@ -39,9 +38,9 @@ func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
 				go func() {
-					stepper.StopFlag = false
-					stepper.Mode = mode
-					stepper.Run()
+					loops.StopFlag = false
+					loops.Mode = mode
+					loops.Run()
 					gui.Stopped()
 				}()
 			}
@@ -65,8 +64,8 @@ func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
 				go func() {
-					stepper.Mode = mode
-					stepper.Step(stepN[stepper.StopLevel.String()], lastSelectedScbTimeScale)
+					loops.Mode = mode
+					loops.Step(stepN[loops.StopLevel.String()], lastSelectedScbTimeScale)
 					gui.Stopped()
 				}()
 			}
@@ -78,7 +77,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
 			stepStrs = append(stepStrs, s.String())
 		}
 		scb.ItemsFromStringList(stepStrs, false, 30)
-		scb.SetCurVal(stepper.StopLevel.String())
+		scb.SetCurVal(loops.StopLevel.String())
 
 		sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
 		sb.Defaults()
@@ -93,7 +92,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
 
 		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 			lastSelectedScbTimeScale = stringToEnumTime[scb.CurVal.(string)]
-			sb.Value = float32(stepN[stepper.StopLevel.String()])
+			sb.Value = float32(stepN[loops.StopLevel.String()])
 		})
 	}
 }
