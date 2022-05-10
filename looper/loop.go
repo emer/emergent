@@ -4,38 +4,27 @@
 
 package looper
 
-import (
-	"github.com/emer/emergent/etime"
-	"github.com/goki/ki/indent"
-)
-
-// Loop represents one level of looping, with arbitrary functions
-// called at 3 different points in the loop, corresponding to a
-// do..while loop logic, with no initialization, which is necessary
-// to ensure reentrant steppability.  In Go, the logic looks like this:
-//
-// for {
-//    for { <subloops here> } // drills down levels for each subloop
-//    Main()                  // Main is called after subloops -- increment counters!
-//    if Stop() {
-//        break
-//    }
-// }
-// End()                      // Reset counters here so next pass starts over
-//
+// Loop contains one level of a multi-level iteration scheme. It wraps around an inner loop recorded in a Stack, or around Main functions. It records how many times the loop should be repeated in the Counter. It records what happens at the beginning and end of each loop.
+// For example, a loop with 1 start, 1 end, and a Counter with max=3 will do:
+// Start, Inner, End, Start, Inner, End, Start, Inner, End
+// Where the Inner loop is specified by a Stack or by Main, and Start and End are functions on the loop.
+// See Stack for more details on how loops are combined.
 type Loop struct {
-	Stack *Stack         `desc:"stack that owns this loop"`
-	Scope etime.ScopeKey `desc:"scope level of this loop"`
-	Main  Funcs          `desc:"main functions to call inside each iteration, after looping at lower level for non-terminal levels -- any counters should be incremented here -- if there is an Env set for the Stack, then any counter in the Env at the corresponding Scope will automatically be incremented via Env:Incr or Env:Step functions added automatically"`
-	Stop  BoolFuncs      `desc:"functions that cause the loop to stop -- if any return true, it stops"`
-	End   Funcs          `desc:"functions to run at the end of the loop, after it has stopped.  counters etc should be reset here, so next iteration starts over afresh.  the Init function calls these to initialize before running."`
+	Counter Ctr `desc:"Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first."`
+
+	OnStart NamedFuncs `desc:"OnStart is called at the beginning of each loop."`
+	// Either Main or the inner loop occurs between OnStart and OnEnd
+	Main   NamedFuncs     `desc:"OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here."`
+	OnEnd  NamedFuncs     `desc:"OnStart is called at the end of each loop."`
+	IsDone NamedFuncsBool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
+
+	Events []Event `desc:"Events occur when Ctr.Cur gets to their OccurTime."`
 }
 
-func NewLoop(sc etime.ScopeKey, st *Stack) *Loop {
-	return &Loop{Scope: sc, Stack: st}
-}
-
-// StageString returns a string for given stage of loop, indented to level
-func (lp *Loop) StageString(stage string, level int) string {
-	return indent.Spaces(level, IndentSize) + string(lp.Scope) + ": " + stage
+// AddEvents to the list.
+func (loops *Loop) AddEvents(events ...Event) {
+	for _, event := range events {
+		loops.Events = append(loops.Events, event)
+		event.OnEvent = NamedFuncs{}
+	}
 }
