@@ -15,7 +15,7 @@ var (
 	// If you want to debug the flow of time, set this to true.
 	PrintControlFlow = false
 
-	// If PrintControlFlow = true, this cuts off printing at this time scale and below -- default is to print all
+	// If PrintControlFlow = true, this cuts off printing at timescales that are faster than this -- default is to print all.
 	NoPrintBelow = etime.AllTimes
 )
 
@@ -45,6 +45,40 @@ func (stepper *Stepper) Init(loopman *DataManager) {
 	stepper.StopLevel = etime.Run
 	stepper.Mode = etime.Train
 	stepper.lastStartedCtr = map[etime.ScopeKey]int{}
+	stepper.ResetCounters()
+}
+
+// ResetCountersByMode is like ResetCounters, but only for one mode.
+func (stepper *Stepper) ResetCountersByMode(modes etime.Modes) {
+	for sk, _ := range stepper.lastStartedCtr {
+		skm, _ := sk.ModeAndTime()
+		if skm == modes {
+			stepper.lastStartedCtr[sk] = 0
+		}
+	}
+	for m, stack := range stepper.Loops.Stacks {
+		if m == modes {
+			for _, loop := range stack.Loops {
+				loop.Counter.Cur = 0
+			}
+		}
+	}
+}
+
+// ResetCounters resets the Cur on all loop Counters, and resets the Stepper's place in the loops.
+func (stepper *Stepper) ResetCounters() {
+	for m, _ := range stepper.Loops.Stacks {
+		stepper.ResetCountersByMode(m)
+	}
+}
+
+// Step numSteps stopscales. Use this if you want to do exactly one trial or two epochs or 50 cycles or something.
+func (stepper *Stepper) Step(numSteps int, stopscale etime.Times) {
+	stepper.StopLevel = stopscale
+	stepper.StepIterations = numSteps
+	stepper.StopFlag = false
+	stepper.StopNext = true
+	stepper.Run()
 }
 
 // Run runs the loops contained within the stepper. If you want it to stop before the full end of the loop, set variables on the Stepper.
@@ -71,8 +105,8 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 	ctr := &loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
-		stopAtLevel := st.Order[currentLevel] == stepper.StopLevel // Based on conversion of etime.Times to int
-		if stepper.StopFlag && stopAtLevel {
+		stopAtLevelOrLarger := st.Order[currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
+		if stepper.StopFlag && stopAtLevelOrLarger {
 			stepper.internalStop = true
 		}
 		if stepper.internalStop {
@@ -84,7 +118,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 			stepper.StepIterations -= 1
 			if stepper.StepIterations <= 0 {
 				stepper.StopNext = false
-				stepper.StopFlag = true
+				stepper.StopFlag = true // Stop at the top of the next StopLevel
 			}
 		}
 
@@ -92,13 +126,13 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 		lastCtr, ok := stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)]
 		if !ok || ctr.Cur > lastCtr {
 			stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)] = ctr.Cur
-			if PrintControlFlow && time > NoPrintBelow {
+			if PrintControlFlow && time >= NoPrintBelow {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnStart {
 				fun.Func()
 			}
-		} else if PrintControlFlow && time > NoPrintBelow {
+		} else if PrintControlFlow && time >= NoPrintBelow {
 			fmt.Println("Skipping start: " + time.String() + ":" + strconv.Itoa(ctr.Cur))
 		}
 
@@ -110,7 +144,7 @@ func (stepper *Stepper) runLevel(currentLevel int) bool {
 			for _, fun := range loop.Main {
 				fun.Func()
 			}
-			if PrintControlFlow && time > NoPrintBelow {
+			if PrintControlFlow && time >= NoPrintBelow {
 				fmt.Println(time.String() + ":End:  " + strconv.Itoa(ctr.Cur))
 			}
 			for _, fun := range loop.OnEnd {

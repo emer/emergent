@@ -65,12 +65,8 @@ func (gui *GUI) AddLooperCtrl(loops *looper.DataManager, modes []etime.Modes) {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
 				go func() {
-					stepper.StopLevel = lastSelectedScbTimeScale
-					stepper.StepIterations = stepN[stepper.StopLevel.String()]
-					stepper.StopFlag = false
-					stepper.StopNext = true
 					stepper.Mode = mode
-					stepper.Run()
+					stepper.Step(stepN[stepper.StopLevel.String()], lastSelectedScbTimeScale)
 					gui.Stopped()
 				}()
 			}
