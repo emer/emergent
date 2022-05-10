@@ -2,10 +2,11 @@ package looper
 
 import (
 	"fmt"
-	"github.com/emer/emergent/etime"
-	"github.com/goki/ki/indent"
 	"strconv"
 	"strings"
+
+	"github.com/emer/emergent/etime"
+	"github.com/goki/ki/indent"
 )
 
 var (
@@ -46,6 +47,14 @@ func (loopman Manager) Init() *Manager {
 	loopman.lastStartedCtr = map[etime.ScopeKey]int{}
 	loopman.ResetCounters()
 	return &loopman
+}
+
+// AddStack adds a new Stack for given mode
+func (loopman Manager) AddStack(mode etime.Modes) *Stack {
+	stack := &Stack{}
+	loopman.Stacks[etime.Train] = stack
+	stack.Init()
+	return stack
 }
 
 // ApplyAcrossAllModesAndTimes applies a function across all evaluation modes and timescales within the Manager. The function might call GetLoop(curMode, curTime) and modify it.
@@ -133,7 +142,7 @@ func (stepper *Manager) ResetCounters() {
 }
 
 // Step numSteps stopscales. Use this if you want to do exactly one trial or two epochs or 50 cycles or something.
-func (stepper *Manager) Step(numSteps int, stopscale etime.Times) {
+func (stepper *Manager) Step(stopscale etime.Times, numSteps int) {
 	stepper.StopLevel = stopscale
 	stepper.StepIterations = numSteps
 	stepper.StopFlag = false
