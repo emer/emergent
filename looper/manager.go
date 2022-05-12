@@ -142,7 +142,7 @@ func (stepper *Manager) ResetCounters() {
 }
 
 // Step numSteps stopscales. Use this if you want to do exactly one trial or two epochs or 50 cycles or something.
-func (stepper *Manager) Step(stopscale etime.Times, numSteps int) {
+func (stepper *Manager) Step(numSteps int, stopscale etime.Times) {
 	stepper.StopLevel = stopscale
 	stepper.StepIterations = numSteps
 	stepper.StopFlag = false
