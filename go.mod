@@ -3,6 +3,7 @@ module github.com/emer/emergent
 go 1.15
 
 require (
+	github.com/Astera-org/worlds v0.0.0-20220513203205-17959e9bff37
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.12
 	github.com/emer/etable v1.0.44
