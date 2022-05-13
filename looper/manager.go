@@ -198,6 +198,8 @@ func (stepper *Manager) runLevel(currentLevel int) bool {
 			if PrintControlFlow && time >= NoPrintBelow {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
+			// Events occur at the very start.
+			stepper.eventLogic(loop)
 			for _, fun := range loop.OnStart {
 				fun.Func()
 			}
@@ -206,7 +208,6 @@ func (stepper *Manager) runLevel(currentLevel int) bool {
 		}
 
 		// Recursion!
-		stepper.eventLogic(loop)
 		runComplete := stepper.runLevel(currentLevel + 1)
 
 		if runComplete {
