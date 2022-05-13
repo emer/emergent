@@ -8,8 +8,8 @@ type SpaceSpec struct {
 	// Continuous
 	ContinuousShape []int   `desc:"The dimensions of an array. For example, [3,2] would be a 3 by 2 array. [1] would be a single value."`
 	Stride          []int   `desc:"TODO Replace Shape and Stride with one Shape object, like an etensor.Tensor has."`
-	Min             float32 `desc:"The minimum continuous value."`
-	Max             float32 `desc:"The maximum continuous value."`
+	Min             float64 `desc:"The minimum continuous value."`
+	Max             float64 `desc:"The maximum continuous value."`
 
 	// Discrete
 	DiscreteLabels []string `desc:"The names of the discrete possibilities, such as ['left', 'right']. The length of this is the number of discrete possibilities that this shape encapsulates."`
