@@ -152,10 +152,12 @@ func (ui *UserInterface) log(mode etime.Modes, time etime.Times, loop looper.Loo
 	}
 
 	ui.Logs.LogRow(mode, time, row) // also logs to file, etc
-	if time == etime.Cycle {
-		ui.GUI.UpdateCyclePlot(mode, row)
-	} else {
-		ui.GUI.UpdatePlot(mode, time)
+	if ui.GUI != nil {
+		if time == etime.Cycle {
+			ui.GUI.UpdateCyclePlot(mode, row)
+		} else {
+			ui.GUI.UpdatePlot(mode, time)
+		}
 	}
 }
 
