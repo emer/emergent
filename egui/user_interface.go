@@ -146,6 +146,9 @@ func (ui *UserInterface) RunWithoutGui() {
 func (ui *UserInterface) log(mode etime.Modes, time etime.Times, loop looper.Loop) {
 	dt := ui.Logs.Table(mode, time)
 	row := dt.Rows
+	if time == etime.Trial {
+		println("Trial start: " + strconv.Itoa(loop.Counter.Cur))
+	}
 	if time == etime.Cycle || time == etime.Trial {
 		// TODO Why?
 		row = loop.Counter.Cur
@@ -168,12 +171,13 @@ func getCurrentLoopState(loops looper.Manager) string {
 	return s
 }
 
-// addDefaultLoggingCallbacks adds callbacks within Looper to do logging. It needs logging items to have been added to Logs before being called.
-func (ui *UserInterface) addDefaultLoggingCallbacks() {
+// addDefaultLoggingCallbacksLooper adds callbacks within Looper to do logging. It needs logging items to have been added to Logs before being called.
+func (ui *UserInterface) addDefaultLoggingCallbacksLooper() {
 	manager := ui.Looper
 	for m, loops := range manager.Stacks {
 		curMode := m // For closures.
-		for t, loop := range loops.Loops {
+		for t, l := range loops.Loops {
+			loop := l // For closures.
 			curTime := t
 
 			// Pass logs that haven't been configured
@@ -204,13 +208,13 @@ func (ui *UserInterface) addDefaultLoggingCallbacks() {
 	}
 }
 
-// AddDefaultLogging adds log items and looper callbacks for logging. Hopefully you find that it adds the logging you need, although you will need to supply a AddNetworkLoggingCallback function that actually adds the log items. I recommend you use axon.AddCommonLogItemsForOutputLayers if you are using an axon network. You can craft your own function like this:
+// AddDefaultLogging adds log items and looper callbacks for logging. You will need to supply a AddNetworkLoggingCallback function that actually adds the log items. I recommend you use axon.AddCommonLogItemsForOutputLayers if you are using an axon network. This function is external because it needs to import axon. Hopefully you find that it adds the logging you need, or you can craft your own function like this:
 //	ui.Logs.AddItem(&elog.Item{
-//		Name:  "CosSim",
+//		Name:  "MyLogName",
 //		Type:  etensor.FLOAT32,
 //		Plot:  elog.DTrue,
 //		Write: elog.WriteMap{etime.Scope(etime.Train, etime.Trial): func(ctx *elog.Context) {
-//			ctx.SetFloat32(myLoggableFunction())
+//			ctx.SetFloat32(myLoggingFunction())
 //		}}})
 func (ui *UserInterface) AddDefaultLogging() {
 	if ui.Logs == nil {
@@ -219,9 +223,9 @@ func (ui *UserInterface) AddDefaultLogging() {
 	if ui.AddNetworkLoggingCallback != nil {
 		ui.AddNetworkLoggingCallback(ui)
 	}
-	ui.Logs.CreateTables() // Create them after log items have been added in addCommonLogItems
+	ui.Logs.CreateTables() // Create them after log items have been added in AddNetworkLoggingCallback
 	ui.Logs.SetContext(ui.Stats, ui.Network)
-	ui.addDefaultLoggingCallbacks()
+	ui.addDefaultLoggingCallbacksLooper()
 }
 
 /////////////////////////////////////////////////////////////////////////
