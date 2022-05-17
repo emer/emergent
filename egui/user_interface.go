@@ -146,11 +146,8 @@ func (ui *UserInterface) RunWithoutGui() {
 func (ui *UserInterface) log(mode etime.Modes, time etime.Times, loop looper.Loop) {
 	dt := ui.Logs.Table(mode, time)
 	row := dt.Rows
-	if time == etime.Trial {
-		println("Trial start: " + strconv.Itoa(loop.Counter.Cur))
-	}
 	if time == etime.Cycle || time == etime.Trial {
-		// TODO Why?
+		// Overwrite from the start for these timescales.
 		row = loop.Counter.Cur
 	}
 
