@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+
 	"github.com/Astera-org/worlds/network"
 	"github.com/Astera-org/worlds/network/gengo/env"
 	"github.com/emer/emergent/looper"
@@ -101,11 +102,7 @@ func toTensor(envtensor *env.ETensor) etensor.Tensor {
 }
 
 func toShape(shape *env.Shape) *etensor.Shape {
-	return &etensor.Shape{
-		Shp:  toInt(shape.Shape),
-		Strd: toInt(shape.Stride),
-		Nms:  shape.Names,
-	}
+	return etensor.NewShape(toInt(shape.Shape), toInt(shape.Stride), shape.Names)
 }
 
 func fromShape(shape *etensor.Shape) *env.Shape {
@@ -126,6 +123,9 @@ func fromTensor(tensor etensor.Tensor) *env.ETensor {
 }
 
 func toInt(xs []int32) []int {
+	if xs == nil {
+		return nil
+	}
 	res := make([]int, len(xs))
 	for i := range xs {
 		res[i] = int(xs[i])
@@ -134,6 +134,9 @@ func toInt(xs []int32) []int {
 }
 
 func toInt32(xs []int) []int32 {
+	if xs == nil {
+		return nil
+	}
 	res := make([]int32, len(xs))
 	for i := range xs {
 		res[i] = int32(xs[i])
