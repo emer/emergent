@@ -16,6 +16,7 @@ type AgentHandler struct {
 
 // GetServerFunc returns a function that blocks, waiting for calls from the environment.
 func (handler *AgentHandler) GetServerFunc(loops *looper.Manager) func() {
+	_ = handler.Agent.GetServerFunc(loops)
 	return func() {
 		server := network.MakeServer(handler)
 		server.Serve()
@@ -30,11 +31,11 @@ type Serverable interface {
 // we convert to and from the types we need locally
 
 func (handler *AgentHandler) Init(ctx context.Context, actionSpace env.Space,
-	observationSpace env.Space) (string, error) {
+	observationSpace env.Space) (map[string]string, error) {
 	handler.Agent.Init(transformSpace(actionSpace), transformSpace(observationSpace))
 	// TODO: update thrift idl to return map[string]string
 	// TODO: return something useful here and in the other init
-	return "", nil
+	return map[string]string{}, nil
 }
 
 func (handler *AgentHandler) Step(ctx context.Context, observations env.Observations, debug string) (env.Actions, error) {
