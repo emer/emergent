@@ -199,7 +199,7 @@ func (ui *UserInterface) addDefaultLoggingCallbacksLooper() {
 				}
 			}
 			if levelToReset != etime.AllTimes {
-				loop.OnEnd.Add(curMode.String()+":"+curTime.String()+":"+"ResetLog"+levelToReset.String(), func() {
+				loop.OnStart.Add(curMode.String()+":"+curTime.String()+":"+"ResetLog"+levelToReset.String(), func() {
 					ui.Logs.ResetLog(curMode, levelToReset)
 				})
 			}
