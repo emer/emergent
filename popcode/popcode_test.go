@@ -218,7 +218,7 @@ func TestTwoDWrap(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if mat32.Abs(val.X-ang) > 2 { // very bad tolerances
+		if mat32.Abs(val.X-ang) > 2 && !(val.X >= 179 && ang <= -179) { // very bad tolerances
 			t.Errorf("did not decode properly: val: %v != %v", val.X, ang)
 		}
 	}
