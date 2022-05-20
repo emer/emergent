@@ -21,18 +21,50 @@ type UserInterface struct {
 	Network       emer.Network    `desc:"The Network model can be rendered in the GUI, and is used for logging."`
 	Logs          *elog.Logs      `desc:"A pointer to a Logs object is needed if logging is to be configured."`
 	Stats         *estats.Stats   `desc:"Stats may be filled out during logging."`
-	GUI           *GUI            `desc:"More directly handles graphical elements."`
+	GUI           *GUI            `desc:"Optionally pass in a GUI object to more directly handles graphical elements. One will be created if none is provided."`
 	AppName       string          `desc:"Displayed in GUI."`
 	AppAbout      string          `desc:"Displayed in GUI."`
 	AppTitle      string          `desc:"Displayed in GUI."`
 	StructForView interface{}     `desc:"This might be Sim or any other object you want to display to the user in the GUI."`
+	ServerFunc    func()          `desc:"A function to start a server."`
 
 	// Callbacks
 	InitCallback              func()                             `desc:"If set, the GUI will contain an initialization button to call it."`
 	AddNetworkLoggingCallback func(userInterface *UserInterface) `desc:"If set, this adds logging based on the network structure. It's a callback because the function might need to live in the axon codebase, which can't be imported here for import loop reasons.'"`
+	AdditionalGuiConfig       func()                             `desc:"Additional GUI configuration logic."`
+
+	// Configuration for Start function
+	DoLogging     bool `desc:"If true, Start with logging. Expects AddNetworkLoggingCallback to also be set."`
+	HaveGui       bool `desc:"If true, Start with a GUI. Might use AdditionalGuiConfig or GUI, but neither are required."`
+	StartAsServer bool `desc:"If true, Start as a Server."`
 
 	// Internal
 	guiEnabled bool
+}
+
+func (ui *UserInterface) Start() {
+	if ui.DoLogging {
+		ui.AddDefaultLogging()
+	}
+
+	// Two ways to specify
+	haveGui := ui.HaveGui || ui.GUI != nil
+	startAsServer := ui.StartAsServer || ui.ServerFunc != nil
+
+	if haveGui && !startAsServer {
+		ui.CreateAndRunGui()
+	}
+	if !haveGui && !startAsServer {
+		ui.RunWithoutGui()
+	}
+	if haveGui && startAsServer {
+		ui.CreateAndRunGuiWithAdditionalConfig(func() {
+			ui.AddServerButton(ui.ServerFunc)
+		})
+	}
+	if !haveGui && startAsServer {
+		ui.ServerFunc()
+	}
 }
 
 func AddDefaultGUICallbacks(manager *looper.Manager, gui *GUI) {
@@ -110,6 +142,9 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 
 		// Run custom code to configure the GUI.
 		config()
+		if ui.AdditionalGuiConfig != nil {
+			ui.AdditionalGuiConfig()
+		}
 
 		ui.GUI.FinalizeGUI(false)
 
