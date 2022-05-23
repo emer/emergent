@@ -37,9 +37,10 @@ type UserInterface struct {
 	StartupRunCallback        func()                             `desc:"Run this immediately when the window starts."`
 
 	// Configuration for Start function
-	DoLogging     bool `desc:"If true, Start with logging. Expects AddNetworkLoggingCallback to also be set."`
-	HaveGui       bool `desc:"If true, Start with a GUI. Might use AdditionalGuiConfig or GUI, but neither are required."`
-	StartAsServer bool `desc:"If true, Start as a Server."`
+	DoLogging            bool `desc:"If true, Start with logging. Expects AddNetworkLoggingCallback to also be set."`
+	HaveGui              bool `desc:"If true, Start with a GUI. Might use AdditionalGuiConfig or GUI, but neither are required."`
+	StartAsServer        bool `desc:"If true, Start as a Server."`
+	AddStartServerButton bool `desc:"If true, add a Server button to the GUI, or start as server if running without GUI."`
 
 	// Internal
 	guiEnabled bool
@@ -60,12 +61,17 @@ func (ui *UserInterface) Start() {
 	if !haveGui && !startAsServer {
 		ui.RunWithoutGui()
 	}
-	if haveGui && startAsServer {
-		ui.CreateAndRunGuiWithAdditionalConfig(func() {
-			ui.AddServerButton(ui.ServerFunc)
-		})
+	if haveGui && (ui.StartAsServer || ui.AddStartServerButton) {
+		if ui.AddStartServerButton {
+			ui.CreateAndRunGuiWithAdditionalConfig(func() {
+				ui.AddServerButton(ui.ServerFunc)
+			})
+		} else if ui.StartAsServer {
+			// Another check occurs within
+			ui.CreateAndRunGui()
+		}
 	}
-	if !haveGui && startAsServer {
+	if !haveGui && (ui.StartAsServer || ui.AddStartServerButton) {
 		ui.ServerFunc()
 	}
 }
@@ -182,6 +188,9 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 
 		if ui.StartupRunCallback != nil {
 			go ui.StartupRunCallback()
+		}
+		if ui.StartAsServer && ui.ServerFunc != nil {
+			go ui.ServerFunc()
 		}
 
 		ui.GUI.Win.StartEventLoop()
