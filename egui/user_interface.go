@@ -9,6 +9,7 @@ import (
 	"github.com/emer/emergent/relpos"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
+	"github.com/goki/ki/ints"
 	"github.com/goki/mat32"
 	"math"
 	"math/rand"
@@ -27,11 +28,13 @@ type UserInterface struct {
 	AppTitle      string          `desc:"Displayed in GUI."`
 	StructForView interface{}     `desc:"This might be Sim or any other object you want to display to the user in the GUI."`
 	ServerFunc    func()          `desc:"A function to start a server."`
+	RasterLayers  []string        `desc:"Show spike rasters for these layers."`
 
 	// Callbacks
 	InitCallback              func()                             `desc:"If set, the GUI will contain an initialization button to call it."`
-	AddNetworkLoggingCallback func(userInterface *UserInterface) `desc:"If set, this adds logging based on the network structure. It's a callback because the function might need to live in the axon codebase, which can't be imported here for import loop reasons.'"`
+	AddNetworkLoggingCallback func(userInterface *UserInterface) `desc:"If set, this adds logging based on the network structure. It's a callback because the function might need to live in the axon codebase, which can't be imported here for import loop reasons. Use axon.AddCommonLogItemsForOutputLayers if you're using an axon network."`
 	AdditionalGuiConfig       func()                             `desc:"Additional GUI configuration logic."`
+	StartupRunCallback        func()                             `desc:"Run this immediately when the window starts."`
 
 	// Configuration for Start function
 	DoLogging     bool `desc:"If true, Start with logging. Expects AddNetworkLoggingCallback to also be set."`
@@ -103,6 +106,11 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 		ui.GUI.MakeWindow(ui.StructForView, ui.AppName, title, ui.AppAbout)
 		ui.GUI.CycleUpdateInterval = 10
 
+		if ui.Looper == nil {
+			println("Looper is required by UserInterface")
+			return
+		}
+
 		if ui.Network != nil {
 			nv := ui.GUI.AddNetView("NetView")
 			nv.Params.MaxRecs = 300
@@ -134,6 +142,30 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 			},
 		})
 
+		if len(ui.RasterLayers) > 0 {
+			stb := ui.GUI.TabView.AddNewTab(gi.KiT_Layout, "Spike Rasters").(*gi.Layout)
+			stb.Lay = gi.LayoutVert
+			stb.SetStretchMax()
+			if ui.Stats == nil {
+				ui.Stats = &estats.Stats{}
+				ui.Stats.Init()
+			}
+			maxCycle := 0
+			for _, st := range ui.Looper.Stacks {
+				maxCycle = ints.MaxInt(maxCycle, st.Loops[etime.Cycle].Counter.Max)
+			}
+			ui.Stats.ConfigRasters(ui.Network, maxCycle, ui.RasterLayers)
+			for _, lnm := range ui.RasterLayers {
+				sr := ui.Stats.F32Tensor("Raster_" + lnm)
+				ui.GUI.ConfigRasterGrid(stb, lnm, sr)
+			}
+			for _, st := range ui.Looper.Stacks {
+				st.Loops[etime.Cycle].OnEnd.Add("GUI:RecordSpikesForRaster", func() {
+					ui.Stats.RasterRec(ui.Network, st.Loops[etime.Cycle].Counter.Cur, "Spike")
+				})
+			}
+		}
+
 		modes := []etime.Modes{}
 		for m, _ := range ui.Looper.Stacks {
 			modes = append(modes, m)
@@ -147,6 +179,10 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 		}
 
 		ui.GUI.FinalizeGUI(false)
+
+		if ui.StartupRunCallback != nil {
+			go ui.StartupRunCallback()
+		}
 
 		ui.GUI.Win.StartEventLoop()
 	})
