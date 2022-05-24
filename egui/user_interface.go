@@ -89,6 +89,9 @@ func AddDefaultGUICallbacks(manager *looper.Manager, gui *GUI) {
 				gui.UpdateNetView() // TODO Use update timescale variable
 			})
 		}
+		manager.GetLoop(curMode, etime.Cycle).OnEnd.Add("GUI:UpdateTimeText", func() {
+			gui.NetViewText = getCurrentLoopState(*manager) // TODO Use update timescale variable
+		})
 	}
 }
 
