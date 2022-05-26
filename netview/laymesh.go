@@ -10,6 +10,7 @@ import (
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/ki/kit"
 	"github.com/goki/mat32"
+	"github.com/goki/vgpu/vshape"
 )
 
 // LayMesh is a gi3d.Mesh that represents a layer -- it is dynamically updated using the
@@ -36,49 +37,81 @@ func AddNewLayMesh(sc *gi3d.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	return lm
 }
 
-func (lm *LayMesh) Make(sc *gi3d.Scene) {
+func (lm *LayMesh) Sizes() (nVtx, nIdx int, hasColor bool) {
+	lm.Trans = true
+	lm.Dynamic = true
+	lm.Color = true
 	if lm.Lay == nil {
-		lm.Shape.SetShape(nil, nil, nil)
-		lm.Reset()
+		return 0, 0, true
 	}
 	shp := lm.Lay.Shape()
-	lm.Reset()
 	lm.Shape.CopyShape(shp)
-
-	if lm.Shape.NumDims() == 0 {
-		return // nothing
-	}
-
-	if lm.Shape.NumDims() == 4 {
-		lm.Make4D(true) // true = init
+	if shp.NumDims() == 4 {
+		lm.NVtx, lm.NIdx = lm.Size4D()
 	} else {
-		lm.Make2D(true)
+		lm.NVtx, lm.NIdx = lm.Size2D()
 	}
+	return lm.NVtx, lm.NIdx, lm.Color
 }
 
-func (lm *LayMesh) Update(sc *gi3d.Scene) {
-	if lm.Shape.NumDims() == 0 {
+func (lm *LayMesh) Size2D() (nVtx, nIdx int) {
+	nz := lm.Shape.Dim(0)
+	nx := lm.Shape.Dim(1)
+	segs := 1
+
+	vtxSz, idxSz := vshape.PlaneN(segs, segs)
+	nVtx = vtxSz * 5 * nz * nx
+	nIdx = idxSz * 5 * nz * nx
+	return
+}
+
+func (lm *LayMesh) Size4D() (nVtx, nIdx int) {
+	npz := lm.Shape.Dim(0) // p = pool
+	npx := lm.Shape.Dim(1)
+	nuz := lm.Shape.Dim(2) // u = unit
+	nux := lm.Shape.Dim(3)
+
+	segs := 1
+
+	vtxSz, idxSz := vshape.PlaneN(segs, segs)
+	nVtx = vtxSz * 5 * npz * npx * nuz * nux
+	nIdx = idxSz * 5 * npz * npx * nuz * nux
+	return
+}
+
+func (lm *LayMesh) Set(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
+	// true = init
 	if lm.Shape.NumDims() == 4 {
-		lm.Make4D(false) // false = not init
+		lm.Set4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
 	} else {
-		lm.Make2D(false)
+		lm.Set2D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
 	}
-	lm.SetVtxData(sc)
-	lm.SetColorData(sc)
-	lm.SetNormData(sc)
-	lm.Activate(sc)
-	lm.TransferVectors()
+	lm.SetMod(sc)
+
+}
+
+func (lm *LayMesh) Update(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
+		return // nothing
+	}
+	// false = not init
+	// todo: not using the init flag to save minor amount of index non-updating..
+	if lm.Shape.NumDims() == 4 {
+		lm.Set4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+	} else {
+		lm.Set2D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+	}
+	lm.SetMod(sc)
 }
 
 // MinUnitHeight ensures that there is always at least some dimensionality
 // to the unit cubes -- affects transparency rendering etc
 var MinUnitHeight = float32(1.0e-6)
 
-func (lm *LayMesh) Make2D(init bool) {
-	lm.Trans = true
-	lm.Dynamic = true
+func (lm *LayMesh) Set2D(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	nz := lm.Shape.Dim(0)
 	nx := lm.Shape.Dim(1)
 
@@ -89,16 +122,9 @@ func (lm *LayMesh) Make2D(init bool) {
 	uo := (1.0 - uw)
 	segs := 1
 
-	vtxSz, idxSz := lm.PlaneSize(segs, segs)
-	nvtx := vtxSz * 5 * nz * nx
-	nidx := idxSz * 5 * nz * nx
-	lm.Alloc(nvtx, nidx, true)
-
+	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-
-	setNorm := true // can change -- always set
-	setTex := init
-	setIdx := init
+	pos := mat32.Vec3{}
 
 	lm.View.ReadLock()
 	for zi := nz - 1; zi >= 0; zi-- {
@@ -108,22 +134,24 @@ func (lm *LayMesh) Make2D(init bool) {
 			ioff := pidx * idxSz * 5
 			x0 := uo + float32(xi)
 			_, scaled, clr, _ := lm.View.UnitVal(lm.Lay, []int{zi, xi})
+			v4c := mat32.NewVec4Color(clr)
+			vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 			ht := 0.5 * mat32.Abs(scaled)
 			if ht < MinUnitHeight {
 				ht = MinUnitHeight
 			}
 			if scaled >= 0 {
-				lm.SetPlane(poff, ioff, setNorm, setTex, setIdx, mat32.X, mat32.Y, -1, -1, uw, ht, x0, 0, z0, segs, segs, clr)                    // nz
-				lm.SetPlane(poff+1*vtxSz, ioff+1*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, -1, -1, uw, ht, z0, 0, x0+uw, segs, segs, clr) // px
-				lm.SetPlane(poff+2*vtxSz, ioff+2*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, 1, -1, uw, ht, z0, 0, x0, segs, segs, clr)     // nx
-				lm.SetPlane(poff+3*vtxSz, ioff+3*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Z, 1, 1, uw, uw, x0, z0, ht, segs, segs, clr)     // py <-
-				lm.SetPlane(poff+4*vtxSz, ioff+4*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Y, 1, -1, uw, ht, x0, 0, z0+uw, segs, segs, clr)  // pz
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff, ioff, mat32.X, mat32.Y, -1, -1, uw, ht, x0, 0, z0, segs, segs, pos)                    // nz
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+1*vtxSz, ioff+1*idxSz, mat32.Z, mat32.Y, -1, -1, uw, ht, z0, 0, x0+uw, segs, segs, pos) // px
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+2*vtxSz, ioff+2*idxSz, mat32.Z, mat32.Y, 1, -1, uw, ht, z0, 0, x0, segs, segs, pos)     // nx
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+3*vtxSz, ioff+3*idxSz, mat32.X, mat32.Z, 1, 1, uw, uw, x0, z0, ht, segs, segs, pos)     // py <-
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+4*vtxSz, ioff+4*idxSz, mat32.X, mat32.Y, 1, -1, uw, ht, x0, 0, z0+uw, segs, segs, pos)  // pz
 			} else {
-				lm.SetPlane(poff, ioff, setNorm, setTex, setIdx, mat32.X, mat32.Y, 1, -1, uw, ht, x0, -ht, z0, segs, segs, clr)                    // nz = pz norm
-				lm.SetPlane(poff+1*vtxSz, ioff+1*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, 1, -1, uw, ht, z0, -ht, x0+uw, segs, segs, clr) // px = nx norm
-				lm.SetPlane(poff+2*vtxSz, ioff+2*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, 1, -1, uw, ht, z0, -ht, x0, segs, segs, clr)    // nx
-				lm.SetPlane(poff+3*vtxSz, ioff+3*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Z, 1, 1, uw, uw, x0, z0, -ht, segs, segs, clr)     // ny <-
-				lm.SetPlane(poff+4*vtxSz, ioff+4*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Y, 1, -1, uw, ht, x0, -ht, z0+uw, segs, segs, clr) // pz
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff, ioff, mat32.X, mat32.Y, 1, -1, uw, ht, x0, -ht, z0, segs, segs, pos)                    // nz = pz norm
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+1*vtxSz, ioff+1*idxSz, mat32.Z, mat32.Y, 1, -1, uw, ht, z0, -ht, x0+uw, segs, segs, pos) // px = nx norm
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+2*vtxSz, ioff+2*idxSz, mat32.Z, mat32.Y, 1, -1, uw, ht, z0, -ht, x0, segs, segs, pos)    // nx
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+3*vtxSz, ioff+3*idxSz, mat32.X, mat32.Z, 1, 1, uw, uw, x0, z0, -ht, segs, segs, pos)     // ny <-
+				vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+4*vtxSz, ioff+4*idxSz, mat32.X, mat32.Y, 1, -1, uw, ht, x0, -ht, z0+uw, segs, segs, pos) // pz
 			}
 			pidx++
 		}
@@ -135,9 +163,7 @@ func (lm *LayMesh) Make2D(init bool) {
 	lm.BBoxMu.Unlock()
 }
 
-func (lm *LayMesh) Make4D(init bool) {
-	lm.Trans = true
-	lm.Dynamic = true
+func (lm *LayMesh) Set4D(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	npz := lm.Shape.Dim(0) // p = pool
 	npx := lm.Shape.Dim(1)
 	nuz := lm.Shape.Dim(2) // u = unit
@@ -161,16 +187,9 @@ func (lm *LayMesh) Make4D(init bool) {
 
 	segs := 1
 
-	vtxSz, idxSz := lm.PlaneSize(segs, segs)
-	nvtx := vtxSz * 5 * npz * npx * nuz * nux
-	nidx := idxSz * 5 * npz * npx * nuz * nux
-	lm.Alloc(nvtx, nidx, true)
-
+	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-
-	setNorm := true // can change -- always set
-	setTex := init
-	setIdx := init
+	pos := mat32.Vec3{}
 
 	lm.View.ReadLock()
 	for zpi := npz - 1; zpi >= 0; zpi-- {
@@ -184,22 +203,24 @@ func (lm *LayMesh) Make4D(init bool) {
 					ioff := pidx * idxSz * 5
 					x0 := xp0 + xsc*(uo+float32(xui))
 					_, scaled, clr, _ := lm.View.UnitVal(lm.Lay, []int{zpi, xpi, zui, xui})
+					v4c := mat32.NewVec4Color(clr)
+					vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 					ht := 0.5 * mat32.Abs(scaled)
 					if ht < MinUnitHeight {
 						ht = MinUnitHeight
 					}
 					if scaled >= 0 {
-						lm.SetPlane(poff, ioff, setNorm, setTex, setIdx, mat32.X, mat32.Y, -1, -1, xuw, ht, x0, 0, z0, segs, segs, clr)                     // nz
-						lm.SetPlane(poff+1*vtxSz, ioff+1*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, -1, -1, zuw, ht, z0, 0, x0+xuw, segs, segs, clr) // px
-						lm.SetPlane(poff+2*vtxSz, ioff+2*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, 1, -1, zuw, ht, z0, 0, x0, segs, segs, clr)      // nx
-						lm.SetPlane(poff+3*vtxSz, ioff+3*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Z, 1, 1, xuw, zuw, x0, z0, ht, segs, segs, clr)     // py <-
-						lm.SetPlane(poff+4*vtxSz, ioff+4*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Y, 1, -1, xuw, ht, x0, 0, z0+zuw, segs, segs, clr)  // pz
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff, ioff, mat32.X, mat32.Y, -1, -1, xuw, ht, x0, 0, z0, segs, segs, pos)                     // nz
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+1*vtxSz, ioff+1*idxSz, mat32.Z, mat32.Y, -1, -1, zuw, ht, z0, 0, x0+xuw, segs, segs, pos) // px
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+2*vtxSz, ioff+2*idxSz, mat32.Z, mat32.Y, 1, -1, zuw, ht, z0, 0, x0, segs, segs, pos)      // nx
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+3*vtxSz, ioff+3*idxSz, mat32.X, mat32.Z, 1, 1, xuw, zuw, x0, z0, ht, segs, segs, pos)     // py <-
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+4*vtxSz, ioff+4*idxSz, mat32.X, mat32.Y, 1, -1, xuw, ht, x0, 0, z0+zuw, segs, segs, pos)  // pz
 					} else {
-						lm.SetPlane(poff, ioff, setNorm, setTex, setIdx, mat32.X, mat32.Y, 1, -1, xuw, ht, x0, -ht, z0, segs, segs, clr)                     // nz = pz norm
-						lm.SetPlane(poff+1*vtxSz, ioff+1*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, 1, -1, zuw, ht, z0, -ht, x0+xuw, segs, segs, clr) // px = nx norm
-						lm.SetPlane(poff+2*vtxSz, ioff+2*idxSz, setNorm, setTex, setIdx, mat32.Z, mat32.Y, 1, -1, zuw, ht, z0, -ht, x0, segs, segs, clr)     // nx
-						lm.SetPlane(poff+3*vtxSz, ioff+3*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Z, 1, 1, xuw, zuw, x0, z0, -ht, segs, segs, clr)     // ny <-
-						lm.SetPlane(poff+4*vtxSz, ioff+4*idxSz, setNorm, setTex, setIdx, mat32.X, mat32.Y, 1, -1, xuw, ht, x0, -ht, z0+zuw, segs, segs, clr) // pz
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff, ioff, mat32.X, mat32.Y, 1, -1, xuw, ht, x0, -ht, z0, segs, segs, pos)                     // nz = pz norm
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+1*vtxSz, ioff+1*idxSz, mat32.Z, mat32.Y, 1, -1, zuw, ht, z0, -ht, x0+xuw, segs, segs, pos) // px = nx norm
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+2*vtxSz, ioff+2*idxSz, mat32.Z, mat32.Y, 1, -1, zuw, ht, z0, -ht, x0, segs, segs, pos)     // nx
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+3*vtxSz, ioff+3*idxSz, mat32.X, mat32.Z, 1, 1, xuw, zuw, x0, z0, -ht, segs, segs, pos)     // ny <-
+						vshape.SetPlane(vtxAry, normAry, texAry, idxAry, poff+4*vtxSz, ioff+4*idxSz, mat32.X, mat32.Y, 1, -1, xuw, ht, x0, -ht, z0+zuw, segs, segs, pos) // pz
 					}
 					pidx++
 				}

@@ -20,7 +20,7 @@ type Params struct {
 	UnitSize   float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	LayNmSize  float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
 	ColorMap   giv.ColorMapName `desc:"name of color map to use"`
-	ZeroAlpha  float32          `min:"0" max:"1" step:"0.1" def:"0.4" desc:"opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum"`
+	ZeroAlpha  float32          `min:"0" max:"1" step:"0.1" def:"0.5" desc:"opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum"`
 	NetView    *NetView         `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview, for update method"`
 	NFastSteps int              `desc:"the number of records to jump for fast forward/backward"`
 }
@@ -36,7 +36,7 @@ func (nv *Params) Defaults() {
 		nv.LayNmSize = .05
 	}
 	if nv.ZeroAlpha == 0 {
-		nv.ZeroAlpha = 0.4
+		nv.ZeroAlpha = 0.5
 	}
 	if nv.ColorMap == "" {
 		nv.ColorMap = giv.ColorMapName("ColdHot")

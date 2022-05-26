@@ -566,10 +566,10 @@ func (nv *NetView) ViewConfig() {
 	vs := nv.Scene()
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		vs.DeleteChildren(true)
-		vs.Meshes = nil
+		vs.Meshes.Reset()
 		return
 	}
-	if len(vs.Lights) == 0 {
+	if vs.Lights.Len() == 0 {
 		nv.ViewDefaults()
 	}
 	vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
@@ -619,16 +619,15 @@ func (nv *NetView) ViewConfig() {
 		lo.LayName = ly.Name()
 		lo.NetView = nv
 		lo.SetMeshName(vs, ly.Name())
-		lo.Mat.Color.SetUInt8(255, 100, 255, 128)
-		lo.Mat.Specular.SetUInt8(128, 128, 128, 255)
-		lo.Mat.CullBack = true
-		lo.Mat.CullFront = false
+		lo.Mat.Color.SetUInt8(255, 100, 255, 255)
+		lo.Mat.Reflective = 1
+		lo.Mat.Bright = 8
 		// lo.Mat.Shiny = 10
 		// note: would actually be better to NOT cull back so you can view underneath
 		// but then the front and back fight against each other, causing flickering
-		// really you ned
 
 		txt := lg.Child(1).(*LayName)
+		txt.Nm = "layname:" + ly.Name()
 		txt.Defaults(vs)
 		txt.NetView = nv
 		txt.SetText(vs, ly.Name())
@@ -636,7 +635,6 @@ func (nv *NetView) ViewConfig() {
 		txt.SetProp("text-align", gist.AlignLeft)
 		txt.SetProp("text-vertical-align", gist.AlignTop)
 	}
-	vs.InitMeshes()
 	laysGp.UpdateEnd(updt)
 }
 
@@ -650,10 +648,10 @@ func (nv *NetView) ViewDefaults() {
 	vs.Camera.Near = 0.1
 	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
 	vs.BgColor = gi.Prefs.Colors.Background
-	gi3d.AddNewAmbientLight(vs, "ambient", 0.3, gi3d.DirectSun)
+	gi3d.AddNewAmbientLight(vs, "ambient", 0.1, gi3d.DirectSun)
 	dir := gi3d.AddNewDirLight(vs, "dirUp", 0.3, gi3d.DirectSun)
 	dir.Pos.Set(0, 1, 0)
-	dir = gi3d.AddNewDirLight(vs, "dirBack", 0.6, gi3d.DirectSun)
+	dir = gi3d.AddNewDirLight(vs, "dirBack", 0.3, gi3d.DirectSun)
 	dir.Pos.Set(0, 1, -2.5)
 	// point := gi3d.AddNewPointLight(vs, "point", 1, gi3d.DirectSun)
 	// point.Pos.Set(0, 2, 5)
