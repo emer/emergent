@@ -9,6 +9,7 @@ import (
 	"github.com/emer/emergent/relpos"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
+	"github.com/goki/ki/ints"
 	"github.com/goki/mat32"
 	"math"
 	"math/rand"
@@ -21,18 +22,58 @@ type UserInterface struct {
 	Network       emer.Network    `desc:"The Network model can be rendered in the GUI, and is used for logging."`
 	Logs          *elog.Logs      `desc:"A pointer to a Logs object is needed if logging is to be configured."`
 	Stats         *estats.Stats   `desc:"Stats may be filled out during logging."`
-	GUI           *GUI            `desc:"More directly handles graphical elements."`
+	GUI           *GUI            `desc:"Optionally pass in a GUI object to more directly handles graphical elements. One will be created if none is provided."`
 	AppName       string          `desc:"Displayed in GUI."`
 	AppAbout      string          `desc:"Displayed in GUI."`
 	AppTitle      string          `desc:"Displayed in GUI."`
 	StructForView interface{}     `desc:"This might be Sim or any other object you want to display to the user in the GUI."`
+	ServerFunc    func()          `desc:"A function to start a server."`
+	RasterLayers  []string        `desc:"Show spike rasters for these layers."`
 
 	// Callbacks
 	InitCallback              func()                             `desc:"If set, the GUI will contain an initialization button to call it."`
-	AddNetworkLoggingCallback func(userInterface *UserInterface) `desc:"If set, this adds logging based on the network structure. It's a callback because the function might need to live in the axon codebase, which can't be imported here for import loop reasons.'"`
+	AddNetworkLoggingCallback func(userInterface *UserInterface) `desc:"If set, this adds logging based on the network structure. It's a callback because the function might need to live in the axon codebase, which can't be imported here for import loop reasons. Use axon.AddCommonLogItemsForOutputLayers if you're using an axon network."`
+	AdditionalGuiConfig       func()                             `desc:"Additional GUI configuration logic."`
+	StartupRunCallback        func()                             `desc:"Run this immediately when the window starts."`
+
+	// Configuration for Start function
+	DoLogging            bool `desc:"If true, Start with logging. Expects AddNetworkLoggingCallback to also be set."`
+	HaveGui              bool `desc:"If true, Start with a GUI. Might use AdditionalGuiConfig or GUI, but neither are required."`
+	StartAsServer        bool `desc:"If true, Start as a Server."`
+	AddStartServerButton bool `desc:"If true, add a Server button to the GUI, or start as server if running without GUI."`
 
 	// Internal
 	guiEnabled bool
+}
+
+func (ui *UserInterface) Start() {
+	if ui.DoLogging {
+		ui.AddDefaultLogging()
+	}
+
+	// Two ways to specify
+	haveGui := ui.HaveGui || ui.GUI != nil
+	startAsServer := ui.StartAsServer || ui.ServerFunc != nil
+
+	if haveGui && !startAsServer {
+		ui.CreateAndRunGui()
+	}
+	if !haveGui && !startAsServer {
+		ui.RunWithoutGui()
+	}
+	if haveGui && (ui.StartAsServer || ui.AddStartServerButton) {
+		if ui.AddStartServerButton {
+			ui.CreateAndRunGuiWithAdditionalConfig(func() {
+				ui.AddServerButton(ui.ServerFunc)
+			})
+		} else if ui.StartAsServer {
+			// Another check occurs within
+			ui.CreateAndRunGui()
+		}
+	}
+	if !haveGui && (ui.StartAsServer || ui.AddStartServerButton) {
+		ui.ServerFunc()
+	}
 }
 
 func AddDefaultGUICallbacks(manager *looper.Manager, gui *GUI) {
@@ -48,6 +89,9 @@ func AddDefaultGUICallbacks(manager *looper.Manager, gui *GUI) {
 				gui.UpdateNetView() // TODO Use update timescale variable
 			})
 		}
+		manager.GetLoop(curMode, etime.Cycle).OnEnd.Add("GUI:UpdateTimeText", func() {
+			gui.NetViewText = getCurrentLoopState(*manager) // TODO Use update timescale variable
+		})
 	}
 }
 
@@ -70,6 +114,11 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 		//cat := struct{ Name string }{Name: "Cat"}
 		ui.GUI.MakeWindow(ui.StructForView, ui.AppName, title, ui.AppAbout)
 		ui.GUI.CycleUpdateInterval = 10
+
+		if ui.Looper == nil {
+			println("Looper is required by UserInterface")
+			return
+		}
 
 		if ui.Network != nil {
 			nv := ui.GUI.AddNetView("NetView")
@@ -102,6 +151,30 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 			},
 		})
 
+		if len(ui.RasterLayers) > 0 {
+			stb := ui.GUI.TabView.AddNewTab(gi.KiT_Layout, "Spike Rasters").(*gi.Layout)
+			stb.Lay = gi.LayoutVert
+			stb.SetStretchMax()
+			if ui.Stats == nil {
+				ui.Stats = &estats.Stats{}
+				ui.Stats.Init()
+			}
+			maxCycle := 0
+			for _, st := range ui.Looper.Stacks {
+				maxCycle = ints.MaxInt(maxCycle, st.Loops[etime.Cycle].Counter.Max)
+			}
+			ui.Stats.ConfigRasters(ui.Network, maxCycle, ui.RasterLayers)
+			for _, lnm := range ui.RasterLayers {
+				sr := ui.Stats.F32Tensor("Raster_" + lnm)
+				ui.GUI.ConfigRasterGrid(stb, lnm, sr)
+			}
+			for _, st := range ui.Looper.Stacks {
+				st.Loops[etime.Cycle].OnEnd.Add("GUI:RecordSpikesForRaster", func() {
+					ui.Stats.RasterRec(ui.Network, st.Loops[etime.Cycle].Counter.Cur, "Spike")
+				})
+			}
+		}
+
 		modes := []etime.Modes{}
 		for m, _ := range ui.Looper.Stacks {
 			modes = append(modes, m)
@@ -110,8 +183,18 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 
 		// Run custom code to configure the GUI.
 		config()
+		if ui.AdditionalGuiConfig != nil {
+			ui.AdditionalGuiConfig()
+		}
 
 		ui.GUI.FinalizeGUI(false)
+
+		if ui.StartupRunCallback != nil {
+			go ui.StartupRunCallback()
+		}
+		if ui.StartAsServer && ui.ServerFunc != nil {
+			go ui.ServerFunc()
+		}
 
 		ui.GUI.Win.StartEventLoop()
 	})
@@ -199,7 +282,7 @@ func (ui *UserInterface) addDefaultLoggingCallbacksLooper() {
 				}
 			}
 			if levelToReset != etime.AllTimes {
-				loop.OnEnd.Add(curMode.String()+":"+curTime.String()+":"+"ResetLog"+levelToReset.String(), func() {
+				loop.OnStart.Add(curMode.String()+":"+curTime.String()+":"+"ResetLog"+levelToReset.String(), func() {
 					ui.Logs.ResetLog(curMode, levelToReset)
 				})
 			}

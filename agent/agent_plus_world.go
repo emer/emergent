@@ -70,23 +70,26 @@ func (world *AgentProxyWithWorldCache) StepWorld(actions map[string]Action, agen
 	return false, "" // Return observations, done, and debug string.
 }
 
+// getRandomTensor is a helper method for generating random observations.
+func getRandomTensor(shape SpaceSpec) etensor.Tensor {
+	rt := etensor.NewFloat32(shape.ContinuousShape, shape.Stride, nil)
+	patgen.PermutedBinaryRows(rt, 1, 1, 0)
+	return rt
+}
+
 // Observe returns an observation from the cache.
 func (world *AgentProxyWithWorldCache) Observe(name string) etensor.Tensor {
 	if world.CachedObservations == nil {
-		return nil
+		// Random observations.
+		return getRandomTensor(SpaceSpec{
+			ContinuousShape: []int{5, 5},
+		})
 	}
 	obs, ok := world.CachedObservations[name]
 	if ok {
 		return obs
 	}
 	return nil
-}
-
-// getRandomTensor is a helper method for generating random observations.
-func getRandomTensor(shape SpaceSpec) etensor.Tensor {
-	rt := etensor.NewFloat32(shape.ContinuousShape, shape.Stride, nil)
-	patgen.PermutedBinaryRows(rt, 1, 1, 0)
-	return rt
 }
 
 // ObserveWithShape Returns a tensor for the named modality like Observe. This allows the agent to request an observation in a specific shape, which may involve downsampling. It should throw an error if the shap can't be satisfied.

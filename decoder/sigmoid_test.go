@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+const tol = 1.0e-6
+
 func TestSigmoid(t *testing.T) {
 	dec := Sigmoid{}
 	dec.Init(2, 2)
@@ -50,7 +52,7 @@ func TestSigmoid(t *testing.T) {
 			t.Error(err)
 		}
 		if i > 2 {
-			if sse > lastsse {
+			if (sse - lastsse) > tol {
 				t.Errorf("error: %d\t sse now is *larger* than previoust: %g > %g\n", i, sse, lastsse)
 			}
 		}
