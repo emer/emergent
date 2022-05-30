@@ -16,6 +16,7 @@ import (
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/minmax"
+	"github.com/goki/gi/colormap"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/gist"
@@ -37,7 +38,7 @@ type NetView struct {
 	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
 	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
 	Params       Params                `desc:"parameters controlling how the view is rendered"`
-	ColorMap     *giv.ColorMap         `desc:"color map for mapping values to colors -- set by name in Params"`
+	ColorMap     *colormap.Map         `desc:"color map for mapping values to colors -- set by name in Params"`
 	RecNo        int                   `desc:"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]"`
 	LastCtrs     string                `desc:"last non-empty counters string provided -- re-used if no new one"`
 	Data         NetData               `desc:"contains all the network data with history"`
@@ -54,7 +55,7 @@ func AddNewNetView(parent ki.Ki, name string) *NetView {
 func (nv *NetView) Defaults() {
 	nv.Params.NetView = nv
 	nv.Params.Defaults()
-	nv.ColorMap = giv.AvailColorMaps[string(nv.Params.ColorMap)]
+	nv.ColorMap = colormap.AvailMaps[string(nv.Params.ColorMap)]
 	nv.RecNo = -1
 }
 
@@ -204,11 +205,11 @@ func (nv *NetView) Config() {
 	if nv.Params.UnitSize == 0 {
 		nv.Defaults()
 	}
-	cmap, ok := giv.AvailColorMaps[string(nv.Params.ColorMap)]
+	cmap, ok := colormap.AvailMaps[string(nv.Params.ColorMap)]
 	if ok {
 		nv.ColorMap = cmap
 	} else {
-		log.Printf("NetView: %v  ColorMap named: %v not found in AvailColorMaps\n", nv.Nm, nv.Params.ColorMap)
+		log.Printf("NetView: %v  ColorMap named: %v not found in colormap.AvailMaps\n", nv.Nm, nv.Params.ColorMap)
 	}
 	nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
 	config := kit.TypeAndNameList{}
