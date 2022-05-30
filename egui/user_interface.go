@@ -142,14 +142,16 @@ func (ui *UserInterface) CreateAndRunGuiWithAdditionalConfig(config func()) {
 			}
 		}
 
-		ui.GUI.AddToolbarItem(ToolbarItem{Label: "Init", Icon: "update",
-			Tooltip: "Initialize everything including network weights, and start over.  Also applies current params.",
-			Active:  ActiveStopped,
-			Func: func() {
-				ui.InitCallback()
-				ui.GUI.UpdateWindow()
-			},
-		})
+		if ui.InitCallback != nil {
+			ui.GUI.AddToolbarItem(ToolbarItem{Label: "Init", Icon: "update",
+				Tooltip: "Initialize everything including network weights, and start over.  Also applies current params.",
+				Active:  ActiveStopped,
+				Func: func() {
+					ui.InitCallback()
+					ui.GUI.UpdateWindow()
+				},
+			})
+		}
 
 		if len(ui.RasterLayers) > 0 {
 			stb := ui.GUI.TabView.AddNewTab(gi.KiT_Layout, "Spike Rasters").(*gi.Layout)
