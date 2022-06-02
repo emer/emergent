@@ -42,8 +42,8 @@ func (agent *AgentProxyWithWorldCache) GetServerFunc(loops *looper.Manager) func
 // Init the agent. This tells the agent what shape input/output to use, and gets some suggestions from the agent about what the world should be like.
 func (agent *AgentProxyWithWorldCache) Init(actionSpace map[string]SpaceSpec, observationSpace map[string]SpaceSpec) map[string]string {
 	// TODO If you want, you could add a callback here to reconfigure the network based on the action and observation spaces.
-	agent.loops.Init()
-	return nil // Return agent name or type or requests for the environment or something.
+	agent.loops.ResetCounters() //todo this be moved or clarified about it's purpose
+	return nil                  // Return agent name or type or requests for the environment or something.
 }
 
 // Step the agent. Internally, this calls looper.Manager.Step. It provides observations to the agent, and records what actions were taken, using the caches on the WorldInterface to move them in and out.
