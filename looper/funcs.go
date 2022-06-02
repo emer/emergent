@@ -22,10 +22,10 @@ func (funcs *NamedFuncs) Add(name string, fun func()) *NamedFuncs {
 }
 
 // String describes named functions.
-func (funcs NamedFuncs) String() string {
+func (funcs *NamedFuncs) String() string {
 	s := ""
-	if len(funcs) > 0 {
-		for _, f := range funcs {
+	if len(*funcs) > 0 {
+		for _, f := range *funcs {
 			s = s + f.Name + " "
 		}
 	}
@@ -33,8 +33,8 @@ func (funcs NamedFuncs) String() string {
 }
 
 // HasNameLike is a helper function to check if there's an existing function that contains a substring. This could be helpful to ensure that you don't add duplicate logic to a list of functions. If you plan on using this, add a comment documenting which name is important, because the default assumption is that names are just documentation.
-func (funcs NamedFuncs) HasNameLike(nameSubstring string) bool {
-	for _, nf := range funcs {
+func (funcs *NamedFuncs) HasNameLike(nameSubstring string) bool {
+	for _, nf := range *funcs {
 		if strings.Contains(nf.Name, nameSubstring) {
 			return true
 		}

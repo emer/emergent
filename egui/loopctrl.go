@@ -5,7 +5,6 @@
 package egui
 
 import (
-	"fmt"
 	"github.com/emer/emergent/etime"
 	"github.com/emer/emergent/looper"
 	"github.com/goki/gi/gi"
@@ -22,7 +21,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 		Func: func() {
 			loops.StopFlag = true
 			loops.StopLevel = etime.Cycle
-			fmt.Println("Stop time!")
+			// fmt.Println("Stop time!")
 			gui.StopNow = true
 			gui.Stopped()
 		},

@@ -35,30 +35,36 @@ type Manager struct {
 }
 
 // GetLoop returns the Loop associated with an evaluation mode and timescale.
-func (loopman *Manager) GetLoop(modes etime.Modes, times etime.Times) *Loop {
-	return loopman.Stacks[modes].Loops[times]
+func (man *Manager) GetLoop(modes etime.Modes, times etime.Times) *Loop {
+	return man.Stacks[modes].Loops[times]
+}
+
+// NewManager returns a new initialized manager
+func NewManager() *Manager {
+	man := &Manager{}
+	man.Init()
+	return man
 }
 
 // Init initializes variables on the Manager.
-func (loopman Manager) Init() *Manager {
-	loopman.Stacks = map[etime.Modes]*Stack{}
-	loopman.StopLevel = etime.Run
-	loopman.Mode = etime.Train
-	loopman.lastStartedCtr = map[etime.ScopeKey]int{}
-	loopman.ResetCounters()
-	return &loopman
+func (man *Manager) Init() {
+	man.Stacks = map[etime.Modes]*Stack{}
+	man.StopLevel = etime.Run
+	man.Mode = etime.Train
+	man.lastStartedCtr = map[etime.ScopeKey]int{}
+	man.ResetCounters()
 }
 
 // AddStack adds a new Stack for given mode
-func (loopman Manager) AddStack(mode etime.Modes) *Stack {
+func (man *Manager) AddStack(mode etime.Modes) *Stack {
 	stack := &Stack{}
-	loopman.Stacks[etime.Train] = stack
 	stack.Init()
+	man.Stacks[mode] = stack
 	return stack
 }
 
 // ApplyAcrossAllModesAndTimes applies a function across all evaluation modes and timescales within the Manager. The function might call GetLoop(curMode, curTime) and modify it.
-func (loopman *Manager) ApplyAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
+func (man *Manager) ApplyAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
 	for _, m := range []etime.Modes{etime.Train, etime.Test} {
 		curMode := m // For closures.
 		for _, t := range []etime.Times{etime.Trial, etime.Epoch} {
@@ -69,22 +75,22 @@ func (loopman *Manager) ApplyAcrossAllModesAndTimes(fun func(etime.Modes, etime.
 }
 
 // AddEventAllModes adds a Event to the stack for all modes.
-func (loopman *Manager) AddEventAllModes(t etime.Times, event Event) {
+func (man *Manager) AddEventAllModes(t etime.Times, event Event) {
 	// Note that phase is copied
-	for mode, _ := range loopman.Stacks {
-		stack := loopman.Stacks[mode]
+	for mode, _ := range man.Stacks {
+		stack := man.Stacks[mode]
 		stack.Loops[t].AddEvents(event)
 	}
 }
 
 // DocString returns an indented summary of the loops and functions in the stack.
-func (loopman Manager) DocString() string {
+func (man *Manager) DocString() string {
 	var sb strings.Builder
 
 	// indentSize is number of spaces to indent for output
 	var indentSize = 4
 
-	for evalMode, st := range loopman.Stacks {
+	for evalMode, st := range man.Stacks {
 		sb.WriteString("Stack: " + evalMode.String() + "\n")
 		for i, t := range st.Order {
 			lp := st.Loops[t]
@@ -113,19 +119,19 @@ func (loopman Manager) DocString() string {
 // All the rest is related to stepping
 
 // IsRunning is True if running.
-func (stepper Manager) IsRunning() bool {
-	return stepper.isRunning
+func (man *Manager) IsRunning() bool {
+	return man.isRunning
 }
 
 // ResetCountersByMode is like ResetCounters, but only for one mode.
-func (stepper *Manager) ResetCountersByMode(modes etime.Modes) {
-	for sk, _ := range stepper.lastStartedCtr {
+func (man *Manager) ResetCountersByMode(modes etime.Modes) {
+	for sk, _ := range man.lastStartedCtr {
 		skm, _ := sk.ModeAndTime()
 		if skm == modes {
-			stepper.lastStartedCtr[sk] = 0
+			man.lastStartedCtr[sk] = 0
 		}
 	}
-	for m, stack := range stepper.Stacks {
+	for m, stack := range man.Stacks {
 		if m == modes {
 			for _, loop := range stack.Loops {
 				loop.Counter.Cur = 0
@@ -134,38 +140,38 @@ func (stepper *Manager) ResetCountersByMode(modes etime.Modes) {
 	}
 }
 
-// ResetCounters resets the Cur on all loop Counters, and resets the Stepper's place in the loops.
-func (stepper *Manager) ResetCounters() {
-	for m, _ := range stepper.Stacks {
-		stepper.ResetCountersByMode(m)
+// ResetCounters resets the Cur on all loop Counters, and resets the Man's place in the loops.
+func (man *Manager) ResetCounters() {
+	for m, _ := range man.Stacks {
+		man.ResetCountersByMode(m)
 	}
 }
 
 // Step numSteps stopscales. Use this if you want to do exactly one trial or two epochs or 50 cycles or something.
-func (stepper *Manager) Step(numSteps int, stopscale etime.Times) {
-	stepper.StopLevel = stopscale
-	stepper.StepIterations = numSteps
-	stepper.StopFlag = false
-	stepper.StopNext = true
-	stepper.Run()
+func (man *Manager) Step(numSteps int, stopscale etime.Times) {
+	man.StopLevel = stopscale
+	man.StepIterations = numSteps
+	man.StopFlag = false
+	man.StopNext = true
+	man.Run()
 }
 
-// Run runs the loops contained within the stepper. If you want it to stop before the full end of the loop, set variables on the Stepper.
-func (stepper *Manager) Run() {
-	stepper.isRunning = true
+// Run runs the loops contained within the man. If you want it to stop before the full end of the loop, set variables on the Man.
+func (man *Manager) Run() {
+	man.isRunning = true
 
 	// Reset internal variables
-	stepper.internalStop = false
+	man.internalStop = false
 
 	// 0 Means the top level loop, probably Run
-	stepper.runLevel(0)
+	man.runLevel(0)
 
-	stepper.isRunning = false
+	man.isRunning = false
 }
 
 // runLevel implements nested for loops recursively. It is set up so that it can be stopped and resumed at any point.
-func (stepper *Manager) runLevel(currentLevel int) bool {
-	st := stepper.Stacks[stepper.Mode]
+func (man *Manager) runLevel(currentLevel int) bool {
+	st := man.Stacks[man.Mode]
 	if currentLevel >= len(st.Order) {
 		return true // Stack overflow, expected at bottom of stack.
 	}
@@ -174,32 +180,32 @@ func (stepper *Manager) runLevel(currentLevel int) bool {
 	ctr := &loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
-		stopAtLevelOrLarger := st.Order[currentLevel] >= stepper.StopLevel // Based on conversion of etime.Times to int
-		if stepper.StopFlag && stopAtLevelOrLarger {
-			stepper.internalStop = true
+		stopAtLevelOrLarger := st.Order[currentLevel] >= man.StopLevel // Based on conversion of etime.Times to int
+		if man.StopFlag && stopAtLevelOrLarger {
+			man.internalStop = true
 		}
-		if stepper.internalStop {
+		if man.internalStop {
 			// This should occur before ctr incrementing and before functions.
-			stepper.StopFlag = false
+			man.StopFlag = false
 			return false // Don't continue above, e.g. Stop functions
 		}
-		if stepper.StopNext && st.Order[currentLevel] == stepper.StopLevel {
-			stepper.StepIterations -= 1
-			if stepper.StepIterations <= 0 {
-				stepper.StopNext = false
-				stepper.StopFlag = true // Stop at the top of the next StopLevel
+		if man.StopNext && st.Order[currentLevel] == man.StopLevel {
+			man.StepIterations -= 1
+			if man.StepIterations <= 0 {
+				man.StopNext = false
+				man.StopFlag = true // Stop at the top of the next StopLevel
 			}
 		}
 
 		// Don't ever Start the same iteration of the same level twice.
-		lastCtr, ok := stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)]
+		lastCtr, ok := man.lastStartedCtr[etime.Scope(man.Mode, time)]
 		if !ok || ctr.Cur > lastCtr {
-			stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)] = ctr.Cur
+			man.lastStartedCtr[etime.Scope(man.Mode, time)] = ctr.Cur
 			if PrintControlFlow && time >= NoPrintBelow {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
 			// Events occur at the very start.
-			stepper.eventLogic(loop)
+			man.eventLogic(loop)
 			for _, fun := range loop.OnStart {
 				fun.Func()
 			}
@@ -208,7 +214,7 @@ func (stepper *Manager) runLevel(currentLevel int) bool {
 		}
 
 		// Recursion!
-		runComplete := stepper.runLevel(currentLevel + 1)
+		runComplete := man.runLevel(currentLevel + 1)
 
 		if runComplete {
 			for _, fun := range loop.Main {
@@ -232,15 +238,15 @@ func (stepper *Manager) runLevel(currentLevel int) bool {
 
 exitLoop:
 	// Only get to this point if this loop is done.
-	if !stepper.internalStop {
+	if !man.internalStop {
 		ctr.Cur = 0
-		stepper.lastStartedCtr[etime.Scope(stepper.Mode, time)] = -1
+		man.lastStartedCtr[etime.Scope(man.Mode, time)] = -1
 	}
 	return true
 }
 
 // eventLogic handles events that occur at specific timesteps.
-func (stepper *Manager) eventLogic(loop *Loop) {
+func (man *Manager) eventLogic(loop *Loop) {
 	ctr := &loop.Counter
 	for _, phase := range loop.Events {
 		if ctr.Cur == phase.AtCtr {

@@ -2,33 +2,20 @@
 
 Looper implements a fully generic looping control system with extensible functionality at each level of the loop, with logic that supports reentrant stepping so each time it is Run it advances at any specified step size, with results that are identical to running.
 
-This steppability constraint requires that no code is run at the start of a loop, which is equivalent to a `do..while` loop with no initialization condition:
+Each loop implements the following logic:
 
-```C
+```go
+OnStart()  // run at start of loop
 do {
-    Main()
-} while !Stop()
-End()
+    Main() // run in loop
+    <run subloops>
+} while !IsDone() // test for completion
+OnEnd()    // run after loop is done
 ```
 
-The `Loop` object has these three function lists: `Main(), Stop(), End()` where function closures can be added to perform any relevant functionality.
+The `Loop` object has the above function lists  where function closures can be added to perform any relevant functionality.
 
-In Go syntax, including the running of sub-loops under a given level, this would be:
-
-```Go
-for {
-   for { <subloops here> } // drills down levels for each subloop
-   Main()                  // Main is called after subloops -- increment counters!
-   if Stop() {
-       break
-   }
-}
-End()                      // Reset counters here so next pass starts over
-```
-
-To make this work, an initialization function must be run prior to starting, which puts the system in a ready-to-run state.  The `End()` function at each level must likewise ensure that it is ready to start again properly the next time through.
-
-The [envlp](https://github.com/emer/emergent/tree/master/envlp) Env is designed to work in concert with the looper control, where the Env holds counter values, and looper automatically increments and uses these counters to stop looping at a given level.  Each `Stack` of loops is associated with a given `etime.Mode`, corresponding to that of the Env.
+Each level of loop holds a corresponding counter value, and the looper automatically increments and uses these counters to stop looping at a given level.  Each `Stack` of loops is associated with a given `etime.Mode`, e.g., `etime.Train` or `etime.Test`.
 
 # Algorithm and Sim Integration
 
@@ -38,136 +25,7 @@ In cases where something must be done prior to looping through cycles (e.g., `Ap
 
 # Concrete Example of Looping Logic
 
-The `stack_test.go` output shows the logic of the looping functions:
+The `stack_test.go` can generate a trace the looping -- edit the if false to true to see.
 
-Here's the trace of a Run with 2 Run iterations, 3 Epoch iterations, and 3 Trials per epoch:
-
-```
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 1
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 2
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 3
-	Epoch Stop: 3
-	Epoch End: 0
-Run Main: 1
-		Trial Main: 1
-   .... (repeat of above)
-	Epoch Main: 3
-	Epoch Stop: 3
-	Epoch End: 0
-Run Main: 2
-Run Stop: 2
-Run End: 0
-```
-
-Here is stepping 1 Trial at a time:
-
-```
-##############
-Step Trial 1
-		Trial Main: 1
-
-##############
-Step Trial 1
-		Trial Main: 2
-
-##############
-Step Trial 1
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 1
-
-##############
-Step Trial 1
-		Trial Main: 1
-
-##############
-Step Trial 2
-		Trial Main: 1
-		Trial Main: 2
-```
-
-Here is stepping 2 Trials at a time:
-
-```
-##############
-Step Trial 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 1
-		Trial Main: 1
-
-##############
-Step Trial 2
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 2
-
-##############
-Step Trial 2
-		Trial Main: 1
-		Trial Main: 2
-```
-
-And here's stepping 1 Epoch at a time:
-
-```
-##############
-Step Epoch 1
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 1
-
-##############
-Step Epoch 1
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 2
-
-##############
-Step Epoch 1
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 3
-	Epoch Stop: 3
-	Epoch End: 0
-Run Main: 1
-
-##############
-Step Epoch 1
-		Trial Main: 1
-		Trial Main: 2
-		Trial Main: 3
-		Trial Stop: 3
-		Trial End: 0
-	Epoch Main: 1
-```
 
 

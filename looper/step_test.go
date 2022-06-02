@@ -10,11 +10,9 @@ import (
 func TestStep(t *testing.T) {
 	trialCount := 0
 
-	manager := Manager{}.Init()
+	manager := NewManager()
 	manager.AddStack(etime.Train).AddTime(etime.Run, 2).AddTime(etime.Epoch, 5).AddTime(etime.Trial, 4).AddTime(etime.Cycle, 3)
 	manager.GetLoop(etime.Train, etime.Trial).OnStart.Add("Count Trials", func() { trialCount += 1 })
-
-	manager.Init()
 
 	run := manager.Stacks[etime.Train].Loops[etime.Run]
 	epc := manager.Stacks[etime.Train].Loops[etime.Epoch]

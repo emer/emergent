@@ -12,7 +12,7 @@ type Event struct {
 }
 
 // String describes the Event in human readable text.
-func (event Event) String() string {
+func (event *Event) String() string {
 	s := event.Name + ": "
 	s = s + "(at " + strconv.Itoa(event.AtCtr) + ") "
 	if len(event.OnEvent) > 0 {

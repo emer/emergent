@@ -21,15 +21,14 @@ type Stack struct {
 }
 
 // Init makes sure data structures are initialized, and empties them if they are.
-func (loops *Stack) Init() *Stack {
-	loops.Loops = map[etime.Times]*Loop{}
-	loops.Order = []etime.Times{}
-	return loops
+func (stack *Stack) Init() {
+	stack.Loops = map[etime.Times]*Loop{}
+	stack.Order = []etime.Times{}
 }
 
 // AddTime adds a new timescale to this Stack with a given number of iterations. The order in which this method is invoked is important, as it adds loops in order from top to bottom.
-func (loops *Stack) AddTime(time etime.Times, max int) *Stack {
-	loops.Loops[time] = &Loop{Counter: Ctr{Max: max}, IsDone: map[string]func() bool{}}
-	loops.Order = append(loops.Order, time)
-	return loops
+func (stack *Stack) AddTime(time etime.Times, max int) *Stack {
+	stack.Loops[time] = &Loop{Counter: Ctr{Max: max}, IsDone: map[string]func() bool{}}
+	stack.Order = append(stack.Order, time)
+	return stack
 }
