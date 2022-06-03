@@ -5,23 +5,26 @@
 package looper
 
 import (
+	"github.com/emer/emergent/estats"
 	"github.com/emer/emergent/etime"
 )
 
 // Stack contains a list of Loops Ordered from top to bottom.
 // For example, a Stack might be created like this:
-//   myStack.Init().AddTime(etime.Run, 2).AddTime(etime.Trial, 3)
+//   mystack := manager.AddStack(etime.Train).AddTime(etime.Run, 2).AddTime(etime.Trial, 3)
 //   myStack.Loops[etime.Run].OnStart.Add("NewRun", initRunFunc)
 //   myStack.Loops[etime.Trial].OnStart.Add("PresentTrial", trialFunc)
 // When run, myStack will behave like this:
 // initRunFunc, trialFunc, trialFunc, trialFunc, initRunFunc, trialFunc, trialFunc, trialFunc
 type Stack struct {
+	Mode  etime.Modes           `desc:"evaluation mode for this stack"`
 	Loops map[etime.Times]*Loop `desc:"An ordered map of Loops, from the outer loop at the start to the inner loop at the end."`
-	Order []etime.Times         `desc:"This should be managed internally. Ordered from top to bottom, so longer timescales like Run should be at the beginning and shorter timescales like Trial should be and the end."`
+	Order []etime.Times         `desc:"The list and order of time scales looped over by this stack of loops,  ordered from top to bottom, so longer timescales like Run should be at the beginning and shorter timescales like Trial should be and the end."`
 }
 
 // Init makes sure data structures are initialized, and empties them if they are.
-func (stack *Stack) Init() {
+func (stack *Stack) Init(mode etime.Modes) {
+	stack.Mode = mode
 	stack.Loops = map[etime.Times]*Loop{}
 	stack.Order = []etime.Times{}
 }
@@ -31,4 +34,17 @@ func (stack *Stack) AddTime(time etime.Times, max int) *Stack {
 	stack.Loops[time] = &Loop{Counter: Ctr{Max: max}, IsDone: map[string]func() bool{}}
 	stack.Order = append(stack.Order, time)
 	return stack
+}
+
+// CtrsToStats sets the current counter values to estats Int values
+// by their time names only (no eval Mode).  These values can then
+// be read by elog LogItems to record the counters in logs.
+// Typically, a TrialName string is also expected to be set,
+// to describe the current trial (Step) contents in a useful way,
+// and other relevant info (e.g., group / category info) can also be set.
+func (stack *Stack) CtrsToStats(stats *estats.Stats) {
+	for _, tm := range stack.Order {
+		lp := stack.Loops[tm]
+		stats.SetInt(tm.String(), lp.Counter.Cur)
+	}
 }

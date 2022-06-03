@@ -14,6 +14,10 @@ Multiple different environments will typically be used in a model, e.g., one for
 
 Thus, the Env encapsulates all of the counter management logic for each aspect of model training and testing, so that the model itself just needs to manage which Env to use, when, and manage the connection of the Env States as inputs to the model, and vice-versa for Actions on the Env coming from the model.
 
+With the newer `looper` framework, the counters are managed by looper independent of the env.
+
+There is also an `Envs` map that provides a basic container for managing multiple Envs -- the key is typically an `etime.Modes` e.g., `etime.Train` or `etime.Test`.
+
 The `EnvDesc` interface provides additional methods (originally included in `Env`) that describe the Counters, States, and Actions, of the Env.  Each `Element` of the overall `State` allows annotation about the different elements of state that are available in general.
 
 The `Step` should update all relevant state elements as appropriate, so these can be queried by the user. Particular paradigms of environments must establish naming conventions for these state elements which then allow the model to use the information appropriately -- the Env interface only provides the most basic framework for establishing these paradigms, and ultimately a given model will only work within a particular paradigm of environments following specific conventions.

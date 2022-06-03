@@ -66,6 +66,16 @@ func (ft *FixedTable) Init(run int) {
 	ft.Trial.Cur = -1 // init state -- key so that first Step() = 0
 }
 
+// Config configures the environment to use given table IndexView and
+// evaluation mode (e.g., etime.Train.String()).  If mode is Train
+// then a Run counter is added, otherwise just Epoch and Trial.
+// NameCol and GroupCol are initialized to "Name" and "Group"
+// so set these to something else after this if needed.
+func (ft *FixedTable) Config(tbl *etable.IdxView) {
+	ft.Table = tbl
+	ft.Init(0)
+}
+
 // NewOrder sets a new random Order based on number of rows in the table.
 func (ft *FixedTable) NewOrder() {
 	np := ft.Table.Len()

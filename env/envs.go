@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package envlp
+package env
 
 import "github.com/emer/emergent/etime"
 
@@ -17,11 +17,11 @@ func (es *Envs) Init() {
 	}
 }
 
-// Add adds Env(s), using its Mode as the key
+// Add adds Env(s), using its Name as the key
 func (es *Envs) Add(evs ...Env) {
 	es.Init()
 	for _, ev := range evs {
-		(*es)[ev.Mode()] = ev
+		(*es)[ev.Name()] = ev
 	}
 }
 

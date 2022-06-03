@@ -5,6 +5,7 @@
 package env
 
 import (
+	"github.com/emer/emergent/etime"
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/ki/kit"
@@ -18,7 +19,7 @@ import (
 // establish a common conceptual framework for time -- it can easily be extended in specific
 // simulations to add needed additional levels, although using one of the existing standard
 // values is recommended wherever possible.
-type TimeScales int32
+type TimeScales etime.Times
 
 //go:generate stringer -type=TimeScales
 
@@ -34,60 +35,60 @@ const (
 	// Typically this is on the time scale of a few seconds: e.g., reaching for
 	// something, catching a ball.  In an experiment it could just be the onset
 	// of a stimulus, or the generation of a response.
-	Event TimeScales = iota
+	Event = TimeScales(etime.Event)
 
 	// Trial is one unit of behavior in an experiment, and could potentially
 	// encompass multiple Events (e.g., one event is fixation, next is stimulus,
 	// last is response, all comprising one Trial).  It is also conventionally
 	// used as a single Input / Output learning instance in a standard error-driven
 	// learning paradigm.
-	Trial
+	Trial = TimeScales(etime.Trial)
 
 	// Tick is one step in a sequence -- often it is useful to have Trial count
 	// up throughout the entire Epoch but also include a Tick to count trials
 	// within a Sequence
-	Tick
+	Tick = TimeScales(etime.Tick)
 
 	// Sequence is a sequential group of Trials (not always needed).
-	Sequence
+	Sequence = TimeScales(etime.Sequence)
 
 	// Block is a collection of Trials, Sequences or Events, often used in experiments
 	// when conditions are varied across blocks.
-	Block
+	Block = TimeScales(etime.Block)
 
 	// Condition is a collection of Blocks that share the same set of parameters.
 	// This is intermediate between Block and Run levels.
-	Condition
+	Condition = TimeScales(etime.Condition)
 
 	// Epoch is used in two different contexts.  In machine learning, it represents a
 	// collection of Trials, Sequences or Events that constitute a "representative sample"
 	// of the environment.  In the simplest case, it is the entire collection of Trials
 	// used for training.  In electrophysiology, it is a timing window used for organizing
 	// the analysis of electrode data.
-	Epoch
+	Epoch = TimeScales(etime.Epoch)
 
 	// Run is a complete run of a model / subject, from training to testing, etc.
 	// Often multiple runs are done in an Expt to obtain statistics over initial
 	// random weights etc.
-	Run
+	Run = TimeScales(etime.Run)
 
 	// Expt is an entire experiment -- multiple Runs through a given protocol / set of
 	// parameters.
-	Expt
+	Expt = TimeScales(etime.Expt)
 
 	// Scene is a sequence of events that constitutes the next larger-scale coherent unit
 	// of naturalistic experience corresponding e.g., to a scene in a movie.
 	// Typically consists of events that all take place in one location over
 	// e.g., a minute or so. This could be a paragraph or a page or so in a book.
-	Scene
+	Scene = TimeScales(etime.Scene)
 
 	// Episode is a sequence of scenes that constitutes the next larger-scale unit
 	// of naturalistic experience e.g., going to the grocery store or eating at a
 	// restaurant, attending a wedding or other "event".
 	// This could be a chapter in a book.
-	Episode
+	Episode = TimeScales(etime.Episode)
 
-	TimeScalesN
+	TimeScalesN = TimeScales(etime.TimesN)
 )
 
 // SchemaFromScales returns an etable.Schema suitable for creating an

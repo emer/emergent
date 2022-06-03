@@ -1,3 +1,7 @@
+// Copyright (c) 2022, The Emergent Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package looper
 
 // Ctr combines an integer with a maximum value. It supports time tracking within looper.

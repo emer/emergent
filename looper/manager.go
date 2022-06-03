@@ -1,3 +1,7 @@
+// Copyright (c) 2022, The Emergent Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package looper
 
 import (
@@ -13,21 +17,24 @@ var (
 	// If you want to debug the flow of time, set this to true.
 	PrintControlFlow = false
 
-	// If PrintControlFlow = true, this cuts off printing at timescales that are faster than this -- default is to print all.
+	// If PrintControlFlow = true, this cuts off printing at timescales
+	// that are faster than this -- default is to print all.
 	NoPrintBelow = etime.AllTimes
 )
 
-// Manager holds data relating to multiple stacks of loops, as well as the logic for stepping through it. It also holds helper methods for constructing the data.
-// It's also a control object for stepping through Stacks of Loops. It holds data about how the flow is going.
+// Manager holds data relating to multiple stacks of loops,
+// as well as the logic for stepping through it.
+// It also holds helper methods for constructing the data.
+// It's also a control object for stepping through Stacks of Loops.
+// It holds data about how the flow is going.
 type Manager struct {
-	Stacks map[etime.Modes]*Stack
-
-	StopFlag       bool        `desc:"If true, stop model ASAP."`
-	StopNext       bool        `desc:"If true, stop model at the end of the current StopLevel."`
-	StopLevel      etime.Times `desc:"Time level to stop at the end of."`
-	StepIterations int         `desc:"How many steps to do."`
-	Mode           etime.Modes `desc:"The current evaluation mode."`
-	isRunning      bool        `desc:"Set to true while looping, false when done. Read only."`
+	Stacks         map[etime.Modes]*Stack `desc:"map of stacks by Mode"`
+	StopFlag       bool                   `desc:"If true, stop model ASAP."`
+	StopNext       bool                   `desc:"If true, stop model at the end of the current StopLevel."`
+	StopLevel      etime.Times            `desc:"Time level to stop at the end of."`
+	StepIterations int                    `desc:"How many steps to do."`
+	Mode           etime.Modes            `desc:"The current evaluation mode."`
+	isRunning      bool                   `desc:"Set to true while looping, false when done. Read only."`
 
 	// For internal use
 	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
@@ -58,7 +65,7 @@ func (man *Manager) Init() {
 // AddStack adds a new Stack for given mode
 func (man *Manager) AddStack(mode etime.Modes) *Stack {
 	stack := &Stack{}
-	stack.Init()
+	stack.Init(mode)
 	man.Stacks[mode] = stack
 	return stack
 }
