@@ -36,8 +36,8 @@ func (stack *Stack) AddTime(time etime.Times, max int) *Stack {
 	return stack
 }
 
-// AddTimeFuncOnStartToAll adds given function taking mode and time args to OnStart in all loops
-func (stack *Stack) AddTimeFuncOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+// AddOnStartToAll adds given function taking mode and time args to OnStart in all loops
+func (stack *Stack) AddOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for tt, lp := range stack.Loops {
 		curTime := tt
 		lp.OnStart.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
@@ -46,8 +46,8 @@ func (stack *Stack) AddTimeFuncOnStartToAll(name string, fun func(mode etime.Mod
 	}
 }
 
-// AddTimeFuncMainToAll adds given function taking mode and time args to Main in all loops
-func (stack *Stack) AddTimeFuncMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+// AddMainToAll adds given function taking mode and time args to Main in all loops
+func (stack *Stack) AddMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for tt, lp := range stack.Loops {
 		curTime := tt
 		lp.Main.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
@@ -56,8 +56,8 @@ func (stack *Stack) AddTimeFuncMainToAll(name string, fun func(mode etime.Modes,
 	}
 }
 
-// AddTimeFuncOnEndToAll adds given function taking mode and time args to OnEnd in all loops
-func (stack *Stack) AddTimeFuncOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+// AddOnEndToAll adds given function taking mode and time args to OnEnd in all loops
+func (stack *Stack) AddOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for tt, lp := range stack.Loops {
 		curTime := tt
 		lp.OnEnd.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {

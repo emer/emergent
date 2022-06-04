@@ -77,24 +77,24 @@ func (man *Manager) AddEventAllModes(t etime.Times, event ...Event) {
 	}
 }
 
-// AddTimeFuncOnStartToAll adds given function taking mode and time args to OnStart in all stacks, loops
-func (man *Manager) AddTimeFuncOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+// AddOnStartToAll adds given function taking mode and time args to OnStart in all stacks, loops
+func (man *Manager) AddOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for _, stack := range man.Stacks {
-		stack.AddTimeFuncOnStartToAll(name, fun)
+		stack.AddOnStartToAll(name, fun)
 	}
 }
 
-// AddTimeFuncMainToAll adds given function taking mode and time args to Main in all stacks, loops
-func (man *Manager) AddTimeFuncMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+// AddMainToAll adds given function taking mode and time args to Main in all stacks, loops
+func (man *Manager) AddMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for _, stack := range man.Stacks {
-		stack.AddTimeFuncMainToAll(name, fun)
+		stack.AddMainToAll(name, fun)
 	}
 }
 
-// AddTimeFuncOnEndToAll adds given function taking mode and time args to OnEnd in all stacks, loops
-func (man *Manager) AddTimeFuncOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+// AddOnEndToAll adds given function taking mode and time args to OnEnd in all stacks, loops
+func (man *Manager) AddOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for _, stack := range man.Stacks {
-		stack.AddTimeFuncOnEndToAll(name, fun)
+		stack.AddOnEndToAll(name, fun)
 	}
 }
 
