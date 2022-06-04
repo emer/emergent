@@ -18,7 +18,7 @@ func (ev *Times) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev
 
 // A list of predefined time scales at which logging can occur
 const (
-	// NoTime represents a non-initialized value
+	// NoTime represents a non-initialized value, or a null result
 	NoTime Times = iota
 
 	// AllTimes indicates that the log should occur over all times present in other items.

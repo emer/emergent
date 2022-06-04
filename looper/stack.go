@@ -36,6 +36,60 @@ func (stack *Stack) AddTime(time etime.Times, max int) *Stack {
 	return stack
 }
 
+// AddTimeFuncOnStartToAll adds given function taking mode and time args to OnStart in all loops
+func (stack *Stack) AddTimeFuncOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+	for tt, lp := range stack.Loops {
+		curTime := tt
+		lp.OnStart.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
+			fun(stack.Mode, curTime)
+		})
+	}
+}
+
+// AddTimeFuncMainToAll adds given function taking mode and time args to Main in all loops
+func (stack *Stack) AddTimeFuncMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+	for tt, lp := range stack.Loops {
+		curTime := tt
+		lp.Main.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
+			fun(stack.Mode, curTime)
+		})
+	}
+}
+
+// AddTimeFuncOnEndToAll adds given function taking mode and time args to OnEnd in all loops
+func (stack *Stack) AddTimeFuncOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+	for tt, lp := range stack.Loops {
+		curTime := tt
+		lp.OnEnd.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
+			fun(stack.Mode, curTime)
+		})
+	}
+}
+
+// TimeAbove returns the time above the given time in the stack
+// returning etime.NoTime if this is the highest level,
+// or given time does not exist in order.
+func (stack *Stack) TimeAbove(time etime.Times) etime.Times {
+	for i, tt := range stack.Order {
+		if tt == time && i > 0 {
+			return stack.Order[i-1]
+		}
+	}
+	return etime.NoTime
+}
+
+// TimeBelow returns the time below the given time in the stack
+// returning etime.NoTime if this is the lowest level,
+// or given time does not exist in order.
+func (stack *Stack) TimeBelow(time etime.Times) etime.Times {
+	for i, tt := range stack.Order {
+		if tt == time && i+1 < len(stack.Order) {
+			return stack.Order[i+1]
+		}
+	}
+	return etime.NoTime
+}
+
 // CtrsToStats sets the current counter values to estats Int values
 // by their time names only (no eval Mode).  These values can then
 // be read by elog LogItems to record the counters in logs.

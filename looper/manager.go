@@ -56,7 +56,7 @@ func NewManager() *Manager {
 // Init initializes variables on the Manager.
 func (man *Manager) Init() {
 	man.Stacks = map[etime.Modes]*Stack{}
-	man.StopLevel = etime.Run
+	man.StopLevel = etime.Trial
 	man.Mode = etime.Train
 	man.lastStartedCtr = map[etime.ScopeKey]int{}
 	man.ResetCounters()
@@ -70,23 +70,31 @@ func (man *Manager) AddStack(mode etime.Modes) *Stack {
 	return stack
 }
 
-// ApplyAcrossAllModesAndTimes applies a function across all evaluation modes and timescales within the Manager. The function might call GetLoop(curMode, curTime) and modify it.
-func (man *Manager) ApplyAcrossAllModesAndTimes(fun func(etime.Modes, etime.Times)) {
-	for _, m := range []etime.Modes{etime.Train, etime.Test} {
-		curMode := m // For closures.
-		for _, t := range []etime.Times{etime.Trial, etime.Epoch} {
-			curTime := t
-			fun(curMode, curTime)
-		}
+// AddEventAllModes adds Event(s) to all stacks at given time
+func (man *Manager) AddEventAllModes(t etime.Times, event ...Event) {
+	for _, stack := range man.Stacks {
+		stack.Loops[t].AddEvents(event...)
 	}
 }
 
-// AddEventAllModes adds a Event to the stack for all modes.
-func (man *Manager) AddEventAllModes(t etime.Times, event Event) {
-	// Note that phase is copied
-	for mode, _ := range man.Stacks {
-		stack := man.Stacks[mode]
-		stack.Loops[t].AddEvents(event)
+// AddTimeFuncOnStartToAll adds given function taking mode and time args to OnStart in all stacks, loops
+func (man *Manager) AddTimeFuncOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+	for _, stack := range man.Stacks {
+		stack.AddTimeFuncOnStartToAll(name, fun)
+	}
+}
+
+// AddTimeFuncMainToAll adds given function taking mode and time args to Main in all stacks, loops
+func (man *Manager) AddTimeFuncMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+	for _, stack := range man.Stacks {
+		stack.AddTimeFuncMainToAll(name, fun)
+	}
+}
+
+// AddTimeFuncOnEndToAll adds given function taking mode and time args to OnEnd in all stacks, loops
+func (man *Manager) AddTimeFuncOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
+	for _, stack := range man.Stacks {
+		stack.AddTimeFuncOnEndToAll(name, fun)
 	}
 }
 

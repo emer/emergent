@@ -54,7 +54,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			stringToEnumTime[st.String()] = st
 		}
 
-		lastSelectedScbTimeScale := etime.Run
+		lastSelectedScbTimeScale := loops.StopLevel
 
 		gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
 			act.SetActiveStateUpdt(!gui.IsRunning)
