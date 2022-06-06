@@ -71,6 +71,32 @@ func (st *Stats) Print(stats []string) string {
 	return str
 }
 
+// PrintVals returns values of given stats with given formats,
+// and delimiter
+func (st *Stats) PrintVals(stats, fmts []string, delim string) string {
+	var str string
+	for i, nm := range stats {
+		fm := fmts[i]
+		if str != "" {
+			str += delim
+		}
+		if val, has := st.Floats[nm]; has {
+			str += fmt.Sprintf(fm, val)
+			continue
+		}
+		if val, has := st.Strings[nm]; has {
+			str += fmt.Sprintf(fm, val)
+			continue
+		}
+		if val, has := st.Ints[nm]; has {
+			str += fmt.Sprintf(fm, val)
+			continue
+		}
+		str += "0"
+	}
+	return str
+}
+
 func (st *Stats) SetFloat(name string, value float64) {
 	st.Floats[name] = value
 }

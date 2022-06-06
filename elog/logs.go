@@ -73,12 +73,22 @@ func (lg *Logs) SetContext(stats *estats.Stats, net emer.Network) {
 // Table returns the table for given mode, time
 func (lg *Logs) Table(mode etime.Modes, time etime.Times) *etable.Table {
 	sk := etime.Scope(mode, time)
-	return lg.Tables[sk].Table
+	tb, ok := lg.Tables[sk]
+	if !ok {
+		log.Printf("Table for scope not found: %s\n", sk)
+		return nil
+	}
+	return tb.Table
 }
 
 // TableScope returns the table for given etime.ScopeKey
 func (lg *Logs) TableScope(sk etime.ScopeKey) *etable.Table {
-	return lg.Tables[sk].Table
+	tb, ok := lg.Tables[sk]
+	if !ok {
+		log.Printf("Table for scope not found: %s\n", sk)
+		return nil
+	}
+	return tb.Table
 }
 
 // MiscTable gets a miscellaneous table that is not specified or typically expected

@@ -18,6 +18,7 @@ import (
 type Params struct {
 	Params    params.Sets            `view:"no-inline" desc:"full collection of param sets to use"`
 	ExtraSets string                 `desc:"optional additional set(s) of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Set names!)"`
+	Tag       string                 `desc:"optional additional tag to add to file names, logs to identify params / run config"`
 	Objects   map[string]interface{} `view:"-" desc:"map of objects to apply parameters to -- the key is the name of the Sheet for each object, e.g., "Network", "Sim" are typically used"`
 	NetHypers params.Flex            `view:"-" desc:"list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used"`
 	SetMsg    bool                   `desc:"print out messages for each parameter that is set"`
@@ -117,13 +118,29 @@ func (pr *Params) AddObject(name string, object interface{}) {
 	pr.Objects[name] = object
 }
 
-// Name returns name of current set of parameters -- if ExtraSets is empty
-// then it returns "Base", otherwise returns ExtraSets
+// Name returns name of current set of parameters, including Tag.
+// if ExtraSets is empty then it returns "Base", otherwise returns ExtraSets
 func (pr *Params) Name() string {
-	if pr.ExtraSets == "" {
-		return "Base"
+	rn := ""
+	if pr.Tag != "" {
+		rn += pr.Tag + "_"
 	}
-	return pr.ExtraSets
+	if pr.ExtraSets == "" {
+		rn += "Base"
+	} else {
+		rn += pr.ExtraSets
+	}
+	return rn
+}
+
+// RunName returns standard name simulation run based on params Name()
+// and starting run number if > 0 (large models are often run separately)
+func (pr *Params) RunName(startRun int) string {
+	rn := pr.Name()
+	if startRun > 0 {
+		rn += fmt.Sprintf("_%03d", startRun)
+	}
+	return rn
 }
 
 // Validate checks that there are sheets with the names for the
