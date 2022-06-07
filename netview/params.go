@@ -15,6 +15,8 @@ import (
 
 // Params holds parameters controlling how the view is rendered
 type Params struct {
+	Raster     bool             `desc:"if true, show a raster plot over time, otherwise units"`
+	RasterMax  int              `desc:"maximum count for the counter defining the raster plot"`
 	PrjnType   string           `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	MaxRecs    int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
 	UnitSize   float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
@@ -26,6 +28,9 @@ type Params struct {
 }
 
 func (nv *Params) Defaults() {
+	if nv.RasterMax == 0 {
+		nv.RasterMax = 200
+	}
 	if nv.MaxRecs == 0 {
 		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
 	}

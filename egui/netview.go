@@ -15,7 +15,7 @@ import (
 // Set the NetViewText field prior to updating
 func (gui *GUI) UpdateNetView() {
 	if gui.NetView != nil && gui.NetView.IsVisible() {
-		gui.NetView.Record(gui.NetViewText)
+		gui.NetView.Record(gui.NetViewText, -1)
 		// note: essential to use Go version of update when called from another goroutine
 		gui.NetView.GoUpdate() // note: using counters is significantly slower..
 	}
@@ -58,7 +58,7 @@ func (gui *GUI) NetDataRecord() {
 	if gui.NetData == nil {
 		return
 	}
-	gui.NetData.Record(gui.NetViewText)
+	gui.NetData.Record(gui.NetViewText, -1)
 }
 
 // SaveNetData saves NetData NetView data (if !nil)
