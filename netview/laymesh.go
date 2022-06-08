@@ -46,10 +46,18 @@ func (lm *LayMesh) Sizes() (nVtx, nIdx int, hasColor bool) {
 	}
 	shp := lm.Lay.Shape()
 	lm.Shape.CopyShape(shp)
-	if shp.NumDims() == 4 {
-		lm.NVtx, lm.NIdx = lm.Size4D()
+	if lm.View.Params.Raster.On {
+		if shp.NumDims() == 4 {
+			lm.NVtx, lm.NIdx = lm.RasterSize4D()
+		} else {
+			lm.NVtx, lm.NIdx = lm.RasterSize2D()
+		}
 	} else {
-		lm.NVtx, lm.NIdx = lm.Size2D()
+		if shp.NumDims() == 4 {
+			lm.NVtx, lm.NIdx = lm.Size4D()
+		} else {
+			lm.NVtx, lm.NIdx = lm.Size2D()
+		}
 	}
 	return lm.NVtx, lm.NIdx, lm.Color
 }
@@ -84,10 +92,26 @@ func (lm *LayMesh) Set(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.Arr
 		return // nothing
 	}
 	// true = init
-	if lm.Shape.NumDims() == 4 {
-		lm.Set4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+	if lm.View.Params.Raster.On {
+		if lm.View.Params.Raster.XAxis {
+			if lm.Shape.NumDims() == 4 {
+				lm.RasterSet4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+			} else {
+				lm.RasterSet2DX(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+			}
+		} else {
+			if lm.Shape.NumDims() == 4 {
+				lm.RasterSet4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+			} else {
+				lm.RasterSet2DZ(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+			}
+		}
 	} else {
-		lm.Set2D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+		if lm.Shape.NumDims() == 4 {
+			lm.Set4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+		} else {
+			lm.Set2D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+		}
 	}
 	lm.SetMod(sc)
 
@@ -99,10 +123,27 @@ func (lm *LayMesh) Update(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.
 	}
 	// false = not init
 	// todo: not using the init flag to save minor amount of index non-updating..
-	if lm.Shape.NumDims() == 4 {
-		lm.Set4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+
+	if lm.View.Params.Raster.On {
+		if lm.View.Params.Raster.XAxis {
+			if lm.Shape.NumDims() == 4 {
+				lm.RasterSet4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+			} else {
+				lm.RasterSet2DX(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+			}
+		} else {
+			if lm.Shape.NumDims() == 4 {
+				lm.RasterSet4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+			} else {
+				lm.RasterSet2DZ(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+			}
+		}
 	} else {
-		lm.Set2D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+		if lm.Shape.NumDims() == 4 {
+			lm.Set4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+		} else {
+			lm.Set2D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+		}
 	}
 	lm.SetMod(sc)
 }

@@ -13,10 +13,30 @@ import (
 	"github.com/goki/gi/giv"
 )
 
+// RasterParams holds parameters controlling the raster plot view
+type RasterParams struct {
+	On         bool    `desc:"if true, show a raster plot over time, otherwise units"`
+	XAxis      bool    `desc:"if true, the raster counter (time) is plotted across the X axis -- otherwise the Z depth axis"`
+	Max        int     `desc:"maximum count for the counter defining the raster plot"`
+	UnitSize   float32 `min:"0.1" max:"1" step:"0.1" def:"1" desc:"size of a single unit, where 1 = full width and no space.. 1 default"`
+	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" def:"0.2" desc:"height multiplier for units, where 1 = full height.. 0.2 default"`
+}
+
+func (nv *RasterParams) Defaults() {
+	if nv.Max == 0 {
+		nv.Max = 200
+	}
+	if nv.UnitSize == 0 {
+		nv.UnitSize = 1
+	}
+	if nv.UnitHeight == 0 {
+		nv.UnitHeight = .2
+	}
+}
+
 // Params holds parameters controlling how the view is rendered
 type Params struct {
-	Raster     bool             `desc:"if true, show a raster plot over time, otherwise units"`
-	RasterMax  int              `desc:"maximum count for the counter defining the raster plot"`
+	Raster     RasterParams     `view:"inline" desc:"raster plot parameters"`
 	PrjnType   string           `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	MaxRecs    int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
 	UnitSize   float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
@@ -28,9 +48,7 @@ type Params struct {
 }
 
 func (nv *Params) Defaults() {
-	if nv.RasterMax == 0 {
-		nv.RasterMax = 200
-	}
+	nv.Raster.Defaults()
 	if nv.MaxRecs == 0 {
 		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
 	}

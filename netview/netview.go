@@ -108,7 +108,7 @@ func (nv *NetView) Record(counters string, rastCtr int) {
 		nv.LastCtrs = counters
 	}
 	nv.Data.PrjnType = nv.Params.PrjnType
-	nv.Data.Record(nv.LastCtrs, rastCtr)
+	nv.Data.Record(nv.LastCtrs, rastCtr, nv.Params.Raster.Max)
 	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
 }
 
@@ -257,7 +257,16 @@ func (nv *NetView) Config() {
 	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
 	nv.DataMu.Unlock()
+	nv.ReconfigMeshes()
 	nv.UpdateEnd(updt)
+}
+
+// ReconfigMeshes reconfigures the layer meshes
+func (nv *NetView) ReconfigMeshes() {
+	vs := nv.Scene()
+	if vs.IsConfiged() {
+		vs.ReconfigMeshes()
+	}
 }
 
 // IsConfiged returns true if widget is fully configured
@@ -691,11 +700,37 @@ func (nv *NetView) ReadUnlock() {
 }
 
 // UnitVal returns the raw value, scaled value, and color representation
-// for given unit of given layer scaled is in range -1..1
+// for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gist.Color, hasval bool) {
 	idx1d := lay.Shape().Offset(idx)
-	raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
+	if idx1d >= lay.Shape().Len() {
+		raw, hasval = 0, false
+	} else {
+		raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
+	}
+	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
+	return
+}
 
+// UnitValRaster returns the raw value, scaled value, and color representation
+// for given unit of given layer, and given raster counter index value (0..RasterMax)
+// scaled is in range -1..1
+func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr gist.Color, hasval bool) {
+	idx1d := lay.Shape().Offset(idx)
+	if idx1d >= lay.Shape().Len() {
+		raw, hasval = 0, false
+	} else {
+		raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+	}
+	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
+	return
+}
+
+var NilColor = gist.Color{0x20, 0x20, 0x20, 0x40}
+
+// UnitValColor returns the raw value, scaled value, and color representation
+// for given unit of given layer. scaled is in range -1..1
+func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval bool) (scaled float32, clr gist.Color) {
 	if nv.CurVarParams == nil || nv.CurVarParams.Var != nv.Var {
 		ok := false
 		nv.CurVarParams, ok = nv.VarParams[nv.Var]
@@ -708,7 +743,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIdx {
 			clr.SetUInt8(0x20, 0x80, 0x20, 0x80)
 		} else {
-			clr.SetUInt8(0x20, 0x20, 0x20, 0x40)
+			clr = NilColor
 		}
 	} else {
 		clp := nv.CurVarParams.Range.ClipVal(raw)
@@ -842,6 +877,30 @@ func (nv *NetView) ToolbarConfig() {
 			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 	ndmen.Menu.AddSeparator("plotneur")
+	rchk := gi.AddNewCheckBox(tbar, "raster")
+	rchk.SetChecked(nv.Params.Raster.On)
+	rchk.SetText("Raster")
+	rchk.Tooltip = "Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)"
+	rchk.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			cb := send.(*gi.CheckBox)
+			nv.Params.Raster.On = cb.IsChecked()
+			nv.ReconfigMeshes()
+			nv.Update()
+		}
+	})
+	xchk := gi.AddNewCheckBox(tbar, "raster-x")
+	xchk.SetChecked(nv.Params.Raster.XAxis)
+	xchk.SetText("X")
+	xchk.Tooltip = "If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension"
+	xchk.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			cb := send.(*gi.CheckBox)
+			nv.Params.Raster.XAxis = cb.IsChecked()
+			nv.Update()
+		}
+	})
+
 	ndmen.Menu.AddAction(gi.ActOpts{Label: "Plot Selected Unit", Icon: "image", Tooltip: "opens up a window with a plot of all saved data for currently-selected unit"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)

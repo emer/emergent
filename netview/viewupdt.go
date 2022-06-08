@@ -11,7 +11,6 @@ type ViewUpdt struct {
 	View    *NetView    `view:"-" desc:"the network view"`
 	Testing bool        `view:"-" desc:"whether in testing mode -- can be set in advance to drive appropriate updating"`
 	Text    string      `view:"-" desc:"text to display at the bottom of the view"`
-	RastCtr int         `view:"-" desc:"raster counter used for raster mode of plotting"`
 	On      bool        `desc:"toggles update of display on"`
 	Train   etime.Times `desc:"at what time scale to update the display during training?"`
 	Test    etime.Times `desc:"at what time scale to update the display during testing?"`
@@ -38,7 +37,7 @@ func (vu *ViewUpdt) Update() {
 	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
 		return
 	}
-	vu.View.Record(vu.Text, vu.RastCtr)
+	vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	// note: essential to use Go version of update when called from another goroutine
 	vu.View.GoUpdate()
 }
@@ -54,11 +53,14 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 // UpdateCycle triggers an update at the Cycle (Millisecond) timescale,
 // using given text to display at bottom of view
 func (vu *ViewUpdt) UpdateCycle(cyc int) {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return
+	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
 	if viewUpdt > etime.ThetaCycle {
 		return
 	}
-	if vu.View.Params.Raster {
+	if vu.View.Params.Raster.On {
 		vu.UpdateCycleRaster(cyc)
 		return
 	}
@@ -91,8 +93,7 @@ func (vu *ViewUpdt) UpdateCycle(cyc int) {
 // UpdateCycleRaster raster version of Cycle update
 func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
 	viewUpdt := vu.UpdtTime(vu.Testing)
-	vu.RastCtr = cyc
-	vu.View.Record(vu.Text, vu.RastCtr)
+	vu.View.Record(vu.Text, cyc)
 	switch viewUpdt {
 	case etime.Cycle:
 		vu.View.GoUpdate()

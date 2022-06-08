@@ -32,20 +32,22 @@ import (
 // up to a given maximum number of records (updates), using efficient ring index logic
 // with no copying to store in fixed-sized buffers.
 type NetData struct {
-	Net       emer.Network        `json:"-" desc:"the network that we're viewing"`
-	PrjnLay   string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
-	PrjnUnIdx int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
-	PrjnType  string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
-	Vars      []string            `desc:"the list of unit variables saved"`
-	VarIdxs   map[string]int      `desc:"index of each variable in the Vars slice"`
-	Ring      ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
-	LayData   map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
-	MinPer    []float32           `desc:"min values for each Ring.Max * variable"`
-	MaxPer    []float32           `desc:"max values for each Ring.Max * variable"`
-	MinVar    []float32           `desc:"min values for variable"`
-	MaxVar    []float32           `desc:"max values for variable"`
-	Counters  []string            `desc:"counter strings"`
-	RasterCtr []int               `desc:"raster counter values"`
+	Net        emer.Network        `json:"-" desc:"the network that we're viewing"`
+	PrjnLay    string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
+	PrjnUnIdx  int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
+	PrjnType   string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
+	Vars       []string            `desc:"the list of unit variables saved"`
+	VarIdxs    map[string]int      `desc:"index of each variable in the Vars slice"`
+	Ring       ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
+	LayData    map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
+	MinPer     []float32           `desc:"min values for each Ring.Max * variable"`
+	MaxPer     []float32           `desc:"max values for each Ring.Max * variable"`
+	MinVar     []float32           `desc:"min values for variable"`
+	MaxVar     []float32           `desc:"max values for variable"`
+	Counters   []string            `desc:"counter strings"`
+	RasterCtrs []int               `desc:"raster counter values"`
+	RasterMap  map[int]int         `desc:"map of raster counter values to record numbers"`
+	RastCtr    int                 `desc:"dummy raster counter when passed a -1"`
 }
 
 var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)
@@ -55,6 +57,7 @@ func (nd *NetData) Init(net emer.Network, max int) {
 	nd.Net = net
 	nd.Ring.Max = max
 	nd.Config()
+	nd.RasterMap = make(map[int]int)
 }
 
 // Config configures the data storage for given network
@@ -132,13 +135,15 @@ makeData:
 	}
 	if len(nd.Counters) != rmax {
 		nd.Counters = make([]string, rmax)
-		nd.RasterCtr = make([]int, rmax)
+		nd.RasterCtrs = make([]int, rmax)
 	}
 }
 
 // Record records the current full set of data from the network,
-// and the given counters string, raster counter value.
-func (nd *NetData) Record(ctrs string, rastCtr int) {
+// and the given counters string (displayed at bottom of window)
+// and raster counter value -- if negative, then an internal
+// wraping-around counter is used.
+func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 	nlay := nd.Net.NLayers()
 	if nlay == 0 {
 		return
@@ -148,7 +153,17 @@ func (nd *NetData) Record(ctrs string, rastCtr int) {
 	nd.Ring.Add(1)
 	lidx := nd.Ring.LastIdx()
 
+	if rastCtr < 0 {
+		rastCtr = nd.RastCtr
+		nd.RastCtr++
+		if nd.RastCtr >= rastMax {
+			nd.RastCtr = 0
+		}
+	}
+
 	nd.Counters[lidx] = ctrs
+	nd.RasterCtrs[lidx] = rastCtr
+	nd.RasterMap[rastCtr] = lidx
 
 	mmidx := lidx * vlen
 	for vi := range nd.Vars {
@@ -263,6 +278,33 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 	if nd.Ring.Len == 0 {
 		return 0, false
 	}
+	ridx := nd.RecIdx(recno)
+	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx)
+}
+
+// RasterCtr returns the raster counter value at given record number (-1 = current)
+func (nd *NetData) RasterCtr(recno int) (int, bool) {
+	if nd.Ring.Len == 0 {
+		return 0, false
+	}
+	ridx := nd.RecIdx(recno)
+	return nd.RasterCtrs[ridx], true
+}
+
+// UnitValRaster returns the value for given layer, variable name, unit index, and
+// raster counter number.
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
+func (nd *NetData) UnitValRaster(laynm string, vnm string, uidx1d int, rastCtr int) (float32, bool) {
+	ridx, has := nd.RasterMap[rastCtr]
+	if !has {
+		return 0, false
+	}
+	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx)
+}
+
+// UnitValIdx returns the value for given layer, variable name, unit index, and stored idx
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
+func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (float32, bool) {
 	if strings.HasPrefix(vnm, "r.") {
 		svar := vnm[2:]
 		return nd.RecvUnitVal(laynm, svar, uidx1d)
@@ -275,7 +317,6 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 		return 0, false
 	}
 	vlen := len(nd.Vars)
-	ridx := nd.RecIdx(recno)
 	ld, ok := nd.LayData[laynm]
 	if !ok {
 		return 0, false
