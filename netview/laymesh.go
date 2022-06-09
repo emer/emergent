@@ -95,13 +95,13 @@ func (lm *LayMesh) Set(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.Arr
 	if lm.View.Params.Raster.On {
 		if lm.View.Params.Raster.XAxis {
 			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet4DX(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
 				lm.RasterSet2DX(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
 			}
 		} else {
 			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet4DZ(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
 				lm.RasterSet2DZ(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
 			}
@@ -127,13 +127,13 @@ func (lm *LayMesh) Update(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.
 	if lm.View.Params.Raster.On {
 		if lm.View.Params.Raster.XAxis {
 			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet4DX(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
 				lm.RasterSet2DX(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
 			}
 		} else {
 			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet4DZ(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
 				lm.RasterSet2DZ(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
 			}

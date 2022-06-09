@@ -33,30 +33,37 @@ import (
 // with no copying to store in fixed-sized buffers.
 type NetData struct {
 	Net        emer.Network        `json:"-" desc:"the network that we're viewing"`
+	NoSynData  bool                `desc:"copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
 	PrjnLay    string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
 	PrjnUnIdx  int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
 	PrjnType   string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
-	Vars       []string            `desc:"the list of unit variables saved"`
-	VarIdxs    map[string]int      `desc:"index of each variable in the Vars slice"`
+	UnVars     []string            `desc:"the list of unit variables saved"`
+	UnVarIdxs  map[string]int      `desc:"index of each variable in the Vars slice"`
+	SynVars    []string            `desc:"the list of synaptic variables saved"`
+	SynVarIdxs map[string]int      `desc:"index of synaptic variable in the SynVars slice"`
 	Ring       ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
 	LayData    map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
-	MinPer     []float32           `desc:"min values for each Ring.Max * variable"`
-	MaxPer     []float32           `desc:"max values for each Ring.Max * variable"`
-	MinVar     []float32           `desc:"min values for variable"`
-	MaxVar     []float32           `desc:"max values for variable"`
+	UnMinPer   []float32           `desc:"unit var min values for each Ring.Max * variable"`
+	UnMaxPer   []float32           `desc:"unit var max values for each Ring.Max * variable"`
+	UnMinVar   []float32           `desc:"min values for unit variables"`
+	UnMaxVar   []float32           `desc:"max values for unit variables"`
+	SynMinVar  []float32           `desc:"min values for syn variables"`
+	SynMaxVar  []float32           `desc:"max values for syn variables"`
 	Counters   []string            `desc:"counter strings"`
 	RasterCtrs []int               `desc:"raster counter values"`
 	RasterMap  map[int]int         `desc:"map of raster counter values to record numbers"`
-	RastCtr    int                 `desc:"dummy raster counter when passed a -1"`
+	RastCtr    int                 `desc:"dummy raster counter when passed a -1 -- increments and wraps around"`
 }
 
 var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)
 
 // Init initializes the main params and configures the data
-func (nd *NetData) Init(net emer.Network, max int) {
+func (nd *NetData) Init(net emer.Network, max int, noSynData bool) {
 	nd.Net = net
 	nd.Ring.Max = max
+	nd.NoSynData = noSynData
 	nd.Config()
+	nd.RastCtr = 0
 	nd.RasterMap = make(map[int]int)
 }
 
@@ -76,11 +83,20 @@ func (nd *NetData) Config() {
 	}
 	nvars := nd.Net.UnitVarNames()
 	vlen := len(nvars)
-	if len(nd.Vars) != vlen {
-		nd.Vars = nvars
-		nd.VarIdxs = make(map[string]int, vlen)
-		for vi, vn := range nd.Vars {
-			nd.VarIdxs[vn] = vi
+	if len(nd.UnVars) != vlen {
+		nd.UnVars = nvars
+		nd.UnVarIdxs = make(map[string]int, vlen)
+		for vi, vn := range nd.UnVars {
+			nd.UnVarIdxs[vn] = vi
+		}
+	}
+	svars := nd.Net.SynVarNames()
+	svlen := len(svars)
+	if len(nd.SynVars) != svlen {
+		nd.SynVars = svars
+		nd.SynVarIdxs = make(map[string]int, svlen)
+		for vi, vn := range nd.SynVars {
+			nd.SynVarIdxs[vn] = vi
 		}
 	}
 makeData:
@@ -91,19 +107,25 @@ makeData:
 			nm := lay.Name()
 			ld := &LayData{LayName: nm, NUnits: lay.Shape().Len()}
 			nd.LayData[nm] = ld
-			ld.AllocSendPrjns(lay)
+			if nd.NoSynData {
+				ld.FreePrjns()
+			} else {
+				ld.AllocSendPrjns(lay)
+			}
 		}
-		for li := 0; li < nlay; li++ {
-			rlay := nd.Net.Layer(li)
-			rld := nd.LayData[rlay.Name()]
-			rp := rlay.RecvPrjns()
-			rld.RecvPrjns = make([]*PrjnData, len(*rp))
-			for ri, rpj := range *rp {
-				slay := rpj.SendLay()
-				sld := nd.LayData[slay.Name()]
-				for _, spj := range sld.SendPrjns {
-					if spj.Prjn == rpj {
-						rld.RecvPrjns[ri] = spj // link
+		if !nd.NoSynData {
+			for li := 0; li < nlay; li++ {
+				rlay := nd.Net.Layer(li)
+				rld := nd.LayData[rlay.Name()]
+				rp := rlay.RecvPrjns()
+				rld.RecvPrjns = make([]*PrjnData, len(*rp))
+				for ri, rpj := range *rp {
+					slay := rpj.SendLay()
+					sld := nd.LayData[slay.Name()]
+					for _, spj := range sld.SendPrjns {
+						if spj.Prjn == rpj {
+							rld.RecvPrjns[ri] = spj // link
+						}
 					}
 				}
 			}
@@ -125,13 +147,17 @@ makeData:
 			ld.Data = make([]float32, ltot)
 		}
 	}
-	if len(nd.MinPer) != vmax {
-		nd.MinPer = make([]float32, vmax)
-		nd.MaxPer = make([]float32, vmax)
+	if len(nd.UnMinPer) != vmax {
+		nd.UnMinPer = make([]float32, vmax)
+		nd.UnMaxPer = make([]float32, vmax)
 	}
-	if len(nd.MinVar) != vlen {
-		nd.MinVar = make([]float32, vlen)
-		nd.MaxVar = make([]float32, vlen)
+	if len(nd.UnMinVar) != vlen {
+		nd.UnMinVar = make([]float32, vlen)
+		nd.UnMaxVar = make([]float32, vlen)
+	}
+	if len(nd.SynMinVar) != svlen {
+		nd.SynMinVar = make([]float32, svlen)
+		nd.SynMaxVar = make([]float32, svlen)
 	}
 	if len(nd.Counters) != rmax {
 		nd.Counters = make([]string, rmax)
@@ -149,7 +175,7 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 		return
 	}
 	nd.Config() // inexpensive if no diff, and safe..
-	vlen := len(nd.Vars)
+	vlen := len(nd.UnVars)
 	nd.Ring.Add(1)
 	lidx := nd.Ring.LastIdx()
 
@@ -166,9 +192,9 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 	nd.RasterMap[rastCtr] = lidx
 
 	mmidx := lidx * vlen
-	for vi := range nd.Vars {
-		nd.MinPer[mmidx+vi] = math.MaxFloat32
-		nd.MaxPer[mmidx+vi] = -math.MaxFloat32
+	for vi := range nd.UnVars {
+		nd.UnMinPer[mmidx+vi] = math.MaxFloat32
+		nd.UnMaxPer[mmidx+vi] = -math.MaxFloat32
 	}
 	for li := 0; li < nlay; li++ {
 		lay := nd.Net.Layer(li)
@@ -176,9 +202,9 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 		ld := nd.LayData[laynm]
 		nu := lay.Shape().Len()
 		nvu := vlen * nu
-		for vi, vnm := range nd.Vars {
-			mn := &nd.MinPer[mmidx+vi]
-			mx := &nd.MaxPer[mmidx+vi]
+		for vi, vnm := range nd.UnVars {
+			mn := &nd.UnMinPer[mmidx+vi]
+			mx := &nd.UnMaxPer[mmidx+vi]
 			idx := lidx*nvu + vi*nu
 			dvals := ld.Data[idx : idx+nu]
 			lay.UnitVals(&dvals, vnm)
@@ -191,47 +217,26 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 			}
 		}
 	}
-	nd.UpdateVarRange()
+	nd.UpdateUnVarRange()
 }
 
-// RecordSyns records synaptic data -- stored separately
-// and only needs to be called when synaptic values are updated.
-func (nd *NetData) RecordSyns() {
-	nlay := nd.Net.NLayers()
-	if nlay == 0 {
-		return
-	}
-	nd.Config() // inexpensive if no diff, and safe..
-	// mmidx := lidx * vlen
-	// for vi := range nd.Vars {
-	// 	nd.MinPer[mmidx+vi] = math.MaxFloat32
-	// 	nd.MaxPer[mmidx+vi] = -math.MaxFloat32
-	// }
-	for li := 0; li < nlay; li++ {
-		lay := nd.Net.Layer(li)
-		laynm := lay.Name()
-		ld := nd.LayData[laynm]
-		for _, spd := range ld.SendPrjns {
-			spd.RecordData()
-		}
-	}
-	// nd.UpdateVarRange()
-}
-
-// UpdateVarRange updates the range for variables
-func (nd *NetData) UpdateVarRange() {
-	vlen := len(nd.Vars)
+// UpdateUnVarRange updates the range for unit variables, integrating over
+// the entire range of stored values, so it is valid when iterating
+// over history.
+func (nd *NetData) UpdateUnVarRange() {
+	vlen := len(nd.UnVars)
 	rlen := nd.Ring.Len
-	for vi := range nd.Vars {
-		vmn := &nd.MinVar[vi]
-		vmx := &nd.MaxVar[vi]
+	for vi := range nd.UnVars {
+		vmn := &nd.UnMinVar[vi]
+		vmx := &nd.UnMaxVar[vi]
 		*vmn = math.MaxFloat32
 		*vmx = -math.MaxFloat32
 
 		for ri := 0; ri < rlen; ri++ {
-			mmidx := ri * vlen
-			mn := nd.MinPer[mmidx+vi]
-			mx := nd.MaxPer[mmidx+vi]
+			ridx := nd.Ring.Idx(ri)
+			mmidx := ridx * vlen
+			mn := nd.UnMinPer[mmidx+vi]
+			mx := nd.UnMaxPer[mmidx+vi]
 			*vmn = mat32.Min(*vmn, mn)
 			*vmx = mat32.Max(*vmx, mx)
 		}
@@ -244,11 +249,47 @@ func (nd *NetData) VarRange(vnm string) (float32, float32, bool) {
 	if nd.Ring.Len == 0 {
 		return 0, 0, false
 	}
-	vi, ok := nd.VarIdxs[vnm]
+	if strings.HasPrefix(vnm, "r.") || strings.HasPrefix(vnm, "s.") {
+		vnm = vnm[2:]
+		vi, ok := nd.SynVarIdxs[vnm]
+		if !ok {
+			return 0, 0, false
+		}
+		return nd.SynMinVar[vi], nd.SynMaxVar[vi], true
+	}
+	vi, ok := nd.UnVarIdxs[vnm]
 	if !ok {
 		return 0, 0, false
 	}
-	return nd.MinVar[vi], nd.MaxVar[vi], true
+	return nd.UnMinVar[vi], nd.UnMaxVar[vi], true
+}
+
+// RecordSyns records synaptic data -- stored separate from unit data
+// and only needs to be called when synaptic values are updated.
+// Should be done when the DWt values have been computed, before
+// updating Wts and zeroing.
+// NetView displays this recorded data when Update is next called.
+func (nd *NetData) RecordSyns() {
+	if nd.NoSynData {
+		return
+	}
+	nlay := nd.Net.NLayers()
+	if nlay == 0 {
+		return
+	}
+	nd.Config() // inexpensive if no diff, and safe..
+	for vi := range nd.SynVars {
+		nd.SynMinVar[vi] = math.MaxFloat32
+		nd.SynMaxVar[vi] = -math.MaxFloat32
+	}
+	for li := 0; li < nlay; li++ {
+		lay := nd.Net.Layer(li)
+		laynm := lay.Name()
+		ld := nd.LayData[laynm]
+		for _, spd := range ld.SendPrjns {
+			spd.RecordData(nd)
+		}
+	}
 }
 
 // RecIdx returns record index for given record number,
@@ -312,11 +353,11 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (f
 		svar := vnm[2:]
 		return nd.SendUnitVal(laynm, svar, uidx1d)
 	}
-	vi, ok := nd.VarIdxs[vnm]
+	vi, ok := nd.UnVarIdxs[vnm]
 	if !ok {
 		return 0, false
 	}
-	vlen := len(nd.Vars)
+	vlen := len(nd.UnVars)
 	ld, ok := nd.LayData[laynm]
 	if !ok {
 		return 0, false
@@ -336,7 +377,7 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (f
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
 func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, bool) {
 	ld, ok := nd.LayData[laynm]
-	if !ok || nd.PrjnLay == "" {
+	if nd.NoSynData || !ok || nd.PrjnLay == "" {
 		return 0, false
 	}
 	recvLay := nd.Net.LayerByName(nd.PrjnLay)
@@ -384,7 +425,7 @@ func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
 func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, bool) {
 	ld, ok := nd.LayData[laynm]
-	if !ok || nd.PrjnLay == "" {
+	if nd.NoSynData || !ok || nd.PrjnLay == "" {
 		return 0, false
 	}
 	sendLay := nd.Net.LayerByName(nd.PrjnLay)
@@ -546,7 +587,7 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 
 	plt.SetTable(dt)
 
-	for _, vnm := range nd.Vars {
+	for _, vnm := range nd.UnVars {
 		vp, ok := nv.VarParams[vnm]
 		if !ok {
 			continue
@@ -586,7 +627,7 @@ func (nd *NetData) SelectedUnitTable() *etable.Table {
 	dt.SetMetaData("precision", strconv.Itoa(4))
 
 	ln := nd.Ring.Len
-	vlen := len(nd.Vars)
+	vlen := len(nd.UnVars)
 	nu := ld.NUnits
 	nvu := vlen * nu
 	uidx1d := nd.PrjnUnIdx
@@ -594,7 +635,7 @@ func (nd *NetData) SelectedUnitTable() *etable.Table {
 	sch := etable.Schema{
 		{"Rec", etensor.INT64, nil, nil},
 	}
-	for _, vnm := range nd.Vars {
+	for _, vnm := range nd.UnVars {
 		sch = append(sch, etable.Column{vnm, etensor.FLOAT64, nil, nil})
 	}
 	dt.SetFromSchema(sch, ln)

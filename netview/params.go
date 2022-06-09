@@ -37,6 +37,7 @@ func (nv *RasterParams) Defaults() {
 // Params holds parameters controlling how the view is rendered
 type Params struct {
 	Raster     RasterParams     `view:"inline" desc:"raster plot parameters"`
+	NoSynData  bool             `desc:"do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
 	PrjnType   string           `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	MaxRecs    int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
 	UnitSize   float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`

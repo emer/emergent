@@ -4,7 +4,10 @@
 
 package netview
 
-import "github.com/emer/emergent/emer"
+import (
+	"github.com/emer/emergent/emer"
+	"github.com/goki/mat32"
+)
 
 // LayData maintains a record of all the data for a given layer
 type LayData struct {
@@ -34,6 +37,12 @@ func (ld *LayData) AllocSendPrjns(ly emer.Layer) {
 	}
 }
 
+// FreePrjns nils prjn data -- for NoSynDat
+func (ld *LayData) FreePrjns() {
+	ld.RecvPrjns = nil
+	ld.SendPrjns = nil
+}
+
 // PrjnData holds display state for a projection
 type PrjnData struct {
 	Send    string    `desc:"name of sending layer"`
@@ -58,14 +67,24 @@ func (pd *PrjnData) Alloc() {
 
 // RecordData records synaptic data from given prjn.
 // must use sender or recv based depending on natural ordering.
-func (pd *PrjnData) RecordData() {
+func (pd *PrjnData) RecordData(nd *NetData) {
 	pj := pd.Prjn
-	nms := pj.SynVarNames()
+	vnms := pj.SynVarNames()
 	nvar := pj.SynVarNum()
 	nsyn := pj.Syn1DNum()
 	for vi := 0; vi < nvar; vi++ {
+		vnm := vnms[vi]
 		si := vi * nsyn
-		sv := pd.SynData[si:]
-		pj.SynVals(&sv, nms[vi])
+		sv := pd.SynData[si : si+nsyn]
+		pj.SynVals(&sv, vnm)
+		nvi := nd.SynVarIdxs[vnm]
+		mn := &nd.SynMinVar[nvi]
+		mx := &nd.SynMaxVar[nvi]
+		for _, vl := range sv {
+			if !mat32.IsNaN(vl) {
+				*mn = mat32.Min(*mn, vl)
+				*mx = mat32.Max(*mx, vl)
+			}
+		}
 	}
 }

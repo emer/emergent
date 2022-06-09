@@ -46,7 +46,7 @@ func (gui *GUI) Stopped() {
 		return
 	}
 	if gui.ViewUpdt != nil {
-		gui.UpdateNetView()
+		gui.UpdateNetViewWhenStopped()
 	}
 	if gui.ToolBar != nil {
 		gui.ToolBar.UpdateActions()

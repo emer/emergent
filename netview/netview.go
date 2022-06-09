@@ -66,7 +66,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.Defaults()
 	nv.Net = net
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
 	nv.DataMu.Unlock()
 	nv.Config()
 }
@@ -85,7 +85,7 @@ func (nv *NetView) SetVar(vr string) {
 // resets the current data in the process
 func (nv *NetView) SetMaxRecs(max int) {
 	nv.Params.MaxRecs = max
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
 }
 
 // HasLayers returns true if network has any layers -- else no display
@@ -112,9 +112,11 @@ func (nv *NetView) Record(counters string, rastCtr int) {
 	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
 }
 
-// RecordSyns records the current state of the network synaptic level state
-// which is stored separately and only needs to be called when synaptic values
-// are updated. The NetView displays this recorded data when Update is next called.
+// RecordSyns records synaptic data -- stored separate from unit data
+// and only needs to be called when synaptic values are updated.
+// Should be done when the DWt values have been computed, before
+// updating Wts and zeroing.
+// NetView displays this recorded data when Update is next called.
 func (nv *NetView) RecordSyns() {
 	nv.DataMu.Lock()
 	defer nv.DataMu.Unlock()
@@ -255,7 +257,7 @@ func (nv *NetView) Config() {
 	ctrs.SetText("Counters: ")
 
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
 	nv.DataMu.Unlock()
 	nv.ReconfigMeshes()
 	nv.UpdateEnd(updt)
@@ -648,9 +650,9 @@ func (nv *NetView) ViewConfig() {
 		lo.NetView = nv
 		lo.SetMeshName(vs, ly.Name())
 		lo.Mat.Color.SetUInt8(255, 100, 255, 255)
-		lo.Mat.Reflective = 1
+		lo.Mat.Reflective = 8
 		lo.Mat.Bright = 8
-		// lo.Mat.Shiny = 10
+		lo.Mat.Shiny = 30
 		// note: would actually be better to NOT cull back so you can view underneath
 		// but then the front and back fight against each other, causing flickering
 

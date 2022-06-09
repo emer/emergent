@@ -11,19 +11,25 @@ import (
 )
 
 // UpdateNetView updates the gui visualization of the network.
-// Set the NetViewText field prior to updating
 func (gui *GUI) UpdateNetView() {
 	if gui.ViewUpdt != nil {
 		gui.ViewUpdt.Update()
 	}
 }
 
+// UpdateNetViewWhenStopped updates the gui visualization of the network.
+// when stopped either via stepping or user hitting stop button.
+func (gui *GUI) UpdateNetViewWhenStopped() {
+	if gui.ViewUpdt != nil {
+		gui.ViewUpdt.UpdateWhenStopped()
+	}
+}
+
 // InitNetData initializes the NetData object to record NetView data
-// when the GUI is not active (located in egui package because of
-// the NetViewText that is also recorded)
+// when the GUI is not active
 func (gui *GUI) InitNetData(net emer.Network, nrecs int) {
 	gui.NetData = &netview.NetData{}
-	gui.NetData.Init(net, nrecs)
+	gui.NetData.Init(net, nrecs, true) // true = NoSynData
 }
 
 // NetDataRecord records current netview data
