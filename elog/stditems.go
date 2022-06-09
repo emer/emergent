@@ -97,6 +97,19 @@ func (lg *Logs) AddStatIntNoAggItem(mode etime.Modes, etm etime.Times, stats ...
 	}
 }
 
+// InitErrStats initializes the base stats variables used for
+// AddErrStatAggItems: TrlErr, FirstZero, LastZero, NZero
+func (lg *Logs) InitErrStats() {
+	stats := lg.Context.Stats
+	if stats == nil {
+		return
+	}
+	stats.SetFloat("TrlErr", 0.0)
+	stats.SetInt("FirstZero", -1) // critical to reset to -1
+	stats.SetInt("LastZero", -1)  // critical to reset to -1
+	stats.SetInt("NZero", 0)
+}
+
 // AddErrStatAggItems adds Err, PctErr, PctCor items recording overall performance
 // from the given statName statistic (e.g., "TrlErr") across the 3 time scales,
 // ordered from higher to lower, e.g., Run, Epoch, Trial.

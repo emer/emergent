@@ -21,7 +21,7 @@ func TestStep(t *testing.T) {
 		run := manager.Stacks[etime.Train].Loops[etime.Run].Counter.Cur
 		epc := manager.Stacks[etime.Train].Loops[etime.Epoch].Counter.Cur
 		if epc != 5 {
-			t.Errorf("Run %d OnEnd counters should be 5, not: %d", run, epc)
+			t.Errorf("Run %d OnEnd epoch counter should be 5, not: %d", run, epc)
 		}
 	})
 
