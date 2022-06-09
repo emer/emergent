@@ -17,6 +17,13 @@ func TestStep(t *testing.T) {
 	manager := NewManager()
 	manager.AddStack(etime.Train).AddTime(etime.Run, 2).AddTime(etime.Epoch, 5).AddTime(etime.Trial, 4).AddTime(etime.Cycle, 3)
 	manager.GetLoop(etime.Train, etime.Trial).OnStart.Add("Count Trials", func() { trialCount += 1 })
+	manager.GetLoop(etime.Train, etime.Run).OnEnd.Add("Counters Test", func() {
+		run := manager.Stacks[etime.Train].Loops[etime.Run].Counter.Cur
+		epc := manager.Stacks[etime.Train].Loops[etime.Epoch].Counter.Cur
+		if epc != 5 {
+			t.Errorf("Run %d OnEnd counters should be 5, not: %d", run, epc)
+		}
+	})
 
 	run := manager.Stacks[etime.Train].Loops[etime.Run]
 	epc := manager.Stacks[etime.Train].Loops[etime.Epoch]
