@@ -33,28 +33,61 @@ func (vu *ViewUpdt) UpdtTime(testing bool) etime.Times {
 }
 
 // Update does an update if view is On, visible and active,
+// including recording new data and driving update of display
 func (vu *ViewUpdt) Update() {
 	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
 		return
 	}
-	vu.View.Record(vu.Text)
+	vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
+	// note: essential to use Go version of update when called from another goroutine
+	vu.View.GoUpdate()
+}
+
+// UpdateWhenStopped does an update when the network updating was stopped
+// either via stepping or hitting the stop button -- this has different
+// logic for the raster view vs. regular.
+func (vu *ViewUpdt) UpdateWhenStopped() {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return
+	}
+	if !vu.View.Params.Raster.On { // always record when not in raster mode
+		vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
+	}
 	// note: essential to use Go version of update when called from another goroutine
 	vu.View.GoUpdate()
 }
 
 // UpdateTime triggers an update at given timescale.
 func (vu *ViewUpdt) UpdateTime(time etime.Times) {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return
+	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
-	if viewUpdt == time || (viewUpdt < etime.Trial && time == etime.Trial) {
+	if viewUpdt == time {
 		vu.Update()
+	} else {
+		if viewUpdt < etime.Trial && time == etime.Trial {
+			if vu.View.Params.Raster.On { // no extra rec here {
+				vu.View.GoUpdate()
+			} else {
+				vu.Update()
+			}
+		}
 	}
 }
 
 // UpdateCycle triggers an update at the Cycle (Millisecond) timescale,
 // using given text to display at bottom of view
 func (vu *ViewUpdt) UpdateCycle(cyc int) {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return
+	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
 	if viewUpdt > etime.ThetaCycle {
+		return
+	}
+	if vu.View.Params.Raster.On {
+		vu.UpdateCycleRaster(cyc)
 		return
 	}
 	switch viewUpdt {
@@ -76,5 +109,51 @@ func (vu *ViewUpdt) UpdateCycle(cyc int) {
 		if cyc%100 == 0 {
 			vu.Update()
 		}
+	case etime.ThetaCycle:
+		if cyc%200 == 0 {
+			vu.Update()
+		}
 	}
+}
+
+// UpdateCycleRaster raster version of Cycle update
+func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
+	viewUpdt := vu.UpdtTime(vu.Testing)
+	vu.View.Record(vu.Text, cyc)
+	switch viewUpdt {
+	case etime.Cycle:
+		vu.View.GoUpdate()
+	case etime.FastSpike:
+		if cyc%10 == 0 {
+			vu.View.GoUpdate()
+		}
+	case etime.GammaCycle:
+		if cyc%25 == 0 {
+			vu.View.GoUpdate()
+		}
+	case etime.BetaCycle:
+		if cyc%50 == 0 {
+			vu.View.GoUpdate()
+		}
+	case etime.AlphaCycle:
+		if cyc%100 == 0 {
+			vu.View.GoUpdate()
+		}
+	case etime.ThetaCycle:
+		if cyc%200 == 0 {
+			vu.View.GoUpdate()
+		}
+	}
+}
+
+// RecordSyns records synaptic data -- stored separate from unit data
+// and only needs to be called when synaptic values are updated.
+// Should be done when the DWt values have been computed, before
+// updating Wts and zeroing.
+// NetView displays this recorded data when Update is next called.
+func (vu *ViewUpdt) RecordSyns() {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return
+	}
+	vu.View.RecordSyns()
 }

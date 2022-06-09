@@ -70,8 +70,8 @@ github.com/emer/emergent v1.1.26/go.mod h1:XhFMJgoZeOYplTDMDUcmGPuthfTqJPbBLmXEP
 github.com/emer/empi v1.0.12 h1:rDOLjrtqr8FzreMtWyzyx0/6hIPlTpjv/LzRSFPEq7Y=
 github.com/emer/empi v1.0.12/go.mod h1:QJRkECkqMO3/UeuknKEzqH+oEf6MWogBeu5LPi+Y9mU=
 github.com/emer/etable v1.0.27/go.mod h1:JM0+fr/d33YNapi3hmKJ9lQPnaavT/4KimxBPnwxLsY=
-github.com/emer/etable v1.1.2 h1:K/JhRcefz3t9631P8x9P027vD8ofcZmalzwFz2NCEcI=
-github.com/emer/etable v1.1.2/go.mod h1:Q64jw7+FfuPIKGyODP+V94QsOtAigLEMM6VdKJLKme0=
+github.com/emer/etable v1.1.3 h1:nEPauPQkbrc6OhxweHFsu2TcXMjOhAlJBB98cgmYAxA=
+github.com/emer/etable v1.1.3/go.mod h1:Q64jw7+FfuPIKGyODP+V94QsOtAigLEMM6VdKJLKme0=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=

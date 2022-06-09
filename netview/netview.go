@@ -35,6 +35,8 @@ type NetView struct {
 	Net          emer.Network          `desc:"the network that we're viewing"`
 	Var          string                `desc:"current variable that we're viewing"`
 	Vars         []string              `desc:"the list of variables to view"`
+	SynVars      []string              `desc:"list of synaptic variables"`
+	SynVarsMap   map[string]int        `desc:"map of synaptic variable names to index"`
 	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
 	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
 	Params       Params                `desc:"parameters controlling how the view is rendered"`
@@ -64,7 +66,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.Defaults()
 	nv.Net = net
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
 	nv.DataMu.Unlock()
 	nv.Config()
 }
@@ -83,7 +85,7 @@ func (nv *NetView) SetVar(vr string) {
 // resets the current data in the process
 func (nv *NetView) SetMaxRecs(max int) {
 	nv.Params.MaxRecs = max
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
 }
 
 // HasLayers returns true if network has any layers -- else no display
@@ -96,17 +98,29 @@ func (nv *NetView) HasLayers() bool {
 
 // Record records the current state of the network, along with provided counters
 // string, which is displayed at the bottom of the view to show the current
-// state of the counters.  The NetView displays this recorded data when
-// Update is next called.
-func (nv *NetView) Record(counters string) {
+// state of the counters. The rastCtr is the raster counter value used for
+// the raster plot mode.
+// The NetView displays this recorded data when Update is next called.
+func (nv *NetView) Record(counters string, rastCtr int) {
 	nv.DataMu.Lock()
 	defer nv.DataMu.Unlock()
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
 	nv.Data.PrjnType = nv.Params.PrjnType
-	nv.Data.Record(nv.LastCtrs)
+	nv.Data.Record(nv.LastCtrs, rastCtr, nv.Params.Raster.Max)
 	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
+}
+
+// RecordSyns records synaptic data -- stored separate from unit data
+// and only needs to be called when synaptic values are updated.
+// Should be done when the DWt values have been computed, before
+// updating Wts and zeroing.
+// NetView displays this recorded data when Update is next called.
+func (nv *NetView) RecordSyns() {
+	nv.DataMu.Lock()
+	defer nv.DataMu.Unlock()
+	nv.Data.RecordSyns()
 }
 
 // GoUpdate is the update call to make from another go routine
@@ -243,9 +257,18 @@ func (nv *NetView) Config() {
 	ctrs.SetText("Counters: ")
 
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
 	nv.DataMu.Unlock()
+	nv.ReconfigMeshes()
 	nv.UpdateEnd(updt)
+}
+
+// ReconfigMeshes reconfigures the layer meshes
+func (nv *NetView) ReconfigMeshes() {
+	vs := nv.Scene()
+	if vs.IsConfiged() {
+		vs.ReconfigMeshes()
+	}
 }
 
 // IsConfiged returns true if widget is fully configured
@@ -384,36 +407,42 @@ func (nv *NetView) RecTrackLatest() bool {
 // NetVarsList returns the list of layer and prjn variables for given network.
 // layEven ensures that the number of layer variables is an even number if true
 // (used for display but not storage).
-func NetVarsList(net emer.Network, layEven bool) []string {
+func NetVarsList(net emer.Network, layEven bool) (nvars, synvars []string) {
 	if net == nil || net.NLayers() == 0 {
-		return nil
+		return nil, nil
 	}
 	unvars := net.UnitVarNames()
-	prjnvars := net.SynVarNames()
+	synvars = net.SynVarNames()
 	ulen := len(unvars)
 	if layEven && ulen%2 != 0 { // make it an even number, for 2 column layout
 		ulen++
 	}
 
-	tlen := ulen + 2*len(prjnvars)
-	nvars := make([]string, tlen)
+	tlen := ulen + 2*len(synvars)
+	nvars = make([]string, tlen)
 	copy(nvars, unvars)
 	st := ulen
-	for pi := 0; pi < len(prjnvars); pi++ {
-		nvars[st+2*pi] = "r." + prjnvars[pi]
-		nvars[st+2*pi+1] = "s." + prjnvars[pi]
+	for pi := 0; pi < len(synvars); pi++ {
+		nvars[st+2*pi] = "r." + synvars[pi]
+		nvars[st+2*pi+1] = "s." + synvars[pi]
 	}
-	return nvars
+	return
 }
 
 // VarsListUpdate updates the list of network variables
 func (nv *NetView) VarsListUpdate() {
-	nvars := NetVarsList(nv.Net, true) // true = layEven
+	nvars, synvars := NetVarsList(nv.Net, true) // true = layEven
 	if len(nvars) == len(nv.Vars) {
 		return
 	}
 	nv.Vars = nvars
 	nv.VarParams = make(map[string]*VarParams, len(nv.Vars))
+
+	nv.SynVars = synvars
+	nv.SynVarsMap = make(map[string]int, len(synvars))
+	for i, vn := range nv.SynVars {
+		nv.SynVarsMap[vn] = i
+	}
 
 	unprops := nv.Net.UnitVarProps()
 	prjnprops := nv.Net.SynVarProps()
@@ -621,9 +650,9 @@ func (nv *NetView) ViewConfig() {
 		lo.NetView = nv
 		lo.SetMeshName(vs, ly.Name())
 		lo.Mat.Color.SetUInt8(255, 100, 255, 255)
-		lo.Mat.Reflective = 1
+		lo.Mat.Reflective = 8
 		lo.Mat.Bright = 8
-		// lo.Mat.Shiny = 10
+		lo.Mat.Shiny = 30
 		// note: would actually be better to NOT cull back so you can view underneath
 		// but then the front and back fight against each other, causing flickering
 
@@ -673,11 +702,37 @@ func (nv *NetView) ReadUnlock() {
 }
 
 // UnitVal returns the raw value, scaled value, and color representation
-// for given unit of given layer scaled is in range -1..1
+// for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr gist.Color, hasval bool) {
 	idx1d := lay.Shape().Offset(idx)
-	raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
+	if idx1d >= lay.Shape().Len() {
+		raw, hasval = 0, false
+	} else {
+		raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
+	}
+	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
+	return
+}
 
+// UnitValRaster returns the raw value, scaled value, and color representation
+// for given unit of given layer, and given raster counter index value (0..RasterMax)
+// scaled is in range -1..1
+func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr gist.Color, hasval bool) {
+	idx1d := lay.Shape().Offset(idx)
+	if idx1d >= lay.Shape().Len() {
+		raw, hasval = 0, false
+	} else {
+		raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+	}
+	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
+	return
+}
+
+var NilColor = gist.Color{0x20, 0x20, 0x20, 0x40}
+
+// UnitValColor returns the raw value, scaled value, and color representation
+// for given unit of given layer. scaled is in range -1..1
+func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval bool) (scaled float32, clr gist.Color) {
 	if nv.CurVarParams == nil || nv.CurVarParams.Var != nv.Var {
 		ok := false
 		nv.CurVarParams, ok = nv.VarParams[nv.Var]
@@ -690,7 +745,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIdx {
 			clr.SetUInt8(0x20, 0x80, 0x20, 0x80)
 		} else {
-			clr.SetUInt8(0x20, 0x20, 0x20, 0x40)
+			clr = NilColor
 		}
 	} else {
 		clp := nv.CurVarParams.Range.ClipVal(raw)
@@ -824,6 +879,30 @@ func (nv *NetView) ToolbarConfig() {
 			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 	ndmen.Menu.AddSeparator("plotneur")
+	rchk := gi.AddNewCheckBox(tbar, "raster")
+	rchk.SetChecked(nv.Params.Raster.On)
+	rchk.SetText("Raster")
+	rchk.Tooltip = "Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)"
+	rchk.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			cb := send.(*gi.CheckBox)
+			nv.Params.Raster.On = cb.IsChecked()
+			nv.ReconfigMeshes()
+			nv.Update()
+		}
+	})
+	xchk := gi.AddNewCheckBox(tbar, "raster-x")
+	xchk.SetChecked(nv.Params.Raster.XAxis)
+	xchk.SetText("X")
+	xchk.Tooltip = "If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension"
+	xchk.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if sig == int64(gi.ButtonToggled) {
+			cb := send.(*gi.CheckBox)
+			nv.Params.Raster.XAxis = cb.IsChecked()
+			nv.Update()
+		}
+	})
+
 	ndmen.Menu.AddAction(gi.ActOpts{Label: "Plot Selected Unit", Icon: "image", Tooltip: "opens up a window with a plot of all saved data for currently-selected unit"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)

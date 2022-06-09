@@ -71,7 +71,6 @@ func (lo *LayObj) ConnectEvents3D(sc *gi3d.Scene) {
 			return // not supported
 		}
 		nv.Data.PrjnLay = lo.LayName
-		nv.Record("") // requires new update
 		nv.Update()
 		me.SetProcessed()
 	})

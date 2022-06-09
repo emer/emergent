@@ -28,39 +28,43 @@ import (
 	"github.com/goki/mat32"
 )
 
-// LayData maintains a record of all the data for a given layer
-type LayData struct {
-	LayName string    `desc:"the layer name"`
-	NUnits  int       `desc:"cached number of units"`
-	Data    []float32 `desc:"the full data, Ring.Max * len(Vars) * NUnits in that order"`
-}
-
 // NetData maintains a record of all the network data that has been displayed
 // up to a given maximum number of records (updates), using efficient ring index logic
 // with no copying to store in fixed-sized buffers.
 type NetData struct {
-	Net       emer.Network        `json:"-" desc:"the network that we're viewing"`
-	PrjnLay   string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
-	PrjnUnIdx int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
-	PrjnType  string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
-	Vars      []string            `desc:"the list of variables saved -- copied from NetView"`
-	VarIdxs   map[string]int      `desc:"index of each variable in the Vars slice"`
-	Ring      ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
-	LayData   map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
-	MinPer    []float32           `desc:"min values for each Ring.Max * variable"`
-	MaxPer    []float32           `desc:"max values for each Ring.Max * variable"`
-	MinVar    []float32           `desc:"min values for variable"`
-	MaxVar    []float32           `desc:"max values for variable"`
-	Counters  []string            `desc:"counter strings"`
+	Net        emer.Network        `json:"-" desc:"the network that we're viewing"`
+	NoSynData  bool                `desc:"copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
+	PrjnLay    string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
+	PrjnUnIdx  int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
+	PrjnType   string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
+	UnVars     []string            `desc:"the list of unit variables saved"`
+	UnVarIdxs  map[string]int      `desc:"index of each variable in the Vars slice"`
+	SynVars    []string            `desc:"the list of synaptic variables saved"`
+	SynVarIdxs map[string]int      `desc:"index of synaptic variable in the SynVars slice"`
+	Ring       ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
+	LayData    map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
+	UnMinPer   []float32           `desc:"unit var min values for each Ring.Max * variable"`
+	UnMaxPer   []float32           `desc:"unit var max values for each Ring.Max * variable"`
+	UnMinVar   []float32           `desc:"min values for unit variables"`
+	UnMaxVar   []float32           `desc:"max values for unit variables"`
+	SynMinVar  []float32           `desc:"min values for syn variables"`
+	SynMaxVar  []float32           `desc:"max values for syn variables"`
+	Counters   []string            `desc:"counter strings"`
+	RasterCtrs []int               `desc:"raster counter values"`
+	RasterMap  map[int]int         `desc:"map of raster counter values to record numbers"`
+	RastCtr    int                 `desc:"dummy raster counter when passed a -1 -- increments and wraps around"`
 }
 
 var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)
 
 // Init initializes the main params and configures the data
-func (nd *NetData) Init(net emer.Network, max int) {
+func (nd *NetData) Init(net emer.Network, max int, noSynData bool) {
 	nd.Net = net
 	nd.Ring.Max = max
+	nd.NoSynData = noSynData
 	nd.Config()
+	nd.RastCtr = 0
+	nd.RasterMap = make(map[int]int)
 }
 
 // Config configures the data storage for given network
@@ -77,13 +81,22 @@ func (nd *NetData) Config() {
 	if nd.Ring.Len > rmax {
 		nd.Ring.Reset()
 	}
-	nvars := NetVarsList(nd.Net, false) // not even
+	nvars := nd.Net.UnitVarNames()
 	vlen := len(nvars)
-	if len(nd.Vars) != vlen {
-		nd.Vars = nvars
-		nd.VarIdxs = make(map[string]int, vlen)
-		for vi, vn := range nd.Vars {
-			nd.VarIdxs[vn] = vi
+	if len(nd.UnVars) != vlen {
+		nd.UnVars = nvars
+		nd.UnVarIdxs = make(map[string]int, vlen)
+		for vi, vn := range nd.UnVars {
+			nd.UnVarIdxs[vn] = vi
+		}
+	}
+	svars := nd.Net.SynVarNames()
+	svlen := len(svars)
+	if len(nd.SynVars) != svlen {
+		nd.SynVars = svars
+		nd.SynVarIdxs = make(map[string]int, svlen)
+		for vi, vn := range nd.SynVars {
+			nd.SynVarIdxs[vn] = vi
 		}
 	}
 makeData:
@@ -92,7 +105,30 @@ makeData:
 		for li := 0; li < nlay; li++ {
 			lay := nd.Net.Layer(li)
 			nm := lay.Name()
-			nd.LayData[nm] = &LayData{LayName: nm, NUnits: lay.Shape().Len()}
+			ld := &LayData{LayName: nm, NUnits: lay.Shape().Len()}
+			nd.LayData[nm] = ld
+			if nd.NoSynData {
+				ld.FreePrjns()
+			} else {
+				ld.AllocSendPrjns(lay)
+			}
+		}
+		if !nd.NoSynData {
+			for li := 0; li < nlay; li++ {
+				rlay := nd.Net.Layer(li)
+				rld := nd.LayData[rlay.Name()]
+				rp := rlay.RecvPrjns()
+				rld.RecvPrjns = make([]*PrjnData, len(*rp))
+				for ri, rpj := range *rp {
+					slay := rpj.SendLay()
+					sld := nd.LayData[slay.Name()]
+					for _, spj := range sld.SendPrjns {
+						if spj.Prjn == rpj {
+							rld.RecvPrjns[ri] = spj // link
+						}
+					}
+				}
+			}
 		}
 	}
 	vmax := vlen * rmax
@@ -111,38 +147,54 @@ makeData:
 			ld.Data = make([]float32, ltot)
 		}
 	}
-	if len(nd.MinPer) != vmax {
-		nd.MinPer = make([]float32, vmax)
-		nd.MaxPer = make([]float32, vmax)
+	if len(nd.UnMinPer) != vmax {
+		nd.UnMinPer = make([]float32, vmax)
+		nd.UnMaxPer = make([]float32, vmax)
 	}
-	if len(nd.MinVar) != vlen {
-		nd.MinVar = make([]float32, vlen)
-		nd.MaxVar = make([]float32, vlen)
+	if len(nd.UnMinVar) != vlen {
+		nd.UnMinVar = make([]float32, vlen)
+		nd.UnMaxVar = make([]float32, vlen)
+	}
+	if len(nd.SynMinVar) != svlen {
+		nd.SynMinVar = make([]float32, svlen)
+		nd.SynMaxVar = make([]float32, svlen)
 	}
 	if len(nd.Counters) != rmax {
 		nd.Counters = make([]string, rmax)
+		nd.RasterCtrs = make([]int, rmax)
 	}
 }
 
-// Record records the current full set of data from the network, and the given counters string
-func (nd *NetData) Record(ctrs string) {
+// Record records the current full set of data from the network,
+// and the given counters string (displayed at bottom of window)
+// and raster counter value -- if negative, then an internal
+// wraping-around counter is used.
+func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 	nlay := nd.Net.NLayers()
 	if nlay == 0 {
 		return
 	}
 	nd.Config() // inexpensive if no diff, and safe..
-	vlen := len(nd.Vars)
+	vlen := len(nd.UnVars)
 	nd.Ring.Add(1)
 	lidx := nd.Ring.LastIdx()
 
-	nd.Counters[lidx] = ctrs
+	if rastCtr < 0 {
+		rastCtr = nd.RastCtr
+		nd.RastCtr++
+		if nd.RastCtr >= rastMax {
+			nd.RastCtr = 0
+		}
+	}
 
-	prjnlay := nd.Net.LayerByName(nd.PrjnLay)
+	nd.Counters[lidx] = ctrs
+	nd.RasterCtrs[lidx] = rastCtr
+	nd.RasterMap[rastCtr] = lidx
 
 	mmidx := lidx * vlen
-	for vi := range nd.Vars {
-		nd.MinPer[mmidx+vi] = math.MaxFloat32
-		nd.MaxPer[mmidx+vi] = -math.MaxFloat32
+	for vi := range nd.UnVars {
+		nd.UnMinPer[mmidx+vi] = math.MaxFloat32
+		nd.UnMaxPer[mmidx+vi] = -math.MaxFloat32
 	}
 	for li := 0; li < nlay; li++ {
 		lay := nd.Net.Layer(li)
@@ -150,20 +202,12 @@ func (nd *NetData) Record(ctrs string) {
 		ld := nd.LayData[laynm]
 		nu := lay.Shape().Len()
 		nvu := vlen * nu
-		for vi, vnm := range nd.Vars {
-			mn := &nd.MinPer[mmidx+vi]
-			mx := &nd.MaxPer[mmidx+vi]
+		for vi, vnm := range nd.UnVars {
+			mn := &nd.UnMinPer[mmidx+vi]
+			mx := &nd.UnMaxPer[mmidx+vi]
 			idx := lidx*nvu + vi*nu
 			dvals := ld.Data[idx : idx+nu]
-			if strings.HasPrefix(vnm, "r.") {
-				svar := vnm[2:]
-				lay.SendPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx, nd.PrjnType)
-			} else if strings.HasPrefix(vnm, "s.") {
-				svar := vnm[2:]
-				lay.RecvPrjnVals(&dvals, svar, prjnlay, nd.PrjnUnIdx, nd.PrjnType)
-			} else {
-				lay.UnitVals(&dvals, vnm)
-			}
+			lay.UnitVals(&dvals, vnm)
 			for ui := range dvals {
 				vl := dvals[ui]
 				if !mat32.IsNaN(vl) {
@@ -173,23 +217,26 @@ func (nd *NetData) Record(ctrs string) {
 			}
 		}
 	}
-	nd.UpdateVarRange()
+	nd.UpdateUnVarRange()
 }
 
-// UpdateVarRange updates the range for variables
-func (nd *NetData) UpdateVarRange() {
-	vlen := len(nd.Vars)
+// UpdateUnVarRange updates the range for unit variables, integrating over
+// the entire range of stored values, so it is valid when iterating
+// over history.
+func (nd *NetData) UpdateUnVarRange() {
+	vlen := len(nd.UnVars)
 	rlen := nd.Ring.Len
-	for vi := range nd.Vars {
-		vmn := &nd.MinVar[vi]
-		vmx := &nd.MaxVar[vi]
+	for vi := range nd.UnVars {
+		vmn := &nd.UnMinVar[vi]
+		vmx := &nd.UnMaxVar[vi]
 		*vmn = math.MaxFloat32
 		*vmx = -math.MaxFloat32
 
 		for ri := 0; ri < rlen; ri++ {
-			mmidx := ri * vlen
-			mn := nd.MinPer[mmidx+vi]
-			mx := nd.MaxPer[mmidx+vi]
+			ridx := nd.Ring.Idx(ri)
+			mmidx := ridx * vlen
+			mn := nd.UnMinPer[mmidx+vi]
+			mx := nd.UnMaxPer[mmidx+vi]
 			*vmn = mat32.Min(*vmn, mn)
 			*vmx = mat32.Max(*vmx, mx)
 		}
@@ -202,11 +249,47 @@ func (nd *NetData) VarRange(vnm string) (float32, float32, bool) {
 	if nd.Ring.Len == 0 {
 		return 0, 0, false
 	}
-	vi, ok := nd.VarIdxs[vnm]
+	if strings.HasPrefix(vnm, "r.") || strings.HasPrefix(vnm, "s.") {
+		vnm = vnm[2:]
+		vi, ok := nd.SynVarIdxs[vnm]
+		if !ok {
+			return 0, 0, false
+		}
+		return nd.SynMinVar[vi], nd.SynMaxVar[vi], true
+	}
+	vi, ok := nd.UnVarIdxs[vnm]
 	if !ok {
 		return 0, 0, false
 	}
-	return nd.MinVar[vi], nd.MaxVar[vi], true
+	return nd.UnMinVar[vi], nd.UnMaxVar[vi], true
+}
+
+// RecordSyns records synaptic data -- stored separate from unit data
+// and only needs to be called when synaptic values are updated.
+// Should be done when the DWt values have been computed, before
+// updating Wts and zeroing.
+// NetView displays this recorded data when Update is next called.
+func (nd *NetData) RecordSyns() {
+	if nd.NoSynData {
+		return
+	}
+	nlay := nd.Net.NLayers()
+	if nlay == 0 {
+		return
+	}
+	nd.Config() // inexpensive if no diff, and safe..
+	for vi := range nd.SynVars {
+		nd.SynMinVar[vi] = math.MaxFloat32
+		nd.SynMaxVar[vi] = -math.MaxFloat32
+	}
+	for li := 0; li < nlay; li++ {
+		lay := nd.Net.Layer(li)
+		laynm := lay.Name()
+		ld := nd.LayData[laynm]
+		for _, spd := range ld.SendPrjns {
+			spd.RecordData(nd)
+		}
+	}
 }
 
 // RecIdx returns record index for given record number,
@@ -236,12 +319,45 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 	if nd.Ring.Len == 0 {
 		return 0, false
 	}
-	vi, ok := nd.VarIdxs[vnm]
+	ridx := nd.RecIdx(recno)
+	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx)
+}
+
+// RasterCtr returns the raster counter value at given record number (-1 = current)
+func (nd *NetData) RasterCtr(recno int) (int, bool) {
+	if nd.Ring.Len == 0 {
+		return 0, false
+	}
+	ridx := nd.RecIdx(recno)
+	return nd.RasterCtrs[ridx], true
+}
+
+// UnitValRaster returns the value for given layer, variable name, unit index, and
+// raster counter number.
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
+func (nd *NetData) UnitValRaster(laynm string, vnm string, uidx1d int, rastCtr int) (float32, bool) {
+	ridx, has := nd.RasterMap[rastCtr]
+	if !has {
+		return 0, false
+	}
+	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx)
+}
+
+// UnitValIdx returns the value for given layer, variable name, unit index, and stored idx
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
+func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (float32, bool) {
+	if strings.HasPrefix(vnm, "r.") {
+		svar := vnm[2:]
+		return nd.RecvUnitVal(laynm, svar, uidx1d)
+	} else if strings.HasPrefix(vnm, "s.") {
+		svar := vnm[2:]
+		return nd.SendUnitVal(laynm, svar, uidx1d)
+	}
+	vi, ok := nd.UnVarIdxs[vnm]
 	if !ok {
 		return 0, false
 	}
-	vlen := len(nd.Vars)
-	ridx := nd.RecIdx(recno)
+	vlen := len(nd.UnVars)
 	ld, ok := nd.LayData[laynm]
 	if !ok {
 		return 0, false
@@ -253,6 +369,102 @@ func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (flo
 	if mat32.IsNaN(val) {
 		return 0, false
 	}
+	return val, true
+}
+
+// RecvUnitVal returns the value for given layer, variable name, unit index,
+// for receiving projection variable, based on recorded synaptic projection data.
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
+func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, bool) {
+	ld, ok := nd.LayData[laynm]
+	if nd.NoSynData || !ok || nd.PrjnLay == "" {
+		return 0, false
+	}
+	recvLay := nd.Net.LayerByName(nd.PrjnLay)
+	if recvLay == nil {
+		return 0, false
+	}
+	var pj emer.Prjn
+	var err error
+	if nd.PrjnType != "" {
+		pj, err = recvLay.RecvPrjns().SendNameTypeTry(laynm, nd.PrjnType)
+		if pj == nil {
+			pj, err = recvLay.RecvPrjns().SendNameTry(laynm)
+		}
+	} else {
+		pj, err = recvLay.RecvPrjns().SendNameTry(laynm)
+	}
+	if pj == nil {
+		return 0, false
+	}
+	var spd *PrjnData
+	for _, pd := range ld.SendPrjns {
+		if pd.Prjn == pj {
+			spd = pd
+			break
+		}
+	}
+	if spd == nil {
+		return 0, false
+	}
+	varIdx, err := pj.SynVarIdx(vnm)
+	if err != nil {
+		return 0, false
+	}
+	synIdx := pj.SynIdx(uidx1d, nd.PrjnUnIdx)
+	if synIdx < 0 {
+		return 0, false
+	}
+	nsyn := pj.Syn1DNum()
+	val := spd.SynData[varIdx*nsyn+synIdx]
+	return val, true
+}
+
+// SendUnitVal returns the value for given layer, variable name, unit index,
+// for sending projection variable, based on recorded synaptic projection data.
+// Returns false if value unavailable for any reason (including recorded as such as NaN).
+func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, bool) {
+	ld, ok := nd.LayData[laynm]
+	if nd.NoSynData || !ok || nd.PrjnLay == "" {
+		return 0, false
+	}
+	sendLay := nd.Net.LayerByName(nd.PrjnLay)
+	if sendLay == nil {
+		return 0, false
+	}
+	var pj emer.Prjn
+	var err error
+	if nd.PrjnType != "" {
+		pj, err = sendLay.SendPrjns().RecvNameTypeTry(laynm, nd.PrjnType)
+		if pj == nil {
+			pj, err = sendLay.SendPrjns().RecvNameTry(laynm)
+		}
+	} else {
+		pj, err = sendLay.SendPrjns().RecvNameTry(laynm)
+	}
+	if pj == nil {
+		return 0, false
+	}
+	var rpd *PrjnData
+	for _, pd := range ld.RecvPrjns {
+		if pd.Prjn == pj {
+			rpd = pd
+			break
+		}
+	}
+	if rpd == nil {
+		return 0, false
+	}
+	varIdx, err := pj.SynVarIdx(vnm)
+	if err != nil {
+		return 0, false
+	}
+	synIdx := pj.SynIdx(nd.PrjnUnIdx, uidx1d)
+	if synIdx < 0 {
+		return 0, false
+	}
+	nsyn := pj.Syn1DNum()
+	val := rpd.SynData[varIdx*nsyn+synIdx]
 	return val, true
 }
 
@@ -375,7 +587,7 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 
 	plt.SetTable(dt)
 
-	for _, vnm := range nd.Vars {
+	for _, vnm := range nd.UnVars {
 		vp, ok := nv.VarParams[vnm]
 		if !ok {
 			continue
@@ -415,7 +627,7 @@ func (nd *NetData) SelectedUnitTable() *etable.Table {
 	dt.SetMetaData("precision", strconv.Itoa(4))
 
 	ln := nd.Ring.Len
-	vlen := len(nd.Vars)
+	vlen := len(nd.UnVars)
 	nu := ld.NUnits
 	nvu := vlen * nu
 	uidx1d := nd.PrjnUnIdx
@@ -423,7 +635,7 @@ func (nd *NetData) SelectedUnitTable() *etable.Table {
 	sch := etable.Schema{
 		{"Rec", etensor.INT64, nil, nil},
 	}
-	for _, vnm := range nd.Vars {
+	for _, vnm := range nd.UnVars {
 		sch = append(sch, etable.Column{vnm, etensor.FLOAT64, nil, nil})
 	}
 	dt.SetFromSchema(sch, ln)

@@ -17,22 +17,21 @@ import (
 
 // GUI manages all standard elements of a simulation Graphical User Interface
 type GUI struct {
-	NetViewText         string `desc:"text to display at bottom of the NetView -- has relevant network state"`
-	CycleUpdateInterval int    `desc:"how many cycles between updates of cycle-level plots"`
-	Active              bool   `view:"-" desc:"true if the GUI is configured and running"`
-	IsRunning           bool   `view:"-" desc:"true if sim is running"`
-	StopNow             bool   `view:"-" desc:"flag to stop running"`
+	CycleUpdateInterval int  `desc:"how many cycles between updates of cycle-level plots"`
+	Active              bool `view:"-" desc:"true if the GUI is configured and running"`
+	IsRunning           bool `view:"-" desc:"true if sim is running"`
+	StopNow             bool `view:"-" desc:"flag to stop running"`
 
 	Plots map[etime.ScopeKey]*eplot.Plot2D `desc:"plots by scope"`
 	Grids map[string]*etview.TensorGrid    `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
 
-	NetView    *netview.NetView `view:"-" desc:"the network viewer"`
-	NetData    *netview.NetData `view:"-" desc:"net data for recording in nogui mode, if !nil"`
-	ToolBar    *gi.ToolBar      `view:"-" desc:"the master toolbar"`
-	StructView *giv.StructView  `view:"-" desc:"displays Sim fields on left"`
-	TabView    *gi.TabView      `view:"-" desc:"tabs for different view elements: plots, rasters"`
-	Win        *gi.Window       `view:"-" desc:"main GUI gui.Window"`
-	ViewPort   *gi.Viewport2D   `view:"-" desc:"main viewport for Window"`
+	ViewUpdt   *netview.ViewUpdt `view:"-" desc:"the view update for managing updates of netview"`
+	NetData    *netview.NetData  `view:"-" desc:"net data for recording in nogui mode, if !nil"`
+	ToolBar    *gi.ToolBar       `view:"-" desc:"the master toolbar"`
+	StructView *giv.StructView   `view:"-" desc:"displays Sim fields on left"`
+	TabView    *gi.TabView       `view:"-" desc:"tabs for different view elements: plots, rasters"`
+	Win        *gi.Window        `view:"-" desc:"main GUI gui.Window"`
+	ViewPort   *gi.Viewport2D    `view:"-" desc:"main viewport for Window"`
 }
 
 // UpdateWindow renders the viewport associated with the main window
@@ -46,8 +45,8 @@ func (gui *GUI) Stopped() {
 	if gui.Win == nil {
 		return
 	}
-	if gui.NetView != nil {
-		gui.UpdateNetView()
+	if gui.ViewUpdt != nil {
+		gui.UpdateNetViewWhenStopped()
 	}
 	if gui.ToolBar != nil {
 		gui.ToolBar.UpdateActions()
@@ -88,9 +87,6 @@ func (gui *GUI) MakeWindow(sim interface{}, appname, title, about string) {
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
 	nv := gui.TabView.AddNewTab(netview.KiT_NetView, tabName).(*netview.NetView)
-	if gui.NetView == nil {
-		gui.NetView = nv
-	}
 	nv.Var = "Act"
 	return nv
 }

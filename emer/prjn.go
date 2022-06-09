@@ -95,6 +95,10 @@ type Prjn interface {
 	// for this prjn.  This is needed for extending indexes in derived types.
 	SynVarNum() int
 
+	// Syn1DNum returns the number of synapses for this prjn as a 1D array.
+	// This is the max idx for SynVal1D and the number of vals set by SynVals.
+	Syn1DNum() int
+
 	// SynVal1D returns value of given variable index (from SynVarIdx) on given SynIdx.
 	// Returns NaN on invalid index.
 	// This is the core synapse var access method used by other methods,
