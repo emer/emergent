@@ -5,11 +5,11 @@ go 1.18
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.12
-	github.com/emer/etable v1.1.3
-	github.com/goki/gi v1.3.1
+	github.com/emer/etable v1.1.4
+	github.com/goki/gi v1.3.2
 	github.com/goki/ki v1.1.8
 	github.com/goki/mat32 v1.0.12
-	github.com/goki/vgpu v1.0.3
+	github.com/goki/vgpu v1.0.4
 	gonum.org/v1/gonum v0.11.0
 )
 
@@ -32,6 +32,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
 	github.com/go-fonts/liberation v0.2.0 // indirect
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220516021902-eb3e265c7661 // indirect
 	github.com/go-gl/mathgl v1.0.0 // indirect
 	github.com/go-latex/latex v0.0.0-20210823091927-c0d11ff05a81 // indirect
 	github.com/go-pdf/fpdf v0.6.0 // indirect
