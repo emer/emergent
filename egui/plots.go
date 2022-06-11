@@ -36,7 +36,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 			if !ok {
 				continue
 			}
-			cp := plt.SetColParams(item.Name, item.Plot.ToBool(), item.FixMin.ToBool(), item.Range.Min, item.FixMax.ToBool(), item.Range.Max)
+			cp := plt.SetColParams(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
 
 			if item.Color != "" {
 				cp.ColorName = gi.ColorName(item.Color)

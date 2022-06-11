@@ -10,17 +10,12 @@ import (
 	"github.com/emer/etable/minmax"
 )
 
-type DefaultBool int64
-
 const (
-	DUnknown DefaultBool = iota
-	DTrue
-	DFalse
+	// DTrue is deprecated -- just use true
+	DTrue = true
+	// DFalse is deprecated -- just use false
+	DFalse = false
 )
-
-func (db *DefaultBool) ToBool() bool {
-	return *db == DTrue
-}
 
 // WriteMap holds log writing functions for scope keys
 type WriteMap map[etime.ScopeKey]WriteFunc
@@ -33,10 +28,10 @@ type Item struct {
 	CellShape []int        `desc:"shape of a single cell in the column (i.e., without the row dimension) -- for scalars this is nil -- tensor column will add the outer row dimension to this shape"`
 	DimNames  []string     `desc:"names of the dimensions within the CellShape -- 'Row' will be added to outer dimension"`
 	Write     WriteMap     `desc:"holds Write functions for different scopes.  After processing, the scope key will be a single mode and time, from Scope(mode, time), but the initial specification can lists for each, or the All* option, if there is a Write function that works across scopes"`
-	Plot      DefaultBool  `desc:"Whether or not to plot it"`
+	Plot      bool         `desc:"Whether or not to plot it"`
 	Range     minmax.F64   `desc:"The minimum and maximum values, for plotting"`
-	FixMin    DefaultBool  `desc:"Whether to fix the minimum in the display"`
-	FixMax    DefaultBool  `desc:"Whether to fix the maximum in the display"`
+	FixMin    bool         `desc:"Whether to fix the minimum in the display"`
+	FixMax    bool         `desc:"Whether to fix the maximum in the display"`
 	ErrCol    string       `desc:"Name of other item that has the error bar values for this item -- for plotting"`
 	TensorIdx int          `desc:"index of tensor to plot -- defaults to 0 -- use -1 to plot all"`
 	Color     string       `desc:"specific color for plot -- uses default ordering of colors if empty"`

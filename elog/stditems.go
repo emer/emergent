@@ -24,7 +24,7 @@ func (lg *Logs) AddCounterItems(ctrs []etime.Times, strNames []string) {
 		lg.AddItem(&Item{
 			Name: ctrName,
 			Type: etensor.INT64,
-			Plot: DFalse,
+			Plot: false,
 			Write: WriteMap{
 				etime.Scope(etime.AllModes, tm): func(ctx *Context) {
 					ctx.SetStatInt(ctrName)
@@ -35,7 +35,7 @@ func (lg *Logs) AddCounterItems(ctrs []etime.Times, strNames []string) {
 		lg.AddItem(&Item{
 			Name: strName,
 			Type: etensor.STRING,
-			Plot: DFalse,
+			Plot: false,
 			Write: WriteMap{
 				etime.Scope(etime.AllModes, etime.AllTimes): func(ctx *Context) {
 					ctx.SetStatString(strName)
@@ -47,12 +47,12 @@ func (lg *Logs) AddCounterItems(ctrs []etime.Times, strNames []string) {
 // ordered from higher to lower, e.g., Run, Epoch, Trial.
 // The itemName is what is saved in the table, and statName is the source
 // statistic in stats at the lowest level.
-func (lg *Logs) AddStatAggItem(itemName, statName string, plot DefaultBool, times ...etime.Times) {
+func (lg *Logs) AddStatAggItem(itemName, statName string, plot bool, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:   itemName,
 		Type:   etensor.FLOAT64,
 		Plot:   plot,
-		FixMax: DTrue,
+		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
@@ -72,7 +72,7 @@ func (lg *Logs) AddStatFloatNoAggItem(mode etime.Modes, etm etime.Times, stats .
 		lg.AddItem(&Item{
 			Name:  st,
 			Type:  etensor.FLOAT64,
-			Plot:  DTrue,
+			Plot:  true,
 			Range: minmax.F64{Min: -1},
 			Write: WriteMap{
 				etime.Scope(mode, etm): func(ctx *Context) {
@@ -88,7 +88,7 @@ func (lg *Logs) AddStatIntNoAggItem(mode etime.Modes, etm etime.Times, stats ...
 		lg.AddItem(&Item{
 			Name:  st,
 			Type:  etensor.FLOAT64,
-			Plot:  DTrue,
+			Plot:  true,
 			Range: minmax.F64{Min: -1},
 			Write: WriteMap{
 				etime.Scope(mode, etm): func(ctx *Context) {
@@ -117,7 +117,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name: "Err",
 		Type: etensor.FLOAT64,
-		Plot: DTrue,
+		Plot: true,
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
 				ctx.SetStatFloat(statName)
@@ -125,8 +125,8 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:   "PctErr",
 		Type:   etensor.FLOAT64,
-		Plot:   DFalse,
-		FixMax: DTrue,
+		Plot:   false,
+		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[1]): func(ctx *Context) {
@@ -151,8 +151,8 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:   "PctCor",
 		Type:   etensor.FLOAT64,
-		Plot:   DTrue,
-		FixMax: DTrue,
+		Plot:   true,
+		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
@@ -165,7 +165,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:  "FirstZero",
 		Type:  etensor.FLOAT64,
-		Plot:  DTrue,
+		Plot:  true,
 		Range: minmax.F64{Min: -1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[0]): func(ctx *Context) {
@@ -175,7 +175,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:  "LastZero",
 		Type:  etensor.FLOAT64,
-		Plot:  DTrue,
+		Plot:  true,
 		Range: minmax.F64{Min: -1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[0]): func(ctx *Context) {
@@ -192,7 +192,7 @@ func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name: itemName,
 		Type: etensor.FLOAT64,
-		Plot: DFalse,
+		Plot: false,
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[1]): func(ctx *Context) {
 				nm := ctx.Item.Name

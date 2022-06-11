@@ -334,17 +334,6 @@ func (lg *Logs) WriteLastRowToFile(lt *LogTable) {
 // It instantiates All scopes, and compiles multi-list scopes into
 // single mode, item pairs
 func (lg *Logs) ProcessItems() {
-	for _, item := range lg.Items {
-		if item.Plot == DUnknown {
-			item.Plot = DTrue
-		}
-		if item.FixMin == DUnknown {
-			item.FixMin = DTrue
-		}
-		if item.FixMax == DUnknown {
-			item.FixMax = DFalse
-		}
-	}
 	lg.CompileAllScopes()
 	for _, item := range lg.Items {
 		lg.ItemBindAllScopes(item)

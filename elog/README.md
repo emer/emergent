@@ -166,7 +166,7 @@ Then they are easily logged -- just showing different Scope expressions here:
     ss.Logs.AddItem(&elog.Item{
         Name: "Run",
         Type: etensor.INT64,
-        Plot: elog.DFalse,
+        Plot: false,
         Write: elog.WriteMap{
             etime.Scope(etime.AllModes, etime.AllTimes): func(ctx *elog.Context) {
                 ctx.SetStatInt("Run")
@@ -177,7 +177,7 @@ Then they are easily logged -- just showing different Scope expressions here:
     ss.Logs.AddItem(&elog.Item{
         Name: "Epoch",
         Type: etensor.INT64,
-        Plot: elog.DFalse,
+        Plot: false,
         Write: elog.WriteMap{
             etime.Scopes([]etime.Modes{etime.AllModes}, []etime.Times{etime.Epoch, etime.Trial}): func(ctx *elog.Context) {
                 ctx.SetStatInt("Epoch")
@@ -202,7 +202,7 @@ Overall summary performance statistics have multiple Write functions for differe
     ss.Logs.AddItem(&elog.Item{
         Name: "UnitErr",
         Type: etensor.FLOAT64,
-        Plot: elog.DFalse,
+        Plot: false,
         Write: elog.WriteMap{
             etime.Scope(etime.AllModes, etime.Trial): func(ctx *elog.Context) {
                 ctx.SetStatFloat("TrlUnitErr")
@@ -227,7 +227,7 @@ It is often convenient to have just one log file with both training and testing 
         ss.Logs.AddItem(&elog.Item{
             Name: tstnm,
             Type: etensor.FLOAT64,
-            Plot: elog.DFalse,
+            Plot: false,
             Write: elog.WriteMap{
                 etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
                     ctx.SetFloat64(ctx.ItemFloat(etime.Test, etime.Epoch, stnm))
@@ -247,8 +247,8 @@ Iterate over layers of interest (use `LayersByClass` function). It is *essential
         ss.Logs.AddItem(&elog.Item{
             Name:   clnm + "_ActAvg",
             Type:   etensor.FLOAT64,
-            Plot:   elog.DFalse,
-            FixMax: elog.DFalse,
+            Plot:   false,
+            FixMax: false,
             Range:  minmax.F64{Max: 1},
             Write: elog.WriteMap{
                 etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
@@ -265,7 +265,7 @@ Here's how to log a projection variable:
     ss.Logs.AddItem(&elog.Item{
         Name:  clnm + "_FF_AvgMaxG",
         Type:  etensor.FLOAT64,
-        Plot:  elog.DFalse,
+        Plot:  false,
         Range: minmax.F64{Max: 1},
         Write: elog.WriteMap{
             etime.Scope(etime.Train, etime.Trial): func(ctx *elog.Context) {
@@ -290,7 +290,7 @@ A log column can be a tensor of any shape -- the `SetLayerTensor` method on the 
             Name:      clnm + "_Act",
             Type:      etensor.FLOAT64,
             CellShape: cly.Shape().Shp,
-            FixMax:    elog.DTrue,
+            FixMax:    true,
             Range:     minmax.F64{Max: 1},
             Write: elog.WriteMap{
                 etime.Scope(etime.Test, etime.Trial): func(ctx *elog.Context) {
@@ -323,7 +323,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
             Name:      clnm + "_ActM",
             Type:      etensor.FLOAT64,
             CellShape: cly.Shape().Shp,
-            FixMax:    elog.DTrue,
+            FixMax:    true,
             Range:     minmax.F64{Max: 1},
             Write: elog.WriteMap{
                 etime.Scope(etime.Analyze, etime.Trial): func(ctx *elog.Context) {
@@ -332,7 +332,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
         ss.Logs.AddItem(&elog.Item{
             Name: clnm + "_PCA_NStrong",
             Type: etensor.FLOAT64,
-            Plot: elog.DFalse,
+            Plot: false,
             Write: elog.WriteMap{
                 etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
                     ctx.SetStatFloat(ctx.Item.Name)
@@ -354,7 +354,7 @@ This item creates a tensor column that records the average error for each catego
         Type:      etensor.FLOAT64,
         CellShape: []int{20},
         DimNames:  []string{"Cat"},
-        Plot:      elog.DTrue,
+        Plot:      true,
         Range:     minmax.F64{Min: 0},
         TensorIdx: -1, // plot all values
         Write: elog.WriteMap{
