@@ -38,7 +38,7 @@ func (lg *Logs) AddCounterItems(ctrs []etime.Times, strNames []string) {
 			Plot: DFalse,
 			Write: WriteMap{
 				etime.Scope(etime.AllModes, etime.AllTimes): func(ctx *Context) {
-					ctx.SetString(strName)
+					ctx.SetStatString(strName)
 				}}})
 	}
 }
