@@ -27,9 +27,10 @@ func (ar *Args) AddStd() {
 	ar.AddBool("randomize", false, "If true, randomize seed for every run")
 	ar.AddBool("wts", false, "if true, save final weights after each run")
 	ar.AddBool("epclog", true, "if true, save train epoch log to file")
-	ar.AddBool("triallog", false, "if true, save test trial log to file. May be large.")
+	ar.AddBool("triallog", false, "if true, save train trial log to file. May be large.")
 	ar.AddBool("runlog", true, "if true, save run log to file")
 	ar.AddBool("tstepclog", false, "if true, save testing epoch log to file")
+	ar.AddBool("tsttriallog", false, "if true, save testing trial log to file. May be large.")
 	ar.AddBool("netdata", false, "if true, save network activation etc data from testing trials, for later viewing in netview")
 	ar.AddString("hyperFile", "", "Name of the file to output hyperparameter data. If not empty string, program should write and then exit")
 	ar.AddString("paramsFile", "", "Name of the file to input parameters from.")
@@ -73,8 +74,12 @@ func (ar *Args) ProcStd(logs *elog.Logs, params *emer.Params, netName string) {
 		logs.SetLogFile(etime.Train, etime.Run, fnm)
 	}
 	if ar.Bool("tstepclog") {
-		fnm := LogFileName("tstepc", netName, runName)
+		fnm := LogFileName("tst_epc", netName, runName)
 		logs.SetLogFile(etime.Test, etime.Epoch, fnm)
+	}
+	if ar.Bool("tsttriallog") {
+		fnm := LogFileName("tst_trl", netName, runName)
+		logs.SetLogFile(etime.Test, etime.Trial, fnm)
 	}
 	if ar.Bool("wts") {
 		fmt.Printf("Saving final weights per run\n")

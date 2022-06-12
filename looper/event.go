@@ -8,10 +8,11 @@ import (
 	"strconv"
 )
 
-// A Event represents a length of time within a loop, if behavior is expected to change in distinct phases.
+// A Event has function(s) that can be called at a particular point
+// in the loop, when the counter is AtCtr value.
 type Event struct {
 	Name    string     `desc:"Might be 'plus' or 'minus' for example."`
-	AtCtr   int        `desc:"The time that this Event occurs."`
+	AtCtr   int        `desc:"The counter value upon which this Event occurs."`
 	OnEvent NamedFuncs `desc:"Callback function for the Event."`
 }
 
@@ -23,4 +24,11 @@ func (event *Event) String() string {
 		s = s + "\tEvents: " + event.OnEvent.String()
 	}
 	return s
+}
+
+// NewEvent returns a new event with given name, function, at given counter
+func NewEvent(name string, atCtr int, fun func()) *Event {
+	ev := &Event{Name: name, AtCtr: atCtr}
+	ev.OnEvent.Add(name, fun)
+	return ev
 }

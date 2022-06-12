@@ -5,6 +5,7 @@
 package elog
 
 import (
+	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etime"
 	"github.com/emer/etable/agg"
 	"github.com/emer/etable/etable"
@@ -224,4 +225,34 @@ func (lg *Logs) RunStats(stats ...string) {
 		split.Desc(spl, st)
 	}
 	lg.MiscTables["RunStats"] = spl.AggsToTable(etable.AddAggName)
+}
+
+// AddLayerTensorItems adds tensor recording items for given variable,
+// classes of layers, mode and time (e.g., Test, Trial).
+// If another item already exists for a different mode / time, this is added
+// to it so there aren't any duplicate items.
+func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.Modes, etm etime.Times, layClasses ...string) {
+	layers := net.LayersByClass(layClasses...)
+	for _, lnm := range layers {
+		clnm := lnm
+		cly := net.LayerByName(clnm)
+		itmNm := clnm + "_" + varNm
+		itm, has := lg.ItemByName(itmNm)
+		if has {
+			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
+				ctx.SetLayerRepTensor(clnm, varNm)
+			}
+		} else {
+			lg.AddItem(&Item{
+				Name:      itmNm,
+				Type:      etensor.FLOAT32,
+				CellShape: cly.Shape().Shp,
+				FixMax:    true,
+				Range:     minmax.F64{Max: 1},
+				Write: WriteMap{
+					etime.Scope(mode, etm): func(ctx *Context) {
+						ctx.SetLayerRepTensor(clnm, varNm)
+					}}})
+		}
+	}
 }

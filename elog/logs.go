@@ -62,6 +62,16 @@ func (lg *Logs) AddItem(item *Item) {
 	lg.ItemIdxMap[item.Name] = len(lg.Items) - 1
 }
 
+// ItemByName returns item by given name, false if not found
+func (lg *Logs) ItemByName(name string) (*Item, bool) {
+	idx, has := lg.ItemIdxMap[name]
+	if !has {
+		return nil, false
+	}
+	itm := lg.Items[idx]
+	return itm, true
+}
+
 // SetContext sets the Context for logging Write functions
 // to give general access to the stats and network
 func (lg *Logs) SetContext(stats *estats.Stats, net emer.Network) {

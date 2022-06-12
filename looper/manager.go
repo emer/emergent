@@ -71,7 +71,7 @@ func (man *Manager) AddStack(mode etime.Modes) *Stack {
 }
 
 // AddEventAllModes adds Event(s) to all stacks at given time
-func (man *Manager) AddEventAllModes(t etime.Times, event ...Event) {
+func (man *Manager) AddEventAllModes(t etime.Times, event ...*Event) {
 	for _, stack := range man.Stacks {
 		stack.Loops[t].AddEvents(event...)
 	}
