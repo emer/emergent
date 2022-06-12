@@ -70,9 +70,15 @@ func (cm *Matrix) InitFromLabels(lbls []string, fontSize int) {
 	cm.Prob.SetMetaData("font-size", fmt.Sprintf("%d", fontSize))
 }
 
-// Incr increments the data for given class ground truth
-// and response.
+// Incr increments the data for given class ground truth and response.
 func (cm *Matrix) Incr(class, resp int) {
+	if class < 0 || resp < 0 {
+		return
+	}
+	ncat := cm.Sum.Dim(0)
+	if class >= ncat || resp >= ncat {
+		return
+	}
 	ix := []int{class, resp}
 	sum := cm.Sum.Value(ix)
 	sum++
