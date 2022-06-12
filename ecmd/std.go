@@ -5,12 +5,12 @@
 package ecmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/emer/emergent/elog"
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/etime"
+	"github.com/emer/empi/mpi"
 )
 
 // AddStd adds the standard command line args used by most sims
@@ -42,24 +42,33 @@ func LogFileName(logName, netName, runName string) string {
 }
 
 // ProcStd processes the standard args, after Parse has been called
-// setting the log files for standard log file names using netName
-// and params.RunName to identify the network / sim and run params, tag,
-// and starting run number
-func (ar *Args) ProcStd(logs *elog.Logs, params *emer.Params, netName string) {
+// for help, note, params, tag and wts
+func (ar *Args) ProcStd(params *emer.Params) {
 	if ar.Bool("help") {
 		ar.Usage()
 		os.Exit(0)
 	}
 	if note := ar.String("note"); note != "" {
-		fmt.Printf("note: %s\n", note)
+		mpi.Printf("note: %s\n", note)
 	}
 	if pars := ar.String("params"); pars != "" {
 		params.ExtraSets = pars
-		fmt.Printf("Using ParamSet: %s\n", params.ExtraSets)
+		mpi.Printf("Using ParamSet: %s\n", params.ExtraSets)
 	}
 	if tag := ar.String("tag"); tag != "" {
 		params.Tag = tag
 	}
+	if ar.Bool("wts") {
+		mpi.Printf("Saving final weights per run\n")
+	}
+
+}
+
+// ProcStdLogs processes the standard args for log files,
+// setting the log files for standard log file names using netName
+// and params.RunName to identify the network / sim and run params, tag,
+// and starting run number
+func (ar *Args) ProcStdLogs(logs *elog.Logs, params *emer.Params, netName string) {
 	runName := params.RunName(ar.Int("run")) // used for naming logs, stats, etc
 	if ar.Bool("epclog") {
 		fnm := LogFileName("epc", netName, runName)
@@ -80,8 +89,5 @@ func (ar *Args) ProcStd(logs *elog.Logs, params *emer.Params, netName string) {
 	if ar.Bool("tsttriallog") {
 		fnm := LogFileName("tst_trl", netName, runName)
 		logs.SetLogFile(etime.Test, etime.Trial, fnm)
-	}
-	if ar.Bool("wts") {
-		fmt.Printf("Saving final weights per run\n")
 	}
 }
