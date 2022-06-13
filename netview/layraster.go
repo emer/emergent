@@ -11,8 +11,9 @@ import (
 )
 
 func (lm *LayMesh) RasterSize2D() (nVtx, nIdx int) {
-	nuz := lm.Shape.Dim(0)
-	nux := lm.Shape.Dim(1)
+	rs := lm.Lay.RepShape()
+	nuz := rs.Dim(0)
+	nux := rs.Dim(1)
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
 	segs := 1
@@ -24,10 +25,11 @@ func (lm *LayMesh) RasterSize2D() (nVtx, nIdx int) {
 }
 
 func (lm *LayMesh) RasterSize4D() (nVtx, nIdx int) {
-	npz := lm.Shape.Dim(0) // p = pool
-	npx := lm.Shape.Dim(1)
-	nuz := lm.Shape.Dim(2) // u = unit
-	nux := lm.Shape.Dim(3)
+	rs := lm.Lay.RepShape()
+	npz := rs.Dim(0) // p = pool
+	npx := rs.Dim(1)
+	nuz := rs.Dim(2) // u = unit
+	nux := rs.Dim(3)
 
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
@@ -41,20 +43,29 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIdx int) {
 }
 
 func (lm *LayMesh) RasterSet2DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
-	nuz := lm.Shape.Dim(0)
-	nux := lm.Shape.Dim(1)
+	rs := lm.Lay.RepShape()
+	nuz := rs.Dim(0)
+	nux := rs.Dim(1)
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
+	fnoz := float32(lm.Shape.Dim(0))
+	fnox := float32(lm.Shape.Dim(1))
+	fnuz := float32(nuz)
+	fnux := float32(nux)
 	fnz := float32(nz)
 	fnx := float32(nx)
 
 	usz := lm.View.Params.Raster.UnitSize
 	uo := (1.0 - usz)
 
-	xsc := float32(nux) / fnx
-	zsc := float32(nuz) / fnz
+	xsc := fnux / fnx
+	zsc := fnuz / fnz
+
+	// rescale rep -> full size
+	xsc *= fnox / fnux
+	zsc *= fnoz / fnuz
 
 	xuw := xsc * usz
 	zuw := zsc * usz
@@ -115,20 +126,29 @@ func (lm *LayMesh) RasterSet2DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 }
 
 func (lm *LayMesh) RasterSet2DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
-	nuz := lm.Shape.Dim(0)
-	nux := lm.Shape.Dim(1)
+	rs := lm.Lay.RepShape()
+	nuz := rs.Dim(0)
+	nux := rs.Dim(1)
 	nx := nuz*nux + nuz - 1
 	nz := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
+	fnoz := float32(lm.Shape.Dim(0))
+	fnox := float32(lm.Shape.Dim(1))
+	fnuz := float32(nuz)
+	fnux := float32(nux)
 	fnz := float32(nz)
 	fnx := float32(nx)
 
 	usz := lm.View.Params.Raster.UnitSize
 	uo := (1.0 - usz)
 
-	xsc := float32(nux) / fnx
-	zsc := float32(nuz) / fnz
+	xsc := fnux / fnx
+	zsc := fnuz / fnz
+
+	// rescale rep -> full size
+	xsc *= fnox / fnux
+	zsc *= fnoz / fnuz
 
 	xuw := xsc * usz
 	zuw := zsc * usz
@@ -189,15 +209,18 @@ func (lm *LayMesh) RasterSet2DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 }
 
 func (lm *LayMesh) RasterSet4DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
-	npz := lm.Shape.Dim(0) // p = pool
-	npx := lm.Shape.Dim(1)
-	nuz := lm.Shape.Dim(2) // u = unit
-	nux := lm.Shape.Dim(3)
+	rs := lm.Lay.RepShape()
+	npz := rs.Dim(0) // p = pool
+	npx := rs.Dim(1)
+	nuz := rs.Dim(2) // u = unit
+	nux := rs.Dim(3)
 
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
+	fnpoz := float32(lm.Shape.Dim(0))
+	fnpox := float32(lm.Shape.Dim(1))
 	fnpz := float32(npz)
 	fnpx := float32(npx)
 	fnuz := float32(nuz)
@@ -213,6 +236,10 @@ func (lm *LayMesh) RasterSet4DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	// these scales are for overall group positioning
 	xsc := (fnpx * fnux) / ((fnpx-1)*uo + (fnpx * fnux))
 	zsc := (fnpz * fnuz) / ((fnpz-1)*uo + (fnpz * fnuz))
+
+	// rescale rep -> full size
+	xsc *= fnpox / fnpx
+	zsc *= fnpoz / fnpz
 
 	// these are for the raster within
 	xscr := xsc * (fnux / fnx)
@@ -281,20 +308,23 @@ func (lm *LayMesh) RasterSet4DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpz * fnuz}, mat32.Vec3{fnpx * fnux, 0.5, 0})
+	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpoz * fnuz}, mat32.Vec3{fnpox * fnux, 0.5, 0})
 	lm.BBoxMu.Unlock()
 }
 
 func (lm *LayMesh) RasterSet4DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
-	npz := lm.Shape.Dim(0) // p = pool
-	npx := lm.Shape.Dim(1)
-	nuz := lm.Shape.Dim(2) // u = unit
-	nux := lm.Shape.Dim(3)
+	rs := lm.Lay.RepShape()
+	npz := rs.Dim(0) // p = pool
+	npx := rs.Dim(1)
+	nuz := rs.Dim(2) // u = unit
+	nux := rs.Dim(3)
 
 	nx := nuz*nux + nuz - 1
 	nz := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
+	fnpoz := float32(lm.Shape.Dim(0))
+	fnpox := float32(lm.Shape.Dim(1))
 	fnpz := float32(npz)
 	fnpx := float32(npx)
 	fnuz := float32(nuz)
@@ -310,6 +340,10 @@ func (lm *LayMesh) RasterSet4DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	// these scales are for overall group positioning
 	xsc := (fnpx * fnux) / ((fnpx-1)*uo + (fnpx * fnux))
 	zsc := (fnpz * fnuz) / ((fnpz-1)*uo + (fnpz * fnuz))
+
+	// rescale rep -> full size
+	xsc *= fnpox / fnpx
+	zsc *= fnpoz / fnpz
 
 	// these are for the raster within
 	xscr := xsc * (fnux / fnx)
@@ -378,6 +412,6 @@ func (lm *LayMesh) RasterSet4DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpz * fnuz}, mat32.Vec3{fnpx * fnux, 0.5, 0})
+	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpoz * fnuz}, mat32.Vec3{fnpox * fnux, 0.5, 0})
 	lm.BBoxMu.Unlock()
 }

@@ -718,11 +718,22 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 // for given unit of given layer, and given raster counter index value (0..RasterMax)
 // scaled is in range -1..1
 func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr gist.Color, hasval bool) {
-	idx1d := lay.Shape().Offset(idx)
-	if idx1d >= lay.Shape().Len() {
-		raw, hasval = 0, false
+	rs := lay.RepShape()
+	idx1d := rs.Offset(idx)
+	ridx := lay.RepIdxs()
+	if len(ridx) == 0 { // no rep
+		if idx1d >= lay.Shape().Len() {
+			raw, hasval = 0, false
+		} else {
+			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+		}
 	} else {
-		raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+		if idx1d >= len(ridx) {
+			raw, hasval = 0, false
+		} else {
+			idx1d = ridx[idx1d]
+			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+		}
 	}
 	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
 	return

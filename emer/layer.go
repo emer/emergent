@@ -160,21 +160,30 @@ type Layer interface {
 	// The set of representative units are defined by SetRepIdxs -- all units
 	// are used if no such subset has been defined.
 	// If tensor is not already big enough to hold the values, it is
-	// set to a 1D shape to hold all the values if subset is defined,
+	// set to RepShape to hold all the values if subset is defined,
 	// otherwise it calls UnitValsTensor and is identical to that.
 	// Returns error on invalid var name.
 	UnitValsRepTensor(tsr etensor.Tensor, varNm string) error
 
-	// SetRepIdxs sets the indexes of the smaller subset of units
-	// that represent the behavior of the layer, for computationally
-	// intensive statistics and displays (e.g., PCA, spike rasters).
+	// RepIdxs returns the current set of representative unit indexes.
+	// which are a smaller subset of units that represent the behavior
+	// of the layer, for computationally intensive statistics and displays
+	// (e.g., PCA, ActRF, NetView rasters).
+	// Returns nil if none has been set (in which case all units should be used).
 	// See utility function CenterPoolIdxs that returns indexes of
 	// units in the central pools of a 4D layer.
-	SetRepIdxs(idxs []int)
-
-	// RepIdxs returns the current set of representative unit indexes.
-	// Returns nil if none has been set (in which case all units should be used).
 	RepIdxs() []int
+
+	// RepShape returns the shape to use for the subset of representative
+	// unit indexes, in terms of an array of dimensions.  See Shape() for more info.
+	// Layers that set RepIdxs should also set this, otherwise a 1D array
+	// of len RepIdxs will be used.
+	// See utility function CenterPoolShape that returns shape of
+	// units in the central pools of a 4D layer.
+	RepShape() *etensor.Shape
+
+	// SetRepIdxsShape sets the RepIdxs, and RepShape and as list of dimension sizes
+	SetRepIdxsShape(idxs, shape []int)
 
 	// UnitVal returns value of given variable name on given unit,
 	// using shape-based dimensional index.
@@ -275,7 +284,7 @@ var LayerDimNames2D = []string{"Y", "X"}
 var LayerDimNames4D = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
 
 // CenterPoolIdxs returns the indexes for n x n center pools of given 4D layer.
-// Useful for SetRepIdxs on Layer.
+// Useful for setting RepIdxs on Layer.
 // Will crash if called on non-4D layers.
 func CenterPoolIdxs(ly Layer, n int) []int {
 	nPy := ly.Shape().Dim(0)
@@ -296,6 +305,12 @@ func CenterPoolIdxs(ly Layer, n int) []int {
 		}
 	}
 	return idxs
+}
+
+// CenterPoolShape returns shape for n x n center pools of given 4D layer.
+// Useful for setting RepShape on Layer.
+func CenterPoolShape(ly Layer, n int) []int {
+	return []int{n, n, ly.Shape().Dim(2), ly.Shape().Dim(3)}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

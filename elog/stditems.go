@@ -14,8 +14,9 @@ import (
 	"github.com/emer/etable/split"
 )
 
-// AddCounterItems adds given Int counters, and string value stats
-func (lg *Logs) AddCounterItems(ctrs []etime.Times, strNames []string) {
+// AddCounterItems adds given Int counters from Stats,
+// typically by recording looper counter values to Stats.
+func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 	for _, ctr := range ctrs {
 		ctrName := ctr.String() // closure
 		tm := etime.AllTimes
@@ -29,17 +30,6 @@ func (lg *Logs) AddCounterItems(ctrs []etime.Times, strNames []string) {
 			Write: WriteMap{
 				etime.Scope(etime.AllModes, tm): func(ctx *Context) {
 					ctx.SetStatInt(ctrName)
-				}}})
-	}
-	for _, str := range strNames {
-		strName := str // closure
-		lg.AddItem(&Item{
-			Name: strName,
-			Type: etensor.STRING,
-			Plot: false,
-			Write: WriteMap{
-				etime.Scope(etime.AllModes, etime.AllTimes): func(ctx *Context) {
-					ctx.SetStatString(strName)
 				}}})
 	}
 }
@@ -66,35 +56,79 @@ func (lg *Logs) AddStatAggItem(itemName, statName string, plot bool, times ...et
 			}}})
 }
 
-// AddStatFloatNoAggItem adds int statistic(s) of given names
+// AddStatFloatNoAggItem adds float statistic(s) of given names
 // for just one mode, time, with no aggregation.
+// If another item already exists for a different mode / time, this is added
+// to it so there aren't any duplicate items.
 func (lg *Logs) AddStatFloatNoAggItem(mode etime.Modes, etm etime.Times, stats ...string) {
 	for _, st := range stats {
-		lg.AddItem(&Item{
-			Name:  st,
-			Type:  etensor.FLOAT64,
-			Plot:  true,
-			Range: minmax.F64{Min: -1},
-			Write: WriteMap{
-				etime.Scope(mode, etm): func(ctx *Context) {
-					ctx.SetStatFloat(st)
-				}}})
+		stName := st // closure
+		itm, has := lg.ItemByName(stName)
+		if has {
+			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
+				ctx.SetStatFloat(stName)
+			}
+		} else {
+			lg.AddItem(&Item{
+				Name:  stName,
+				Type:  etensor.FLOAT64,
+				Plot:  false,
+				Range: minmax.F64{Min: -1},
+				Write: WriteMap{
+					etime.Scope(mode, etm): func(ctx *Context) {
+						ctx.SetStatFloat(stName)
+					}}})
+		}
 	}
 }
 
 // AddStatIntNoAggItem adds int statistic(s) of given names
 // for just one mode, time, with no aggregation.
+// If another item already exists for a different mode / time, this is added
+// to it so there aren't any duplicate items.
 func (lg *Logs) AddStatIntNoAggItem(mode etime.Modes, etm etime.Times, stats ...string) {
 	for _, st := range stats {
-		lg.AddItem(&Item{
-			Name:  st,
-			Type:  etensor.FLOAT64,
-			Plot:  true,
-			Range: minmax.F64{Min: -1},
-			Write: WriteMap{
-				etime.Scope(mode, etm): func(ctx *Context) {
-					ctx.SetStatInt(st)
-				}}})
+		stName := st // closure
+		itm, has := lg.ItemByName(stName)
+		if has {
+			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
+				ctx.SetStatInt(stName)
+			}
+		} else {
+			lg.AddItem(&Item{
+				Name:  stName,
+				Type:  etensor.INT,
+				Plot:  false,
+				Range: minmax.F64{Min: -1},
+				Write: WriteMap{
+					etime.Scope(mode, etm): func(ctx *Context) {
+						ctx.SetStatInt(stName)
+					}}})
+		}
+	}
+}
+
+// AddStatStringItem adds string stat item(s) to given mode and time (e.g., Allmodes, Trial).
+// If another item already exists for a different mode / time, this is added
+// to it so there aren't any duplicate items.
+func (lg *Logs) AddStatStringItem(mode etime.Modes, etm etime.Times, stats ...string) {
+	for _, st := range stats {
+		stName := st // closure
+		itm, has := lg.ItemByName(stName)
+		if has {
+			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
+				ctx.SetStatString(stName)
+			}
+		} else {
+			lg.AddItem(&Item{
+				Name: stName,
+				Type: etensor.STRING,
+				Plot: false,
+				Write: WriteMap{
+					etime.Scope(mode, etm): func(ctx *Context) {
+						ctx.SetStatString(stName)
+					}}})
+		}
 	}
 }
 
@@ -246,7 +280,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 			lg.AddItem(&Item{
 				Name:      itmNm,
 				Type:      etensor.FLOAT32,
-				CellShape: cly.Shape().Shp,
+				CellShape: cly.RepShape().Shp,
 				FixMax:    true,
 				Range:     minmax.F64{Max: 1},
 				Write: WriteMap{

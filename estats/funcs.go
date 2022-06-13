@@ -23,8 +23,8 @@ func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string) *etenso
 	return tsr
 }
 
-// SetLayerRepTensor sets tensor of representative Unit values on a layer for given variable
-// to a F32Tensor with name = layNm
+// SetLayerRepTensor sets tensor of representative Unit values on a layer
+// for given variable to a F32Tensor with name = layNm
 func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32Tensor(layNm)
