@@ -53,6 +53,7 @@ func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, pats *etabl
 //  PCA Stats
 
 // PCAStrongThr is the threshold for counting PCA eigenvalues as "strong"
+// Applies to SVD as well.
 var PCAStrongThr = 0.01
 
 // PCAStats computes PCA statistics on recorded hidden activation patterns
@@ -65,32 +66,34 @@ var PCAStrongThr = 0.01
 // layer_PCA_Top5: average strength of top 5 eigenvalues
 // layer_PCA_Next5: average strength of next 5 eigenvalues
 // layer_PCA_Rest: average strength of remaining eigenvalues (if more than 10 total eigens)
+// Uses SVD to compute much more efficiently than official PCA.
 func (st *Stats) PCAStats(ix *etable.IdxView, varNm string, layers []string) {
-	pca := &st.PCA
+	svd := &st.SVD
+	svd.Cond = PCAStrongThr
 	for _, lnm := range layers {
-		pca.TableCol(ix, lnm+"_"+varNm, metric.Covariance64)
-		var nstr float64
-		ln := len(pca.Values)
-		for i, v := range pca.Values {
-			if v >= PCAStrongThr {
-				nstr = float64(ln - i)
+		svd.TableCol(ix, lnm+"_"+varNm, metric.Covariance64)
+		ln := len(svd.Values)
+		var nstr float64 // nstr := float64(svd.Rank)  this didn't work..
+		for i, v := range svd.Values {
+			if v < PCAStrongThr {
+				nstr = float64(i)
 				break
 			}
 		}
 		var top5, next5 float64
 		for i := 0; i < 5; i++ {
 			if ln >= 5 {
-				top5 += pca.Values[ln-1-i]
+				top5 += svd.Values[i]
 			}
 			if ln >= 10 {
-				next5 += pca.Values[ln-6-i]
+				next5 += svd.Values[i+5]
 			}
 		}
 		st.SetFloat(lnm+"_PCA_NStrong", nstr)
 		st.SetFloat(lnm+"_PCA_Top5", top5/5)
 		st.SetFloat(lnm+"_PCA_Next5", next5/5)
 		if ln > 10 {
-			sum := norm.Sum64(pca.Values)
+			sum := norm.Sum64(svd.Values)
 			ravg := (sum - (top5 + next5)) / float64(ln-10)
 			st.SetFloat(lnm+"_PCA_Rest", ravg)
 		} else {

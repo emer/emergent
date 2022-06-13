@@ -27,6 +27,7 @@ type Stats struct {
 	Confusion  confusion.Matrix            `view:"no-inline" desc:"confusion matrix"`
 	SimMats    map[string]*simat.SimMat    `desc:"similarity matrix for comparing pattern similarities"`
 	PCA        pca.PCA                     `desc:"one PCA object can be reused for all PCA computations"`
+	SVD        pca.SVD                     `desc:"one SVD object can be reused for all SVD computations"`
 	ActRFs     actrf.RFs                   `view:"no-inline" desc:"activation-based receptive fields"`
 	Rasters    []string                    `desc:"list of layer names configured for recording raster plots"`
 	Timers     map[string]*timer.Time      `desc:"named timers available for timing how long different computations take (wall-clock time)"`
@@ -42,6 +43,9 @@ func (st *Stats) Init() {
 	st.IntTensors = make(map[string]*etensor.Int)
 	st.SimMats = make(map[string]*simat.SimMat)
 	st.Timers = make(map[string]*timer.Time)
+	st.PCA.Init()
+	st.SVD.Init()
+	st.SVD.Cond = PCAStrongThr
 }
 
 // Print returns a formatted Name: Value string of stat values,
