@@ -40,7 +40,7 @@ func (stack *Stack) AddTime(time etime.Times, max int) *Stack {
 func (stack *Stack) AddOnStartToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for tt, lp := range stack.Loops {
 		curTime := tt
-		lp.OnStart.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
+		lp.OnStart.Add(name, func() {
 			fun(stack.Mode, curTime)
 		})
 	}
@@ -50,7 +50,7 @@ func (stack *Stack) AddOnStartToAll(name string, fun func(mode etime.Modes, time
 func (stack *Stack) AddMainToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for tt, lp := range stack.Loops {
 		curTime := tt
-		lp.Main.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
+		lp.Main.Add(name, func() {
 			fun(stack.Mode, curTime)
 		})
 	}
@@ -60,7 +60,7 @@ func (stack *Stack) AddMainToAll(name string, fun func(mode etime.Modes, time et
 func (stack *Stack) AddOnEndToAll(name string, fun func(mode etime.Modes, time etime.Times)) {
 	for tt, lp := range stack.Loops {
 		curTime := tt
-		lp.OnEnd.Add(stack.Mode.String()+":"+curTime.String()+":"+name, func() {
+		lp.OnEnd.Add(name, func() {
 			fun(stack.Mode, curTime)
 		})
 	}
