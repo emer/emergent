@@ -35,3 +35,13 @@ func (loops *Loop) AddNewEvent(name string, atCtr int, fun func()) *Event {
 	loops.Events = append(loops.Events, ev)
 	return ev
 }
+
+// EventByName returns event by name, false if not found
+func (loops *Loop) EventByName(name string) (*Event, bool) {
+	for _, ev := range loops.Events {
+		if ev.Name == name {
+			return ev, true
+		}
+	}
+	return nil, false
+}
