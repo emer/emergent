@@ -22,7 +22,7 @@ type Stack struct {
 	Order []etime.Times         `desc:"The list and order of time scales looped over by this stack of loops,  ordered from top to bottom, so longer timescales like Run should be at the beginning and shorter timescales like Trial should be and the end."`
 }
 
-// Init makes sure data structures are initialized, and empties them if they are.
+// Init initializes new data structures for a newly created object
 func (stack *Stack) Init(mode etime.Modes) {
 	stack.Mode = mode
 	stack.Loops = map[etime.Times]*Loop{}

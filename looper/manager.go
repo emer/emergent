@@ -53,13 +53,12 @@ func NewManager() *Manager {
 	return man
 }
 
-// Init initializes variables on the Manager.
+// Init initializes the state of the manager, to be called on a newly created object.
 func (man *Manager) Init() {
 	man.Stacks = map[etime.Modes]*Stack{}
 	man.StopLevel = etime.Trial
 	man.Mode = etime.Train
 	man.lastStartedCtr = map[etime.ScopeKey]int{}
-	man.ResetCounters()
 }
 
 // AddStack adds a new Stack for given mode
@@ -138,12 +137,12 @@ func (man *Manager) IsRunning() bool {
 	return man.isRunning
 }
 
-// ResetCountersByMode is like ResetCounters, but only for one mode.
+// ResetCountersByMode resets counters for given mode.
 func (man *Manager) ResetCountersByMode(modes etime.Modes) {
 	for sk, _ := range man.lastStartedCtr {
 		skm, _ := sk.ModeAndTime()
 		if skm == modes {
-			man.lastStartedCtr[sk] = 0
+			delete(man.lastStartedCtr, sk)
 		}
 	}
 	for m, stack := range man.Stacks {
@@ -155,14 +154,19 @@ func (man *Manager) ResetCountersByMode(modes etime.Modes) {
 	}
 }
 
-// ResetCounters resets the Cur on all loop Counters, and resets the Man's place in the loops.
+// ResetCounters resets the Cur on all loop Counters,
+// and resets the Manager's place in the loops.
 func (man *Manager) ResetCounters() {
-	for m, _ := range man.Stacks {
-		man.ResetCountersByMode(m)
+	man.lastStartedCtr = map[etime.ScopeKey]int{}
+	for _, stack := range man.Stacks {
+		for _, loop := range stack.Loops {
+			loop.Counter.Cur = 0
+		}
 	}
 }
 
-// Step numSteps stopscales. Use this if you want to do exactly one trial or two epochs or 50 cycles or something.
+// Step numSteps stopscales. Use this if you want to do exactly one trial
+// or two epochs or 50 cycles or whatever
 func (man *Manager) Step(numSteps int, stopscale etime.Times) {
 	man.StopLevel = stopscale
 	man.StepIterations = numSteps
@@ -171,7 +175,8 @@ func (man *Manager) Step(numSteps int, stopscale etime.Times) {
 	man.Run()
 }
 
-// Run runs the loops contained within the man. If you want it to stop before the full end of the loop, set variables on the Man.
+// Run runs the loops contained within the man.
+// If you want it to stop before the full end of the loop, set variables on the Manager.
 func (man *Manager) Run() {
 	man.isRunning = true
 
@@ -184,7 +189,8 @@ func (man *Manager) Run() {
 	man.isRunning = false
 }
 
-// runLevel implements nested for loops recursively. It is set up so that it can be stopped and resumed at any point.
+// runLevel implements nested for loops recursively.
+// It is set up so that it can be stopped and resumed at any point.
 func (man *Manager) runLevel(currentLevel int) bool {
 	st := man.Stacks[man.Mode]
 	if currentLevel >= len(st.Order) {
