@@ -66,6 +66,7 @@ func TestStep(t *testing.T) {
 			t.Errorf("Cycles not counted correctly")
 		}
 	} else {
+		PrintControlFlow = false
 		manager.Step(1, etime.Cycle)
 		manager.Step(1, etime.Cycle)
 		manager.Step(1, etime.Cycle)

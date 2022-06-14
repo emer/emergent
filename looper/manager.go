@@ -241,22 +241,28 @@ func (man *Manager) runLevel(currentLevel int) bool {
 			for _, fun := range loop.OnEnd {
 				fun.Func()
 			}
+
+			// Increment
+			ctr.Cur = ctr.Cur + 1
+			// Reset the counter at the next level. Do this here so that the counter number is visible during loop.OnEnd.
+			if currentLevel+1 < len(st.Order) {
+				st.Loops[st.Order[currentLevel+1]].Counter.Cur = 0
+				man.lastStartedCtr[etime.Scope(man.Mode, st.Order[currentLevel+1])] = -1
+			}
+
 			for name, fun := range loop.IsDone {
 				if fun() {
-					_ = name      // For debugging
-					goto exitLoop // Exit multiple for-loops without flag variable.
+					if PrintControlFlow {
+						fmt.Println("Stopping early with: " + name + " condition")
+					}
+					goto exitLoop // Exit IsDone and Ctr for-loops without flag variable.
 				}
 			}
-			ctr.Cur = ctr.Cur + 1 // Increment
 		}
 	}
 
 exitLoop:
 	// Only get to this point if this loop is done.
-	if !man.internalStop {
-		ctr.Cur = 0
-		man.lastStartedCtr[etime.Scope(man.Mode, time)] = -1
-	}
 	return true
 }
 
