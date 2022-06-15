@@ -32,25 +32,25 @@ func TestStep(t *testing.T) {
 		PrintControlFlow = true
 
 		fmt.Println("#### Step Cyc 1:")
-		manager.Step(1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
 		fmt.Println("#### Step Cyc 1:")
-		manager.Step(1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
 		fmt.Println("#### Step Cyc 1:")
-		manager.Step(1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
 		fmt.Println("#### Step Cyc 1:")
-		manager.Step(1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
 		fmt.Println("#### Step Cyc 2:")
-		manager.Step(2, etime.Cycle)
+		manager.Step(etime.Train, 2, etime.Cycle)
 
 		NoPrintBelow = etime.Trial
 
 		fmt.Println("#### Step Run 1:")
-		manager.Step(1, etime.Run)
+		manager.Step(etime.Train, 1, etime.Run)
 		if run.Counter.Cur != 1 {
 			t.Errorf("Incorrect step run")
 		}
 		fmt.Println("#### Step Epoch 3:")
-		manager.Step(3, etime.Epoch)
+		manager.Step(etime.Train, 3, etime.Epoch)
 		if run.Counter.Cur != 1 || epc.Counter.Cur != 3 {
 			t.Errorf("Incorrect step epoch")
 		}
@@ -61,29 +61,29 @@ func TestStep(t *testing.T) {
 		NoPrintBelow = etime.AllTimes
 
 		fmt.Println("#### Step Trial 2:")
-		manager.Step(2, etime.Trial)
+		manager.Step(etime.Train, 2, etime.Trial)
 		if trialCount != 34 { // 34 = 1*5*4+3*4+2
 			t.Errorf("Cycles not counted correctly")
 		}
 	} else {
 		PrintControlFlow = false
-		manager.Step(1, etime.Cycle)
-		manager.Step(1, etime.Cycle)
-		manager.Step(1, etime.Cycle)
-		manager.Step(1, etime.Cycle)
-		manager.Step(2, etime.Cycle)
-		manager.Step(1, etime.Run)
+		manager.Step(etime.Train, 1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Cycle)
+		manager.Step(etime.Train, 2, etime.Cycle)
+		manager.Step(etime.Train, 1, etime.Run)
 		if run.Counter.Cur != 1 {
 			t.Errorf("Incorrect step run")
 		}
-		manager.Step(3, etime.Epoch)
+		manager.Step(etime.Train, 3, etime.Epoch)
 		if run.Counter.Cur != 1 || epc.Counter.Cur != 3 {
 			t.Errorf("Incorrect step epoch")
 		}
 		if trialCount != 32 { // 32 = 1*5*4+3*4
 			t.Errorf("Cycles not counted correctly")
 		}
-		manager.Step(2, etime.Trial)
+		manager.Step(etime.Train, 2, etime.Trial)
 		if trialCount != 34 { // 34 = 1*5*4+3*4+2
 			t.Errorf("Cycles not counted correctly")
 		}

@@ -20,11 +20,17 @@ type Stack struct {
 	Mode  etime.Modes           `desc:"evaluation mode for this stack"`
 	Loops map[etime.Times]*Loop `desc:"An ordered map of Loops, from the outer loop at the start to the inner loop at the end."`
 	Order []etime.Times         `desc:"The list and order of time scales looped over by this stack of loops,  ordered from top to bottom, so longer timescales like Run should be at the beginning and shorter timescales like Trial should be and the end."`
+
+	StopNext       bool        `desc:"If true, stop model at the end of the current StopLevel."`
+	StopFlag       bool        `desc:"If true, stop model ASAP."`
+	StopLevel      etime.Times `desc:"Time level to stop at the end of."`
+	StepIterations int         `desc:"How many steps to do."`
 }
 
 // Init initializes new data structures for a newly created object
 func (stack *Stack) Init(mode etime.Modes) {
 	stack.Mode = mode
+	stack.StopLevel = etime.Trial
 	stack.Loops = map[etime.Times]*Loop{}
 	stack.Order = []etime.Times{}
 }
@@ -101,4 +107,18 @@ func (stack *Stack) CtrsToStats(stats *estats.Stats) {
 		lp := stack.Loops[tm]
 		stats.SetInt(tm.String(), lp.Counter.Cur)
 	}
+}
+
+// SetStep sets stepping to given level and iterations
+func (stack *Stack) SetStep(numSteps int, stopscale etime.Times) {
+	stack.StopLevel = stopscale
+	stack.StepIterations = numSteps
+	stack.StopFlag = false
+	stack.StopNext = true
+}
+
+// ClearStep clears stepping control state
+func (stack *Stack) ClearStep() {
+	stack.StopNext = false
+	stack.StopFlag = false
 }

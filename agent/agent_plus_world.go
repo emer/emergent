@@ -49,7 +49,7 @@ func (agent *AgentProxyWithWorldCache) Init(actionSpace map[string]SpaceSpec, ob
 // Step the agent. Internally, this calls looper.Manager.Step. It provides observations to the agent, and records what actions were taken, using the caches on the WorldInterface to move them in and out.
 func (agent *AgentProxyWithWorldCache) Step(observations map[string]etensor.Tensor, debug string) map[string]Action {
 	agent.CachedObservations = observations // Record observations for this timestep for the world to report.
-	agent.loops.Step(1, etime.Trial)
+	agent.loops.Step(agent.loops.Mode, 1, etime.Trial)
 	// After 1 trial has been stepped, a new action will be ready to return.
 	return agent.CachedActions
 }

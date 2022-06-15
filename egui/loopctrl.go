@@ -19,8 +19,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
-			loops.StopFlag = true
-			loops.StopLevel = etime.Cycle
+			loops.Stop(etime.Cycle)
 			// fmt.Println("Stop time!")
 			gui.StopNow = true
 			gui.Stopped()
@@ -37,9 +36,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
 				go func() {
-					loops.StopFlag = false
-					loops.Mode = mode
-					loops.Run()
+					loops.Run(mode)
 					gui.Stopped()
 				}()
 			}
@@ -54,8 +51,6 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			stringToEnumTime[st.String()] = st
 		}
 
-		lastSelectedScbTimeScale := loops.StopLevel
-
 		gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
 			act.SetActiveStateUpdt(!gui.IsRunning)
 		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
@@ -63,8 +58,8 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
 				go func() {
-					loops.Mode = mode
-					loops.Step(stepN[loops.StopLevel.String()], lastSelectedScbTimeScale)
+					stack := loops.Stacks[mode]
+					loops.Step(mode, stepN[stack.StopLevel.String()], stack.StopLevel)
 					gui.Stopped()
 				}()
 			}
@@ -76,7 +71,8 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			stepStrs = append(stepStrs, s.String())
 		}
 		scb.ItemsFromStringList(stepStrs, false, 30)
-		scb.SetCurVal(loops.StopLevel.String())
+		stack := loops.Stacks[mode]
+		scb.SetCurVal(stack.StopLevel.String())
 
 		sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
 		sb.Defaults()
@@ -90,8 +86,9 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 		})
 
 		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-			lastSelectedScbTimeScale = stringToEnumTime[scb.CurVal.(string)]
-			sb.Value = float32(stepN[loops.StopLevel.String()])
+			stack := loops.Stacks[mode]
+			stack.StopLevel = stringToEnumTime[scb.CurVal.(string)]
+			sb.Value = float32(stepN[stack.StopLevel.String()])
 		})
 	}
 }

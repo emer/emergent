@@ -28,13 +28,9 @@ var (
 // It's also a control object for stepping through Stacks of Loops.
 // It holds data about how the flow is going.
 type Manager struct {
-	Stacks         map[etime.Modes]*Stack `desc:"map of stacks by Mode"`
-	StopFlag       bool                   `desc:"If true, stop model ASAP."`
-	StopNext       bool                   `desc:"If true, stop model at the end of the current StopLevel."`
-	StopLevel      etime.Times            `desc:"Time level to stop at the end of."`
-	StepIterations int                    `desc:"How many steps to do."`
-	Mode           etime.Modes            `desc:"The current evaluation mode."`
-	isRunning      bool                   `desc:"Set to true while looping, false when done. Read only."`
+	Stacks    map[etime.Modes]*Stack `desc:"map of stacks by Mode"`
+	Mode      etime.Modes            `desc:"The current evaluation mode."`
+	isRunning bool                   `desc:"Set to true while looping, false when done. Read only."`
 
 	// For internal use
 	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
@@ -56,7 +52,6 @@ func NewManager() *Manager {
 // Init initializes the state of the manager, to be called on a newly created object.
 func (man *Manager) Init() {
 	man.Stacks = map[etime.Modes]*Stack{}
-	man.StopLevel = etime.Trial
 	man.Mode = etime.Train
 	man.lastStartedCtr = map[etime.ScopeKey]int{}
 }
@@ -167,26 +162,53 @@ func (man *Manager) ResetCounters() {
 
 // Step numSteps stopscales. Use this if you want to do exactly one trial
 // or two epochs or 50 cycles or whatever
-func (man *Manager) Step(numSteps int, stopscale etime.Times) {
-	man.StopLevel = stopscale
-	man.StepIterations = numSteps
-	man.StopFlag = false
-	man.StopNext = true
-	man.Run()
+func (man *Manager) Step(mode etime.Modes, numSteps int, stopscale etime.Times) {
+	man.Mode = mode
+	st := man.Stacks[man.Mode]
+	st.SetStep(numSteps, stopscale)
+	man.Cont()
 }
 
-// Run runs the loops contained within the man.
-// If you want it to stop before the full end of the loop, set variables on the Manager.
-func (man *Manager) Run() {
+// ClearStep clears stepping variables from given mode,
+// so it will run to completion in a subsequent Cont().
+// Called by Run
+func (man *Manager) ClearStep(mode etime.Modes) {
+	st := man.Stacks[man.Mode]
+	st.ClearStep()
+}
+
+// Run runs the stack of loops for given mode (Train, Test, etc).
+// This resets any stepping settings for this stack and runs
+// until completion or stopped externally.
+func (man *Manager) Run(mode etime.Modes) {
+	man.Mode = mode
+	man.ClearStep(mode)
+	man.Cont()
+}
+
+// ResetAndRun calls ResetCountersByMode on this mode
+// and then Run.  This ensures that the Stack is run from
+// the start, regardless of what state it might have been in.
+func (man *Manager) ResetAndRun(mode etime.Modes) {
+	man.ResetCountersByMode(mode)
+	man.Run(mode)
+}
+
+// Cont continues running based on current state of the manager.
+// This is common pathway for Step and Run, which set state and
+// call Cont.  Programatic calling of Step can continue with Cont.
+func (man *Manager) Cont() {
 	man.isRunning = true
-
-	// Reset internal variables
 	man.internalStop = false
-
-	// 0 Means the top level loop, probably Run
-	man.runLevel(0)
-
+	man.runLevel(0) // 0 Means the top level loop
 	man.isRunning = false
+}
+
+// Stop stops currently running stack of loops at given run time level
+func (man *Manager) Stop(level etime.Times) {
+	st := man.Stacks[man.Mode]
+	st.StopLevel = level
+	st.StopFlag = true
 }
 
 // runLevel implements nested for loops recursively.
@@ -201,20 +223,20 @@ func (man *Manager) runLevel(currentLevel int) bool {
 	ctr := &loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max < 0 { // Loop forever for negative maxes
-		stopAtLevelOrLarger := st.Order[currentLevel] >= man.StopLevel // Based on conversion of etime.Times to int
-		if man.StopFlag && stopAtLevelOrLarger {
+		stopAtLevelOrLarger := st.Order[currentLevel] >= st.StopLevel // Based on conversion of etime.Times to int
+		if st.StopFlag && stopAtLevelOrLarger {
 			man.internalStop = true
 		}
 		if man.internalStop {
 			// This should occur before ctr incrementing and before functions.
-			man.StopFlag = false
+			st.StopFlag = false
 			return false // Don't continue above, e.g. Stop functions
 		}
-		if man.StopNext && st.Order[currentLevel] == man.StopLevel {
-			man.StepIterations -= 1
-			if man.StepIterations <= 0 {
-				man.StopNext = false
-				man.StopFlag = true // Stop at the top of the next StopLevel
+		if st.StopNext && st.Order[currentLevel] == st.StopLevel {
+			st.StepIterations -= 1
+			if st.StepIterations <= 0 {
+				st.StopNext = false
+				st.StopFlag = true // Stop at the top of the next StopLevel
 			}
 		}
 
