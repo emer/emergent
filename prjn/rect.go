@@ -53,32 +53,39 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 	snv := sendn.Values
 	sNtot := send.Len()
 
+	rNyEff := rNy
+	if cr.RecvN.Y > 0 {
+		rNyEff = ints.MinInt(rNy, cr.RecvN.Y)
+	}
+	if cr.RecvStart.Y > 0 {
+		rNyEff = ints.MinInt(rNyEff, rNy-cr.RecvStart.Y)
+	}
+
+	rNxEff := rNx
+	if cr.RecvN.X > 0 {
+		rNxEff = ints.MinInt(rNx, cr.RecvN.X)
+	}
+	if cr.RecvStart.X > 0 {
+		rNxEff = ints.MinInt(rNxEff, rNx-cr.RecvStart.X)
+	}
+
 	sc := cr.Scale
 	if cr.AutoScale {
 		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
-		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
+		rsz := mat32.Vec2{float32(rNxEff), float32(rNyEff)}
 		sc = ssz.Div(rsz)
 	}
 
-	rNyEff := rNy
-	if cr.RecvN.Y > 0 {
-		rNyEff = ints.MinInt(rNy, cr.RecvStart.Y+cr.RecvN.Y)
-	}
-	rNxEff := rNx
-	if cr.RecvN.X > 0 {
-		rNxEff = ints.MinInt(rNx, cr.RecvStart.X+cr.RecvN.X)
-	}
-
-	for ry := cr.RecvStart.Y; ry < rNyEff; ry++ {
-		for rx := cr.RecvStart.X; rx < rNxEff; rx++ {
+	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
+		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
 			ri := etensor.Prjn2DIdx(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
-				sst.X += int(mat32.Round(float32(rx) * sc.X))
-				sst.Y += int(mat32.Round(float32(ry) * sc.Y))
+				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X+sst.X) * sc.X))
+				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y+sst.Y) * sc.Y))
 			} else {
-				sst.X += int(mat32.Floor(float32(rx) * sc.X))
-				sst.Y += int(mat32.Floor(float32(ry) * sc.Y))
+				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X+sst.X) * sc.X))
+				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y+sst.Y) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)
