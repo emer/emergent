@@ -6,6 +6,7 @@ package confusion
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/simat"
@@ -105,9 +106,9 @@ func (cm *Matrix) Probs() {
 }
 
 func (cm *Matrix) SumTFPN(class int) {
-	fn := 0.0
-	fp := 0.0
-	tn := 0.0
+	fn := 0.0 // false negative
+	fp := 0.0 // false positive
+	tn := 0.0 // true negative
 
 	n := cm.N.Len()
 	for c := 0; c < n; c++ {
@@ -162,17 +163,25 @@ func (cm *Matrix) ScoreMatrix() {
 	cm.MatrixScores.SetFloat1D(0, f1)
 
 	// macro F1 - unweighted average of class F1 scores
+	// some classes might not have any instances so check NaN
 	f1 = 0.0
 	for i := 0; i < n; i++ {
-		f1 += cm.ClassScores.FloatValRowCell(i, 2)
+		classf1 := cm.ClassScores.FloatValRowCell(i, 2)
+		if math.IsNaN(classf1) == false {
+			f1 += classf1
+		}
 	}
 	cm.MatrixScores.SetFloat1D(1, f1/float64(n))
 
 	// weighted F1 - weighted average of class F1 scores
+	// some classes might not have any instances so check NaN
 	f1 = 0.0
 	totalN := 0.0
 	for i := 0; i < n; i++ {
-		f1 += cm.ClassScores.FloatValRowCell(i, 2) * cm.N.FloatVal1D(i)
+		classf1 := cm.ClassScores.FloatValRowCell(i, 2) * cm.N.FloatVal1D(i)
+		if math.IsNaN(classf1) == false {
+			f1 += classf1
+		}
 		totalN += cm.N.FloatVal1D(i)
 	}
 	cm.MatrixScores.SetFloat1D(2, f1/totalN)
