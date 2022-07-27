@@ -85,7 +85,7 @@ func (lg *Logs) Table(mode etime.Modes, time etime.Times) *etable.Table {
 	sk := etime.Scope(mode, time)
 	tb, ok := lg.Tables[sk]
 	if !ok {
-		log.Printf("Table for scope not found: %s\n", sk)
+		// log.Printf("Table for scope not found: %s\n", sk)
 		return nil
 	}
 	return tb.Table
@@ -95,7 +95,7 @@ func (lg *Logs) Table(mode etime.Modes, time etime.Times) *etable.Table {
 func (lg *Logs) TableScope(sk etime.ScopeKey) *etable.Table {
 	tb, ok := lg.Tables[sk]
 	if !ok {
-		log.Printf("Table for scope not found: %s\n", sk)
+		// log.Printf("Table for scope not found: %s\n", sk)
 		return nil
 	}
 	return tb.Table
@@ -256,7 +256,10 @@ func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int) *etable.Table {
 // The IdxViews are reset too.
 func (lg *Logs) ResetLog(mode etime.Modes, time etime.Times) {
 	sk := etime.Scope(mode, time)
-	lt := lg.Tables[sk]
+	lt, ok := lg.Tables[sk]
+	if !ok {
+		return
+	}
 	dt := lt.Table
 	dt.SetNumRows(0)
 	lt.ResetIdxViews()

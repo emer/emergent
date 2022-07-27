@@ -115,7 +115,7 @@ func (man *Manager) DocString() string {
 			}
 			sb.WriteString(indent.Spaces(i+1, indentSize) + "  End:   " + lp.OnEnd.String() + "\n")
 			if len(lp.Events) > 0 {
-				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Phases:\n")
+				sb.WriteString(indent.Spaces(i+1, indentSize) + "  Events:\n")
 				for _, ph := range lp.Events {
 					sb.WriteString(indent.Spaces(i+2, indentSize) + ph.String() + "\n")
 				}

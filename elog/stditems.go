@@ -43,6 +43,7 @@ func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) 
 	lg.AddItem(&Item{
 		Name:   itemName,
 		Type:   etensor.FLOAT64,
+		FixMin: true,
 		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
@@ -147,8 +148,10 @@ func (lg *Logs) InitErrStats() {
 // ordered from higher to lower, e.g., Run, Epoch, Trial.
 func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
-		Name: "Err",
-		Type: etensor.FLOAT64,
+		Name:   "Err",
+		Type:   etensor.FLOAT64,
+		FixMin: true,
+		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
 				ctx.SetStatFloat(statName)
@@ -156,6 +159,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:   "PctErr",
 		Type:   etensor.FLOAT64,
+		FixMin: true,
 		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
@@ -181,6 +185,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:   "PctCor",
 		Type:   etensor.FLOAT64,
+		FixMin: true,
 		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
