@@ -24,13 +24,16 @@ type Stack struct {
 	StopNext       bool        `desc:"If true, stop model at the end of the current StopLevel."`
 	StopFlag       bool        `desc:"If true, stop model ASAP."`
 	StopLevel      etime.Times `desc:"Time level to stop at the end of."`
-	StepIterations int         `desc:"How many steps to do."`
+	StopIterations int         `desc:"How many iterations at StopLevel before actually stopping."`
+	StepLevel      etime.Times `desc:"Saved Time level for stepping -- what was set for last step or by gui."`
+	StepIterations int         `desc:"Saved number of steps for stepping -- what was set for last step or by gui."`
 }
 
 // Init initializes new data structures for a newly created object
 func (stack *Stack) Init(mode etime.Modes) {
 	stack.Mode = mode
-	stack.StopLevel = etime.Trial
+	stack.StepLevel = etime.Trial
+	stack.StepIterations = 1
 	stack.Loops = map[etime.Times]*Loop{}
 	stack.Order = []etime.Times{}
 }
@@ -112,6 +115,8 @@ func (stack *Stack) CtrsToStats(stats *estats.Stats) {
 // SetStep sets stepping to given level and iterations
 func (stack *Stack) SetStep(numSteps int, stopscale etime.Times) {
 	stack.StopLevel = stopscale
+	stack.StopIterations = numSteps
+	stack.StepLevel = stopscale
 	stack.StepIterations = numSteps
 	stack.StopFlag = false
 	stack.StopNext = true

@@ -59,7 +59,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 				gui.ToolBar.UpdateActions()
 				go func() {
 					stack := loops.Stacks[mode]
-					loops.Step(mode, stepN[stack.StopLevel.String()], stack.StopLevel)
+					loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
 					gui.Stopped()
 				}()
 			}
@@ -72,7 +72,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 		}
 		scb.ItemsFromStringList(stepStrs, false, 30)
 		stack := loops.Stacks[mode]
-		scb.SetCurVal(stack.StopLevel.String())
+		scb.SetCurVal(stack.StepLevel.String())
 
 		sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
 		sb.Defaults()
@@ -87,8 +87,8 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 
 		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 			stack := loops.Stacks[mode]
-			stack.StopLevel = stringToEnumTime[scb.CurVal.(string)]
-			sb.Value = float32(stepN[stack.StopLevel.String()])
+			stack.StepLevel = stringToEnumTime[scb.CurVal.(string)]
+			sb.Value = float32(stepN[stack.StepLevel.String()])
 		})
 	}
 }

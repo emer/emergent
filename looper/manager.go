@@ -208,6 +208,7 @@ func (man *Manager) Cont() {
 func (man *Manager) Stop(level etime.Times) {
 	st := man.Stacks[man.Mode]
 	st.StopLevel = level
+	st.StopIterations = 0
 	st.StopFlag = true
 }
 
@@ -233,8 +234,8 @@ func (man *Manager) runLevel(currentLevel int) bool {
 			return false // Don't continue above, e.g. Stop functions
 		}
 		if st.StopNext && st.Order[currentLevel] == st.StopLevel {
-			st.StepIterations -= 1
-			if st.StepIterations <= 0 {
+			st.StopIterations -= 1
+			if st.StopIterations <= 0 {
 				st.StopNext = false
 				st.StopFlag = true // Stop at the top of the next StopLevel
 			}

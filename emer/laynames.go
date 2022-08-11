@@ -37,7 +37,7 @@ func (ln *LayNames) AddOne(laynm string) {
 }
 
 // AddAllBut adds all layers in network except those in exlude list
-func (ln *LayNames) AddAllBut(net Network, excl []string) {
+func (ln *LayNames) AddAllBut(net Network, excl ...string) {
 	exmap := make(map[string]struct{})
 	for _, ex := range excl {
 		exmap[ex] = struct{}{}
