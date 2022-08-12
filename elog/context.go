@@ -156,6 +156,35 @@ func (ctx *Context) ItemStringScope(scope etime.ScopeKey, itemNm string) string 
 	return dt.CellString(itemNm, dt.Rows-1)
 }
 
+// ItemTensor returns an etensor.Tensor of the last row of given item name
+// in log for given mode, time
+func (ctx *Context) ItemTensor(mode etime.Modes, time etime.Times, itemNm string) etensor.Tensor {
+	return ctx.ItemTensorScope(etime.Scope(mode, time), itemNm)
+}
+
+// ItemTensorScope returns an etensor.Tensor of the last row of given item name
+// in log for given scope.
+func (ctx *Context) ItemTensorScope(scope etime.ScopeKey, itemNm string) etensor.Tensor {
+	dt := ctx.Logs.TableScope(scope)
+	if dt.Rows == 0 {
+		return nil
+	}
+	return dt.CellTensor(itemNm, dt.Rows-1)
+}
+
+// ItemColTensor returns an etensor.Tensor of the entire column of given item name
+// in log for given mode, time
+func (ctx *Context) ItemColTensor(mode etime.Modes, time etime.Times, itemNm string) etensor.Tensor {
+	return ctx.ItemColTensorScope(etime.Scope(mode, time), itemNm)
+}
+
+// ItemColTensorScope returns an etensor.Tensor of the entire column of given item name
+// in log for given scope.
+func (ctx *Context) ItemColTensorScope(scope etime.ScopeKey, itemNm string) etensor.Tensor {
+	dt := ctx.Logs.TableScope(scope)
+	return dt.ColByName(itemNm)
+}
+
 ///////////////////////////////////////////////////
 //  Network
 
