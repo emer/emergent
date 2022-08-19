@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "evec",
+    srcs = [
+        "dims.go",
+        "dims_string.go",
+        "vec2i.go",
+    ],
+    importpath = "github.com/emer/emergent/evec",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_goki_ki//kit:go_default_library",
+        "@com_github_goki_mat32//:go_default_library",
+    ],
+)

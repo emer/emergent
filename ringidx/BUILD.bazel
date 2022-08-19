@@ -1,0 +1,11 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "ringidx",
+    srcs = [
+        "fixlen.go",
+        "ringidx.go",
+    ],
+    importpath = "github.com/emer/emergent/ringidx",
+    visibility = ["//visibility:public"],
+)

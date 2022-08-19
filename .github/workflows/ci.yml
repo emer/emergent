@@ -34,7 +34,6 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
- 
     - name: Install dep libs
       run: |
         sudo apt-get update
@@ -55,3 +54,26 @@ jobs:
       if: matrix.platform == 'ubuntu-latest'
       run: bash <(curl -s https://codecov.io/bash)
 
+  bazel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dep libs
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libgl1-mesa-dev xorg-dev
+      - name: Mount bazel action cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: bazel
+      - name: Mount bazel repo cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel-repo"
+          key: bazel-repo
+      - name: bazel test //...
+        env:
+          # Bazelisk will download bazel to here, ensure it is under .cache dir.
+          XDG_CACHE_HOME: /home/runner/.cache/bazel-repo
+        run: bazel --bazelrc=.github/workflows/workflows.bazelrc test //...

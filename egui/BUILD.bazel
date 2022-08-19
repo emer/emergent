@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "egui",
+    srcs = [
+        "grids.go",
+        "gui.go",
+        "loopctrl.go",
+        "netview.go",
+        "plots.go",
+        "toolbar.go",
+        "toolghosting.go",
+    ],
+    importpath = "github.com/emer/emergent/egui",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//actrf",
+        "//elog",
+        "//emer",
+        "//etime",
+        "//looper",
+        "//netview",
+        "@com_github_emer_etable//eplot:go_default_library",
+        "@com_github_emer_etable//etensor:go_default_library",
+        "@com_github_emer_etable//etview:go_default_library",
+        "@com_github_goki_gi//gi:go_default_library",
+        "@com_github_goki_gi//giv:go_default_library",
+        "@com_github_goki_ki//ki:go_default_library",
+        "@com_github_goki_ki//kit:go_default_library",
+        "@com_github_goki_mat32//:go_default_library",
+    ],
+)

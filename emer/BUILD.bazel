@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "emer",
+    srcs = [
+        "doc.go",
+        "layer.go",
+        "layertype_string.go",
+        "laynames.go",
+        "netsize.go",
+        "network.go",
+        "params.go",
+        "prjn.go",
+        "prjntype_string.go",
+        "version.go",
+    ],
+    importpath = "github.com/emer/emergent/emer",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//params",
+        "//prjn",
+        "//relpos",
+        "//weights",
+        "@com_github_emer_etable//etensor:go_default_library",
+        "@com_github_goki_gi//gi:go_default_library",
+        "@com_github_goki_ki//kit:go_default_library",
+        "@com_github_goki_mat32//:go_default_library",
+    ],
+)

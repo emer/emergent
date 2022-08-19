@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "confusion",
+    srcs = ["confusion.go"],
+    importpath = "github.com/emer/emergent/confusion",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_emer_etable//etensor:go_default_library",
+        "@com_github_emer_etable//simat:go_default_library",
+        "@com_github_goki_gi//gi:go_default_library",
+        "@com_github_goki_ki//ki:go_default_library",
+        "@com_github_goki_ki//kit:go_default_library",
+    ],
+)

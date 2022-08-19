@@ -1,0 +1,13 @@
+# This file contains Bazel settings to apply on GitHub workflows only.
+# It is referenced with a --bazelrc option in the in the yml files.
+
+# Debug where options came from
+build --announce_rc
+# Don't rely on test logs being easily accessible from the test runner,
+# though it makes the log noisier.
+test --test_output=errors
+# Print out tests with the wrong timeout value.
+test --test_verbose_timeout_warnings
+# These directories are configured in GitHub actions to be persisted between runs.
+build --disk_cache=$HOME/.cache/bazel
+build --repository_cache=$HOME/.cache/bazel-repo

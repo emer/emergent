@@ -37,7 +37,7 @@ See [python README](https://github.com/emer/leabra/blob/master/python/README.md)
 
 * The `emergent` repository will host additional Go packages that provide support for models.  These are all designed to be usable as independently and optionally as possible.  An overview of some of those packages is provided below.
 
-* The system is fully usable from within Python -- see the [Python Wiki](https://github.com/emer/emergent/wiki/Python).  This includes interoperating with PyTorch via [eTorch](https://github.com/emer/etorch), and [PsyNeuLink](https://princetonuniversity.github.io/PsyNeuLink/) to make Leabra models accessible in that framework, and vice-versa.  Furthermore, interactive, IDE-level tools such as `Jupyter` and `nteract` can be used to interactively develop and analyze the models, etc. 
+* The system is fully usable from within Python -- see the [Python Wiki](https://github.com/emer/emergent/wiki/Python).  This includes interoperating with PyTorch via [eTorch](https://github.com/emer/etorch), and [PsyNeuLink](https://princetonuniversity.github.io/PsyNeuLink/) to make Leabra models accessible in that framework, and vice-versa.  Furthermore, interactive, IDE-level tools such as `Jupyter` and `nteract` can be used to interactively develop and analyze the models, etc.
 
 * We are leveraging the [GoGi Gui](https://github.com/goki/gi) to provide interactive 2D and 3D GUI interfaces to models, capturing the essential functionality of the original C++ emergent interface, but in a much more a-la-carte fashion.  We also use and support the [GoNum](https://github.com/gonum) framework for analyzing and plotting results within Go.
 
@@ -45,7 +45,7 @@ See [python README](https://github.com/emer/leabra/blob/master/python/README.md)
 
 * The `emergent` repository contains a collection of packages supporting the implementation of biologically-based neural networks.  The main package is `emer` which specifies a minimal abstract interface for a neural network.  The `etable` `etable.Table` data structure (DataTable in C++) is in a separate repository under the overall `emer` project umbrella, as are specific algorithms such as `leabra` which implement the `emer` interface.
 
-* Go uses `interfaces` to represent abstract collections of functionality (i.e., sets of methods).  The `emer` package provides a set of interfaces for each structural level (e.g., `emer.Layer` etc) -- any given specific layer must implement all of these methods, and the structural containers (e.g., the list of layers in a network) are lists of these interfaces.  An interface is implicitly a *pointer* to an actual concrete object that implements the interface.  
+* Go uses `interfaces` to represent abstract collections of functionality (i.e., sets of methods).  The `emer` package provides a set of interfaces for each structural level (e.g., `emer.Layer` etc) -- any given specific layer must implement all of these methods, and the structural containers (e.g., the list of layers in a network) are lists of these interfaces.  An interface is implicitly a *pointer* to an actual concrete object that implements the interface.
 
 * To allow for specialized algorithms to extend the basic Leabra algorithm functionality, we have additional algorithm-specific interfaces in `leabra/leabra/leabra.go`, called `LeabraNetwork`, `LeabraLayer`, and `LeabraPrjn` -- all functions should go through this interface so that the final actual function called can be either the default version defined on `leabra.Layer` or a more specialized type (e.g., for simulating the PFC, hippocampus, BG etc). This is what it looks like for example:
 
@@ -127,6 +127,20 @@ Here are the other repositories within `emer` that provide additional, optional 
 * [grunt](https://github.com/emer/grunt) is the git-based run tool -- it handles the grunt work for running simulations on a cluster, by pushing to git repositories hosted on the cluster, which has a daemon running on it monitoring for these git updates.  It pushes back updates and results from the cluster.  There is a GUI for controlling and managing a potentially large history of jobs -- invaluable for any significant simulation to keep track of various parameter searches, changes over time etc.
 
 * [vision](https://github.com/emer/vision) and [auditory](https://github.com/emer/auditory) provide low-level filtering on sensory inputs reflecting corresponding biological mechanisms.
+
+# Bazel
+
+In addition to the go tool, we support [Bazel](https://bazel.build).
+
+After adding any new files or imports, please update the Bazel files automatically with:
+
+```sh
+# Updates BUILD.bazel files
+bazel run //:gazelle
+# Updates external repos in WORKSPACE.bazel
+bazel run //:gazelle -- update-repos -from_file=go.mod
+bazel test //...
+```
 
 # TODO
 
