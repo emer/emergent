@@ -1,3 +1,5 @@
+# elog
+
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/elog)
 
 `elog` provides a full infrastructure for recording data of all sorts at multiple time scales and evaluation modes (training, testing, validation, etc).

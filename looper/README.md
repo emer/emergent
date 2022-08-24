@@ -1,5 +1,7 @@
 # Looper: A flexible steppable control hierarchy
 
+Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/looper)
+
 Looper implements a fully generic looping control system with extensible functionality at each level of the loop, with logic that supports reentrant stepping so each time it is Run it advances at any specified step size, with results that are identical to running.
 
 Each loop implements the following logic:
