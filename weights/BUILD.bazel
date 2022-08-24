@@ -18,5 +18,6 @@ go_test(
         "cpp_test.go",
         "json_test.go",
     ],
+    data = ["FaceNetworkCpp.wts"],
     embed = [":weights"],
 )
