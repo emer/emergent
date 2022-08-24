@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "decoder",
+    srcs = [
+        "sigmoid.go",
+        "softmax.go",
+        "vote.go",
+    ],
+    importpath = "github.com/emer/emergent/decoder",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//emer",
+        "@com_github_emer_etable//etensor:go_default_library",
+        "@com_github_goki_mat32//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "decoder_test",
+    srcs = [
+        "sigmoid_test.go",
+        "softmax_test.go",
+        "vote_test.go",
+    ],
+    embed = [":decoder"],
+)

@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "esg",
+    srcs = [
+        "condels_string.go",
+        "conds.go",
+        "doc.go",
+        "elements_string.go",
+        "item.go",
+        "parse.go",
+        "rule.go",
+        "rules.go",
+        "ruletypes_string.go",
+    ],
+    importpath = "github.com/emer/emergent/esg",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//erand",
+        "@com_github_goki_ki//kit:go_default_library",
+    ],
+)
+
+go_test(
+    name = "esg_test",
+    srcs = ["esg_test.go"],
+    data = glob(["testdata/**"]),
+    embed = [":esg"],
+)

@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "chem",
+    srcs = [
+        "buffer.go",
+        "conc.go",
+        "diffuse.go",
+        "enz.go",
+        "enzrate.go",
+        "integrate.go",
+        "paramer.go",
+        "react.go",
+        "senz.go",
+        "stater.go",
+    ],
+    importpath = "github.com/emer/emergent/chem",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_emer_etable//etable:go_default_library"],
+)

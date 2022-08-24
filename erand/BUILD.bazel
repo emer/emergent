@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "erand",
+    srcs = [
+        "bool.go",
+        "doc.go",
+        "pchoose.go",
+        "permute.go",
+        "rnddists_string.go",
+        "rndparams.go",
+        "seeds.go",
+    ],
+    importpath = "github.com/emer/emergent/erand",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_goki_ki//kit:go_default_library",
+        "@org_gonum_v1_gonum//stat/distuv:go_default_library",
+    ],
+)
+
+go_test(
+    name = "erand_test",
+    srcs = ["erand_test.go"],
+    embed = [":erand"],
+    deps = ["@com_github_goki_ki//ints:go_default_library"],
+)

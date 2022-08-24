@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "weights",
+    srcs = [
+        "cpp.go",
+        "doc.go",
+        "json.go",
+        "wts.go",
+    ],
+    importpath = "github.com/emer/emergent/weights",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "weights_test",
+    srcs = [
+        "cpp_test.go",
+        "json_test.go",
+    ],
+    embed = [":weights"],
+)

@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "actrf",
+    srcs = [
+        "actrf.go",
+        "actrfs.go",
+        "doc.go",
+        "running.go",
+    ],
+    importpath = "github.com/emer/emergent/actrf",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_emer_etable//etensor:go_default_library",
+        "@com_github_emer_etable//norm:go_default_library",
+    ],
+)
