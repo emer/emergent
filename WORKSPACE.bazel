@@ -25,6 +25,7 @@ http_archive(
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 ############################################################
 # Define your own dependencies using go_repository() below.
@@ -762,11 +763,21 @@ go_repository(
     version = "v1.0.4",
 )
 
+git_repository(
+    name = "com_github_KhronosGroup_Vulkan-Headers",
+    commit = "7d7ac855d04117f05ffa6426178cd2a1c22ca556",
+    # TODO: Switch to http_archive if this is upstreamed and released.
+    remote = "https://github.com/garymm/Vulkan-Headers",
+    shallow_since = "1661456960 +0000",
+)
+
+# TODO: switch to released version
 go_repository(
     name = "com_github_goki_vulkan",
+    commit = "adbd4c5",
     importpath = "github.com/goki/vulkan",
-    sum = "h1:siy8s9EpUyiBnKMfkFqHYWxG20YaxRZhLNFJcmiLSK8=",
-    version = "v0.0.0-20220512102541-6e89b8ce8542",
+    remote = "https://github.com/garymm/vulkan",
+    vcs = "git",
 )
 
 go_repository(
