@@ -482,10 +482,9 @@ go_repository(
 
 go_repository(
     name = "com_github_emer_empi",
-    commit = "7fdaed27aaba53ffdcf20662fb04f4b333e43421",
     importpath = "github.com/emer/empi",
-    remote = "https://github.com/garymm/empi",
-    vcs = "git",
+    sum = "h1:OPZVHraAtrFNuWe2l0+mEDFNhPeg1g0hTleojSzJpis=",
+    version = "v1.0.14",
 )
 
 go_repository(
@@ -616,7 +615,7 @@ go_repository(
 
 go_repository(
     name = "com_github_go_gl_glfw",
-    commit = "cdcea3653b8e8a8d5cab49828b3993f27cebf00c",
+    commit = "0b4652f",
     importpath = "github.com/go-gl/glfw",
     # TODO: switch to official release if / when merged.
     remote = "https://github.com/garymm/glfw",
