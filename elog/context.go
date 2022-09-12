@@ -194,20 +194,32 @@ func (ctx *Context) Layer(layNm string) emer.Layer {
 	return ctx.Net.LayerByName(layNm)
 }
 
-// SetLayerTensor sets tensor of Unit values on a layer for given variable
-func (ctx *Context) SetLayerTensor(layNm, unitVar string) *etensor.Float32 {
+// GetLayerTensor gets tensor of Unit values on a layer for given variable
+func (ctx *Context) GetLayerTensor(layNm, unitVar string) *etensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
 	ly.UnitValsTensor(tsr, unitVar)
+	return tsr
+}
+
+// GetLayerRepTensor gets tensor of representative Unit values on a layer for given variable
+func (ctx *Context) GetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
+	ly := ctx.Layer(layNm)
+	tsr := ctx.Stats.F32Tensor(layNm)
+	ly.UnitValsRepTensor(tsr, unitVar)
+	return tsr
+}
+
+// SetLayerTensor sets tensor of Unit values on a layer for given variable
+func (ctx *Context) SetLayerTensor(layNm, unitVar string) *etensor.Float32 {
+	tsr := ctx.GetLayerTensor(layNm, unitVar)
 	ctx.SetTensor(tsr)
 	return tsr
 }
 
 // SetLayerRepTensor sets tensor of representative Unit values on a layer for given variable
 func (ctx *Context) SetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
-	ly := ctx.Layer(layNm)
-	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValsRepTensor(tsr, unitVar)
+	tsr := ctx.GetLayerRepTensor(layNm, unitVar)
 	ctx.SetTensor(tsr)
 	return tsr
 }

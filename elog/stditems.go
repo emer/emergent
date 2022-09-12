@@ -44,8 +44,8 @@ func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) 
 		Name:   itemName,
 		Type:   etensor.FLOAT64,
 		FixMin: true,
-		FixMax: true,
-		Range:  minmax.F64{Max: 1},
+		// FixMax: true,
+		Range: minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
 				ctx.SetFloat64(ctx.Stats.Float(statName))
