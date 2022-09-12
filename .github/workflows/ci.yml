@@ -37,7 +37,7 @@ jobs:
     - name: Install dep libs
       run: |
         sudo apt-get update
-        sudo apt-get -y install libgl1-mesa-dev xorg-dev
+        sudo apt-get install libgl1-mesa-dev xorg-dev
 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -55,13 +55,13 @@ jobs:
       run: bash <(curl -s https://codecov.io/bash)
 
   bazel:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - name: Install dep libs
         run: |
           sudo apt-get update
-          sudo apt-get -y install libgl1-mesa-dev xorg-dev
+          sudo apt-get install libgl1-mesa-dev xorg-dev
       - name: Mount bazel action cache
         uses: actions/cache@v3
         with:
