@@ -31,27 +31,35 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 		plt.SetTable(lt.Table)
 		plt.Params.FmMetaMap(lt.Meta)
 
-		for _, item := range lg.Items {
-			_, ok := item.Write[key]
-			if !ok {
-				continue
-			}
-			cp := plt.SetColParams(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
+		ConfigPlotFromLog(title, plt, lg, key)
+	}
+}
 
-			if item.Color != "" {
-				cp.ColorName = gi.ColorName(item.Color)
-			}
-			cp.TensorIdx = item.TensorIdx
-			cp.ErrCol = item.ErrCol
+func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime.ScopeKey) {
+	_, times := key.ModesAndTimes()
+	time := times[0]
+	lt := lg.Tables[key] // LogTable struct
 
-			plt.Params.Title = title + " " + time + " Plot"
-			plt.Params.XAxisCol = time
-			if xaxis, has := lt.Meta["XAxisCol"]; has {
-				plt.Params.XAxisCol = xaxis
-			}
-			if legend, has := lt.Meta["LegendCol"]; has {
-				plt.Params.LegendCol = legend
-			}
+	for _, item := range lg.Items {
+		_, ok := item.Write[key]
+		if !ok {
+			continue
+		}
+		cp := plt.SetColParams(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
+
+		if item.Color != "" {
+			cp.ColorName = gi.ColorName(item.Color)
+		}
+		cp.TensorIdx = item.TensorIdx
+		cp.ErrCol = item.ErrCol
+
+		plt.Params.Title = title + " " + time + " Plot"
+		plt.Params.XAxisCol = time
+		if xaxis, has := lt.Meta["XAxisCol"]; has {
+			plt.Params.XAxisCol = xaxis
+		}
+		if legend, has := lt.Meta["LegendCol"]; has {
+			plt.Params.LegendCol = legend
 		}
 	}
 }

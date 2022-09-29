@@ -99,7 +99,7 @@ func (nv *NetView) HasLayers() bool {
 // Record records the current state of the network, along with provided counters
 // string, which is displayed at the bottom of the view to show the current
 // state of the counters. The rastCtr is the raster counter value used for
-// the raster plot mode.
+// the raster plot mode -- use -1 for a default incrementing counter.
 // The NetView displays this recorded data when Update is next called.
 func (nv *NetView) Record(counters string, rastCtr int) {
 	nv.DataMu.Lock()
