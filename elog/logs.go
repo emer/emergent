@@ -101,9 +101,16 @@ func (lg *Logs) TableScope(sk etime.ScopeKey) *etable.Table {
 	return tb.Table
 }
 
-// MiscTable gets a miscellaneous table that is not specified or typically expected
+// MiscTable gets a miscellaneous table, e.g., for misc analysis.
+// If it doesn't exist, one is created.
 func (lg *Logs) MiscTable(name string) *etable.Table {
-	return lg.MiscTables[name]
+	dt, has := lg.MiscTables[name]
+	if has {
+		return dt
+	}
+	dt = &etable.Table{}
+	lg.MiscTables[name] = dt
+	return dt
 }
 
 // IdxView returns the Index View of a log table for a given mode, time

@@ -10,6 +10,7 @@ import (
 	"github.com/emer/emergent/actrf"
 	"github.com/emer/emergent/confusion"
 	"github.com/emer/emergent/timer"
+	"github.com/emer/etable/eplot"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/pca"
 	"github.com/emer/etable/simat"
@@ -26,6 +27,7 @@ type Stats struct {
 	IntTensors map[string]*etensor.Int     `desc:"int tensors as needed for other computations"`
 	Confusion  confusion.Matrix            `view:"no-inline" desc:"confusion matrix"`
 	SimMats    map[string]*simat.SimMat    `desc:"similarity matrix for comparing pattern similarities"`
+	Plots      map[string]*eplot.Plot2D    `desc:"analysis plots -- created by analysis routines"`
 	PCA        pca.PCA                     `desc:"one PCA object can be reused for all PCA computations"`
 	SVD        pca.SVD                     `desc:"one SVD object can be reused for all SVD computations"`
 	ActRFs     actrf.RFs                   `view:"no-inline" desc:"activation-based receptive fields"`
@@ -42,6 +44,7 @@ func (st *Stats) Init() {
 	st.F64Tensors = make(map[string]*etensor.Float64)
 	st.IntTensors = make(map[string]*etensor.Int)
 	st.SimMats = make(map[string]*simat.SimMat)
+	st.Plots = make(map[string]*eplot.Plot2D)
 	st.Timers = make(map[string]*timer.Time)
 	st.PCA.Init()
 	st.SVD.Init()
@@ -196,6 +199,17 @@ func (st *Stats) SimMat(name string) *simat.SimMat {
 		st.SimMats[name] = sm
 	}
 	return sm
+}
+
+// Plot returns an eplot.Plot2D of given name, creating if not yet made
+func (st *Stats) Plot(name string) *eplot.Plot2D {
+	pl, has := st.Plots[name]
+	if !has {
+		pl = &eplot.Plot2D{}
+		pl.InitName(pl, name) // any Ki obj needs this
+		st.Plots[name] = pl
+	}
+	return pl
 }
 
 // Timer returns timer of given name, creating if not yet made
