@@ -220,6 +220,13 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 	nd.UpdateUnVarRange()
 }
 
+// RecordLastCtrs records just the last counter string to be the given string
+// overwriting what was there before.
+func (nd *NetData) RecordLastCtrs(ctrs string) {
+	lidx := nd.Ring.LastIdx()
+	nd.Counters[lidx] = ctrs
+}
+
 // UpdateUnVarRange updates the range for unit variables, integrating over
 // the entire range of stored values, so it is valid when iterating
 // over history.

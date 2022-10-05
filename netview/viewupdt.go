@@ -67,7 +67,8 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 		vu.Update()
 	} else {
 		if viewUpdt < etime.Trial && time == etime.Trial {
-			if vu.View.Params.Raster.On { // no extra rec here {
+			if vu.View.Params.Raster.On { // no extra rec here
+				vu.View.Data.RecordLastCtrs(vu.Text)
 				vu.View.GoUpdate()
 			} else {
 				vu.Update()
