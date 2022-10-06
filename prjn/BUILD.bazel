@@ -24,10 +24,10 @@ go_library(
         "//efuns",
         "//erand",
         "//evec",
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_emer_etable//minmax:go_default_library",
-        "@com_github_goki_ki//ints:go_default_library",
-        "@com_github_goki_mat32//:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_emer_etable//minmax",
+        "@com_github_goki_ki//ints",
+        "@com_github_goki_mat32//:mat32",
     ],
 )
 
@@ -36,7 +36,7 @@ go_test(
     srcs = ["prjn_test.go"],
     embed = [":prjn"],
     deps = [
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_goki_ki//ints:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_goki_ki//ints",
     ],
 )

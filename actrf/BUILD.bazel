@@ -11,7 +11,7 @@ go_library(
     importpath = "github.com/emer/emergent/actrf",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_emer_etable//norm:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_emer_etable//norm",
     ],
 )

@@ -15,7 +15,7 @@ go_library(
     deps = [
         "//estats",
         "//etime",
-        "@com_github_goki_ki//indent:go_default_library",
+        "@com_github_goki_ki//indent",
     ],
 )
 

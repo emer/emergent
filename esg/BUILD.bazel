@@ -17,7 +17,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//erand",
-        "@com_github_goki_ki//kit:go_default_library",
+        "@com_github_goki_ki//kit",
     ],
 )
 

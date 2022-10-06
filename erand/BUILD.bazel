@@ -14,8 +14,8 @@ go_library(
     importpath = "github.com/emer/emergent/erand",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_goki_ki//kit:go_default_library",
-        "@org_gonum_v1_gonum//stat/distuv:go_default_library",
+        "@com_github_goki_ki//kit",
+        "@org_gonum_v1_gonum//stat/distuv",
     ],
 )
 
@@ -23,5 +23,5 @@ go_test(
     name = "erand_test",
     srcs = ["erand_test.go"],
     embed = [":erand"],
-    deps = ["@com_github_goki_ki//ints:go_default_library"],
+    deps = ["@com_github_goki_ki//ints"],
 )

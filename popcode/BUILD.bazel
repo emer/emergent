@@ -11,8 +11,8 @@ go_library(
     importpath = "github.com/emer/emergent/popcode",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_goki_mat32//:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_goki_mat32//:mat32",
     ],
 )
 
@@ -21,7 +21,7 @@ go_test(
     srcs = ["popcode_test.go"],
     embed = [":popcode"],
     deps = [
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_goki_mat32//:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_goki_mat32//:mat32",
     ],
 )

@@ -11,5 +11,5 @@ go_library(
     ],
     importpath = "github.com/emer/emergent/etime",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_goki_ki//kit:go_default_library"],
+    deps = ["@com_github_goki_ki//kit"],
 )

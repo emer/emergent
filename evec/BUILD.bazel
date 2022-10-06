@@ -10,7 +10,7 @@ go_library(
     importpath = "github.com/emer/emergent/evec",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_goki_ki//kit:go_default_library",
-        "@com_github_goki_mat32//:go_default_library",
+        "@com_github_goki_ki//kit",
+        "@com_github_goki_mat32//:mat32",
     ],
 )

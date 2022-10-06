@@ -8,5 +8,5 @@ go_library(
     ],
     importpath = "github.com/emer/emergent/edge",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_goki_mat32//:go_default_library"],
+    deps = ["@com_github_goki_mat32//:mat32"],
 )
