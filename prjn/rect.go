@@ -24,6 +24,7 @@ type Rect struct {
 	RoundScale bool       `desc:"if true, use Round when applying scaling factor -- otherwise uses Floor which makes Scale work like a grouping factor -- e.g., .25 will effectively group 4 recv units with same send position"`
 	Wrap       bool       `desc:"if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped"`
 	SelfCon    bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	Recip      bool       `desc:"make the reciprocal of the specified connections -- i.e., symmetric for swapping recv and send"`
 	RecvStart  evec.Vec2i `desc:"starting position in receiving layer -- if > 0 then units below this starting point remain unconnected"`
 	RecvN      evec.Vec2i `desc:"number of units in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected"`
 }
@@ -31,6 +32,14 @@ type Rect struct {
 func NewRect() *Rect {
 	cr := &Rect{}
 	cr.Defaults()
+	return cr
+}
+
+// NewRectRecip creates a new Rect that is a Recip version of given ff one
+func NewRectRecip(ff *Rect) *Rect {
+	cr := &Rect{}
+	*cr = *ff
+	cr.Recip = true
 	return cr
 }
 
@@ -45,6 +54,9 @@ func (cr *Rect) Name() string {
 }
 
 func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+	if cr.Recip {
+		return cr.ConnectRecip(send, recv, same)
+	}
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNy, sNx, _, _ := etensor.Prjn2DShape(send, false)
 	rNy, rNx, _, _ := etensor.Prjn2DShape(recv, false)
@@ -81,11 +93,11 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 			ri := etensor.Prjn2DIdx(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
-				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X+sst.X) * sc.X))
-				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y+sst.Y) * sc.Y))
+				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
 			} else {
-				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X+sst.X) * sc.X))
-				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y+sst.Y) * sc.Y))
+				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)
@@ -105,6 +117,74 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 					cons.Values.Set(off, true)
 					rnv[ri]++
 					snv[si]++
+				}
+			}
+		}
+	}
+	return
+}
+
+func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+	sendn, recvn, cons = NewTensors(send, recv)
+	sNy, sNx, _, _ := etensor.Prjn2DShape(recv, false) // swapped!
+	rNy, rNx, _, _ := etensor.Prjn2DShape(send, false)
+
+	rnv := recvn.Values
+	snv := sendn.Values
+	sNtot := send.Len()
+
+	rNyEff := rNy
+	if cr.RecvN.Y > 0 {
+		rNyEff = ints.MinInt(rNy, cr.RecvN.Y)
+	}
+	if cr.RecvStart.Y > 0 {
+		rNyEff = ints.MinInt(rNyEff, rNy-cr.RecvStart.Y)
+	}
+
+	rNxEff := rNx
+	if cr.RecvN.X > 0 {
+		rNxEff = ints.MinInt(rNx, cr.RecvN.X)
+	}
+	if cr.RecvStart.X > 0 {
+		rNxEff = ints.MinInt(rNxEff, rNx-cr.RecvStart.X)
+	}
+
+	sc := cr.Scale
+	if cr.AutoScale {
+		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
+		rsz := mat32.Vec2{float32(rNxEff), float32(rNyEff)}
+		sc = ssz.Div(rsz)
+	}
+
+	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
+		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
+			ri := etensor.Prjn2DIdx(send, false, ry, rx)
+			sst := cr.Start
+			if cr.RoundScale {
+				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
+			} else {
+				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
+			}
+			for y := 0; y < cr.Size.Y; y++ {
+				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)
+				if clipy {
+					continue
+				}
+				for x := 0; x < cr.Size.X; x++ {
+					sx, clipx := edge.Edge(sst.X+x, sNx, cr.Wrap)
+					if clipx {
+						continue
+					}
+					si := etensor.Prjn2DIdx(recv, false, sy, sx)
+					off := si*sNtot + ri
+					if !cr.SelfCon && same && ri == si {
+						continue
+					}
+					cons.Values.Set(off, true)
+					rnv[si]++
+					snv[ri]++
 				}
 			}
 		}
