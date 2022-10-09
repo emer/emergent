@@ -266,8 +266,8 @@ go_repository(
 go_repository(
     name = "com_github_burntsushi_toml",
     importpath = "github.com/BurntSushi/toml",
-    sum = "h1:ksErzDEI1khOiGPgpwuI7x2ebx/uXQNw7xJpn9Eq1+I=",
-    version = "v1.1.0",
+    sum = "h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=",
+    version = "v0.3.1",
 )
 
 go_repository(
@@ -490,8 +490,8 @@ go_repository(
 go_repository(
     name = "com_github_emer_etable",
     importpath = "github.com/emer/etable",
-    sum = "h1:xrndue6hIw1HBALClSc3WudvVNuDwMuEP3rOLHJl2tU=",
-    version = "v1.1.7",
+    sum = "h1:ApYgX4rDcxtQtkvoLstsfrY//gIuYi/zJkKHoiwClqI=",
+    version = "v1.1.10",
 )
 
 go_repository(
@@ -702,8 +702,8 @@ go_repository(
 go_repository(
     name = "com_github_goki_gi",
     importpath = "github.com/goki/gi",
-    sum = "h1:YRasxFKSkOPd2k1LGfjicOcGrSLQuk2pFtMAykmhBGM=",
-    version = "v1.3.5",
+    sum = "h1:gS7HRKxponQSphCN+2657eeDynEs7iTHFmN+de52YwY=",
+    version = "v1.3.7",
 )
 
 go_repository(
@@ -723,8 +723,8 @@ go_repository(
 go_repository(
     name = "com_github_goki_kigen",
     importpath = "github.com/goki/kigen",
-    sum = "h1:txBgu8SXsPKDkHoSD8elob85bWjy6TEreVS3TYMz7pU=",
-    version = "v1.0.1",
+    sum = "h1:bARxFEBOLDoDKQ/UPXbUO1rqkF1ZykLPxGvj2NOPdtk=",
+    version = "v1.0.0",
 )
 
 go_repository(
@@ -737,15 +737,15 @@ go_repository(
 go_repository(
     name = "com_github_goki_pi",
     importpath = "github.com/goki/pi",
-    sum = "h1:D5jbgEsYDPTf60DcFAgvRI9tMOLneg9yeKfguyUwNYE=",
-    version = "v1.0.18",
+    sum = "h1:0VkF9Dcj9R2DkQCA0q/OdcCxYa03WjYr+ehvKcFwxKU=",
+    version = "v1.0.20",
 )
 
 go_repository(
     name = "com_github_goki_prof",
     importpath = "github.com/goki/prof",
-    sum = "h1:3zU6niF8uvEaNtRBhOkmgbE/Fx7D6xuALotArTpycNc=",
-    version = "v0.0.0-20180502205428-54bc71b5d09b",
+    sum = "h1:kDkH1t4FpV7XYTEp2kJeQbI0l994bXg5dTzKw7hysKQ=",
+    version = "v1.0.0",
 )
 
 go_repository(
@@ -758,25 +758,19 @@ go_repository(
 go_repository(
     name = "com_github_goki_vgpu",
     importpath = "github.com/goki/vgpu",
-    sum = "h1:Z+gzFbt6u6x3tG7ZkFG9pofbpx7PSSvHt1GbdeRC4PE=",
-    version = "v1.0.4",
+    sum = "h1:5YPpI3uKZy+a7k+nsCpO4tcq/pRVKneQo+8ntsuD+Ag=",
+    version = "v1.0.5",
 )
 
 go_repository(
     name = "com_github_goki_vulkan",
     importpath = "github.com/goki/vulkan",
-    sum = "h1:RXR5Ib4NPr9xHPMpGPNqacRv6tMm1JSoY8o9DkeEePM=",
-    version = "v0.0.0-20220826212136-256f2efb4961",
-)
-
-# Required by the above repo.
-vulkan_mac_deps_version = "1.3.211.0"
-
-http_archive(
-    name = "com_github_goki_vulkan_mac_deps",
-    sha256 = "8d3277edf13a29703fc8922e32cf6e15a67c2af67c89fb1bec4dc2bce3e0cbf6",
-    strip_prefix = "vulkan_mac_deps-%s" % vulkan_mac_deps_version,
-    url = "https://github.com/goki/vulkan_mac_deps/archive/refs/tags/%s.tar.gz" % vulkan_mac_deps_version,
+    # NOTE: differs from go.mod/go.sum. The difference only matters
+    # for bazel. It would be nice to get this in sync through all
+    # the transtiive deps.
+    # Please make sure this doesn't go backwards.
+    sum = "h1:FGoz5u3HY1/lMcvPSEe7PMbnJPtJIE/W2kgooTITDic=",
+    version = "v0.0.0-20220928215615-c67065a9cfc2",
 )
 
 go_repository(
@@ -803,8 +797,8 @@ go_repository(
 go_repository(
     name = "com_github_golang_mock",
     importpath = "github.com/golang/mock",
-    sum = "h1:jlYHihg//f7RRwuPfptm04yp4s7O6Kw8EZiVYIGcH0g=",
-    version = "v1.5.0",
+    sum = "h1:G5FRp8JnTd7RQH5kemVNlMeyXQAztQ3mOWV95KxsXH8=",
+    version = "v1.1.1",
 )
 
 go_repository(
@@ -1195,8 +1189,8 @@ go_repository(
 go_repository(
     name = "com_github_knetic_govaluate",
     importpath = "github.com/Knetic/govaluate",
-    sum = "h1:1G1pk05UrOh0NlF1oeaaix1x8XzrfjIDK47TY0Zehcw=",
-    version = "v3.0.1-0.20171022003610-9aa49832a739+incompatible",
+    sum = "h1:7o6+MAPhYTCF0+fdvoz1xDedhRb4f6s9Tn1Tt7/WTEg=",
+    version = "v3.0.0+incompatible",
 )
 
 go_repository(
@@ -1594,8 +1588,8 @@ go_repository(
 go_repository(
     name = "com_github_prometheus_client_model",
     importpath = "github.com/prometheus/client_model",
-    sum = "h1:ElTg5tNp4DqfV7UQjDqv2+RJlNzsDtvNAWccbItceIE=",
-    version = "v0.1.0",
+    sum = "h1:gQz4mCbXsO+nc9n1hCxHcGA3Zx3Eo+UHZoInFGUIXNM=",
+    version = "v0.0.0-20190812154241-14fe0d1b01d4",
 )
 
 go_repository(
@@ -1846,8 +1840,8 @@ go_repository(
 go_repository(
     name = "com_github_stretchr_objx",
     importpath = "github.com/stretchr/objx",
-    sum = "h1:2vfRuCMp5sSVIDSqO8oNnWJq7mPa6KVP3iPIwFBuy8A=",
-    version = "v0.1.1",
+    sum = "h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=",
+    version = "v0.1.0",
 )
 
 go_repository(
@@ -1923,8 +1917,8 @@ go_repository(
 go_repository(
     name = "com_shuralyov_dmitri_gpu_mtl",
     importpath = "dmitri.shuralyov.com/gpu/mtl",
-    sum = "h1:+PdD6GLKejR9DizMAKT5DpSAkKswvZrurk1/eEt9+pw=",
-    version = "v0.0.0-20201218220906-28db891af037",
+    sum = "h1:VpgP7xuJadIUuKccphEpTJnWhS2jkQyMt6Y7pJCD7fY=",
+    version = "v0.0.0-20190408044501-666a987793e9",
 )
 
 go_repository(
@@ -2161,8 +2155,8 @@ go_repository(
 go_repository(
     name = "org_golang_x_image",
     importpath = "golang.org/x/image",
-    sum = "h1:9NbNcTg//wfC5JskFW4Z3sqwVnjmJKHxLAol1bW2qgw=",
-    version = "v0.0.0-20220601225756-64ec528b34cd",
+    sum = "h1:LRtI4W37N+KFebI/qV0OFiLUv4GLOWeEW5hn/KEJvxE=",
+    version = "v0.0.0-20220413100746-70e8d0d3baa9",
 )
 
 go_repository(
@@ -2175,15 +2169,15 @@ go_repository(
 go_repository(
     name = "org_golang_x_mobile",
     importpath = "golang.org/x/mobile",
-    sum = "h1:kgfVkAEEQXXQ0qc6dH7n6y37NAYmTFmz0YRwrRjgxKw=",
-    version = "v0.0.0-20201217150744-e6ae53a27f4f",
+    sum = "h1:4+4C/Iv2U4fMZBiMCc98MG1In4gJY5YRhtpDNeDeHWs=",
+    version = "v0.0.0-20190719004257-d2bd2a29d028",
 )
 
 go_repository(
     name = "org_golang_x_mod",
     importpath = "golang.org/x/mod",
-    sum = "h1:kQgndtyPBW/JIYERgdxfwMYh3AVStj88WQTlNDi2a+o=",
-    version = "v0.6.0-dev.0.20220106191415-9b9b3d81d5e3",
+    sum = "h1:6zppjxzCulZykYSLyVDYbneBfbaBIQPYMevg0bEwv2s=",
+    version = "v0.6.0-dev.0.20220419223038-86c51ed26bb4",
 )
 
 go_repository(
@@ -2238,8 +2232,8 @@ go_repository(
 go_repository(
     name = "org_golang_x_tools",
     importpath = "golang.org/x/tools",
-    sum = "h1:QjFRCZxdOhBJ/UNgnBZLbNV13DlbnK0quyivTnXJM20=",
-    version = "v0.1.10",
+    sum = "h1:loJ25fNOEhSXfHrpoGj91eCUThwdNX6u24rO1xnNteY=",
+    version = "v0.1.11",
 )
 
 go_repository(

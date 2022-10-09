@@ -6,10 +6,10 @@ go_library(
     importpath = "github.com/emer/emergent/confusion",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_emer_etable//simat:go_default_library",
-        "@com_github_goki_gi//gi:go_default_library",
-        "@com_github_goki_ki//ki:go_default_library",
-        "@com_github_goki_ki//kit:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_emer_etable//simat",
+        "@com_github_goki_gi//gi",
+        "@com_github_goki_ki//ki",
+        "@com_github_goki_ki//kit",
     ],
 )

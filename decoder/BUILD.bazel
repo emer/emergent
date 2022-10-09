@@ -11,8 +11,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//emer",
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_goki_mat32//:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_goki_mat32//:mat32",
     ],
 )
 

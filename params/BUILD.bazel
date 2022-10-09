@@ -15,10 +15,10 @@ go_library(
     importpath = "github.com/emer/emergent/params",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_goki_gi//gi:go_default_library",
-        "@com_github_goki_ki//indent:go_default_library",
-        "@com_github_goki_ki//ki:go_default_library",
-        "@com_github_goki_ki//kit:go_default_library",
+        "@com_github_goki_gi//gi",
+        "@com_github_goki_ki//indent",
+        "@com_github_goki_ki//ki",
+        "@com_github_goki_ki//kit",
     ],
 )
 
@@ -26,5 +26,5 @@ go_test(
     name = "params_test",
     srcs = ["params_test.go"],
     embed = [":params"],
-    deps = ["@com_github_andreyvit_diff//:go_default_library"],
+    deps = ["@com_github_andreyvit_diff//:diff"],
 )

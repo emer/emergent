@@ -21,9 +21,9 @@ go_library(
         "//prjn",
         "//relpos",
         "//weights",
-        "@com_github_emer_etable//etensor:go_default_library",
-        "@com_github_goki_gi//gi:go_default_library",
-        "@com_github_goki_ki//kit:go_default_library",
-        "@com_github_goki_mat32//:go_default_library",
+        "@com_github_emer_etable//etensor",
+        "@com_github_goki_gi//gi",
+        "@com_github_goki_ki//kit",
+        "@com_github_goki_mat32//:mat32",
     ],
 )
