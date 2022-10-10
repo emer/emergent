@@ -104,18 +104,27 @@ func (st *Stats) PrintVals(stats, fmts []string, delim string) string {
 	return str
 }
 
+// SetFloat sets Floats stat value
 func (st *Stats) SetFloat(name string, value float64) {
 	st.Floats[name] = value
 }
 
+// SetFloat32 sets Floats stat value using a float32 value
+func (st *Stats) SetFloat32(name string, value float32) {
+	st.Floats[name] = float64(value)
+}
+
+// SetString sets Strings stat value
 func (st *Stats) SetString(name string, value string) {
 	st.Strings[name] = value
 }
 
+// SetInt sets Ints stat value
 func (st *Stats) SetInt(name string, value int) {
 	st.Ints[name] = value
 }
 
+// Float returns Floats stat value -- prints error message and returns 0 if not found
 func (st *Stats) Float(name string) float64 {
 	val, has := st.Floats[name]
 	if has {
@@ -125,6 +134,13 @@ func (st *Stats) Float(name string) float64 {
 	return 0
 }
 
+// Float32 returns Floats stat value converted to float32.
+// prints error message and returns 0 if not found
+func (st *Stats) Float32(name string) float32 {
+	return float32(st.Float(name))
+}
+
+// String returns Strings stat value -- prints error message and returns "" if not found
 func (st *Stats) String(name string) string {
 	val, has := st.Strings[name]
 	if has {
@@ -134,6 +150,7 @@ func (st *Stats) String(name string) string {
 	return ""
 }
 
+// Int returns Ints stat value -- prints error message and returns 0 if not found
 func (st *Stats) Int(name string) int {
 	val, has := st.Ints[name]
 	if has {

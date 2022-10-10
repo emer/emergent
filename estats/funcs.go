@@ -32,6 +32,27 @@ func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string) *ete
 	return tsr
 }
 
+// LayerVarsCorrel returns the correlation between two variables on a given layer
+func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB string) float32 {
+	ly := net.LayerByName(layNm)
+	tsrA := st.F32Tensor(layNm) // standard re-used storage tensor
+	ly.UnitValsTensor(tsrA, unitVarA)
+	tsrB := st.F32Tensor(layNm + "_alt") // alternative storage tensor
+	ly.UnitValsTensor(tsrB, unitVarB)
+	return metric.Correlation32(tsrA.Values, tsrB.Values)
+}
+
+// LayerVarsCorrelRep returns the correlation between two variables on a given layer
+// Rep version uses representative units.
+func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB string) float32 {
+	ly := net.LayerByName(layNm)
+	tsrA := st.F32Tensor(layNm) // standard re-used storage tensor
+	ly.UnitValsRepTensor(tsrA, unitVarA)
+	tsrB := st.F32Tensor(layNm + "_alt") // alternative storage tensor
+	ly.UnitValsRepTensor(tsrB, unitVarB)
+	return metric.Correlation32(tsrA.Values, tsrB.Values)
+}
+
 // ClosestStat finds the closest pattern in given column of given table of possible patterns,
 // compared to layer activation pattern using given variable.  Returns the row number,
 // correlation value, and value of a column named namecol for that row if non-empty.
