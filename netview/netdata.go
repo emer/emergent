@@ -130,6 +130,16 @@ makeData:
 				}
 			}
 		}
+	} else {
+		for li := 0; li < nlay; li++ {
+			lay := nd.Net.Layer(li)
+			ld := nd.LayData[lay.Name()]
+			if nd.NoSynData {
+				ld.FreePrjns()
+			} else {
+				ld.AllocSendPrjns(lay)
+			}
+		}
 	}
 	vmax := vlen * rmax
 	for li := 0; li < nlay; li++ {
@@ -293,7 +303,9 @@ func (nd *NetData) RecordSyns() {
 		lay := nd.Net.Layer(li)
 		laynm := lay.Name()
 		ld := nd.LayData[laynm]
-		for _, spd := range ld.SendPrjns {
+		sp := lay.SendPrjns()
+		for si, _ := range *sp {
+			spd := ld.SendPrjns[si]
 			spd.RecordData(nd)
 		}
 	}

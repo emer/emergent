@@ -95,11 +95,11 @@ func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 			ris := rpi * rNn
 			sst := cr.Start
 			if cr.RoundScale {
-				sst.X += int(mat32.Round(float32(rx) * sc.X))
-				sst.Y += int(mat32.Round(float32(ry) * sc.Y))
+				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
 			} else {
-				sst.X += int(mat32.Floor(float32(rx) * sc.X))
-				sst.Y += int(mat32.Floor(float32(ry) * sc.Y))
+				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)

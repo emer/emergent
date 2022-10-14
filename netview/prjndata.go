@@ -21,10 +21,13 @@ type LayData struct {
 // AllocSendPrjns allocates Sending projections for given layer.
 // does nothing if already allocated.
 func (ld *LayData) AllocSendPrjns(ly emer.Layer) {
-	// nrp := ly.NRecvPrjns()
-	// len(ld.RecvPrjns) == nrp &&
 	nsp := ly.NSendPrjns()
 	if len(ld.SendPrjns) == nsp {
+		sp := ly.SendPrjns()
+		for si, pj := range *sp {
+			spd := ld.SendPrjns[si]
+			spd.Prjn = pj
+		}
 		return
 	}
 	ld.SendPrjns = make([]*PrjnData, nsp)
@@ -32,7 +35,6 @@ func (ld *LayData) AllocSendPrjns(ly emer.Layer) {
 	for si, pj := range *sp {
 		pd := &PrjnData{Send: pj.SendLay().Name(), Recv: pj.RecvLay().Name(), Prjn: pj}
 		ld.SendPrjns[si] = pd
-		// todo: need a Recv option
 		pd.Alloc()
 	}
 }
