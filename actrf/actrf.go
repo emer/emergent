@@ -21,8 +21,10 @@ type RF struct {
 	Name    string          `desc:"name of this RF -- used for management of multiple in RFs"`
 	RF      etensor.Float32 `view:"no-inline" desc:"computed receptive field, as SumProd / SumSrc -- only after Avg has been called"`
 	NormRF  etensor.Float32 `view:"no-inline" desc:"unit normalized version of RF per source (inner 2D dimensions) -- good for display"`
+	NormSrc etensor.Float32 `view:"no-inline" desc:"normalized version of SumSrc -- sum of each point in the source -- good for viewing the completeness and uniformity of the sampling of the source space"`
 	SumProd etensor.Float32 `view:"no-inline" desc:"sum of the products of act * src"`
 	SumSrc  etensor.Float32 `view:"no-inline" desc:"sum of the sources (denomenator)"`
+	MPITmp  etensor.Float32 `view:"no-inline" desc:"temporary destination sum for MPI -- only used when MPISum called"`
 }
 
 // Init initializes this RF based on name and shapes of given
@@ -45,10 +47,13 @@ func (af *RF) InitShape(act, src etensor.Tensor) []int {
 		return oshp
 	}
 	snm := []string{"ActY", "ActX", "SrcY", "SrcX"}
+	sshp := []int{sNy, sNx}
+	ssnm := []string{"SrcY", "SrcX"}
 	af.RF.SetShape(oshp, nil, snm)
 	af.NormRF.SetShape(oshp, nil, snm)
 	af.SumProd.SetShape(oshp, nil, snm)
-	af.SumSrc.SetShape(oshp, nil, snm)
+	af.NormSrc.SetShape(sshp, nil, ssnm)
+	af.SumSrc.SetShape(sshp, nil, ssnm)
 	return oshp
 }
 
@@ -71,13 +76,11 @@ func (af *RF) Add(act, src etensor.Tensor, thr float32) {
 			if tv < thr {
 				continue
 			}
+			af.SumSrc.AddScalar([]int{sy, sx}, tv)
 			for ay := 0; ay < aNy; ay++ {
 				for ax := 0; ax < aNx; ax++ {
 					av := float32(etensor.Prjn2DVal(act, false, ay, ax))
-					oi := []int{ay, ax, sy, sx}
-					oo := af.SumProd.Offset(oi)
-					af.SumProd.Values[oo] += av * tv
-					af.SumSrc.Values[oo] += tv
+					af.SumProd.AddScalar([]int{ay, ax, sy, sx}, av*tv)
 				}
 			}
 		}
@@ -90,25 +93,42 @@ func (af *RF) Avg() {
 	aNx := af.SumProd.Dim(1)
 	sNy := af.SumProd.Dim(2)
 	sNx := af.SumProd.Dim(3)
-	for ay := 0; ay < aNy; ay++ {
-		for ax := 0; ax < aNx; ax++ {
-			for sy := 0; sy < sNy; sy++ {
-				for sx := 0; sx < sNx; sx++ {
-					oi := []int{ay, ax, sy, sx}
-					oo := af.SumProd.Offset(oi)
-					src := af.SumSrc.Values[oo]
-					if src > 0 {
-						af.RF.Values[oo] = af.SumProd.Values[oo] / src
-					}
-
+	var maxSrc float32
+	for sy := 0; sy < sNy; sy++ {
+		for sx := 0; sx < sNx; sx++ {
+			src := af.SumSrc.Value([]int{sy, sx})
+			if src == 0 {
+				continue
+			}
+			if src > maxSrc {
+				maxSrc = src
+			}
+			for ay := 0; ay < aNy; ay++ {
+				for ax := 0; ax < aNx; ax++ {
+					oo := af.SumProd.Offset([]int{ay, ax, sy, sx})
+					af.RF.Values[oo] = af.SumProd.Values[oo] / src
 				}
 			}
 		}
 	}
+	if maxSrc == 0 {
+		maxSrc = 1
+	}
+	for i, v := range af.SumSrc.Values {
+		af.NormSrc.Values[i] = v / maxSrc
+	}
 }
 
-// Norm computes unit norm of RF values
+// Norm computes unit norm of RF values -- must be called after Avg
 func (af *RF) Norm() {
 	af.NormRF.CopyFrom(&af.RF)
 	norm.TensorUnit32(&af.NormRF, 2) // 2 = norm within outer 2 dims = norm each src within
+}
+
+// AvgNorm computes RF as SumProd / SumTarg and then does Norm.
+// This is what you typically want to call before viewing RFs.
+// Does not Reset sums.
+func (af *RF) AvgNorm() {
+	af.Avg()
+	af.Norm()
 }

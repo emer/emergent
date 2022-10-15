@@ -77,9 +77,18 @@ func (af *RFs) Avg() {
 	}
 }
 
-// Norm computes unit norm of RF values
+// Norm computes unit norm of RF values -- must be called after Avg
 func (af *RFs) Norm() {
 	for _, rf := range af.RFs {
 		rf.Norm()
+	}
+}
+
+// AvgNorm computes RF as SumProd / SumTarg and then does Norm.
+// This is what you typically want to call before viewing RFs.
+// Does not Reset sums.
+func (af *RFs) AvgNorm() {
+	for _, rf := range af.RFs {
+		rf.AvgNorm()
 	}
 }

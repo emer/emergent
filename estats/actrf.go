@@ -83,6 +83,5 @@ func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32) {
 // ActRFsAvgNorm calls Avg() then Norm() on ActRFs -- this is the
 // standard way to visualize the RFs
 func (st *Stats) ActRFsAvgNorm() {
-	st.ActRFs.Avg()
-	st.ActRFs.Norm()
+	st.ActRFs.AvgNorm()
 }
