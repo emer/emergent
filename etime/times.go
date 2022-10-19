@@ -112,3 +112,10 @@ const (
 
 	TimesN
 )
+
+// TimeFromString returns Time int value from string name
+func TimeFromString(str string) Times {
+	var time Times
+	time.FromString(str)
+	return time
+}

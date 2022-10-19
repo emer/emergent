@@ -4,7 +4,9 @@
 
 package etime
 
-import "github.com/goki/ki/kit"
+import (
+	"github.com/goki/ki/kit"
+)
 
 // Modes are evaluation modes (Training, Testing, etc)
 type Modes int32
@@ -38,4 +40,9 @@ const (
 	ModesN
 )
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ModeFromString returns Mode int value from string name
+func ModeFromString(str string) Modes {
+	var mode Modes
+	mode.FromString(str)
+	return mode
+}
