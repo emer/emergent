@@ -39,8 +39,8 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 // ordered from higher to lower, e.g., Run, Epoch, Trial.
 // The itemName is what is saved in the table, and statName is the source
 // statistic in stats at the lowest level.
-func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) {
-	lg.AddItem(&Item{
+func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) *Item {
+	return lg.AddItem(&Item{
 		Name:   itemName,
 		Type:   etensor.FLOAT64,
 		FixMin: true,
@@ -151,6 +151,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 		Name:   "Err",
 		Type:   etensor.FLOAT64,
 		FixMin: true,
+		FixMax: true,
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
@@ -220,8 +221,8 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 // the time taken to process one trial.  itemName is PerTrlMSec by default.
 // and times are relevant 3 times to record, ordered higher to lower,
 // e.g., Run, Epoch, Trial
-func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) {
-	lg.AddItem(&Item{
+func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) *Item {
+	return lg.AddItem(&Item{
 		Name: itemName,
 		Type: etensor.FLOAT64,
 		Write: WriteMap{
@@ -277,7 +278,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 				Name:      itmNm,
 				Type:      etensor.FLOAT32,
 				CellShape: cly.RepShape().Shp,
-				FixMax:    true,
+				FixMin:    true,
 				Range:     minmax.F64{Max: 1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
@@ -313,6 +314,30 @@ func (lg *Logs) PlotItems(itemNames ...string) {
 			continue
 		}
 		itm.Plot = true
+	}
+}
+
+// SetFloatMinItems turns off the FixMin flag for given items
+func (lg *Logs) SetFloatMinItems(itemNames ...string) {
+	for _, nm := range itemNames {
+		itm, has := lg.ItemByName(nm)
+		if !has {
+			fmt.Printf("elog.SetFloatMinItems: item named: %s not found\n", nm)
+			continue
+		}
+		itm.FixMin = false
+	}
+}
+
+// SetFloatMaxItems turns off the FixMax flag for given items
+func (lg *Logs) SetFloatMaxItems(itemNames ...string) {
+	for _, nm := range itemNames {
+		itm, has := lg.ItemByName(nm)
+		if !has {
+			fmt.Printf("elog.SetFloatMaxItems: item named: %s not found\n", nm)
+			continue
+		}
+		itm.FixMax = false
 	}
 }
 

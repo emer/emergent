@@ -49,7 +49,7 @@ type Logs struct {
 // dependencies across items (e.g., in using intermediate computed values).
 // Note: item names must be unique -- use different scopes for Write functions
 // where needed.
-func (lg *Logs) AddItem(item *Item) {
+func (lg *Logs) AddItem(item *Item) *Item {
 	lg.Items = append(lg.Items, item)
 	if lg.ItemIdxMap == nil {
 		lg.ItemIdxMap = make(map[string]int)
@@ -60,6 +60,7 @@ func (lg *Logs) AddItem(item *Item) {
 		log.Printf("elog.AddItem Warning: item name repeated: %s -- item names must be unique -- use different scopes in their Write functions instead of adding multiple entries\n", item.Name)
 	}
 	lg.ItemIdxMap[item.Name] = len(lg.Items) - 1
+	return item
 }
 
 // ItemByName returns item by given name, false if not found
