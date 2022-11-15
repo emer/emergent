@@ -33,7 +33,7 @@ type Styler interface {
 type StylerObj interface {
 	Styler
 
-	//	Object recturns the object that will have its field values set by
+	// Object returns the object that will have its field values set by
 	// the params specifications.
 	Object() interface{}
 }
