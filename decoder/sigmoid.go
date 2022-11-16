@@ -28,9 +28,9 @@ type Sigmoid struct {
 
 // SigmoidUnit has variables for Sigmoid decoder unit
 type SigmoidUnit struct {
-	Targ float32 `desc:"target activation value -- typically 0 or 1 but can be within that range too"`
-	Act  float32 `desc:"final activation = 1 / (1 + e^-Net) -- this is the decoded output"`
-	Net  float32 `desc:"net input = sum x * w"`
+	Target float32 `desc:"target activation value -- typically 0 or 1 but can be within that range too"`
+	Act    float32 `desc:"final activation = 1 / (1 + e^-Net) -- this is the decoded output"`
+	Net    float32 `desc:"net input = sum x * w"`
 }
 
 // InitLayer initializes detector with number of categories and layers
@@ -88,7 +88,7 @@ func (sm *Sigmoid) Train(targs []float32) (float32, error) {
 	}
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
-		u.Targ = targs[ui]
+		u.Target = targs[ui]
 	}
 	sse := sm.Back()
 	return sse, nil
@@ -141,7 +141,7 @@ func (sm *Sigmoid) Back() float32 {
 	var sse float32
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
-		err := (u.Targ - u.Act)
+		err := (u.Target - u.Act)
 		sse += err * err
 		del := lr * err
 		off := ui * sm.NInputs
