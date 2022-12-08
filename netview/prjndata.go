@@ -23,16 +23,16 @@ type LayData struct {
 func (ld *LayData) AllocSendPrjns(ly emer.Layer) {
 	nsp := ly.NSendPrjns()
 	if len(ld.SendPrjns) == nsp {
-		sp := ly.SendPrjns()
-		for si, pj := range *sp {
+		for si := 0; si < ly.NSendPrjns(); si++ {
+			pj := ly.SendPrjn(si)
 			spd := ld.SendPrjns[si]
 			spd.Prjn = pj
 		}
 		return
 	}
 	ld.SendPrjns = make([]*PrjnData, nsp)
-	sp := ly.SendPrjns()
-	for si, pj := range *sp {
+	for si := 0; si < ly.NSendPrjns(); si++ {
+		pj := ly.SendPrjn(si)
 		pd := &PrjnData{Send: pj.SendLay().Name(), Recv: pj.RecvLay().Name(), Prjn: pj}
 		ld.SendPrjns[si] = pd
 		pd.Alloc()

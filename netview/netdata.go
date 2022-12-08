@@ -117,9 +117,9 @@ makeData:
 			for li := 0; li < nlay; li++ {
 				rlay := nd.Net.Layer(li)
 				rld := nd.LayData[rlay.Name()]
-				rp := rlay.RecvPrjns()
-				rld.RecvPrjns = make([]*PrjnData, len(*rp))
-				for ri, rpj := range *rp {
+				rld.RecvPrjns = make([]*PrjnData, rlay.NRecvPrjns())
+				for ri := 0; ri < rlay.NRecvPrjns(); ri++ {
+					rpj := rlay.RecvPrjn(ri)
 					slay := rpj.SendLay()
 					sld := nd.LayData[slay.Name()]
 					for _, spj := range sld.SendPrjns {
@@ -303,8 +303,7 @@ func (nd *NetData) RecordSyns() {
 		lay := nd.Net.Layer(li)
 		laynm := lay.Name()
 		ld := nd.LayData[laynm]
-		sp := lay.SendPrjns()
-		for si, _ := range *sp {
+		for si := 0; si < lay.NSendPrjns(); si++ {
 			spd := ld.SendPrjns[si]
 			spd.RecordData(nd)
 		}
@@ -391,6 +390,46 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (f
 	return val, true
 }
 
+func sendNameTry(l emer.Layer, sender string) (emer.Prjn, error) {
+	for pi := 0; pi < l.NRecvPrjns(); pi++ {
+		pj := l.RecvPrjn(pi)
+		if pj.SendLay().Name() == sender {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+}
+
+func recvNameTry(l emer.Layer, recv string) (emer.Prjn, error) {
+	for pi := 0; pi < l.NSendPrjns(); pi++ {
+		pj := l.SendPrjn(pi)
+		if pj.RecvLay().Name() == recv {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("receiving layer: %v not found in list of projections", recv)
+}
+
+func sendNameTypeTry(l emer.Layer, sender, typ string) (emer.Prjn, error) {
+	for pi := 0; pi < l.NRecvPrjns(); pi++ {
+		pj := l.RecvPrjn(pi)
+		if pj.SendLay().Name() == sender && pj.PrjnTypeName() == typ {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+}
+
+func recvNameTypeTry(l emer.Layer, recv, typ string) (emer.Prjn, error) {
+	for pi := 0; pi < l.NSendPrjns(); pi++ {
+		pj := l.SendPrjn(pi)
+		if pj.RecvLay().Name() == recv && pj.PrjnTypeName() == typ {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of projections", recv, typ)
+}
+
 // RecvUnitVal returns the value for given layer, variable name, unit index,
 // for receiving projection variable, based on recorded synaptic projection data.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
@@ -406,12 +445,12 @@ func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 	var pj emer.Prjn
 	var err error
 	if nd.PrjnType != "" {
-		pj, err = recvLay.RecvPrjns().SendNameTypeTry(laynm, nd.PrjnType)
+		pj, err = sendNameTypeTry(recvLay, laynm, nd.PrjnType)
 		if pj == nil {
-			pj, err = recvLay.RecvPrjns().SendNameTry(laynm)
+			pj, err = sendNameTry(recvLay, laynm)
 		}
 	} else {
-		pj, err = recvLay.RecvPrjns().SendNameTry(laynm)
+		pj, err = sendNameTry(recvLay, laynm)
 	}
 	if pj == nil {
 		return 0, false
@@ -454,12 +493,12 @@ func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 	var pj emer.Prjn
 	var err error
 	if nd.PrjnType != "" {
-		pj, err = sendLay.SendPrjns().RecvNameTypeTry(laynm, nd.PrjnType)
+		pj, err = recvNameTypeTry(sendLay, laynm, nd.PrjnType)
 		if pj == nil {
-			pj, err = sendLay.SendPrjns().RecvNameTry(laynm)
+			pj, err = recvNameTry(sendLay, laynm)
 		}
 	} else {
-		pj, err = sendLay.SendPrjns().RecvNameTry(laynm)
+		pj, err = recvNameTry(sendLay, laynm)
 	}
 	if pj == nil {
 		return 0, false

@@ -190,17 +190,11 @@ type Layer interface {
 	// Returns NaN on invalid var name or index.
 	UnitVal(varNm string, idx []int) float32
 
-	// RecvPrjns returns the full list of receiving projections
-	RecvPrjns() *Prjns
-
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int
 
 	// RecvPrjn returns a specific receiving projection
 	RecvPrjn(idx int) Prjn
-
-	// SendPrjns returns the full list of sending projections
-	SendPrjns() *Prjns
 
 	// NSendPrjns returns the number of sending projections
 	NSendPrjns() int
