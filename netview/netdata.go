@@ -390,7 +390,7 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (f
 	return val, true
 }
 
-func sendNameTry(l emer.Layer, sender string) (emer.Prjn, error) {
+func SendNameTry(l emer.Layer, sender string) (emer.Prjn, error) {
 	for pi := 0; pi < l.NRecvPrjns(); pi++ {
 		pj := l.RecvPrjn(pi)
 		if pj.SendLay().Name() == sender {
@@ -400,7 +400,7 @@ func sendNameTry(l emer.Layer, sender string) (emer.Prjn, error) {
 	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
 }
 
-func recvNameTry(l emer.Layer, recv string) (emer.Prjn, error) {
+func RecvNameTry(l emer.Layer, recv string) (emer.Prjn, error) {
 	for pi := 0; pi < l.NSendPrjns(); pi++ {
 		pj := l.SendPrjn(pi)
 		if pj.RecvLay().Name() == recv {
@@ -410,7 +410,7 @@ func recvNameTry(l emer.Layer, recv string) (emer.Prjn, error) {
 	return nil, fmt.Errorf("receiving layer: %v not found in list of projections", recv)
 }
 
-func sendNameTypeTry(l emer.Layer, sender, typ string) (emer.Prjn, error) {
+func SendNameTypeTry(l emer.Layer, sender, typ string) (emer.Prjn, error) {
 	for pi := 0; pi < l.NRecvPrjns(); pi++ {
 		pj := l.RecvPrjn(pi)
 		if pj.SendLay().Name() == sender && pj.PrjnTypeName() == typ {
@@ -420,7 +420,7 @@ func sendNameTypeTry(l emer.Layer, sender, typ string) (emer.Prjn, error) {
 	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
 }
 
-func recvNameTypeTry(l emer.Layer, recv, typ string) (emer.Prjn, error) {
+func RecvNameTypeTry(l emer.Layer, recv, typ string) (emer.Prjn, error) {
 	for pi := 0; pi < l.NSendPrjns(); pi++ {
 		pj := l.SendPrjn(pi)
 		if pj.RecvLay().Name() == recv && pj.PrjnTypeName() == typ {
@@ -445,12 +445,12 @@ func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 	var pj emer.Prjn
 	var err error
 	if nd.PrjnType != "" {
-		pj, err = sendNameTypeTry(recvLay, laynm, nd.PrjnType)
+		pj, err = SendNameTypeTry(recvLay, laynm, nd.PrjnType)
 		if pj == nil {
-			pj, err = sendNameTry(recvLay, laynm)
+			pj, err = SendNameTry(recvLay, laynm)
 		}
 	} else {
-		pj, err = sendNameTry(recvLay, laynm)
+		pj, err = SendNameTry(recvLay, laynm)
 	}
 	if pj == nil {
 		return 0, false
@@ -493,12 +493,12 @@ func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 	var pj emer.Prjn
 	var err error
 	if nd.PrjnType != "" {
-		pj, err = recvNameTypeTry(sendLay, laynm, nd.PrjnType)
+		pj, err = RecvNameTypeTry(sendLay, laynm, nd.PrjnType)
 		if pj == nil {
-			pj, err = recvNameTry(sendLay, laynm)
+			pj, err = RecvNameTry(sendLay, laynm)
 		}
 	} else {
-		pj, err = recvNameTry(sendLay, laynm)
+		pj, err = RecvNameTry(sendLay, laynm)
 	}
 	if pj == nil {
 		return 0, false
