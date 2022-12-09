@@ -410,7 +410,7 @@ func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 			pj, err = recvLay.SendNameTry(laynm)
 		}
 	} else {
-		pj, err = emer.SendNameTry(recvLay, laynm)
+		pj, err = recvLay.SendNameTry(laynm)
 	}
 	if pj == nil {
 		return 0, false
