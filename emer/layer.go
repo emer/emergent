@@ -5,6 +5,7 @@
 package emer
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/emer/emergent/params"
@@ -202,6 +203,18 @@ type Layer interface {
 	// SendPrjn returns a specific sending projection
 	SendPrjn(idx int) Prjn
 
+	// SendNameTry looks for a projection connected to this layer whose sender layer has a given name
+	SendNameTry(sender string) (Prjn, error)
+
+	// SendNameTypeTry looks for a projection connected to this layer whose sender layer has a given name and type
+	SendNameTypeTry(sender, typ string) (Prjn, error)
+
+	// RecvNameTry looks for a projection connected to this layer whose receiver layer has a given name
+	RecvNameTry(recv string) (Prjn, error)
+
+	// RecvNameTypeTry looks for a projection connected to this layer whose receiver layer has a given name and type
+	RecvNameTypeTry(recv, typ string) (Prjn, error)
+
 	// RecvPrjnVals fills in values of given synapse variable name,
 	// for projection from given sending layer and neuron 1D index,
 	// for all receiving neurons in this layer,
@@ -351,3 +364,45 @@ const (
 
 	LayerTypeN
 )
+
+// we keep these here to make it easier for other packages to implement the emer.Layer interface
+// by just calling these methods
+func SendNameTry(l Layer, sender string) (Prjn, error) {
+	for pi := 0; pi < l.NRecvPrjns(); pi++ {
+		pj := l.RecvPrjn(pi)
+		if pj.SendLay().Name() == sender {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+}
+
+func RecvNameTry(l Layer, recv string) (Prjn, error) {
+	for pi := 0; pi < l.NSendPrjns(); pi++ {
+		pj := l.SendPrjn(pi)
+		if pj.RecvLay().Name() == recv {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("receiving layer: %v not found in list of projections", recv)
+}
+
+func SendNameTypeTry(l Layer, sender, typ string) (Prjn, error) {
+	for pi := 0; pi < l.NRecvPrjns(); pi++ {
+		pj := l.RecvPrjn(pi)
+		if pj.SendLay().Name() == sender && pj.PrjnTypeName() == typ {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+}
+
+func RecvNameTypeTry(l Layer, recv, typ string) (Prjn, error) {
+	for pi := 0; pi < l.NSendPrjns(); pi++ {
+		pj := l.SendPrjn(pi)
+		if pj.RecvLay().Name() == recv && pj.PrjnTypeName() == typ {
+			return pj, nil
+		}
+	}
+	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of projections", recv, typ)
+}
