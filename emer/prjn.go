@@ -63,7 +63,9 @@ type Prjn interface {
 	// Useful for experimentation
 	IsOff() bool
 
-	// SetOff sets the projection Off status (i.e., lesioned)
+	// SetOff sets the projection Off status (i.e., lesioned). Careful: Layer.SetOff(true) will
+	// reactivate that layer's projections, so projection-level lesioning should always be called
+	// after layer-level lesioning.
 	SetOff(off bool)
 
 	// SynVarNames returns the names of all the variables on the synapse
