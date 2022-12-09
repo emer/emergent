@@ -40,7 +40,8 @@ type Layer interface {
 	// IsOff returns true if layer has been turned Off (lesioned) -- for experimentation
 	IsOff() bool
 
-	// SetOff sets the "off" (lesioned) status of layer
+	// SetOff sets the "off" (lesioned) status of layer. Also sets the Off state of all
+	// projections from this layer to other layers.
 	SetOff(off bool)
 
 	// Shape returns the organization of units in the layer, in terms of an array of dimensions.
