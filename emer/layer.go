@@ -69,14 +69,6 @@ type Layer interface {
 	// Config configures the basic parameters of the layer
 	Config(shape []int, typ LayerType)
 
-	// Thread() returns the thread number (go worker thread) to use in updating this layer.
-	// The user is responsible for allocating layers to threads, trying to maintain an even
-	// distribution across layers and establishing good break-points.
-	Thread() int
-
-	// SetThread sets the thread number (go worker thread) to use in updating this layer.
-	SetThread(thr int)
-
 	// RelPos returns the relative 3D position specification for this layer
 	// for display in the 3D NetView -- see Pos() for display conventions.
 	RelPos() relpos.Rel
