@@ -23,7 +23,7 @@ type SoftMax struct {
 	Sorted   []int                       `desc:"sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act"`
 	NInputs  int                         `desc:"number of inputs -- total sizes of layer inputs"`
 	Inputs   []float32                   `desc:"input values, copied from layers"`
-	Targ     int                         `desc:"current target index of correct category"`
+	Target   int                         `desc:"current target index of correct category"`
 	ValsTsrs map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
 	Weights  etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 }
@@ -71,7 +71,7 @@ func (sm *SoftMax) Decode(varNm string) int {
 
 // Train trains the decoder with given target correct answer (0..NCats-1)
 func (sm *SoftMax) Train(targ int) {
-	sm.Targ = targ
+	sm.Target = targ
 	sm.Back()
 }
 
@@ -147,7 +147,7 @@ func (sm *SoftMax) Back() {
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
 		var del float32
-		if ui == sm.Targ {
+		if ui == sm.Target {
 			del = lr * (1 - u.Act)
 		} else {
 			del = -lr * u.Act

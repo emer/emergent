@@ -7,15 +7,15 @@ package chem
 // Buffer provides a soft buffering driving deltas relative to a target N
 // which can be set by concentration and volume.
 type Buffer struct {
-	K    float64 `desc:"rate of buffering (akin to permeability / conductance of a channel)"`
-	Targ float64 `desc:"buffer target concentration -- drives delta relative to this"`
+	K      float64 `desc:"rate of buffering (akin to permeability / conductance of a channel)"`
+	Target float64 `desc:"buffer target concentration -- drives delta relative to this"`
 }
 
 func (bf *Buffer) SetTargVol(targ, vol float64) {
-	bf.Targ = CoToN(targ, vol)
+	bf.Target = CoToN(targ, vol)
 }
 
-// Step computes da delta for current value ca relative to target value Targ
+// Step computes da delta for current value ca relative to target value Target
 func (bf *Buffer) Step(ca float64, da *float64) {
-	*da += bf.K * (bf.Targ - ca)
+	*da += bf.K * (bf.Target - ca)
 }
