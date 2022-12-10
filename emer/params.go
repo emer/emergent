@@ -171,8 +171,8 @@ func (pr *Params) SetAll() error {
 }
 
 // SetAllSet sets parameters for given Set name to all Objects
-func (pr *Params) SetAllSet(setNm string) error {
-	pset, err := pr.Params.SetByNameTry(setNm)
+func (pr *Params) SetAllSet(setName string) error {
+	pset, err := pr.Params.SetByNameTry(setName)
 	if err != nil {
 		return err
 	}
@@ -181,11 +181,12 @@ func (pr *Params) SetAllSet(setNm string) error {
 		if !ok {
 			continue
 		}
+		sh.SelMatchReset()
 		if nm == "Network" {
 			net := obj.(Network)
 			net.ApplyParams(sh, pr.SetMsg)
 			hypers := NetworkHyperParams(net, sh)
-			if setNm == "Base" {
+			if setName == "Base" {
 				pr.NetHypers = hypers
 			} else {
 				pr.NetHypers.CopyFrom(hypers)
@@ -196,6 +197,7 @@ func (pr *Params) SetAllSet(setNm string) error {
 		} else {
 			sh.Apply(obj, pr.SetMsg)
 		}
+		err = sh.SelNoMatchWarn(setName, nm)
 	}
 	return err
 }
@@ -215,8 +217,8 @@ func (pr *Params) SetObject(objName string) error {
 }
 
 // SetObjectSet sets parameters for given Set name to given object
-func (pr *Params) SetObjectSet(objName, setNm string) error {
-	pset, err := pr.Params.SetByNameTry(setNm)
+func (pr *Params) SetObjectSet(objName, setName string) error {
+	pset, err := pr.Params.SetByNameTry(setName)
 	if err != nil {
 		return err
 	}
@@ -230,6 +232,7 @@ func (pr *Params) SetObjectSet(objName, setNm string) error {
 		err = fmt.Errorf("Params.SetObjectSet: Object named: %s not found", objName)
 		return err
 	}
+	sh.SelMatchReset()
 	if objName == "Network" {
 		net := obj.(Network)
 		net.ApplyParams(sh, pr.SetMsg)
@@ -239,6 +242,7 @@ func (pr *Params) SetObjectSet(objName, setNm string) error {
 	} else {
 		sh.Apply(obj, pr.SetMsg)
 	}
+	err = sh.SelNoMatchWarn(setName, objName)
 	return err
 }
 

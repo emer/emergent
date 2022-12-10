@@ -5,6 +5,7 @@
 package params
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -225,12 +226,43 @@ func (ps *Sheet) Apply(obj interface{}, setMsg bool) (bool, error) {
 		app, err := sl.Apply(obj, setMsg)
 		if app {
 			applied = true
+			sl.NMatch++
 		}
 		if err != nil {
 			rerr = err
 		}
 	}
 	return applied, rerr
+}
+
+// SelMatchReset resets the Sel.NMatch counter used to find cases where no Sel
+// matched any target objects.  Call at start of application process, which
+// may be at an outer-loop of Apply calls (e.g., for a Network, Apply is called
+// for each Layer and Prjn), so this must be called separately.
+// See SelNoMatchWarn for warning call at end.
+func (ps *Sheet) SelMatchReset() {
+	for _, sl := range *ps {
+		sl.NMatch = 0
+	}
+}
+
+// SelNoMatchWarn issues warning messages for any Sel selectors that had no
+// matches during the last Apply process -- see SelMatchReset.
+// The setName and objName provide info about the Set and obj being applied.
+// Returns an error message with the non-matching sets if any, else nil.
+func (ps *Sheet) SelNoMatchWarn(setName, objName string) error {
+	msg := ""
+	for _, sl := range *ps {
+		if sl.NMatch == 0 {
+			msg += "\tSel: " + sl.Sel + "\n"
+		}
+	}
+	if msg != "" {
+		msg = fmt.Sprintf("param.Sheet from Set: %s for object: %s had the following non-matching Selectors:\n%s", setName, objName, msg)
+		log.Println(msg)
+		return errors.New(msg)
+	}
+	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////
