@@ -190,12 +190,12 @@ func (ur *UnifRnd) ConnectFull(send, recv *etensor.Shape, same bool) (sendn, rec
 	nsend := send.Len()
 	nrecv := recv.Len()
 	if same && !ur.SelfCon {
-		nsend--
-		nrecv--
 		for i := 0; i < nsend; i++ { // nsend = nrecv
 			off := i*nsend + i
 			cons.Values.Set(off, false)
 		}
+		nsend--
+		nrecv--
 	}
 	rnv := recvn.Values
 	for i := range rnv {
