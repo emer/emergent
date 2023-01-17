@@ -9,7 +9,7 @@ require (
 	github.com/goki/gi v1.3.9
 	github.com/goki/ki v1.1.9
 	github.com/goki/mat32 v1.0.13
-	github.com/goki/vgpu v1.0.7
+	github.com/goki/vgpu v1.0.9
 	gonum.org/v1/gonum v0.12.0
 )
 

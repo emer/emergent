@@ -8,15 +8,17 @@ import (
 	"github.com/goki/ki/kit"
 )
 
-// Modes are evaluation modes (Training, Testing, etc)
-type Modes int32
-
 //go:generate stringer -type=Modes
 
 var KiT_Modes = kit.Enums.AddEnum(ModesN, kit.NotBitFlag, nil)
 
 func (ev Modes) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
 func (ev *Modes) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+
+//gosl: start etime
+
+// Modes are evaluation modes (Training, Testing, etc)
+type Modes int32
 
 // The evaluation modes
 const (
@@ -39,6 +41,8 @@ const (
 
 	ModesN
 )
+
+//gosl: end etime
 
 // ModeFromString returns Mode int value from string name
 func ModeFromString(str string) Modes {
