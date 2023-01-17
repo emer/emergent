@@ -11,6 +11,7 @@ import (
 	"github.com/emer/etable/etview"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/giv"
+	_ "github.com/goki/gosl/slboolview" // include to get gui views
 	"github.com/goki/ki/ki"
 	"github.com/goki/mat32"
 )

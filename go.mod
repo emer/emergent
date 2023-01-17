@@ -5,11 +5,12 @@ go 1.18
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
-	github.com/emer/etable v1.1.12
+	github.com/emer/etable v1.1.14
 	github.com/goki/gi v1.3.9
-	github.com/goki/ki v1.1.9
+	github.com/goki/gosl v1.0.5
+	github.com/goki/ki v1.1.11
 	github.com/goki/mat32 v1.0.13
-	github.com/goki/vgpu v1.0.9
+	github.com/goki/vgpu v1.0.10
 	gonum.org/v1/gonum v0.12.0
 )
 
