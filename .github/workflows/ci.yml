@@ -2,78 +2,53 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-
   build:
     name: Build
     strategy:
       matrix:
         go-version: [1.18.x]
-        platform: [ubuntu-latest]  # not macos-latest
+        platform: [ubuntu-latest] # not macos-latest
 
     runs-on: ${{ matrix.platform }}
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
 
-    - name: Cache-Go
-      uses: actions/cache@v1
-      with:
-        path: |
+      - name: Cache-Go
+        uses: actions/cache@v1
+        with:
+          path: |
             ~/go/pkg/mod              # Module download cache
             ~/.cache/go-build         # Build cache (Linux)
             ~/Library/Caches/go-build # Build cache (Mac)
             '%LocalAppData%\go-build' # Build cache (Windows)
 
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-    - name: Install dep libs
-      run: |
-        sudo apt-get update
-        sudo apt-get install libgl1-mesa-dev xorg-dev
-
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Build
-      run: |
-        make build
-
-    - name: Test
-      run: |
-        make test
-
-    - name: Upload-Coverage
-      if: matrix.platform == 'ubuntu-latest'
-      run: bash <(curl -s https://codecov.io/bash)
-
-  bazel:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
       - name: Install dep libs
         run: |
           sudo apt-get update
           sudo apt-get install libgl1-mesa-dev xorg-dev
-      - name: Mount bazel action cache
-        uses: actions/cache@v3
-        with:
-          path: "~/.cache/bazel"
-          key: bazel
-      - name: Mount bazel repo cache
-        uses: actions/cache@v3
-        with:
-          path: "~/.cache/bazel-repo"
-          key: bazel-repo
-      - name: bazel test //...
-        env:
-          # Bazelisk will download bazel to here, ensure it is under .cache dir.
-          XDG_CACHE_HOME: /home/runner/.cache/bazel-repo
-        run: bazel --bazelrc=.github/workflows/workflows.bazelrc test //...
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          make build
+
+      - name: Test
+        run: |
+          make test
+
+      - name: Upload-Coverage
+        if: matrix.platform == 'ubuntu-latest'
+        run: bash <(curl -s https://codecov.io/bash)
