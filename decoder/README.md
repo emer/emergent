@@ -4,7 +4,7 @@ The decoder package provides standalone decoders that can sample variables from 
 
 # SoftMax
 
-The `SoftMax` decoder is the best choice for a 1-hot classification decoder, using the widely-used SoftMax function: https://en.wikipedia.org/wiki/Softmax_function
+The `SoftMax` decoder is the best choice for a 1-hot classification decoder, using the [SoftMax function](https://en.wikipedia.org/wiki/Softmax_function).
 
 Here's the basic API:
 
@@ -18,9 +18,9 @@ It is also possible to use the decoder without reference to emer Layers by just 
 
 A learning rate of about 0.05 works well for large layers, and 0.1 can be used for smaller, less complex cases.
 
-# Sigmoid
+# Linear
 
-The `Sigmoid` decoder is the best choice for factorial, independent categories where any number of them might be active at a time.  It learns using the delta rule for each output unit.  Uses the same API as above, except Decode takes a full slice of target values for each category output, and the results are found in the `Units[i].Act` variable, which can be returned into a slice using the `Output` method.
+The `Linear` decoder is the best choice for factorial, independent categories where any number of them might be active at a time.  It learns using the delta rule for each output unit.  Uses the same API as above, except Decode takes a full slice of target values for each category output, and the results are found in the `Units[i].Act` variable, which can be returned into a slice using the `Output` method.
 
 # Vote
 

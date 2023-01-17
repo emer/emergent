@@ -1,0 +1,170 @@
+// Copyright (c) 2023, The Emergent Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package decoder
+
+import (
+	"fmt"
+
+	"github.com/emer/emergent/emer"
+	"github.com/emer/etable/etensor"
+	"github.com/goki/mat32"
+)
+
+type ActivationFunc func(float32) float32
+
+// Linear is a linear neural network, which can be configured with a custom
+// activation function. By default it will use the identity function.
+// It learns using the delta rule for each output unit.
+type Linear struct {
+	LRate        float32                     `def:"0.1" desc:"learning rate"`
+	Layers       []emer.Layer                `desc:"layers to decode"`
+	Units        []LinearUnit                `desc:"unit values -- read this for decoded output"`
+	NInputs      int                         `desc:"number of inputs -- total sizes of layer inputs"`
+	NOutputs     int                         `desc:"number of outputs -- total sizes of layer inputs"`
+	Inputs       []float32                   `desc:"input values, copied from layers"`
+	ValsTsrs     map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
+	Weights      etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
+	ActivationFn ActivationFunc              `desc:"activation function"`
+}
+
+func IdentityFunc(x float32) float32 { return x }
+
+// LogisticFunc implements the standard logistic function.
+// Its outputs are in the range (0, 1).
+// Also known as Sigmoid. See https://en.wikipedia.org/wiki/Logistic_function.
+func LogisticFunc(x float32) float32 { return 1 / (1 + mat32.FastExp(-x)) }
+
+// LinearUnit has variables for Linear decoder unit
+type LinearUnit struct {
+	Target float32 `desc:"target activation value -- typically 0 or 1 but can be within that range too"`
+	Act    float32 `desc:"final activation = sum x * w -- this is the decoded output"`
+	Net    float32 `desc:"net input = sum x * w"`
+}
+
+// InitLayer initializes detector with number of categories and layers
+func (dec *Linear) InitLayer(nOutputs int, layers []emer.Layer, activationFn ActivationFunc) {
+	dec.Layers = layers
+	nIn := 0
+	for _, ly := range dec.Layers {
+		nIn += ly.Shape().Len()
+	}
+	dec.Init(nOutputs, nIn, activationFn)
+}
+
+// Init initializes detector with number of categories and number of inputs
+func (dec *Linear) Init(nOutputs, nInputs int, activationFn ActivationFunc) {
+	dec.NInputs = nInputs
+	dec.LRate = 0.1
+	dec.NOutputs = nOutputs
+	dec.Units = make([]LinearUnit, dec.NOutputs)
+	dec.Inputs = make([]float32, dec.NInputs)
+	dec.Weights.SetShape([]int{dec.NOutputs, dec.NInputs}, nil, []string{"Outputs", "Inputs"})
+	for i := range dec.Weights.Values {
+		dec.Weights.Values[i] = 0.1
+	}
+	dec.ActivationFn = activationFn
+}
+
+// Decode decodes the given variable name from layers (forward pass).
+// Decoded values are in Units[i].Act -- see also Output to get into a []float32
+func (dec *Linear) Decode(varNm string) {
+	dec.Input(varNm)
+	dec.Forward()
+}
+
+// Output returns the resulting Decoded output activation values into given slice
+// which is automatically resized if not of sufficient size.
+func (dec *Linear) Output(acts *[]float32) {
+	if cap(*acts) < dec.NOutputs {
+		*acts = make([]float32, dec.NOutputs)
+	} else if len(*acts) != dec.NOutputs {
+		*acts = (*acts)[:dec.NOutputs]
+	}
+	for ui := range dec.Units {
+		u := &dec.Units[ui]
+		(*acts)[ui] = u.Act
+	}
+}
+
+// Train trains the decoder with given target correct answers, as []float32 values.
+// Returns SSE (sum squared error) of difference between targets and outputs.
+// Also returns and prints an error if targets are not sufficient length for NOutputs.
+func (dec *Linear) Train(targs []float32) (float32, error) {
+	if len(targs) < dec.NOutputs {
+		err := fmt.Errorf("decoder.Linear: number of targets < NOutputs: %d < %d", len(targs), dec.NOutputs)
+		fmt.Println(err)
+		return 0, err
+	}
+	for ui := range dec.Units {
+		u := &dec.Units[ui]
+		u.Target = targs[ui]
+	}
+	sse := dec.Back()
+	return sse, nil
+}
+
+// ValsTsr gets value tensor of given name, creating if not yet made
+func (dec *Linear) ValsTsr(name string) *etensor.Float32 {
+	if dec.ValsTsrs == nil {
+		dec.ValsTsrs = make(map[string]*etensor.Float32)
+	}
+	tsr, ok := dec.ValsTsrs[name]
+	if !ok {
+		tsr = &etensor.Float32{}
+		dec.ValsTsrs[name] = tsr
+	}
+	return tsr
+}
+
+// Input grabs the input from given variable in layers
+func (dec *Linear) Input(varNm string) {
+	off := 0
+	for _, ly := range dec.Layers {
+		tsr := dec.ValsTsr(ly.Name())
+		ly.UnitValsTensor(tsr, varNm)
+		for j, v := range tsr.Values {
+			dec.Inputs[off+j] = v
+		}
+		off += ly.Shape().Len()
+	}
+}
+
+// Forward compute the forward pass from input
+func (dec *Linear) Forward() {
+	for ui := range dec.Units {
+		u := &dec.Units[ui]
+		net := float32(0)
+		off := ui * dec.NInputs
+		for j, in := range dec.Inputs {
+			net += dec.Weights.Values[off+j] * in
+		}
+		u.Net = net
+		u.Act = dec.ActivationFn(net)
+	}
+}
+
+// Back compute the backward error propagation pass
+// Returns SSE (sum squared error) of difference between targets and outputs.
+func (dec *Linear) Back() float32 {
+	// https://en.wikipedia.org/wiki/Delta_rule
+	// Delta rule: delta = learning rate * error * input
+	// We don't need the g' (derivative of activation function) term assuming:
+	// 1. Identity activation function with SSE loss (beecause it's 1), OR
+	// 2. Logistic activation function with Cross Entropy loss (because it cancels out, see
+	//    https://towardsdatascience.com/deriving-backpropagation-with-cross-entropy-loss-d24811edeaf9)
+	// The fact that we return SSE does not mean we're optimizing SSE.
+	var sse float32
+	for ui := range dec.Units {
+		u := &dec.Units[ui]
+		err := u.Target - u.Act
+		sse += err * err
+		del := dec.LRate * err
+		off := ui * dec.NInputs
+		for j, in := range dec.Inputs {
+			dec.Weights.Values[off+j] += del * in
+		}
+	}
+	return sse
+}
