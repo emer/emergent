@@ -15,6 +15,3 @@
 .DS_Store
 
 *.idea
-
-# Bazel
-/bazel-*

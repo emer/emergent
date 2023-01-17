@@ -128,20 +128,6 @@ Here are the other repositories within `emer` that provide additional, optional 
 
 * [vision](https://github.com/emer/vision) and [auditory](https://github.com/emer/auditory) provide low-level filtering on sensory inputs reflecting corresponding biological mechanisms.
 
-# Bazel
-
-In addition to the go tool, we support [Bazel](https://bazel.build).
-
-After adding any new files or imports, please update the Bazel files automatically with:
-
-```sh
-# Updates BUILD.bazel files
-bazel run //:gazelle
-# Updates external repos in WORKSPACE.bazel
-bazel run //:gazelle -- update-repos -from_file=go.mod
-bazel test //...
-```
-
 # TODO
 
 Last updated: Nov 2020. This list used to be much longer!
