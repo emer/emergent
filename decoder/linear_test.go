@@ -8,15 +8,14 @@ import (
 	"testing"
 )
 
-const tol = 1.0e-6
+func testLinear(t *testing.T, activationFn ActivationFunc) {
+	const tol = 1.0e-6
 
-func TestSigmoid(t *testing.T) {
-	dec := Sigmoid{}
-	dec.Init(2, 2)
-	dec.Lrate = .1
+	dec := Linear{}
+	dec.Init(2, 2, activationFn)
 	trgs := []float32{0, 1}
 	outs := []float32{0, 0}
-	var lastsse float32
+	var lastSSE float32
 	for i := 0; i < 100; i++ {
 		if i%2 == 0 {
 			dec.Inputs[0] = 1
@@ -31,11 +30,6 @@ func TestSigmoid(t *testing.T) {
 		}
 		dec.Forward()
 		dec.Output(&outs)
-		// fmt.Printf("%d\t%v\t%v", i, trgs, outs)
-		// for j := 0; j < 2; j++ {
-		// 	fmt.Printf("\t%g", dec.Units[j].Act)
-		// }
-		// fmt.Printf("\n")
 		if i > 2 {
 			if i%2 == 0 {
 				if outs[0] < outs[1] {
@@ -52,11 +46,18 @@ func TestSigmoid(t *testing.T) {
 			t.Error(err)
 		}
 		if i > 2 {
-			if (sse - lastsse) > tol {
-				t.Errorf("error: %d\t sse now is *larger* than previoust: %g > %g\n", i, sse, lastsse)
+			if (sse - lastSSE) > tol {
+				t.Errorf("error: %d\t sse now is *larger* than previoust: %g > %g\n", i, sse, lastSSE)
 			}
 		}
-		lastsse = sse
-		// fmt.Printf("%d\t%g\n", i, sse)
+		lastSSE = sse
 	}
+}
+
+func TestLinearIdentity(t *testing.T) {
+	testLinear(t, IdentityFunc)
+}
+
+func TestLinearLogistic(t *testing.T) {
+	testLinear(t, LogisticFunc)
 }
