@@ -10,7 +10,7 @@ require (
 	github.com/goki/gosl v1.0.5
 	github.com/goki/ki v1.1.11
 	github.com/goki/mat32 v1.0.13
-	github.com/goki/vgpu v1.0.10
+	github.com/goki/vgpu v1.0.11
 	gonum.org/v1/gonum v0.12.0
 )
 
