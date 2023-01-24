@@ -18,7 +18,7 @@ import (
 
 // WriteFunc function that computes and sets log values
 // The Context provides information typically needed for logging
-type WriteFunc func(ctxt *Context)
+type WriteFunc func(ctx *Context)
 
 // Context provides the context for logging Write functions.
 // SetContext must be called on Logs to set the Stats and Net values

@@ -276,6 +276,11 @@ func (ps *Sheet) SelNoMatchWarn(setName, objName string) error {
 func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 	npv := kit.NonPtrValue(val)
 	if npv.Kind() != reflect.Struct {
+		if !npv.IsValid() {
+			err := fmt.Errorf("params.FindParam: object is nil -- must Build *before* applying params!  path: %v\n", path)
+			log.Println(err)
+			return npv, err
+		}
 		err := fmt.Errorf("params.FindParam: object is not a struct: %v kind: %v -- params must be on structs, path: %v\n", npv.String(), npv.Kind(), path)
 		log.Println(err)
 		return npv, err
