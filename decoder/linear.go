@@ -27,6 +27,7 @@ type Linear struct {
 	ValsTsrs     map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
 	Weights      etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 	ActivationFn ActivationFunc              `desc:"activation function"`
+	PoolIndex    int                         `desc:"which pool to use within a layer"`
 }
 
 func IdentityFunc(x float32) float32 { return x }
@@ -50,11 +51,19 @@ func (dec *Linear) InitLayer(nOutputs int, layers []emer.Layer, activationFn Act
 	for _, ly := range dec.Layers {
 		nIn += ly.Shape().Len()
 	}
-	dec.Init(nOutputs, nIn, activationFn)
+	dec.Init(nOutputs, nIn, -1, activationFn)
+}
+
+// InitPool initializes detector with number of categories, 1 layer and
+func (dec *Linear) InitPool(nOutputs int, layer emer.Layer, poolIndex int, activationFn ActivationFunc) {
+	dec.Layers = []emer.Layer{layer}
+	shape := layer.Shape()
+	nIn := shape.Dim(2) * shape.Dim(3)
+	dec.Init(nOutputs, nIn, poolIndex, activationFn)
 }
 
 // Init initializes detector with number of categories and number of inputs
-func (dec *Linear) Init(nOutputs, nInputs int, activationFn ActivationFunc) {
+func (dec *Linear) Init(nOutputs, nInputs int, poolIndex int, activationFn ActivationFunc) {
 	dec.NInputs = nInputs
 	dec.LRate = 0.1
 	dec.NOutputs = nOutputs
@@ -64,6 +73,7 @@ func (dec *Linear) Init(nOutputs, nInputs int, activationFn ActivationFunc) {
 	for i := range dec.Weights.Values {
 		dec.Weights.Values[i] = 0.1
 	}
+	dec.PoolIndex = poolIndex
 	dec.ActivationFn = activationFn
 }
 
@@ -124,6 +134,11 @@ func (dec *Linear) Input(varNm string) {
 	for _, ly := range dec.Layers {
 		tsr := dec.ValsTsr(ly.Name())
 		ly.UnitValsTensor(tsr, varNm)
+		if dec.PoolIndex >= 0 {
+			y := dec.PoolIndex / ly.Shape().Dim(0)
+			x := dec.PoolIndex % ly.Shape().Dim(1)
+			tsr = tsr.SubSpace([]int{y, x}).(*etensor.Float32)
+		}
 		for j, v := range tsr.Values {
 			dec.Inputs[off+j] = v
 		}
