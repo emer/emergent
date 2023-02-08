@@ -137,9 +137,8 @@ func (dec *Linear) Input(varNm string) {
 		ly.UnitValsTensor(tsr, varNm)
 		if dec.PoolIndex >= 0 {
 			shape := ly.Shape()
-			poolSize := shape.Dim(0) * shape.Dim(1)
-			y := dec.PoolIndex / poolSize
-			x := dec.PoolIndex % poolSize
+			y := dec.PoolIndex / shape.Dim(1)
+			x := dec.PoolIndex % shape.Dim(1)
 			tsr = tsr.SubSpace([]int{y, x}).(*etensor.Float32)
 		}
 		for j, v := range tsr.Values {
