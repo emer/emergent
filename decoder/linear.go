@@ -7,7 +7,6 @@ package decoder
 import (
 	"fmt"
 
-	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
@@ -19,7 +18,7 @@ type ActivationFunc func(float32) float32
 // It learns using the delta rule for each output unit.
 type Linear struct {
 	LRate        float32                     `def:"0.1" desc:"learning rate"`
-	Layers       []emer.Layer                `desc:"layers to decode"`
+	Layers       []Layer                     `desc:"layers to decode"`
 	Units        []LinearUnit                `desc:"unit values -- read this for decoded output"`
 	NInputs      int                         `desc:"number of inputs -- total sizes of layer inputs"`
 	NOutputs     int                         `desc:"number of outputs -- total sizes of layer inputs"`
@@ -27,6 +26,14 @@ type Linear struct {
 	ValsTsrs     map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
 	Weights      etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 	ActivationFn ActivationFunc              `desc:"activation function"`
+	PoolIndex    int                         `desc:"which pool to use within a layer"`
+}
+
+// Layer is the subset of emer.Layer that is used by this code
+type Layer interface {
+	Name() string
+	UnitValsTensor(tsr etensor.Tensor, varNm string) error
+	Shape() *etensor.Shape
 }
 
 func IdentityFunc(x float32) float32 { return x }
@@ -44,17 +51,26 @@ type LinearUnit struct {
 }
 
 // InitLayer initializes detector with number of categories and layers
-func (dec *Linear) InitLayer(nOutputs int, layers []emer.Layer, activationFn ActivationFunc) {
+func (dec *Linear) InitLayer(nOutputs int, layers []Layer, activationFn ActivationFunc) {
 	dec.Layers = layers
 	nIn := 0
 	for _, ly := range dec.Layers {
 		nIn += ly.Shape().Len()
 	}
-	dec.Init(nOutputs, nIn, activationFn)
+	dec.Init(nOutputs, nIn, -1, activationFn)
+}
+
+// InitPool initializes detector with number of categories, 1 layer and
+func (dec *Linear) InitPool(nOutputs int, layer Layer, poolIndex int, activationFn ActivationFunc) {
+	dec.Layers = []Layer{layer}
+	shape := layer.Shape()
+	// TODO: assert that it's a 4D layer
+	nIn := shape.Dim(2) * shape.Dim(3)
+	dec.Init(nOutputs, nIn, poolIndex, activationFn)
 }
 
 // Init initializes detector with number of categories and number of inputs
-func (dec *Linear) Init(nOutputs, nInputs int, activationFn ActivationFunc) {
+func (dec *Linear) Init(nOutputs, nInputs int, poolIndex int, activationFn ActivationFunc) {
 	dec.NInputs = nInputs
 	dec.LRate = 0.1
 	dec.NOutputs = nOutputs
@@ -64,6 +80,7 @@ func (dec *Linear) Init(nOutputs, nInputs int, activationFn ActivationFunc) {
 	for i := range dec.Weights.Values {
 		dec.Weights.Values[i] = 0.1
 	}
+	dec.PoolIndex = poolIndex
 	dec.ActivationFn = activationFn
 }
 
@@ -124,6 +141,12 @@ func (dec *Linear) Input(varNm string) {
 	for _, ly := range dec.Layers {
 		tsr := dec.ValsTsr(ly.Name())
 		ly.UnitValsTensor(tsr, varNm)
+		if dec.PoolIndex >= 0 {
+			shape := ly.Shape()
+			y := dec.PoolIndex / shape.Dim(1)
+			x := dec.PoolIndex % shape.Dim(1)
+			tsr = tsr.SubSpace([]int{y, x}).(*etensor.Float32)
+		}
 		for j, v := range tsr.Values {
 			dec.Inputs[off+j] = v
 		}
