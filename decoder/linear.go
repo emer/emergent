@@ -7,7 +7,6 @@ package decoder
 import (
 	"fmt"
 
-	"github.com/emer/emergent/emer"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
@@ -19,7 +18,7 @@ type ActivationFunc func(float32) float32
 // It learns using the delta rule for each output unit.
 type Linear struct {
 	LRate        float32                     `def:"0.1" desc:"learning rate"`
-	Layers       []emer.Layer                `desc:"layers to decode"`
+	Layers       []Layer                     `desc:"layers to decode"`
 	Units        []LinearUnit                `desc:"unit values -- read this for decoded output"`
 	NInputs      int                         `desc:"number of inputs -- total sizes of layer inputs"`
 	NOutputs     int                         `desc:"number of outputs -- total sizes of layer inputs"`
@@ -28,6 +27,13 @@ type Linear struct {
 	Weights      etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 	ActivationFn ActivationFunc              `desc:"activation function"`
 	PoolIndex    int                         `desc:"which pool to use within a layer"`
+}
+
+// Layer is the subset of emer.Layer that is used by this code
+type Layer interface {
+	Name() string
+	UnitValsTensor(tsr etensor.Tensor, varNm string) error
+	Shape() *etensor.Shape
 }
 
 func IdentityFunc(x float32) float32 { return x }
@@ -45,7 +51,7 @@ type LinearUnit struct {
 }
 
 // InitLayer initializes detector with number of categories and layers
-func (dec *Linear) InitLayer(nOutputs int, layers []emer.Layer, activationFn ActivationFunc) {
+func (dec *Linear) InitLayer(nOutputs int, layers []Layer, activationFn ActivationFunc) {
 	dec.Layers = layers
 	nIn := 0
 	for _, ly := range dec.Layers {
@@ -55,8 +61,8 @@ func (dec *Linear) InitLayer(nOutputs int, layers []emer.Layer, activationFn Act
 }
 
 // InitPool initializes detector with number of categories, 1 layer and
-func (dec *Linear) InitPool(nOutputs int, layer emer.Layer, poolIndex int, activationFn ActivationFunc) {
-	dec.Layers = []emer.Layer{layer}
+func (dec *Linear) InitPool(nOutputs int, layer Layer, poolIndex int, activationFn ActivationFunc) {
+	dec.Layers = []Layer{layer}
 	shape := layer.Shape()
 	// TODO: assert that it's a 4D layer
 	nIn := shape.Dim(2) * shape.Dim(3)
