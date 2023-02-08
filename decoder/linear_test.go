@@ -12,7 +12,7 @@ func testLinear(t *testing.T, activationFn ActivationFunc) {
 	const tol = 1.0e-6
 
 	dec := Linear{}
-	dec.Init(2, 2, activationFn)
+	dec.Init(2, 2, -1, activationFn)
 	trgs := []float32{0, 1}
 	outs := []float32{0, 0}
 	var lastSSE float32
@@ -61,3 +61,5 @@ func TestLinearIdentity(t *testing.T) {
 func TestLinearLogistic(t *testing.T) {
 	testLinear(t, LogisticFunc)
 }
+
+// TODO: add test for pools

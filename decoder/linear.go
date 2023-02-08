@@ -58,6 +58,7 @@ func (dec *Linear) InitLayer(nOutputs int, layers []emer.Layer, activationFn Act
 func (dec *Linear) InitPool(nOutputs int, layer emer.Layer, poolIndex int, activationFn ActivationFunc) {
 	dec.Layers = []emer.Layer{layer}
 	shape := layer.Shape()
+	// TODO: assert that it's a 4D layer
 	nIn := shape.Dim(2) * shape.Dim(3)
 	dec.Init(nOutputs, nIn, poolIndex, activationFn)
 }
@@ -135,8 +136,10 @@ func (dec *Linear) Input(varNm string) {
 		tsr := dec.ValsTsr(ly.Name())
 		ly.UnitValsTensor(tsr, varNm)
 		if dec.PoolIndex >= 0 {
-			y := dec.PoolIndex / ly.Shape().Dim(0)
-			x := dec.PoolIndex % ly.Shape().Dim(1)
+			shape := ly.Shape()
+			poolSize := shape.Dim(0) * shape.Dim(1)
+			y := dec.PoolIndex / poolSize
+			x := dec.PoolIndex % poolSize
 			tsr = tsr.SubSpace([]int{y, x}).(*etensor.Float32)
 		}
 		for j, v := range tsr.Values {
