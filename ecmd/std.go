@@ -34,6 +34,7 @@ func (ar *Args) AddStd() {
 	ar.AddBool("netdata", false, "if true, save network activation etc data from testing trials, for later viewing in netview")
 	ar.AddString("hyperFile", "", "Name of the file to output hyperparameter data. If not empty string, program should write and then exit")
 	ar.AddString("paramsFile", "", "Name of the file to input parameters from.")
+	ar.AddBool("gpu", false, "Use the GPU to run the model -- typically faster for larger models.")
 }
 
 // LogFileName returns a standard log file name as netName_runName_logName.tsv
