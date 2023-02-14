@@ -416,7 +416,6 @@ func (nv *NetView) NetVarsList(net emer.Network, layEven bool) (nvars, synvars [
 	ulen := len(unvars)
 	ncols := NVarCols // nv.Params.NVarCols
 	nr := ulen % ncols
-	fmt.Printf("ncols: %d  nr: %d\n", ncols, nr)
 	if layEven && nr != 0 { // make it an even number
 		ulen += ncols - nr
 	}
