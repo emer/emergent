@@ -13,6 +13,9 @@ import (
 	"github.com/goki/gi/giv"
 )
 
+// NVarCols is the default number of variable columns in the NetView
+var NVarCols = 2
+
 // RasterParams holds parameters controlling the raster plot view
 type RasterParams struct {
 	On         bool    `desc:"if true, show a raster plot over time, otherwise units"`
@@ -40,6 +43,7 @@ type Params struct {
 	NoSynData  bool             `desc:"do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
 	PrjnType   string           `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	MaxRecs    int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
+	NVarCols   int              `desc:"number of variable columns"`
 	UnitSize   float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	LayNmSize  float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
 	ColorMap   giv.ColorMapName `desc:"name of color map to use"`
@@ -50,6 +54,9 @@ type Params struct {
 
 func (nv *Params) Defaults() {
 	nv.Raster.Defaults()
+	if nv.NVarCols == 0 {
+		nv.NVarCols = NVarCols
+	}
 	if nv.MaxRecs == 0 {
 		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
 	}

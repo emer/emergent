@@ -407,15 +407,18 @@ func (nv *NetView) RecTrackLatest() bool {
 // NetVarsList returns the list of layer and prjn variables for given network.
 // layEven ensures that the number of layer variables is an even number if true
 // (used for display but not storage).
-func NetVarsList(net emer.Network, layEven bool) (nvars, synvars []string) {
+func (nv *NetView) NetVarsList(net emer.Network, layEven bool) (nvars, synvars []string) {
 	if net == nil || net.NLayers() == 0 {
 		return nil, nil
 	}
 	unvars := net.UnitVarNames()
 	synvars = net.SynVarNames()
 	ulen := len(unvars)
-	if layEven && ulen%2 != 0 { // make it an even number, for 2 column layout
-		ulen++
+	ncols := NVarCols // nv.Params.NVarCols
+	nr := ulen % ncols
+	fmt.Printf("ncols: %d  nr: %d\n", ncols, nr)
+	if layEven && nr != 0 { // make it an even number
+		ulen += ncols - nr
 	}
 
 	tlen := ulen + 2*len(synvars)
@@ -431,7 +434,7 @@ func NetVarsList(net emer.Network, layEven bool) (nvars, synvars []string) {
 
 // VarsListUpdate updates the list of network variables
 func (nv *NetView) VarsListUpdate() {
-	nvars, synvars := NetVarsList(nv.Net, true) // true = layEven
+	nvars, synvars := nv.NetVarsList(nv.Net, true) // true = layEven
 	if len(nvars) == len(nv.Vars) {
 		return
 	}
@@ -541,7 +544,7 @@ func (nv *NetView) VarsConfig() {
 	vl := nv.VarsLay()
 	vl.SetReRenderAnchor()
 	vl.Lay = gi.LayoutGrid
-	vl.SetProp("columns", 2)
+	vl.SetProp("columns", nv.Params.NVarCols)
 	vl.SetProp("spacing", 0)
 	vl.SetProp("vertical-align", gist.AlignTop)
 	nv.VarsListUpdate()
