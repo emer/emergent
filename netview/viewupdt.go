@@ -4,7 +4,11 @@
 
 package netview
 
-import "github.com/emer/emergent/etime"
+import (
+	"strings"
+
+	"github.com/emer/emergent/etime"
+)
 
 // ViewUpdt manages time scales for updating the NetView
 type ViewUpdt struct {
@@ -75,6 +79,37 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 			}
 		}
 	}
+}
+
+// IsCycleUpdating returns true if the view is updating at a cycle level,
+// either from raster or literal cycle level.
+func (vu *ViewUpdt) IsCycleUpdating() bool {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return false
+	}
+	viewUpdt := vu.UpdtTime(vu.Testing)
+	if viewUpdt > etime.ThetaCycle {
+		return false
+	}
+	if viewUpdt == etime.Cycle {
+		return true
+	}
+	if vu.View.Params.Raster.On {
+		return true
+	}
+	return false
+}
+
+// IsViewingSynapse returns true if netview is actively viewing synapses.
+func (vu *ViewUpdt) IsViewingSynapse() bool {
+	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+		return false
+	}
+	vvar := vu.View.Var
+	if strings.HasPrefix(vvar, "r.") || strings.HasPrefix(vvar, "s.") {
+		return true
+	}
+	return false
 }
 
 // UpdateCycle triggers an update at the Cycle (Millisecond) timescale,

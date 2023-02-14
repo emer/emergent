@@ -6,11 +6,11 @@ require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
 	github.com/emer/etable v1.1.15
-	github.com/goki/gi v1.3.10
-	github.com/goki/gosl v1.0.10
+	github.com/goki/gi v1.3.11
+	github.com/goki/gosl v1.0.11
 	github.com/goki/ki v1.1.11
 	github.com/goki/mat32 v1.0.14
-	github.com/goki/vgpu v1.0.19
+	github.com/goki/vgpu v1.0.20
 	github.com/stretchr/testify v1.8.0
 	gonum.org/v1/gonum v0.12.0
 )
@@ -46,7 +46,7 @@ require (
 	github.com/goki/pi v1.0.22 // indirect
 	github.com/goki/prof v1.0.0 // indirect
 	github.com/goki/vci v1.0.1 // indirect
-	github.com/goki/vulkan v1.0.2 // indirect
+	github.com/goki/vulkan v1.0.5 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect

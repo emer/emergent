@@ -64,6 +64,11 @@ func (man *Manager) AddStack(mode etime.Modes) *Stack {
 	return stack
 }
 
+// ModeStack returns the Stack for the current Mode
+func (man *Manager) ModeStack() *Stack {
+	return man.Stacks[man.Mode]
+}
+
 // AddEventAllModes adds Event(s) to all stacks at given time
 func (man *Manager) AddEventAllModes(t etime.Times, event ...*Event) {
 	for _, stack := range man.Stacks {
