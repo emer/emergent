@@ -6,7 +6,7 @@ require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
 	github.com/emer/etable v1.1.16
-	github.com/goki/gi v1.3.13
+	github.com/goki/gi v1.3.15
 	github.com/goki/gosl v1.0.11
 	github.com/goki/ki v1.1.11
 	github.com/goki/mat32 v1.0.14
@@ -24,7 +24,7 @@ require (
 	github.com/Masterminds/vcs v1.13.3 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/akutz/sortfold v0.2.1 // indirect
-	github.com/alecthomas/chroma v0.10.0 // indirect
+	github.com/alecthomas/chroma/v2 v2.5.0 // indirect
 	github.com/anthonynsimon/bild v0.13.0 // indirect
 	github.com/antonmedv/expr v1.12.0 // indirect
 	github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
@@ -43,7 +43,7 @@ require (
 	github.com/goki/freetype v0.0.0-20220119013949-7a161fd3728c // indirect
 	github.com/goki/go-difflib v1.2.1 // indirect
 	github.com/goki/kigen v1.0.2 // indirect
-	github.com/goki/pi v1.0.23 // indirect
+	github.com/goki/pi v1.0.25 // indirect
 	github.com/goki/prof v1.0.0 // indirect
 	github.com/goki/vci v1.0.1 // indirect
 	github.com/goki/vulkan v1.0.5 // indirect
