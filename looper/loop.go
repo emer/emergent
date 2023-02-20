@@ -23,25 +23,31 @@ type Loop struct {
 }
 
 // AddEvents to the list of events.
-func (loops *Loop) AddEvents(events ...*Event) {
+func (lp *Loop) AddEvents(events ...*Event) {
 	for _, event := range events {
-		loops.Events = append(loops.Events, event)
+		lp.Events = append(lp.Events, event)
 	}
 }
 
 // AddNewEvent to the list.
-func (loops *Loop) AddNewEvent(name string, atCtr int, fun func()) *Event {
+func (lp *Loop) AddNewEvent(name string, atCtr int, fun func()) *Event {
 	ev := NewEvent(name, atCtr, fun)
-	loops.Events = append(loops.Events, ev)
+	lp.Events = append(lp.Events, ev)
 	return ev
 }
 
 // EventByName returns event by name, false if not found
-func (loops *Loop) EventByName(name string) (*Event, bool) {
-	for _, ev := range loops.Events {
+func (lp *Loop) EventByName(name string) (*Event, bool) {
+	for _, ev := range lp.Events {
 		if ev.Name == name {
 			return ev, true
 		}
 	}
 	return nil, false
+}
+
+// SkipToMax sets the counter to its Max value for this level.
+// for skipping over rest of loop
+func (lp *Loop) SkipToMax() {
+	lp.Counter.SkipToMax()
 }

@@ -19,19 +19,26 @@ import (
 // AddCounterItems adds given Int counters from Stats,
 // typically by recording looper counter values to Stats.
 func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
-	for _, ctr := range ctrs {
+	for ci, ctr := range ctrs {
 		ctrName := ctr.String() // closure
 		tm := etime.AllTimes
 		if ctr < etime.Epoch {
 			tm = ctr
 		}
-		lg.AddItem(&Item{
+		itm := lg.AddItem(&Item{
 			Name: ctrName,
 			Type: etensor.INT64,
 			Write: WriteMap{
 				etime.Scope(etime.AllModes, tm): func(ctx *Context) {
 					ctx.SetStatInt(ctrName)
 				}}})
+		if ctr < etime.Epoch {
+			for ti := ci + 1; ti < len(ctrs); ti++ {
+				itm.Write[etime.Scope(etime.AllModes, ctrs[ti])] = func(ctx *Context) {
+					ctx.SetStatInt(ctrName)
+				}
+			}
+		}
 	}
 }
 

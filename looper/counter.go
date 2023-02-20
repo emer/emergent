@@ -15,6 +15,11 @@ func (ct *Ctr) Incr() {
 	ct.Cur++
 }
 
+// SkipToMax sets the counter to its Max value -- for skipping over rest of loop
+func (ct *Ctr) SkipToMax() {
+	ct.Cur = ct.Max
+}
+
 // IsOverMax returns true if counter is at or over Max (only if Max > 0)
 func (ct *Ctr) IsOverMax() bool {
 	return ct.Max > 0 && ct.Cur >= ct.Max

@@ -96,6 +96,15 @@ func (nv *NetView) HasLayers() bool {
 	return true
 }
 
+// RecordCounters saves the counters, so they are available for a Current update
+func (nv *NetView) RecordCounters(counters string) {
+	nv.DataMu.Lock()
+	defer nv.DataMu.Unlock()
+	if counters != "" {
+		nv.LastCtrs = counters
+	}
+}
+
 // Record records the current state of the network, along with provided counters
 // string, which is displayed at the bottom of the view to show the current
 // state of the counters. The rastCtr is the raster counter value used for
@@ -845,12 +854,19 @@ func (nv *NetView) ToolbarConfig() {
 		return
 	}
 	tbar.SetStretchMaxWidth()
-	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully redraw display"}, nv.This(),
+	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully reconfigure and redraw the display -- does not record any new data from the network (see Current button) -- should not be needed in general"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			nvv.Config()
 			nvv.Update()
 			nvv.VarsUpdate()
+		})
+	tbar.AddAction(gi.ActOpts{Label: "Current", Icon: "update", Tooltip: "grab the current state of the network, including synaptic values, and display it -- use this when switching to NetView tab after network has been running, because network state not recored then."}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.Record("", -1)
+			nvv.RecordSyns()
+			nvv.Update()
 		})
 	tbar.AddAction(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {

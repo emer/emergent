@@ -12,12 +12,13 @@ import (
 
 // ViewUpdt manages time scales for updating the NetView
 type ViewUpdt struct {
-	View    *NetView    `view:"-" desc:"the network view"`
-	Testing bool        `view:"-" desc:"whether in testing mode -- can be set in advance to drive appropriate updating"`
-	Text    string      `view:"-" desc:"text to display at the bottom of the view"`
-	On      bool        `desc:"toggles update of display on"`
-	Train   etime.Times `desc:"at what time scale to update the display during training?"`
-	Test    etime.Times `desc:"at what time scale to update the display during testing?"`
+	View      *NetView    `view:"-" desc:"the network view"`
+	Testing   bool        `view:"-" desc:"whether in testing mode -- can be set in advance to drive appropriate updating"`
+	Text      string      `view:"-" desc:"text to display at the bottom of the view"`
+	On        bool        `desc:"toggles update of display on"`
+	SkipInvis bool        `desc:"if true, do not record network data when the NetView is invisible -- this speeds up running when not visible, but the NetView display will not show the current state when switching back to it"`
+	Train     etime.Times `desc:"at what time scale to update the display during training?"`
+	Test      etime.Times `desc:"at what time scale to update the display during testing?"`
 }
 
 // Config configures for given NetView and default train, test times
@@ -39,31 +40,43 @@ func (vu *ViewUpdt) UpdtTime(testing bool) etime.Times {
 // Update does an update if view is On, visible and active,
 // including recording new data and driving update of display
 func (vu *ViewUpdt) Update() {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil {
+		return
+	}
+	if !vu.View.IsVisible() && vu.SkipInvis {
+		vu.View.RecordCounters(vu.Text)
 		return
 	}
 	vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	// note: essential to use Go version of update when called from another goroutine
-	vu.View.GoUpdate()
+	if vu.View.IsVisible() {
+		vu.View.GoUpdate()
+	}
 }
 
 // UpdateWhenStopped does an update when the network updating was stopped
 // either via stepping or hitting the stop button -- this has different
 // logic for the raster view vs. regular.
 func (vu *ViewUpdt) UpdateWhenStopped() {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil {
+		return
+	}
+	if !vu.View.IsVisible() && vu.SkipInvis {
+		vu.View.RecordCounters(vu.Text)
 		return
 	}
 	if !vu.View.Params.Raster.On { // always record when not in raster mode
 		vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	}
 	// note: essential to use Go version of update when called from another goroutine
-	vu.View.GoUpdate()
+	if vu.View.IsVisible() {
+		vu.View.GoUpdate()
+	}
 }
 
 // UpdateTime triggers an update at given timescale.
 func (vu *ViewUpdt) UpdateTime(time etime.Times) {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil {
 		return
 	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
@@ -73,7 +86,9 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 		if viewUpdt < etime.Trial && time == etime.Trial {
 			if vu.View.Params.Raster.On { // no extra rec here
 				vu.View.Data.RecordLastCtrs(vu.Text)
-				vu.View.GoUpdate()
+				if vu.View.IsVisible() {
+					vu.View.GoUpdate()
+				}
 			} else {
 				vu.Update()
 			}
@@ -84,7 +99,7 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 // IsCycleUpdating returns true if the view is updating at a cycle level,
 // either from raster or literal cycle level.
 func (vu *ViewUpdt) IsCycleUpdating() bool {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil || !(vu.View.IsVisible() || !vu.SkipInvis) {
 		return false
 	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
@@ -102,7 +117,7 @@ func (vu *ViewUpdt) IsCycleUpdating() bool {
 
 // IsViewingSynapse returns true if netview is actively viewing synapses.
 func (vu *ViewUpdt) IsViewingSynapse() bool {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil || !(vu.View.IsVisible() || !vu.SkipInvis) {
 		return false
 	}
 	vvar := vu.View.Var
@@ -115,7 +130,7 @@ func (vu *ViewUpdt) IsViewingSynapse() bool {
 // UpdateCycle triggers an update at the Cycle (Millisecond) timescale,
 // using given text to display at bottom of view
 func (vu *ViewUpdt) UpdateCycle(cyc int) {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil {
 		return
 	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
@@ -154,6 +169,10 @@ func (vu *ViewUpdt) UpdateCycle(cyc int) {
 
 // UpdateCycleRaster raster version of Cycle update
 func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
+	if !vu.View.IsVisible() && vu.SkipInvis {
+		vu.View.RecordCounters(vu.Text)
+		return
+	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
 	vu.View.Record(vu.Text, cyc)
 	switch viewUpdt {
@@ -188,8 +207,13 @@ func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
 // updating Wts and zeroing.
 // NetView displays this recorded data when Update is next called.
 func (vu *ViewUpdt) RecordSyns() {
-	if !vu.On || vu.View == nil || !vu.View.IsVisible() {
+	if !vu.On || vu.View == nil {
 		return
+	}
+	if !vu.View.IsVisible() {
+		if vu.SkipInvis || !vu.IsViewingSynapse() {
+			return
+		}
 	}
 	vu.View.RecordSyns()
 }
