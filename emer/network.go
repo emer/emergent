@@ -8,7 +8,6 @@ import (
 	"io"
 
 	"github.com/emer/emergent/params"
-	"github.com/emer/emergent/prjn"
 	"github.com/emer/emergent/weights"
 	"github.com/goki/gi/gi"
 	"github.com/goki/mat32"
@@ -126,18 +125,6 @@ type Network interface {
 
 	// NewPrjn creates a new concrete projection of appropriate type for this network
 	NewPrjn() Prjn
-
-	// ConnectLayerNames establishes a projection between two layers, referenced by name
-	// adding to the recv and send projection lists on each side of the connection.
-	// Returns error if not successful.
-	// Does not yet actually connect the units within the layers -- that requires Build.
-	ConnectLayerNames(send, recv string, pat prjn.Pattern, typ PrjnType) (rlay, slay Layer, pj Prjn, err error)
-
-	// ConnectLayers establishes a projection between two layers,
-	// adding to the recv and send projection lists on each side of the connection.
-	// Returns false if not successful. Does not yet actually connect the units within the layers -- that
-	// requires Build.
-	ConnectLayers(send, recv Layer, pat prjn.Pattern, typ PrjnType) Prjn
 
 	// Build constructs the network units and synapses based on current layers, projections
 	Build() error

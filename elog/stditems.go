@@ -42,26 +42,89 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 	}
 }
 
-// AddStatAggItem adds a Float64 stat that is aggregated across the 3 time scales,
-// ordered from higher to lower, e.g., Run, Epoch, Trial.
+// AddStatAggItem adds a Float64 stat that is aggregated across the given time scales,
+// ordered from higher to lower, e.g., Run, Epoch, Trial. 2-5 scales are supported.
 // The itemName is what is saved in the table, and statName is the source
-// statistic in stats at the lowest level.
+// statistic in stats at the lowest level.  If either is empty, it is copied from the other.
 func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) *Item {
-	return lg.AddItem(&Item{
-		Name:   itemName,
-		Type:   etensor.FLOAT64,
-		FixMin: true,
-		// FixMax: true,
-		Range: minmax.F64{Max: 1},
-		Write: WriteMap{
-			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
-				ctx.SetFloat64(ctx.Stats.Float(statName))
-			}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
-				ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
-			}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
-				ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
-			}}})
+	if statName == "" {
+		statName = itemName
+	} else if itemName == "" {
+		itemName = statName
+	}
+	switch len(times) {
+	case 2:
+		return lg.AddItem(&Item{
+			Name:   itemName,
+			Type:   etensor.FLOAT64,
+			FixMin: true,
+			// FixMax: true,
+			Range: minmax.F64{Max: 1},
+			Write: WriteMap{
+				etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
+					ctx.SetFloat64(ctx.Stats.Float(statName))
+				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
+					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
+					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				}}})
+	case 3:
+		return lg.AddItem(&Item{
+			Name:   itemName,
+			Type:   etensor.FLOAT64,
+			FixMin: true,
+			// FixMax: true,
+			Range: minmax.F64{Max: 1},
+			Write: WriteMap{
+				etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
+					ctx.SetFloat64(ctx.Stats.Float(statName))
+				}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
+					ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
+				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
+					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
+					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				}}})
+	case 4:
+		return lg.AddItem(&Item{
+			Name:   itemName,
+			Type:   etensor.FLOAT64,
+			FixMin: true,
+			// FixMax: true,
+			Range: minmax.F64{Max: 1},
+			Write: WriteMap{
+				etime.Scope(etime.AllModes, times[3]): func(ctx *Context) {
+					ctx.SetFloat64(ctx.Stats.Float(statName))
+				}, etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
+					ctx.SetAgg(ctx.Mode, times[3], agg.AggMean)
+				}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
+					ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
+				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
+					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
+					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				}}})
+	case 5:
+		return lg.AddItem(&Item{
+			Name:   itemName,
+			Type:   etensor.FLOAT64,
+			FixMin: true,
+			// FixMax: true,
+			Range: minmax.F64{Max: 1},
+			Write: WriteMap{
+				etime.Scope(etime.AllModes, times[4]): func(ctx *Context) {
+					ctx.SetFloat64(ctx.Stats.Float(statName))
+				}, etime.Scope(etime.AllModes, times[3]): func(ctx *Context) {
+					ctx.SetAgg(ctx.Mode, times[4], agg.AggMean)
+				}, etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
+					ctx.SetAgg(ctx.Mode, times[3], agg.AggMean)
+				}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
+					ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
+				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
+					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
+					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				}}})
+	default:
+		panic("only 2-5 time scales supporte")
+		return nil
+	}
 }
 
 // AddStatFloatNoAggItem adds float statistic(s) of given names
