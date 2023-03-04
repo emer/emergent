@@ -38,6 +38,21 @@ func (rp *Rel) Defaults() {
 	}
 }
 
+// NewRightOf returns a RightOf relationship with default YAlign: Front alignment and given spacing
+func NewRightOf(other string, space float32) Rel {
+	return Rel{Rel: RightOf, Other: other, YAlign: Front, Space: space, Scale: 1}
+}
+
+// NewBehind returns a Behind relationship with default XAlign: Left alignment and given spacing
+func NewBehind(other string, space float32) Rel {
+	return Rel{Rel: Behind, Other: other, XAlign: Left, Space: space, Scale: 1}
+}
+
+// NewAbove returns an Above relationship with default XAlign: Left, YAlign: Front alignment
+func NewAbove(other string) Rel {
+	return Rel{Rel: Above, Other: other, XAlign: Left, YAlign: Front, YOffset: 1, Scale: 1}
+}
+
 // Pos returns the relative position compared to other position and size, based on settings
 // osz and sz must both have already been scaled by relevant Scale factor
 func (rp *Rel) Pos(op mat32.Vec3, osz mat32.Vec2, sz mat32.Vec2) mat32.Vec3 {
