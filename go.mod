@@ -5,12 +5,12 @@ go 1.18
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
-	github.com/emer/etable v1.1.16
-	github.com/goki/gi v1.3.15
+	github.com/emer/etable v1.1.17
+	github.com/goki/gi v1.3.16
 	github.com/goki/gosl v1.0.11
 	github.com/goki/ki v1.1.11
 	github.com/goki/mat32 v1.0.14
-	github.com/goki/vgpu v1.0.21
+	github.com/goki/vgpu v1.0.22
 	github.com/stretchr/testify v1.8.0
 	gonum.org/v1/gonum v0.12.0
 )
@@ -43,7 +43,7 @@ require (
 	github.com/goki/freetype v0.0.0-20220119013949-7a161fd3728c // indirect
 	github.com/goki/go-difflib v1.2.1 // indirect
 	github.com/goki/kigen v1.0.2 // indirect
-	github.com/goki/pi v1.0.25 // indirect
+	github.com/goki/pi v1.0.27 // indirect
 	github.com/goki/prof v1.0.0 // indirect
 	github.com/goki/vci v1.0.1 // indirect
 	github.com/goki/vulkan v1.0.5 // indirect
