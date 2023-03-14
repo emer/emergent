@@ -68,45 +68,69 @@ func (nt *Network) InitActs() {
 
 # Packages
 
-Here are some of the additional supporting packages, most important first then alphabetically:
+Here are some of the additional supporting packages, organized by overall functionality:
 
-* `emer` *only* has the primary abstract Network interfaces.
+## Core Network
 
-* `params` has the parameter-styling infrastructure (e.g., `params.Set`, `params.Sheet`, `params.Sel`), which implement a powerful, flexible, and efficient CSS style-sheet approach to parameters.  See the [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for more info.
+* [emer](emer) *only* has the primary abstract Network interfaces.
 
-* `env` has an interface for environments, which encapsulates all the counters and timing information for patterns that are presented to the network, and enables more of a mix-and-match ability for using different environments with different networks.  See [Wiki Env](https://github.com/emer/emergent/wiki/Env) page for more info, and the [envs](https://github.com/emer/envs) repository for various specialized environments that can be a good starting point.
+* [params](params) has the parameter-styling infrastructure (e.g., `params.Set`, `params.Sheet`, `params.Sel`), which implement a powerful, flexible, and efficient CSS style-sheet approach to parameters.  See the [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for more info.
 
-* `netview` provides the `NetView` interactive 3D network viewer, implemented in the GoGi 3D framework.
+* [netview](netview) provides the `NetView` interactive 3D network viewer, implemented in the GoGi 3D framework.
 
-* `prjn` is a separate package for defining patterns of connectivity between layers (i.e., the `ProjectionSpec`s from C++ emergent).  This is done using a fully independent structure that *only* knows about the shapes of the two layers, and it returns a fully general bitmap representation of the pattern of connectivity between them.  The `leabra.Prjn` code then uses these patterns to do all the nitty-gritty of connecting up neurons.  This makes the projection code *much* simpler compared to the ProjectionSpec in C++ emergent, which was involved in both creating the pattern and also all the complexity of setting up the actual connections themselves.  This should be the *last* time any of those projection patterns need to be written (having re-written this code too many times in the C++ version as the details of memory allocations changed).
+* [prjn](prjn) is a separate package for defining patterns of connectivity between layers (i.e., the `ProjectionSpec`s from C++ emergent).  This is done using a fully independent structure that *only* knows about the shapes of the two layers, and it returns a fully general bitmap representation of the pattern of connectivity between them.  The `leabra.Prjn` code then uses these patterns to do all the nitty-gritty of connecting up neurons.  This makes the projection code *much* simpler compared to the ProjectionSpec in C++ emergent, which was involved in both creating the pattern and also all the complexity of setting up the actual connections themselves.  This should be the *last* time any of those projection patterns need to be written (having re-written this code too many times in the C++ version as the details of memory allocations changed).
 
-* `relpos` provides relative positioning of layers (right of, above, etc).
+* [relpos](relpos) provides relative positioning of layers (right of, above, etc).
 
-* `weights` provides weight-file parsing / loading routines: much easier to read into a temporary structure and then apply to the network.
+* [weights](weights) provides weight-file parsing / loading routines: much easier to read into a temporary structure and then apply to the network.
 
-* `patgen` supports various general-purpose pattern-generation algorithms, as implemented in `taDataGen` in C++ emergent (e.g., `PermutedBinary` and `FlipBits`).
+## Environment: input / output patterns
 
-* `efuns` has misc special functions such as Gaussian and Sigmoid.
+* [env](env) has an interface for environments, which encapsulates all the counters and timing information for patterns that are presented to the network, and enables more of a mix-and-match ability for using different environments with different networks.  See [Wiki Env](https://github.com/emer/emergent/wiki/Env) page for more info, and the [envs](https://github.com/emer/envs) repository for various specialized environments that can be a good starting point.
 
-* `erand` has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
+* [patgen](patgen) supports various general-purpose pattern-generation algorithms, as implemented in `taDataGen` in C++ emergent (e.g., `PermutedBinary` and `FlipBits`).
 
-* `elog` comprehensive support for logging data at different time scales and evaluation modes -- saves a lot of boilerplate code for configuring, updating.
+## Running, Logging, Stats, GUI toolkit
 
-* `estats` manages statistics as maps of name, value for various types, along with network-relevant statistics such as `ClosestPat`, PCA stats, and raster plots.
+The following all work together to provide a convenient layer of abstraction for running, logging & statistics, and the GUI interface:
 
-* `egui` implements a standard simulation GUI, with a toolbar, tabs of different views, and a Sim struct view on the left.
+* [etime](time) provides the core time scales and training / testing etc modes used in the rest of the packages.
 
-* `esg` is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
+* [looper](looper) provides a fully step-able hierarchical looping control framework (e.g., Run / Epoch / Trial / Cycle) where you can insert functions to run at different points (start, end, or specific counter value).  [Axon](https;//github.com/emer/axon) uses this natively and has support functions for configuring standard looper functions.
 
-* `evec` has `Vec2i` which uses plain `int` X, Y fields, whereas the `mat32` package uses `int32` which are needed for graphics but int is more convenient in models.
+* [estats](estats) manages statistics as maps of name, value for various types, along with network-relevant statistics such as `ClosestPat`, PCA stats, Cluster plots, decoders, raster plots, etc.
 
-* `popcode` supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
+* [elog](elog) has comprehensive support for logging data at different time scales and evaluation modes -- saves a lot of boilerplate code for configuring, updating.
 
-* `ringidx` provides a wrap-around ring index for efficient use of a fixed buffer that overwrites the oldest items without any copying.
+* [egui](egui) implements a standard simulation GUI, with a toolbar, tabs of different views, and a Sim struct view on the left.
 
-* `stepper` provides dynamic stepping control at multiple levels -- used in `pvlv` model (contributed by Randy Gobbel).
+* [ecmd](ecmd) manages command-line args and standard defaults / methdods around these.
 
-* `timer` is a simple interval timing struct, used for benchmarking / profiling etc.
+## Other Misc
+
+* [actrf](actrf) provides activation-based receptive field stats (reverse correlation, spike-triggered averaging) for decoding internal representations.
+
+* [chem](chem) provides basic chemistry simulation mechanisms for chemical reactions characterized by rate constants and concentrations, including diffusion.  This can be used for detailed biochemical models of neural function, as in the [Urakubo et al (2008)](https://github.com/ccnlab/kinase/sims/urakubo) model of synaptic plasticity.
+
+* [confusion](confusion) provides confusion matricies for model output vs. target output.
+
+* [decoder](decoder) provides simple linear, sigmoid, and softmax decoders for interpreting network activity states according to hypothesized variables of interest.
+
+* [efuns](efuns) has misc special functions such as Gaussian and Sigmoid.
+
+* [erand](erand) has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
+
+* [esg](esg) is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
+
+* [evec](evec) has `Vec2i` which uses plain `int` X, Y fields, whereas the `mat32` package uses `int32` which are needed for graphics but int is more convenient in models.
+
+* [popcode](popcode) supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
+
+* [ringidx](ringidx) provides a wrap-around ring index for efficient use of a fixed buffer that overwrites the oldest items without any copying.
+
+* [stepper](stepper) provides dynamic stepping control at multiple levels -- used in `pvlv` model (contributed by Randy Gobbel).  This functionality is now available in [looper](looper) in a more robust and integrated form.
+
+* [timer](timer) is a simple interval timing struct, used for benchmarking / profiling etc.
 
 # Repositories
 
@@ -128,10 +152,5 @@ Here are the other repositories within `emer` that provide additional, optional 
 
 * [vision](https://github.com/emer/vision) and [auditory](https://github.com/emer/auditory) provide low-level filtering on sensory inputs reflecting corresponding biological mechanisms.
 
-# TODO
-
-Last updated: Nov 2020. This list used to be much longer!
-
-- [ ] GPU -- see https://github.com/gorgonia/gorgonia for existing CUDA impl -- alternatively, maybe try using opengl or vulkan directly within existing gogi/gpu framework -- would work on any GPU and seems like it wouldn't be very hard and gives full control -- https://www.khronos.org/opengl/wiki/Compute_Shader -- 4.3 min version though -- maybe better to just go to vulkan?  https://community.khronos.org/t/opencl-vs-vulkan-compute/7132/6
-
+* [vgpu](https://github.com/goki/vgpu) is a GPU library using Vulkan for both graphics and compute functionality.  Used now in [Axon](https;//github.com/emer/axon), via [gosl](https://github.com/goki/gosl) which is a Go shader language that converts Go -> HLSL shader code that can then be compiled and run in the VGPU framework.
 
