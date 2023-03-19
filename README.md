@@ -146,7 +146,7 @@ Here are the other repositories within `emer` that provide additional, optional 
 
 * [eTorch](https://github.com/emer/etorch) is the emergent interface to PyTorch models, providing emergent GUI NetView etc for these models.
 
-* [eve](https://github.com/emer/eve) is the emergent virtual environment -- provides a physics engine and collision detection that interfaces with the GoGi 3D for visualization.  For constructing more realistic environments for your models!
+* [eve](https://github.com/emer/eve) is the emergent virtual environment -- provides a physics engine and collision detection that interfaces with the GoGi 3D for visualization.  For constructing more realistic environments for your models.
 
 * [grunt](https://github.com/emer/grunt) is the git-based run tool -- it handles the grunt work for running simulations on a cluster, by pushing to git repositories hosted on the cluster, which has a daemon running on it monitoring for these git updates.  It pushes back updates and results from the cluster.  There is a GUI for controlling and managing a potentially large history of jobs -- invaluable for any significant simulation to keep track of various parameter searches, changes over time etc.
 
