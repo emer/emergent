@@ -896,6 +896,16 @@ func (nv *NetView) ToolbarConfig() {
 			nvv := recv.Embed(KiT_NetView).(*NetView)
 			nvv.ShowAllParams()
 		})
+	parsmen.Menu.AddAction(gi.ActOpts{Label: "Key Layer Params", Icon: "info", Tooltip: "returns a listing for all layers in the network, of the most important layer-level params (specific to each algorithm)."}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.ShowKeyLayerParams()
+		})
+	parsmen.Menu.AddAction(gi.ActOpts{Label: "Key Prjn Params", Icon: "info", Tooltip: "returns a listing for all Recv projections in the network, of the most important projection-level params (specific to each algorithm)."}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.ShowKeyPrjnParams()
+		})
 	ndmen := tbar.AddAction(gi.ActOpts{Label: "Net Data", Icon: "file-save"}, nil, nil)
 	ndmen.Menu.AddAction(gi.ActOpts{Label: "Save Net Data", Icon: "file-save"}, nv.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
@@ -1268,6 +1278,22 @@ func (nv *NetView) ShowNonDefaultParams() string {
 func (nv *NetView) ShowAllParams() string {
 	nds := nv.Net.AllParams()
 	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "All Params"})
+	return nds
+}
+
+// ShowKeyLayerParams shows a dialog with a listing for all layers in the network,
+// of the most important layer-level params (specific to each algorithm)
+func (nv *NetView) ShowKeyLayerParams() string {
+	nds := nv.Net.KeyLayerParams()
+	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "Key Layer Params"})
+	return nds
+}
+
+// ShowKeyPrjnParams shows a dialog with a listing for all Recv projections in the network,
+// of the most important projection-level params (specific to each algorithm)
+func (nv *NetView) ShowKeyPrjnParams() string {
+	nds := nv.Net.KeyPrjnParams()
+	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "Key Prjn Params"})
 	return nds
 }
 

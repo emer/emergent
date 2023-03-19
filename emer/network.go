@@ -63,6 +63,14 @@ type Network interface {
 	// AllParams returns a listing of all parameters in the Network
 	AllParams() string
 
+	// KeyLayerParams returns a listing for all layers in the network,
+	// of the most important layer-level params (specific to each algorithm).
+	KeyLayerParams() string
+
+	// KeyPrjnParams returns a listing for all Recv projections in the network,
+	// of the most important projection-level params (specific to each algorithm).
+	KeyPrjnParams() string
+
 	// UnitVarNames returns a list of variable names available on the units in this network.
 	// This list determines what is shown in the NetView (and the order of vars list).
 	// Not all layers need to support all variables, but must safely return mat32.NaN() for

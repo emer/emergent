@@ -227,6 +227,9 @@ func (ps *Sheet) Apply(obj interface{}, setMsg bool) (bool, error) {
 		if app {
 			applied = true
 			sl.NMatch++
+			if hist, ok := obj.(History); ok {
+				hist.ParamsApplied(sl)
+			}
 		}
 		if err != nil {
 			rerr = err
@@ -240,9 +243,10 @@ func (ps *Sheet) Apply(obj interface{}, setMsg bool) (bool, error) {
 // may be at an outer-loop of Apply calls (e.g., for a Network, Apply is called
 // for each Layer and Prjn), so this must be called separately.
 // See SelNoMatchWarn for warning call at end.
-func (ps *Sheet) SelMatchReset() {
+func (ps *Sheet) SelMatchReset(setName string) {
 	for _, sl := range *ps {
 		sl.NMatch = 0
+		sl.SetName = setName
 	}
 }
 

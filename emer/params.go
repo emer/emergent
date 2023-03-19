@@ -160,6 +160,11 @@ func (pr *Params) SetAll() error {
 	if err != nil {
 		return err
 	}
+	for _, obj := range pr.Objects {
+		if hist, ok := obj.(params.History); ok {
+			hist.ParamsHistoryReset()
+		}
+	}
 	err = pr.SetAllSet("Base")
 	if pr.ExtraSets != "" && pr.ExtraSets != "Base" {
 		sps := strings.Fields(pr.ExtraSets)
@@ -181,7 +186,7 @@ func (pr *Params) SetAllSet(setName string) error {
 		if !ok {
 			continue
 		}
-		sh.SelMatchReset()
+		sh.SelMatchReset(setName)
 		if nm == "Network" {
 			net := obj.(Network)
 			net.ApplyParams(sh, pr.SetMsg)
@@ -232,7 +237,7 @@ func (pr *Params) SetObjectSet(objName, setName string) error {
 		err = fmt.Errorf("Params.SetObjectSet: Object named: %s not found", objName)
 		return err
 	}
-	sh.SelMatchReset()
+	sh.SelMatchReset(setName)
 	if objName == "Network" {
 		net := obj.(Network)
 		net.ApplyParams(sh, pr.SetMsg)

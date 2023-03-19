@@ -56,11 +56,12 @@ var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
 type Sel struct {
-	Sel    string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
-	Desc   string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
-	Params Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
-	Hypers Hypers `desc:"Put your hyperparams here"`
-	NMatch int    `inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+	Sel     string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
+	Desc    string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
+	Params  Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
+	Hypers  Hypers `desc:"Put your hyperparams here"`
+	NMatch  int    `inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+	SetName string `inactive:"+" desc:"name of current Set being applied"`
 }
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
