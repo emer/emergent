@@ -27,17 +27,20 @@ const (
 	// AllModes indicates that the log should occur over all modes present in other items.
 	AllModes
 
-	// Train is this a training mode for the env
+	// Train is when the network is learning
 	Train
 
-	// Test is this a test mode for the env
+	// Test is when testing, typically without learning
 	Test
 
-	// Validate is this a validation mode for the env
+	// Validate is typically for a special held-out testing set
 	Validate
 
-	// Analyze when analyzing the representations and behavior of the network
+	// Analyze is when analyzing the representations and behavior of the network
 	Analyze
+
+	// Debug is for recording info particularly useful for debugging
+	Debug
 
 	ModesN
 )

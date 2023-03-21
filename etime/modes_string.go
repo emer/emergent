@@ -19,12 +19,13 @@ func _() {
 	_ = x[Test-3]
 	_ = x[Validate-4]
 	_ = x[Analyze-5]
-	_ = x[ModesN-6]
+	_ = x[Debug-6]
+	_ = x[ModesN-7]
 }
 
-const _Modes_name = "NoEvalModeAllModesTrainTestValidateAnalyzeModesN"
+const _Modes_name = "NoEvalModeAllModesTrainTestValidateAnalyzeDebugModesN"
 
-var _Modes_index = [...]uint8{0, 10, 18, 23, 27, 35, 42, 48}
+var _Modes_index = [...]uint8{0, 10, 18, 23, 27, 35, 42, 47, 53}
 
 func (i Modes) String() string {
 	if i < 0 || i >= Modes(len(_Modes_index)-1) {

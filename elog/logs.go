@@ -179,8 +179,10 @@ func (lg *Logs) SetMetaScope(sk etime.ScopeKey, key, val string) {
 // NoPlot sets meta data to not plot for given scope mode, time.
 // Typically all combinations of mode and time end up being
 // generated, so you have to turn off plotting of cases not used.
-func (lg *Logs) NoPlot(mode etime.Modes, time etime.Times) {
-	lg.NoPlotScope(etime.Scope(mode, time))
+func (lg *Logs) NoPlot(mode etime.Modes, time ...etime.Times) {
+	for _, tm := range time {
+		lg.NoPlotScope(etime.Scope(mode, tm))
+	}
 }
 
 // NoPlotScope sets meta data to not plot for given scope mode, time.
@@ -209,8 +211,8 @@ func (lg *Logs) CreateTables() error {
 				dt := lg.NewTable(modes[0], times[0])
 				tables[scope] = NewLogTable(dt)
 				tableOrder = append(tableOrder, scope)
-				if modes[0] == "Analyze" {
-					tables[scope].Meta["Plot"] = "false" // don't plot Anaylze by default
+				if modes[0] == "Analyze" || modes[0] == "Validate" || modes[0] == "Debug" {
+					tables[scope].Meta["Plot"] = "false" // don't plot by default
 				}
 			}
 		}
@@ -250,6 +252,9 @@ func (lg *Logs) LogRow(mode etime.Modes, time etime.Times, row int) *etable.Tabl
 func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int) *etable.Table {
 	lt := lg.Tables[sk]
 	dt := lt.Table
+	if row < 0 {
+		row = dt.Rows
+	}
 	if dt.Rows <= row {
 		dt.SetNumRows(row + 1)
 	}

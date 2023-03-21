@@ -23,8 +23,9 @@ type GUI struct {
 	IsRunning           bool `view:"-" desc:"true if sim is running"`
 	StopNow             bool `view:"-" desc:"flag to stop running"`
 
-	Plots map[etime.ScopeKey]*eplot.Plot2D `desc:"plots by scope"`
-	Grids map[string]*etview.TensorGrid    `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
+	Plots      map[etime.ScopeKey]*eplot.Plot2D     `desc:"plots by scope"`
+	TableViews map[etime.ScopeKey]*etview.TableView `desc:"plots by scope"`
+	Grids      map[string]*etview.TensorGrid        `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
 
 	ViewUpdt   *netview.ViewUpdt `view:"-" desc:"the view update for managing updates of netview"`
 	NetData    *netview.NetData  `view:"-" desc:"net data for recording in nogui mode, if !nil"`

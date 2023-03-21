@@ -5,9 +5,13 @@
 package egui
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/emer/emergent/elog"
 	"github.com/emer/emergent/etime"
 	"github.com/emer/etable/eplot"
+	"github.com/emer/etable/etview"
 	"github.com/goki/gi/gi"
 )
 
@@ -119,4 +123,46 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *eplot.Plot2D {
 		plot.GoUpdate()
 	}
 	return plot
+}
+
+// AddTableView adds a table view of given log,
+// typically particularly useful for Debug logs.
+func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) {
+	if gui.TableViews == nil {
+		gui.TableViews = make(map[etime.ScopeKey]*etview.TableView)
+	}
+
+	key := etime.Scope(mode, time)
+	lt, ok := lg.Tables[key]
+	if !ok {
+		log.Printf("ERROR: in egui.AddTableView, log: %s not found\n", key)
+		return
+	}
+
+	tv := gui.TabView.AddNewTab(etview.KiT_TableView, mode.String()+" "+time.String()+" ").(*etview.TableView)
+	gui.TableViews[key] = tv
+	tv.SetTable(lt.Table, nil)
+}
+
+// TableView returns TableView for mode, time scope
+func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *etview.TableView {
+	if !gui.Active {
+		return nil
+	}
+	scope := etime.Scope(mode, time)
+	tv, ok := gui.TableViews[scope]
+	if !ok {
+		fmt.Printf("egui TableView not found for scope: %s\n", scope)
+		return nil
+	}
+	return tv
+}
+
+// UpdateTableView updates TableView for given mode, time scope
+func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *etview.TableView {
+	tv := gui.TableView(mode, time)
+	if tv != nil {
+		tv.UpdateTable()
+	}
+	return tv
 }
