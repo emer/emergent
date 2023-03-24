@@ -99,7 +99,7 @@ func (ft *FreqTable) Sample() {
 		if ft.RndSamp {
 			n := int(ft.NSamples)
 			for i := 0; i < n; i++ {
-				if erand.BoolProb(frq, -1) {
+				if erand.BoolP(frq, -1) {
 					ft.Order = append(ft.Order, ri)
 				}
 			}

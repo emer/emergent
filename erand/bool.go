@@ -5,12 +5,28 @@
 package erand
 
 // BoolP is a simple method to generate a true value with given probability
-// (else false).  is just rand.Float32() < p but this is more readable
+// (else false). It is just rand.Float64() < p but this is more readable
 // and explicit.
 // Thr is an optional parallel thread index (-1 for none).
 // Optionally can pass a single Rand interface to use --
 // otherwise uses system global Rand source.
-func BoolP(p float32, thr int, randOpt ...Rand) bool {
+func BoolP(p float64, thr int, randOpt ...Rand) bool {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return rnd.Float64(thr) < p
+}
+
+// BoolP32 is a simple method to generate a true value with given probability
+// (else false). It is just rand.Float32() < p but this is more readable
+// and explicit.
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func BoolP32(p float32, thr int, randOpt ...Rand) bool {
 	var rnd Rand
 	if len(randOpt) == 0 {
 		rnd = NewGlobalRand()

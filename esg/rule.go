@@ -73,7 +73,7 @@ func (rl *Rule) Gen(rls *Rules) {
 		fmt.Printf("Fired Rule: %v\n", rl.Name)
 	}
 	if rl.RepeatP > 0 && rl.PrevIdx >= 0 {
-		rpt := erand.BoolP(rl.RepeatP)
+		rpt := erand.BoolP32(rl.RepeatP, -1)
 		if rpt {
 			if rls.Trace {
 				fmt.Printf("Selected item: %v due to RepeatP = %v\n", rl.PrevIdx, rl.RepeatP)

@@ -6,7 +6,6 @@ package prjn
 
 import (
 	"math"
-	"math/rand"
 	"sort"
 
 	"github.com/emer/emergent/erand"
@@ -64,17 +63,14 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 		nsend = int(math.Round(float64(ur.PCon) * float64(sNu)))
 	}
 
-	if ur.RndSeed == 0 {
-		ur.RndSeed = int64(rand.Uint64())
-	}
-	rand.Seed(ur.RndSeed)
+	ur.InitRand()
 
 	sordlen := sNu
 	if noself {
 		sordlen--
 	}
 
-	sorder := rand.Perm(sordlen)
+	sorder := ur.Rand.Perm(sordlen, -1)
 	slist := make([]int, nsend)
 
 	if ur.NPools > 0 {
@@ -98,7 +94,7 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 						ix++
 					}
 				}
-				erand.PermuteInts(sorder)
+				erand.PermuteInts(sorder, ur.Rand)
 			}
 			copy(slist, sorder)
 			sort.Ints(slist)
@@ -107,7 +103,7 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 				off := ri*sNtot + si
 				cons.Values.Set(off, true)
 			}
-			erand.PermuteInts(sorder)
+			erand.PermuteInts(sorder, ur.Rand)
 		}
 		for sui := 0; sui < sNu; sui++ {
 			nr := 0
@@ -169,17 +165,14 @@ func (ur *PoolUnifRnd) ConnectRnd(send, recv *etensor.Shape, same bool) (sendn, 
 		rnv[i] = int32(nsend)
 	}
 
-	if ur.RndSeed == 0 {
-		ur.RndSeed = int64(rand.Uint64())
-	}
-	rand.Seed(ur.RndSeed)
+	ur.InitRand()
 
 	sordlen := slen
 	if noself {
 		sordlen--
 	}
 
-	sorder := rand.Perm(sordlen)
+	sorder := ur.Rand.Perm(sordlen, -1)
 	slist := make([]int, nsend)
 	for ri := 0; ri < rlen; ri++ {
 		if noself { // need to exclude ri
@@ -190,7 +183,7 @@ func (ur *PoolUnifRnd) ConnectRnd(send, recv *etensor.Shape, same bool) (sendn, 
 					ix++
 				}
 			}
-			erand.PermuteInts(sorder)
+			erand.PermuteInts(sorder, ur.Rand)
 		}
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
@@ -198,7 +191,7 @@ func (ur *PoolUnifRnd) ConnectRnd(send, recv *etensor.Shape, same bool) (sendn, 
 			off := ri*slen + slist[si]
 			cons.Values.Set(off, true)
 		}
-		erand.PermuteInts(sorder)
+		erand.PermuteInts(sorder, ur.Rand)
 	}
 
 	// 	set send n's empirically
