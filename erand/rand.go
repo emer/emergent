@@ -97,8 +97,14 @@ func NewGlobalRand() *SysRand {
 // NewSysRand returns a new SysRand with a new
 // rand.Rand random source with given initial seed.
 func NewSysRand(seed int64) *SysRand {
-	r := &SysRand{Rand: rand.New(rand.NewSource(seed))}
+	r := &SysRand{}
+	r.NewRand(seed)
 	return r
+}
+
+// NewRand sets Rand to a new rand.Rand source using given seed.
+func (r *SysRand) NewRand(seed int64) {
+	r.Rand = rand.New(rand.NewSource(seed))
 }
 
 // Seed uses the provided seed value to initialize the generator to a deterministic state.
