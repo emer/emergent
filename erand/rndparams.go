@@ -5,10 +5,7 @@
 package erand
 
 import (
-	"math/rand"
-
 	"github.com/goki/ki/kit"
-	"gonum.org/v1/gonum/stat/distuv"
 )
 
 // RndParams provides parameterized random number generation according to different distributions
@@ -21,30 +18,31 @@ type RndParams struct {
 }
 
 // Gen generates a random variable according to current parameters.
-// (0 <= thr < 100) specifies thread or dmem proc number for parallel safe random sequences
-// (-1 = auto-safe dmem)
-func (rp *RndParams) Gen(thr int) float64 {
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func (rp *RndParams) Gen(thr int, randOpt ...Rand) float64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
 	switch rp.Dist {
 	case Uniform:
-		return UniformMeanRange(rp.Mean, rp.Var, thr)
+		return UniformMeanRange(rp.Mean, rp.Var, thr, rnd)
 	case Binomial:
-		return rp.Mean + Binom(rp.Par, rp.Var, thr)
+		return rp.Mean + BinomialGen(rp.Par, rp.Var, thr, rnd)
 	case Poisson:
-		return rp.Mean + Poiss(rp.Var, thr)
+		return rp.Mean + PoissonGen(rp.Var, thr, rnd)
 	case Gamma:
-		return rp.Mean + Gam(rp.Var, rp.Par, thr)
+		return rp.Mean + GammaGen(rp.Par, rp.Var, thr, rnd)
 	case Gaussian:
-		return rp.Mean + Gauss(rp.Var, thr)
+		return GaussianGen(rp.Mean, rp.Var, thr, rnd)
 	case Beta:
-		return rp.Mean + Bet(rp.Var, rp.Par, thr)
+		return rp.Mean + BetaGen(rp.Var, rp.Par, thr, rnd)
 	}
 	return rp.Mean
-}
-
-// Density returns density of random variable according to current params, at given
-// x value
-func (rp *RndParams) Density(s float64) float64 {
-	return 0
 }
 
 // RndDists are different random number distributions
@@ -85,78 +83,88 @@ const (
 )
 
 // IntZeroN returns uniform random integer in the range between 0 and n, exclusive of n: [0,n).
-func IntZeroN(n int64, thr int) int64 {
-	return rand.Int63n(n)
+// Thr is an optional parallel thread index (-1 0 to ignore).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func IntZeroN(n int64, thr int, randOpt ...Rand) int64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return rnd.Int63n(n, thr)
 }
 
 // IntMinMax returns uniform random integer in range between min and max, exclusive of max: [min,max).
-func IntMinMax(min, max int64, thr int) int64 {
-	return min + IntZeroN(max-min, thr)
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func IntMinMax(min, max int64, thr int, randOpt ...Rand) int64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return min + rnd.Int63n(max-min, thr)
 }
 
 // IntMeanRange returns uniform random integer with given range on either side of the mean:
 // [mean - range, mean + range]
-func IntMeanRange(mean, rnge int64, thr int) int64 {
-	return mean + (IntZeroN(2*rnge+1, thr) - rnge)
-}
-
-// Discrete samples from a discrete distribution with probabilities given
-// (automatically renormalizes the values).  Returns the index of the element of dist.
-func Discrete(dist []float64, thr int) int {
-	return 0
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func IntMeanRange(mean, rnge int64, thr int, randOpt ...Rand) int64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return mean + (rnd.Int63n(2*rnge+1, thr) - rnge)
 }
 
 // ZeroOne returns a uniform random number between zero and one (exclusive of 1)
-func ZeroOne(thr int) float64 {
-	return rand.Float64()
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func ZeroOne(thr int, randOpt ...Rand) float64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return rnd.Float64(thr)
 }
 
 // UniformMinMax returns uniform random number between min and max values inclusive
 // (Do not use for generating integers - will not include max!)
-func UniformMinMax(min, max float64, thr int) float64 {
-	return min + (max-min)*ZeroOne(thr)
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func UniformMinMax(min, max float64, thr int, randOpt ...Rand) float64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return min + (max-min)*rnd.Float64(thr)
 }
 
 // UniformMeanRange returns uniform random number with given range on either size of the mean:
 // [mean - range, mean + range]
-func UniformMeanRange(mean, rnge float64, thr int) float64 {
-	return mean + rnge*2.0*(ZeroOne(thr)-0.5)
-}
-
-// Binom returns binomial with n trials (par) each of probability p (var)
-func Binom(n, p float64, thr int) float64 {
-	pd := distuv.Binomial{N: n, P: p}
-	return pd.Rand()
-}
-
-// Poiss returns poisson variable, as number of events in interval,
-// with event rate (lmb = Var) plus mean
-func Poiss(lmb float64, thr int) float64 {
-	pd := distuv.Poisson{Lambda: lmb}
-	return pd.Rand()
-}
-
-// Gam represents maximum entropy distribution with two parameters:
-// scaling parameter (Var, Beta) and shape parameter k (Par, Alpha)
-func Gam(v, k float64, thr int) float64 {
-	pd := distuv.Gamma{Alpha: k, Beta: v}
-	return pd.Rand()
-}
-
-// Gauss returns gaussian (normal) random number with given standard deviation
-func Gauss(stdev float64, thr int) float64 {
-	return stdev * rand.NormFloat64()
-}
-
-// Beta returns beta random number with two shape parameters a > 0 and b > 0
-func Bet(a, b float64, thr int) float64 {
-	x1 := Gam(a, 1, thr)
-	x2 := Gam(b, 1, thr)
-
-	return x1 / (x1 + x2)
-}
-
-// BoolProp returns boolean true/false with given probability.
-func BoolProb(p float64, thr int) bool {
-	return (ZeroOne(thr) < p)
+// Thr is an optional parallel thread index (-1 for none).
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func UniformMeanRange(mean, rnge float64, thr int, randOpt ...Rand) float64 {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	return mean + rnge*2.0*(rnd.Float64(thr)-0.5)
 }

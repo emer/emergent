@@ -6,7 +6,6 @@ package erand
 
 import (
 	"math"
-	"math/rand"
 	"testing"
 
 	"github.com/goki/ki/ints"
@@ -16,9 +15,10 @@ func TestPoisson(t *testing.T) {
 	// t.Skip()
 	vr := 8.0
 	mi := 30
+	rnd := NewGlobalRand()
 	pd := make([]int, mi)
 	for i := 0; i < 100000; i++ {
-		kv := int(Poiss(vr, -1))
+		kv := int(PoissonGen(vr, -1, rnd))
 		// fmt.Printf("poisson: %d\n", kv)
 		if kv < mi {
 			pd[kv]++
@@ -30,7 +30,7 @@ func TestPoisson(t *testing.T) {
 	ep := math.Exp(-vr)
 	p := 1.0
 	for i := 0; i < 1000000; i++ {
-		p *= rand.Float64()
+		p *= rnd.Float64(-1)
 		if p <= ep {
 			d := i - li
 			if d < mi {

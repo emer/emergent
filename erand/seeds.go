@@ -5,7 +5,6 @@
 package erand
 
 import (
-	"math/rand"
 	"time"
 )
 
@@ -21,9 +20,16 @@ func (rs *Seeds) Init(n int) {
 	}
 }
 
-// Set sets the given seed as rand.Seed
-func (rs *Seeds) Set(idx int) {
-	rand.Seed((*rs)[idx])
+// Set sets the given seed to either the single Rand
+// interface passed, or the system global Rand source.
+func (rs *Seeds) Set(idx int, randOpt ...Rand) {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	rnd.Seed((*rs)[idx])
 }
 
 // NewSeeds sets a new set of random seeds based on current time

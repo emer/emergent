@@ -14,15 +14,17 @@ import (
 )
 
 // UnifRnd implements uniform random pattern of connectivity between two layers
-// uses a permuted (shuffled) list for without-replacement randomness
-// and maintains its own local random seed for fully replicable results
-// (if seed is not set when run, then random number generator is used to create seed)
-// should reset seed after calling to resume sequence appropriately
+// using a permuted (shuffled) list for without-replacement randomness,
+// and maintains its own local random number source and seed
+// which are initialized if Rand == nil -- usually best to keep this
+// specific to each instance of a projection so it is fully reproducible
+// and doesn't interfere with other random number streams.
 type UnifRnd struct {
-	PCon    float32 `min:"0" max:"1" desc:"probability of connection (0-1)"`
-	RndSeed int64   `view:"-" desc:"the current random seed"`
-	SelfCon bool    `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
-	Recip   bool    `desc:"reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down projection -- ESSENTIAL to use same RndSeed between two prjns to ensure symmetry"`
+	PCon    float32    `min:"0" max:"1" desc:"probability of connection (0-1)"`
+	SelfCon bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	Recip   bool       `desc:"reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down projection -- ESSENTIAL to use same RndSeed between two prjns to ensure symmetry"`
+	Rand    erand.Rand `view:"-" desc:"random number source -- is created with its own separate source if nil"`
+	RndSeed int64      `view:"-" desc:"the current random seed -- will be initialized to a new random number from the global random stream when Rand is created."`
 }
 
 func NewUnifRnd() *UnifRnd {
@@ -31,6 +33,15 @@ func NewUnifRnd() *UnifRnd {
 
 func (ur *UnifRnd) Name() string {
 	return "UnifRnd"
+}
+
+func (ur *UnifRnd) InitRand() {
+	if ur.Rand != nil {
+		ur.Rand.Seed(ur.RndSeed)
+		return
+	}
+	ur.RndSeed = int64(rand.Uint64())
+	ur.Rand = erand.NewSysRand(ur.RndSeed)
 }
 
 func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
@@ -69,17 +80,14 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 		rnv[i] = int32(nsend)
 	}
 
-	if ur.RndSeed == 0 {
-		ur.RndSeed = int64(rand.Uint64())
-	}
-	rand.Seed(ur.RndSeed)
+	ur.InitRand()
 
 	sordlen := slen
 	if noself {
 		sordlen--
 	}
 
-	sorder := rand.Perm(sordlen)
+	sorder := ur.Rand.Perm(sordlen, -1)
 	slist := make([]int, nsend)
 	for ri := 0; ri < rlen; ri++ {
 		if noself { // need to exclude ri
@@ -90,7 +98,7 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 					ix++
 				}
 			}
-			erand.PermuteInts(sorder)
+			erand.PermuteInts(sorder, ur.Rand)
 		}
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
@@ -98,7 +106,7 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 			off := ri*slen + slist[si]
 			cons.Values.Set(off, true)
 		}
-		erand.PermuteInts(sorder)
+		erand.PermuteInts(sorder, ur.Rand)
 	}
 
 	// 	set send n's empirically
@@ -137,17 +145,14 @@ func (ur *UnifRnd) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, re
 		rnv[i] = int32(nsend)
 	}
 
-	if ur.RndSeed == 0 {
-		ur.RndSeed = int64(rand.Uint64())
-	}
-	rand.Seed(ur.RndSeed)
+	ur.InitRand()
 
 	sordlen := slen
 	if noself {
 		sordlen--
 	}
 
-	sorder := rand.Perm(sordlen)
+	sorder := ur.Rand.Perm(sordlen, -1)
 	slist := make([]int, nsend)
 	for ri := 0; ri < rlen; ri++ {
 		if noself { // need to exclude ri
@@ -158,7 +163,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, re
 					ix++
 				}
 			}
-			erand.PermuteInts(sorder)
+			erand.PermuteInts(sorder, ur.Rand)
 		}
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
@@ -166,7 +171,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, re
 			off := slist[si]*slenR + ri
 			cons.Values.Set(off, true)
 		}
-		erand.PermuteInts(sorder)
+		erand.PermuteInts(sorder, ur.Rand)
 	}
 
 	// set send n's empirically

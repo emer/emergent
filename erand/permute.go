@@ -4,14 +4,20 @@
 
 package erand
 
-import "math/rand"
-
 // PermuteInts permutes (shuffles) the order of elements in the given int slice
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-// So you don't have to remember how to call rand.Shuffle
-func PermuteInts(ins []int) {
-	rand.Shuffle(len(ins), func(i, j int) {
+// So you don't have to remember how to call rand.Shuffle.
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func PermuteInts(ins []int, randOpt ...Rand) {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	rnd.Shuffle(len(ins), -1, func(i, j int) {
 		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
@@ -20,8 +26,16 @@ func PermuteInts(ins []int) {
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func PermuteStrings(ins []string) {
-	rand.Shuffle(len(ins), func(i, j int) {
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func PermuteStrings(ins []string, randOpt ...Rand) {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	rnd.Shuffle(len(ins), -1, func(i, j int) {
 		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
@@ -30,8 +44,16 @@ func PermuteStrings(ins []string) {
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func Permutefloat32s(ins []float32) {
-	rand.Shuffle(len(ins), func(i, j int) {
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func Permutefloat32s(ins []float32, randOpt ...Rand) {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	rnd.Shuffle(len(ins), -1, func(i, j int) {
 		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
@@ -40,8 +62,16 @@ func Permutefloat32s(ins []float32) {
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 // So you don't have to remember how to call rand.Shuffle
-func Permutefloat64s(ins []float64) {
-	rand.Shuffle(len(ins), func(i, j int) {
+// Optionally can pass a single Rand interface to use --
+// otherwise uses system global Rand source.
+func Permutefloat64s(ins []float64, randOpt ...Rand) {
+	var rnd Rand
+	if len(randOpt) == 0 {
+		rnd = NewGlobalRand()
+	} else {
+		rnd = randOpt[0]
+	}
+	rnd.Shuffle(len(ins), -1, func(i, j int) {
 		ins[i], ins[j] = ins[j], ins[i]
 	})
 }
