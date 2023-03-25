@@ -5,14 +5,13 @@ go 1.18
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
-	github.com/emer/etable v1.1.18
+	github.com/emer/etable v1.1.19
 	github.com/goki/gi v1.3.16
 	github.com/goki/gosl v1.0.12
 	github.com/goki/ki v1.1.11
 	github.com/goki/mat32 v1.0.14
 	github.com/goki/vgpu v1.0.22
 	github.com/stretchr/testify v1.8.0
-	gonum.org/v1/gonum v0.12.0
 )
 
 require (
@@ -65,6 +64,7 @@ require (
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
+	gonum.org/v1/gonum v0.12.0 // indirect
 	gonum.org/v1/plot v0.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -121,9 +121,9 @@ func (ss *Sim) ConfigGui() *gi.Window {
 	// gi.WinEventTrace = true
 
 	gi.SetAppName("distplot")
-	gi.SetAppAbout(`This plots an equation. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
+	gi.SetAppAbout(`This plots histograms of random distributions. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
 
-	win := gi.NewMainWindow("distplot", "Plotting Equations", width, height)
+	win := gi.NewMainWindow("distplot", "Plotting Random Distributions", width, height)
 	ss.Win = win
 
 	vp := win.WinViewport2D()

@@ -60,8 +60,8 @@ github.com/dlclark/regexp2 v1.8.0 h1:rJD5HeGIT/2b5CDk63FVCwZA3qgYElfg+oQK7uH5pfE
 github.com/dlclark/regexp2 v1.8.0/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
 github.com/emer/empi v1.0.17 h1:1arFWAzdDR9emrKbz2sTGMhfAa+Kk0y3UTeBW1j9ltw=
 github.com/emer/empi v1.0.17/go.mod h1:cwXlhwSb91QvfadOlVRrXvcpLGa1ld3GZme5ygb4kt8=
-github.com/emer/etable v1.1.18 h1:xtKIMR1MFNJAQO4cJEBiE9v/Ujy+02V+vp8YA4kCtUc=
-github.com/emer/etable v1.1.18/go.mod h1:c5Uvo5NQl5VhV8Q3VB6CexDd2lRl2PJ04Aa8y65AYUU=
+github.com/emer/etable v1.1.19 h1:nk3ThZBPs5PjYwuM2CCq7MxvyoxBeUFEfn67ewC/IHQ=
+github.com/emer/etable v1.1.19/go.mod h1:c5Uvo5NQl5VhV8Q3VB6CexDd2lRl2PJ04Aa8y65AYUU=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
