@@ -17,6 +17,11 @@ type RndParams struct {
 	Par  float64  `view:"if Dist=Gamma,Binomial,Beta" desc:"extra parameter for distribution (depends on each one)"`
 }
 
+func (rp *RndParams) Defaults() {
+	rp.Var = 1
+	rp.Par = 1
+}
+
 // Gen generates a random variable according to current parameters.
 // Thr is an optional parallel thread index (-1 for none).
 // Optionally can pass a single Rand interface to use --
@@ -57,26 +62,26 @@ func (ev *RndDists) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON
 
 // The random number distributions
 const (
-	// Uniform has a uniform probability distribution over var = range on either side of the mean
+	// Uniform has a uniform probability distribution over Var = range on either side of the Mean
 	Uniform RndDists = iota
 
 	// Binomial represents number of 1's in n (Par) random (Bernouli) trials of probability p (Var)
 	Binomial
 
-	// Poisson represents number of events in interval, with event rate (lambda = Var) plus mean
+	// Poisson represents number of events in interval, with event rate (lambda = Var) plus Mean
 	Poisson
 
 	// Gamma represents maximum entropy distribution with two parameters: scaling parameter (Var)
-	// and shape parameter k (Par) plus mean
+	// and shape parameter k (Par) plus Mean
 	Gamma
 
-	// Gaussian normal with Var = stddev plus mean
+	// Gaussian normal with Var = stddev plus Mean
 	Gaussian
 
-	// Beta with var = a and par = b shape parameters
+	// Beta with Var = alpha and Par = beta shape parameters
 	Beta
 
-	// Mean is just the constant mean, no randomness
+	// Mean is just the constant Mean, no randomness
 	Mean
 
 	RndDistsN

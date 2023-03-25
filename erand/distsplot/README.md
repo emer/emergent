@@ -1,10 +1,6 @@
-Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/erand)
+# distplot
 
-Package erand provides randomization functionality built on top of standard math/rand
-random number generation functions.  Includes:
-*  RndParams: specifies parameters for random number generation according to various distributions
-   used e.g., for initializing random weights and generating random noise in neurons
-*  Permute*: basic convenience methods calling rand.Shuffle on e.g., []int slice
+This executable plots a histogram of random numbers generated according to different distributions, according to the `RndParams` parameterized distributions.
 
 Here are the distributions and how the parameters in `RndParams` map onto distributional parameters -- the `Mean` and `Var` are not the actual mean and variance of the distribution, but rather provide parameters roughly corresponding to these values, along with the extra `Par` value:
 
@@ -29,5 +25,5 @@ Here are the distributions and how the parameters in `RndParams` map onto distri
 	Mean
 ```
 
-See [distplot](distplot) for a program to plot the histograms of these different distributions as you vary the parameters.
+The range of these distributions vary so you'll have to adjust the Range values as you try different distributions and parameters.
 
