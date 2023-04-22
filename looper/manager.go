@@ -138,15 +138,15 @@ func (man *Manager) IsRunning() bool {
 }
 
 // ResetCountersByMode resets counters for given mode.
-func (man *Manager) ResetCountersByMode(modes etime.Modes) {
+func (man *Manager) ResetCountersByMode(mode etime.Modes) {
 	for sk, _ := range man.lastStartedCtr {
 		skm, _ := sk.ModeAndTime()
-		if skm == modes {
+		if skm == mode {
 			delete(man.lastStartedCtr, sk)
 		}
 	}
 	for m, stack := range man.Stacks {
-		if m == modes {
+		if m == mode {
 			for _, loop := range stack.Loops {
 				loop.Counter.Cur = 0
 			}
@@ -161,6 +161,24 @@ func (man *Manager) ResetCounters() {
 	for _, stack := range man.Stacks {
 		for _, loop := range stack.Loops {
 			loop.Counter.Cur = 0
+		}
+	}
+}
+
+// ResetCountersBelow resets the Cur on all loop Counters below given level
+// (inclusive), and resets the Manager's place in the loops.
+func (man *Manager) ResetCountersBelow(mode etime.Modes, time etime.Times) {
+	for _, stack := range man.Stacks {
+		if stack.Mode != mode {
+			continue
+		}
+		for lt, loop := range stack.Loops {
+			if lt > time {
+				continue
+			}
+			loop.Counter.Cur = 0
+			sk := etime.Scope(mode, lt)
+			delete(man.lastStartedCtr, sk)
 		}
 	}
 }

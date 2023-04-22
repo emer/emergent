@@ -86,6 +86,14 @@ func (ctx *Context) SetTensor(val etensor.Tensor) {
 	ctx.Table.SetCellTensor(ctx.Item.Name, ctx.Row, val)
 }
 
+// SetFloat64Cells sets float64 values to tensor cell
+// in current table, item, row
+func (ctx *Context) SetFloat64Cells(vals []float64) {
+	for i, v := range vals {
+		ctx.Table.SetCellTensorFloat1D(ctx.Item.Name, ctx.Row, i, v)
+	}
+}
+
 ///////////////////////////////////////////////////
 //  Aggregation, data access
 
@@ -120,7 +128,12 @@ func (ctx *Context) SetAggItemScope(scope etime.ScopeKey, itemNm string, ag agg.
 		fmt.Printf("elog.Context SetAggItemScope for item: %s in scope: %s -- could not aggregate item: %s from scope: %s -- check names\n", ctx.Item.Name, ctx.Scope, itemNm, scope)
 		return 0
 	}
-	ctx.SetFloat64(vals[0])
+	cl := ctx.Table.ColByName(itemNm)
+	if cl.NumDims() > 1 {
+		ctx.SetFloat64Cells(vals)
+	} else {
+		ctx.SetFloat64(vals[0])
+	}
 	return vals[0]
 }
 
