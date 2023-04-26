@@ -235,7 +235,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 		Range:  minmax.F64{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[1]): func(ctx *Context) {
-				pcterr := ctx.SetAggItem(ctx.Mode, times[2], "Err", agg.AggMean)
+				pcterr := ctx.SetAggItem(ctx.Mode, times[2], "Err", agg.AggMean)[0]
 				epc := ctx.Stats.Int("Epoch")
 				if ctx.Stats.Int("FirstZero") < 0 && pcterr == 0 {
 					ctx.Stats.SetInt("FirstZero", epc)

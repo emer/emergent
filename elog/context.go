@@ -6,6 +6,7 @@ package elog
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/emer/emergent/emer"
 	"github.com/emer/emergent/estats"
@@ -97,44 +98,52 @@ func (ctx *Context) SetFloat64Cells(vals []float64) {
 ///////////////////////////////////////////////////
 //  Aggregation, data access
 
-// SetAgg sets an aggregated scalar value computed from given eval mode
+// SetAgg sets an aggregated value computed from given eval mode
 // and time scale with same Item name, to current item, row.
-// returns aggregated value
-func (ctx *Context) SetAgg(mode etime.Modes, time etime.Times, ag agg.Aggs) float64 {
+// Supports scalar or tensor cells.
+// returns aggregated value(s).
+func (ctx *Context) SetAgg(mode etime.Modes, time etime.Times, ag agg.Aggs) []float64 {
 	return ctx.SetAggScope(etime.Scope(mode, time), ag)
 }
 
-// SetAggScope sets an aggregated scalar value computed from
-// another scope (ScopeKey) with same Item name, to current item, row
-// returns aggregated value
-func (ctx *Context) SetAggScope(scope etime.ScopeKey, ag agg.Aggs) float64 {
+// SetAggScope sets an aggregated value computed from
+// another scope (ScopeKey) with same Item name, to current item, row.
+// Supports scalar or tensor cells.
+// returns aggregated value(s).
+func (ctx *Context) SetAggScope(scope etime.ScopeKey, ag agg.Aggs) []float64 {
 	return ctx.SetAggItemScope(scope, ctx.Item.Name, ag)
 }
 
-// SetAggItem sets an aggregated scalar value computed from given eval mode
+// SetAggItem sets an aggregated value computed from given eval mode
 // and time scale with given Item name, to current item, row.
-// returns aggregated value
-func (ctx *Context) SetAggItem(mode etime.Modes, time etime.Times, itemNm string, ag agg.Aggs) float64 {
+// Supports scalar or tensor cells.
+// returns aggregated value(s).
+func (ctx *Context) SetAggItem(mode etime.Modes, time etime.Times, itemNm string, ag agg.Aggs) []float64 {
 	return ctx.SetAggItemScope(etime.Scope(mode, time), itemNm, ag)
 }
 
-// SetAggItemScope sets an aggregated scalar value computed from
+// SetAggItemScope sets an aggregated value computed from
 // another scope (ScopeKey) with given Item name, to current item, row.
-// returns aggregated value
-func (ctx *Context) SetAggItemScope(scope etime.ScopeKey, itemNm string, ag agg.Aggs) float64 {
+// Supports scalar or tensor cells.
+// returns aggregated value(s).
+func (ctx *Context) SetAggItemScope(scope etime.ScopeKey, itemNm string, ag agg.Aggs) []float64 {
 	ix := ctx.Logs.IdxViewScope(scope)
 	vals := agg.Agg(ix, itemNm, ag)
 	if len(vals) == 0 {
 		fmt.Printf("elog.Context SetAggItemScope for item: %s in scope: %s -- could not aggregate item: %s from scope: %s -- check names\n", ctx.Item.Name, ctx.Scope, itemNm, scope)
-		return 0
+		return nil
 	}
-	cl := ctx.Table.ColByName(itemNm)
+	cl, err := ctx.Table.ColByNameTry(ctx.Item.Name)
+	if err != nil {
+		log.Println(err)
+		return vals
+	}
 	if cl.NumDims() > 1 {
 		ctx.SetFloat64Cells(vals)
 	} else {
 		ctx.SetFloat64(vals[0])
 	}
-	return vals[0]
+	return vals
 }
 
 // ItemFloat returns a float64 value of the last row of given item name

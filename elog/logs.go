@@ -338,6 +338,9 @@ func (lg *Logs) WriteItems(sk etime.ScopeKey, row int) {
 		fun, ok := item.Write[sk]
 		if ok {
 			lg.Context.Item = item
+			// if strings.Contains(string(sk), "Epoch") {
+			// 	fmt.Printf("%#v\n", lg.Context.Item)
+			// }
 			fun(&lg.Context)
 		}
 	}
