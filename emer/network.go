@@ -128,15 +128,6 @@ type Network interface {
 	// from a JSON-formatted file.  If filename has .gz extension, then file is gzip uncompressed.
 	OpenWtsJSON(filename gi.FileName) error
 
-	// NewLayer creates a new concrete layer of appropriate type for this network
-	NewLayer() Layer
-
-	// NewPrjn creates a new concrete projection of appropriate type for this network
-	NewPrjn() Prjn
-
-	// Build constructs the network units and synapses based on current layers, projections
-	Build() error
-
 	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
 	Bounds() (min, max mat32.Vec3)
 
