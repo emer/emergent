@@ -926,6 +926,13 @@ func (nv *NetView) ToolbarConfig() {
 			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 	ndmen.Menu.AddSeparator("plotneur")
+	ndmen.Menu.AddAction(gi.ActOpts{Label: "Plot Selected Unit", Icon: "image", Tooltip: "opens up a window with a plot of all saved data for currently-selected unit"}, nv.This(),
+		func(recv, send ki.Ki, sig int64, data interface{}) {
+			nvv := recv.Embed(KiT_NetView).(*NetView)
+			nvv.PlotSelectedUnit()
+		})
+
+	tbar.AddSeparator("disep")
 	ditb := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
 	dilbl := gi.AddNewLabel(tbar, "dilab", "Di:")
 	dilbl.Tooltip = ditb
@@ -946,7 +953,7 @@ func (nv *NetView) ToolbarConfig() {
 		sbb.Value = float32(nvv.Di)
 		nvv.Update()
 	})
-	ndmen.Menu.AddSeparator("rastsep")
+	tbar.AddSeparator("rastsep")
 	rchk := gi.AddNewCheckBox(tbar, "raster")
 	rchk.SetChecked(nv.Params.Raster.On)
 	rchk.SetText("Raster")
@@ -970,12 +977,6 @@ func (nv *NetView) ToolbarConfig() {
 			nv.Update()
 		}
 	})
-
-	ndmen.Menu.AddAction(gi.ActOpts{Label: "Plot Selected Unit", Icon: "image", Tooltip: "opens up a window with a plot of all saved data for currently-selected unit"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.PlotSelectedUnit()
-		})
 
 	vp, ok := nv.VarParams[nv.Var]
 	if !ok {

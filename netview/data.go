@@ -13,7 +13,6 @@ import (
 type LayData struct {
 	LayName   string      `desc:"the layer name"`
 	NUnits    int         `desc:"cached number of units"`
-	MaxData   int         `desc:"cached max data parallel data per unit"`
 	Data      []float32   `desc:"the full data, [Ring.Max][len(Vars)][MaxData][NUnits] in that order"`
 	RecvPrjns []*PrjnData `desc:"receiving projection data -- shared with SendPrjns"`
 	SendPrjns []*PrjnData `desc:"sending projection data -- shared with RecvPrjns"`

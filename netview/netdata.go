@@ -143,7 +143,7 @@ makeData:
 			}
 		}
 	}
-	vmax := vlen * rmax
+	vmax := vlen * rmax * nd.MaxData
 	for li := 0; li < nlay; li++ {
 		lay := nd.Net.Layer(li)
 		nm := lay.Name()
@@ -153,9 +153,8 @@ makeData:
 			goto makeData
 		}
 		ld.NUnits = lay.Shape().Len()
-		ld.MaxData = nd.MaxData
 		nu := ld.NUnits
-		ltot := vmax * nu * nd.MaxData
+		ltot := vmax * nu
 		if len(ld.Data) != ltot {
 			ld.Data = make([]float32, ltot)
 		}
@@ -215,12 +214,12 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 		laynm := lay.Name()
 		ld := nd.LayData[laynm]
 		nu := lay.Shape().Len()
-		nvu := vlen * nu * maxData
+		nvu := vlen * maxData * nu
 		for vi, vnm := range nd.UnVars {
 			mn := &nd.UnMinPer[mmidx+vi]
 			mx := &nd.UnMaxPer[mmidx+vi]
 			for di := 0; di < maxData; di++ {
-				idx := (lidx*nvu + vi*nu + di) * maxData
+				idx := lidx*nvu + vi*maxData*nu + di*nu
 				dvals := ld.Data[idx : idx+nu]
 				lay.UnitVals(&dvals, vnm, di)
 				for ui := range dvals {
@@ -388,9 +387,8 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int, di
 		return 0, false
 	}
 	nu := ld.NUnits
-	nvu := vlen * nu
-	maxData := nd.MaxData
-	idx := (ridx*nvu+vi*nu+di)*maxData + uidx1d
+	nvu := vlen * nd.MaxData * nu
+	idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 	val := ld.Data[idx]
 	if mat32.IsNaN(val) {
 		return 0, false
@@ -609,7 +607,7 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 	plt.Params.Title = "NetView " + selnm
 	plt.Params.XAxisCol = "Rec"
 
-	dt := nd.SelectedUnitTable()
+	dt := nd.SelectedUnitTable(nv.Di)
 
 	plt.SetTable(dt)
 
@@ -632,8 +630,8 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 }
 
 // SelectedUnitTable returns a table with all of the data for the
-// currently-selected unit.
-func (nd *NetData) SelectedUnitTable() *etable.Table {
+// currently-selected unit, and data parallel index.
+func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 	if nd.PrjnLay == "" || nd.PrjnUnIdx < 0 {
 		fmt.Printf("NetView:SelectedUnitTable -- no unit selected\n")
 		return nil
@@ -655,7 +653,7 @@ func (nd *NetData) SelectedUnitTable() *etable.Table {
 	ln := nd.Ring.Len
 	vlen := len(nd.UnVars)
 	nu := ld.NUnits
-	nvu := vlen * nu
+	nvu := vlen * nd.MaxData * nu
 	uidx1d := nd.PrjnUnIdx
 
 	sch := etable.Schema{
@@ -670,7 +668,7 @@ func (nd *NetData) SelectedUnitTable() *etable.Table {
 		ridx := nd.RecIdx(ri)
 		dt.SetCellFloatIdx(0, ri, float64(ri))
 		for vi := 0; vi < vlen; vi++ {
-			idx := ridx*nvu + vi*nu + uidx1d
+			idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 			val := ld.Data[idx]
 			dt.SetCellFloatIdx(vi+1, ri, float64(val))
 		}
