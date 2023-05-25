@@ -129,26 +129,31 @@ type Layer interface {
 	// for this layer.  This is needed for extending indexes in derived types.
 	UnitVarNum() int
 
-	// UnitVal1D returns value of given variable index on given unit, using 1-dimensional index.
+	// UnitVal1D returns value of given variable index on given unit,
+	// using 1-dimensional index, and a data parallel index di,
+	// for networks capable of processing multiple input patterns in parallel.
 	// returns NaN on invalid index.
 	// This is the core unit var access method used by other methods,
 	// so it is the only one that needs to be updated for derived layer types.
-	UnitVal1D(varIdx int, idx int) float32
+	UnitVal1D(varIdx int, idx, di int) float32
 
 	// UnitVals fills in values of given variable name on unit,
 	// for each unit in the layer, into given float32 slice (only resized if not big enough).
+	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	// Returns error on invalid var name.
-	UnitVals(vals *[]float32, varNm string) error
+	UnitVals(vals *[]float32, varNm string, di int) error
 
 	// UnitValsTensor fills in values of given variable name on unit
 	// for each unit in the layer, into given tensor.
+	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	// If tensor is not already big enough to hold the values, it is
 	// set to the same shape as the layer.
 	// Returns error on invalid var name.
-	UnitValsTensor(tsr etensor.Tensor, varNm string) error
+	UnitValsTensor(tsr etensor.Tensor, varNm string, di int) error
 
 	// UnitValsRepTensor fills in values of given variable name on unit
 	// for a smaller subset of representative units in the layer, into given tensor.
+	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	// This is used for computationally intensive stats or displays that work
 	// much better with a smaller number of units.
 	// The set of representative units are defined by SetRepIdxs -- all units
@@ -157,7 +162,7 @@ type Layer interface {
 	// set to RepShape to hold all the values if subset is defined,
 	// otherwise it calls UnitValsTensor and is identical to that.
 	// Returns error on invalid var name.
-	UnitValsRepTensor(tsr etensor.Tensor, varNm string) error
+	UnitValsRepTensor(tsr etensor.Tensor, varNm string, di int) error
 
 	// RepIdxs returns the current set of representative unit indexes.
 	// which are a smaller subset of units that represent the behavior
@@ -182,7 +187,8 @@ type Layer interface {
 	// UnitVal returns value of given variable name on given unit,
 	// using shape-based dimensional index.
 	// Returns NaN on invalid var name or index.
-	UnitVal(varNm string, idx []int) float32
+	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+	UnitVal(varNm string, idx []int, di int) float32
 
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int

@@ -16,40 +16,44 @@ import (
 
 // SetLayerTensor sets tensor of Unit values on a layer for given variable
 // to a F32Tensor with name = layNm
-func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string) *etensor.Float32 {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32Tensor(layNm)
-	ly.UnitValsTensor(tsr, unitVar)
+	ly.UnitValsTensor(tsr, unitVar, di)
 	return tsr
 }
 
 // SetLayerRepTensor sets tensor of representative Unit values on a layer
 // for given variable to a F32Tensor with name = layNm
-func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string) *etensor.Float32 {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32Tensor(layNm)
-	ly.UnitValsRepTensor(tsr, unitVar)
+	ly.UnitValsRepTensor(tsr, unitVar, di)
 	return tsr
 }
 
 // LayerVarsCorrel returns the correlation between two variables on a given layer
-func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB string) float32 {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
 	ly := net.LayerByName(layNm)
 	tsrA := st.F32Tensor(layNm) // standard re-used storage tensor
-	ly.UnitValsTensor(tsrA, unitVarA)
+	ly.UnitValsTensor(tsrA, unitVarA, di)
 	tsrB := st.F32Tensor(layNm + "_alt") // alternative storage tensor
-	ly.UnitValsTensor(tsrB, unitVarB)
+	ly.UnitValsTensor(tsrB, unitVarB, di)
 	return metric.Correlation32(tsrA.Values, tsrB.Values)
 }
 
 // LayerVarsCorrelRep returns the correlation between two variables on a given layer
 // Rep version uses representative units.
-func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB string) float32 {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
 	ly := net.LayerByName(layNm)
 	tsrA := st.F32Tensor(layNm) // standard re-used storage tensor
-	ly.UnitValsRepTensor(tsrA, unitVarA)
+	ly.UnitValsRepTensor(tsrA, unitVarA, di)
 	tsrB := st.F32Tensor(layNm + "_alt") // alternative storage tensor
-	ly.UnitValsRepTensor(tsrB, unitVarB)
+	ly.UnitValsRepTensor(tsrB, unitVarB, di)
 	return metric.Correlation32(tsrA.Values, tsrB.Values)
 }
 
@@ -57,8 +61,9 @@ func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB 
 // compared to layer activation pattern using given variable.  Returns the row number,
 // correlation value, and value of a column named namecol for that row if non-empty.
 // Column must be etensor.Float32
-func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, pats *etable.Table, colnm, namecol string) (int, float32, string) {
-	tsr := st.SetLayerTensor(net, layNm, unitVar)
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, di int, pats *etable.Table, colnm, namecol string) (int, float32, string) {
+	tsr := st.SetLayerTensor(net, layNm, unitVar, di)
 	col := pats.ColByName(colnm)
 	// note: requires Increasing metric so using Inv
 	row, cor := metric.ClosestRow32(tsr, col.(*etensor.Float32), metric.InvCorrelation32)

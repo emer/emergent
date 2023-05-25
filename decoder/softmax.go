@@ -93,7 +93,7 @@ func (sm *SoftMax) Input(varNm string) {
 	off := 0
 	for _, ly := range sm.Layers {
 		tsr := sm.ValsTsr(ly.Name())
-		ly.UnitValsTensor(tsr, varNm)
+		ly.UnitValsTensor(tsr, varNm, 0)
 		for j, v := range tsr.Values {
 			sm.Inputs[off+j] = v
 		}

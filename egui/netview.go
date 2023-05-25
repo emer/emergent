@@ -29,7 +29,7 @@ func (gui *GUI) UpdateNetViewWhenStopped() {
 // when the GUI is not active
 func (gui *GUI) InitNetData(net emer.Network, nrecs int) {
 	gui.NetData = &netview.NetData{}
-	gui.NetData.Init(net, nrecs, true) // true = NoSynData
+	gui.NetData.Init(net, nrecs, true, 1) // true = NoSynData, 1 = MaxData
 }
 
 // NetDataRecord records current netview data

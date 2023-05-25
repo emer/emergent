@@ -332,7 +332,8 @@ func (lg *Logs) RunStats(stats ...string) {
 // classes of layers, mode and time (e.g., Test, Trial).
 // If another item already exists for a different mode / time, this is added
 // to it so there aren't any duplicate items.
-func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.Modes, etm etime.Times, layClasses ...string) {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, di int, mode etime.Modes, etm etime.Times, layClasses ...string) {
 	layers := net.LayersByClass(layClasses...)
 	for _, lnm := range layers {
 		clnm := lnm
@@ -341,7 +342,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 		itm, has := lg.ItemByName(itmNm)
 		if has {
 			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
-				ctx.SetLayerRepTensor(clnm, varNm)
+				ctx.SetLayerRepTensor(clnm, varNm, di)
 			}
 		} else {
 			lg.AddItem(&Item{
@@ -352,7 +353,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 				Range:     minmax.F64{Max: 1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
-						ctx.SetLayerRepTensor(clnm, varNm)
+						ctx.SetLayerRepTensor(clnm, varNm, di)
 					}}})
 		}
 	}

@@ -42,6 +42,7 @@ type NetData struct {
 	SynVars    []string            `desc:"the list of synaptic variables saved"`
 	SynVarIdxs map[string]int      `desc:"index of synaptic variable in the SynVars slice"`
 	Ring       ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
+	MaxData    int                 `desc:"max data parallel data per unit"`
 	LayData    map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
 	UnMinPer   []float32           `desc:"unit var min values for each Ring.Max * variable"`
 	UnMaxPer   []float32           `desc:"unit var max values for each Ring.Max * variable"`
@@ -58,9 +59,10 @@ type NetData struct {
 var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)
 
 // Init initializes the main params and configures the data
-func (nd *NetData) Init(net emer.Network, max int, noSynData bool) {
+func (nd *NetData) Init(net emer.Network, max int, noSynData bool, maxData int) {
 	nd.Net = net
 	nd.Ring.Max = max
+	nd.MaxData = maxData
 	nd.NoSynData = noSynData
 	nd.Config()
 	nd.RastCtr = 0
@@ -151,8 +153,9 @@ makeData:
 			goto makeData
 		}
 		ld.NUnits = lay.Shape().Len()
+		ld.MaxData = nd.MaxData
 		nu := ld.NUnits
-		ltot := vmax * nu
+		ltot := vmax * nu * nd.MaxData
 		if len(ld.Data) != ltot {
 			ld.Data = make([]float32, ltot)
 		}
@@ -188,6 +191,7 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 	vlen := len(nd.UnVars)
 	nd.Ring.Add(1)
 	lidx := nd.Ring.LastIdx()
+	maxData := nd.MaxData
 
 	if rastCtr < 0 {
 		rastCtr = nd.RastCtr
@@ -211,18 +215,20 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 		laynm := lay.Name()
 		ld := nd.LayData[laynm]
 		nu := lay.Shape().Len()
-		nvu := vlen * nu
+		nvu := vlen * nu * maxData
 		for vi, vnm := range nd.UnVars {
 			mn := &nd.UnMinPer[mmidx+vi]
 			mx := &nd.UnMaxPer[mmidx+vi]
-			idx := lidx*nvu + vi*nu
-			dvals := ld.Data[idx : idx+nu]
-			lay.UnitVals(&dvals, vnm)
-			for ui := range dvals {
-				vl := dvals[ui]
-				if !mat32.IsNaN(vl) {
-					*mn = mat32.Min(*mn, vl)
-					*mx = mat32.Max(*mx, vl)
+			for di := 0; di < maxData; di++ {
+				idx := (lidx*nvu + vi*nu + di) * maxData
+				dvals := ld.Data[idx : idx+nu]
+				lay.UnitVals(&dvals, vnm, di)
+				for ui := range dvals {
+					vl := dvals[ui]
+					if !mat32.IsNaN(vl) {
+						*mn = mat32.Min(*mn, vl)
+						*mx = mat32.Max(*mx, vl)
+					}
 				}
 			}
 		}
@@ -330,15 +336,15 @@ func (nd *NetData) CounterRec(recno int) string {
 	return nd.Counters[ridx]
 }
 
-// UnitVal returns the value for given layer, variable name, unit index, and record number,
-// which is -1 for current (last) record, or in [0..Len-1] for prior records.
+// UnitVal returns the value for given layer, variable name, unit index, data parallel idx di,
+// and record number, which is -1 for current (last) record, or in [0..Len-1] for prior records.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int) (float32, bool) {
+func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int, di int) (float32, bool) {
 	if nd.Ring.Len == 0 {
 		return 0, false
 	}
 	ridx := nd.RecIdx(recno)
-	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx)
+	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx, di)
 }
 
 // RasterCtr returns the raster counter value at given record number (-1 = current)
@@ -353,17 +359,18 @@ func (nd *NetData) RasterCtr(recno int) (int, bool) {
 // UnitValRaster returns the value for given layer, variable name, unit index, and
 // raster counter number.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) UnitValRaster(laynm string, vnm string, uidx1d int, rastCtr int) (float32, bool) {
+func (nd *NetData) UnitValRaster(laynm string, vnm string, uidx1d int, rastCtr int, di int) (float32, bool) {
 	ridx, has := nd.RasterMap[rastCtr]
 	if !has {
 		return 0, false
 	}
-	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx)
+	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx, di)
 }
 
-// UnitValIdx returns the value for given layer, variable name, unit index, and stored idx
+// UnitValIdx returns the value for given layer, variable name, unit index, stored idx,
+// and data parallel index.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (float32, bool) {
+func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int, di int) (float32, bool) {
 	if strings.HasPrefix(vnm, "r.") {
 		svar := vnm[2:]
 		return nd.RecvUnitVal(laynm, svar, uidx1d)
@@ -382,7 +389,8 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int) (f
 	}
 	nu := ld.NUnits
 	nvu := vlen * nu
-	idx := ridx*nvu + vi*nu + uidx1d
+	maxData := nd.MaxData
+	idx := (ridx*nvu+vi*nu+di)*maxData + uidx1d
 	val := ld.Data[idx]
 	if mat32.IsNaN(val) {
 		return 0, false

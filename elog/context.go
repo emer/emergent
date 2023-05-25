@@ -217,31 +217,33 @@ func (ctx *Context) Layer(layNm string) emer.Layer {
 }
 
 // GetLayerTensor gets tensor of Unit values on a layer for given variable
-func (ctx *Context) GetLayerTensor(layNm, unitVar string) *etensor.Float32 {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (ctx *Context) GetLayerTensor(layNm, unitVar string, di int) *etensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValsTensor(tsr, unitVar)
+	ly.UnitValsTensor(tsr, unitVar, di)
 	return tsr
 }
 
 // GetLayerRepTensor gets tensor of representative Unit values on a layer for given variable
-func (ctx *Context) GetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (ctx *Context) GetLayerRepTensor(layNm, unitVar string, di int) *etensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValsRepTensor(tsr, unitVar)
+	ly.UnitValsRepTensor(tsr, unitVar, di)
 	return tsr
 }
 
 // SetLayerTensor sets tensor of Unit values on a layer for given variable
-func (ctx *Context) SetLayerTensor(layNm, unitVar string) *etensor.Float32 {
-	tsr := ctx.GetLayerTensor(layNm, unitVar)
+func (ctx *Context) SetLayerTensor(layNm, unitVar string, di int) *etensor.Float32 {
+	tsr := ctx.GetLayerTensor(layNm, unitVar, di)
 	ctx.SetTensor(tsr)
 	return tsr
 }
 
 // SetLayerRepTensor sets tensor of representative Unit values on a layer for given variable
-func (ctx *Context) SetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
-	tsr := ctx.GetLayerRepTensor(layNm, unitVar)
+func (ctx *Context) SetLayerRepTensor(layNm, unitVar string, di int) *etensor.Float32 {
+	tsr := ctx.GetLayerRepTensor(layNm, unitVar, di)
 	ctx.SetTensor(tsr)
 	return tsr
 }
@@ -250,8 +252,8 @@ func (ctx *Context) SetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
 // given layer activation pattern using given variable.  Returns the row number,
 // correlation value, and value of a column named namecol for that row if non-empty.
 // Column must be etensor.Float32
-func (ctx *Context) ClosestPat(layNm, unitVar string, pats *etable.Table, colnm, namecol string) (int, float32, string) {
-	tsr := ctx.SetLayerTensor(layNm, unitVar)
+func (ctx *Context) ClosestPat(layNm, unitVar string, di int, pats *etable.Table, colnm, namecol string) (int, float32, string) {
+	tsr := ctx.SetLayerTensor(layNm, unitVar, di)
 	col := pats.ColByName(colnm)
 	// note: requires Increasing metric so using Inv
 	row, cor := metric.ClosestRow32(tsr, col.(*etensor.Float32), metric.InvCorrelation32)

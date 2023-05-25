@@ -22,7 +22,8 @@ import (
 // and 'Source' is either the name of another layer (checked first)
 // or the name of a tensor stored in F32Tensors (if layer name not found).
 // If Source is not a layer, it must be populated prior to these calls.
-func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string, di int) error {
 	var err error
 	for _, anm := range arfs {
 		sp := strings.Split(anm, ":")
@@ -32,12 +33,12 @@ func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error
 			fmt.Printf("estats.InitActRFs: %s\n", err)
 			continue
 		}
-		lvt := st.SetLayerRepTensor(net, lnm, varnm)
+		lvt := st.SetLayerRepTensor(net, lnm, varnm, di)
 		tnm := sp[1]
 		var tvt *etensor.Float32
 		_, err = net.LayerByNameTry(tnm)
 		if err == nil {
-			tvt = st.SetLayerRepTensor(net, tnm, varnm)
+			tvt = st.SetLayerRepTensor(net, tnm, varnm, di)
 		} else {
 			ok := false
 			tvt, ok = st.F32Tensors[tnm]
@@ -58,7 +59,8 @@ func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error
 // Must have called InitActRFs first -- see it for documentation.
 // Uses RFs configured then, grabbing network values from variable
 // varnm, and given threshold (0.01 recommended)
-func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32) {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32, di int) {
 	for _, rf := range st.ActRFs.RFs {
 		anm := rf.Name
 		sp := strings.Split(anm, ":")
@@ -67,12 +69,12 @@ func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32) {
 		if err != nil {
 			continue
 		}
-		lvt := st.SetLayerRepTensor(net, lnm, varnm)
+		lvt := st.SetLayerRepTensor(net, lnm, varnm, di)
 		tnm := sp[1]
 		var tvt *etensor.Float32
 		_, err = net.LayerByNameTry(tnm)
 		if err == nil {
-			tvt = st.SetLayerRepTensor(net, tnm, varnm)
+			tvt = st.SetLayerRepTensor(net, tnm, varnm, di)
 		} else { // random state
 			tvt = st.F32Tensor(tnm)
 		}

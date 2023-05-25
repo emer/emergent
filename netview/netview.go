@@ -34,6 +34,7 @@ type NetView struct {
 	gi.Layout
 	Net          emer.Network          `desc:"the network that we're viewing"`
 	Var          string                `desc:"current variable that we're viewing"`
+	Di           int                   `desc:"current data parallel index di, for networks capable of processing input patterns in parallel."`
 	Vars         []string              `desc:"the list of variables to view"`
 	SynVars      []string              `desc:"list of synaptic variables"`
 	SynVarsMap   map[string]int        `desc:"map of synaptic variable names to index"`
@@ -66,7 +67,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.Defaults()
 	nv.Net = net
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
 	nv.DataMu.Unlock()
 	nv.Config()
 }
@@ -85,7 +86,14 @@ func (nv *NetView) SetVar(vr string) {
 // resets the current data in the process
 func (nv *NetView) SetMaxRecs(max int) {
 	nv.Params.MaxRecs = max
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
+}
+
+// SetMaxData sets the max data parallel info recorded
+// resets the current data in the process
+func (nv *NetView) SetMaxData(max int) {
+	nv.Params.MaxData = max
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
 }
 
 // HasLayers returns true if network has any layers -- else no display
@@ -266,7 +274,7 @@ func (nv *NetView) Config() {
 	ctrs.SetText("Counters: ")
 
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
 	nv.DataMu.Unlock()
 	nv.ReconfigMeshes()
 	nv.UpdateEnd(updt)
@@ -719,7 +727,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 	if idx1d >= lay.Shape().Len() {
 		raw, hasval = 0, false
 	} else {
-		raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo)
+		raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo, nv.Di)
 	}
 	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
 	return
@@ -736,14 +744,14 @@ func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scal
 		if idx1d >= lay.Shape().Len() {
 			raw, hasval = 0, false
 		} else {
-			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr, nv.Di)
 		}
 	} else {
 		if idx1d >= len(ridx) {
 			raw, hasval = 0, false
 		} else {
 			idx1d = ridx[idx1d]
-			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr)
+			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr, nv.Di)
 		}
 	}
 	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
@@ -918,6 +926,27 @@ func (nv *NetView) ToolbarConfig() {
 			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
 		})
 	ndmen.Menu.AddSeparator("plotneur")
+	ditb := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
+	dilbl := gi.AddNewLabel(tbar, "dilab", "Di:")
+	dilbl.Tooltip = ditb
+	disb := gi.AddNewSpinBox(tbar, "disb")
+	disb.Tooltip = ditb
+	disb.Defaults()
+	disb.SetProp("has-min", true)
+	disb.SetProp("min", 0)
+	disb.SetProp("step", 1)
+	disb.SetValue(float32(nv.Di))
+	disb.SpinBoxSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		nvv := recv.Embed(KiT_NetView).(*NetView)
+		sbb := send.(*gi.SpinBox)
+		md := int(sbb.Value)
+		if md < nvv.Params.MaxData && md >= 0 {
+			nvv.Di = md
+		}
+		sbb.Value = float32(nvv.Di)
+		nvv.Update()
+	})
+	ndmen.Menu.AddSeparator("rastsep")
 	rchk := gi.AddNewCheckBox(tbar, "raster")
 	rchk.SetChecked(nv.Params.Raster.On)
 	rchk.SetText("Raster")

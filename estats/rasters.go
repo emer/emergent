@@ -33,9 +33,10 @@ func (st *Stats) SetRasterCol(sr, tsr *etensor.Float32, col int) {
 
 // RasterRec records data from layers configured with ConfigRasters
 // using variable name, for given cycle number (X axis index)
-func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string) {
+// di is a data parallel index di, for networks capable of processing input patterns in parallel.
+func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string, di int) {
 	for _, lnm := range st.Rasters {
-		tsr := st.SetLayerRepTensor(net, lnm, varNm)
+		tsr := st.SetLayerRepTensor(net, lnm, varNm, di)
 		sr := st.F32Tensor("Raster_" + lnm)
 		if sr.Dim(1) <= cyc {
 			continue
