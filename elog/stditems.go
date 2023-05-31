@@ -333,7 +333,7 @@ func (lg *Logs) RunStats(stats ...string) {
 // If another item already exists for a different mode / time, this is added
 // to it so there aren't any duplicate items.
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
-func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, di int, mode etime.Modes, etm etime.Times, layClasses ...string) {
+func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.Modes, etm etime.Times, layClasses ...string) {
 	layers := net.LayersByClass(layClasses...)
 	for _, lnm := range layers {
 		clnm := lnm
@@ -342,7 +342,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, di int, mode
 		itm, has := lg.ItemByName(itmNm)
 		if has {
 			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
-				ctx.SetLayerRepTensor(clnm, varNm, di)
+				ctx.SetLayerRepTensor(clnm, varNm)
 			}
 		} else {
 			lg.AddItem(&Item{
@@ -353,7 +353,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, di int, mode
 				Range:     minmax.F64{Max: 1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
-						ctx.SetLayerRepTensor(clnm, varNm, di)
+						ctx.SetLayerRepTensor(clnm, varNm)
 					}}})
 		}
 	}

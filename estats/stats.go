@@ -109,6 +109,9 @@ func (st *Stats) PrintVals(stats, fmts []string, delim string) string {
 	return str
 }
 
+//////////////////////////////////////
+//  Set, Get vals
+
 // SetFloat sets Floats stat value
 func (st *Stats) SetFloat(name string, value float64) {
 	st.Floats[name] = value
@@ -212,6 +215,136 @@ func (st *Stats) SetF64Tensor(name string, tsr *etensor.Float64) {
 func (st *Stats) SetIntTensor(name string, tsr *etensor.Int) {
 	st.IntTensors[name] = tsr
 }
+
+//////////////////////////////////////////////
+//  Set, Get vals, data index versions
+
+// DiName returns a string formatted with the given name
+// appended with _di data index.
+func DiName(name string, di int) string {
+	return fmt.Sprintf("%s_%02d", name, di)
+}
+
+// SetFloatDi sets Floats stat value
+// Data parallel index version appends _di to name
+func (st *Stats) SetFloatDi(name string, di int, value float64) {
+	st.Floats[DiName(name, di)] = value
+}
+
+// SetFloat32Di sets Floats stat value using a float32 value
+// Data parallel index version appends _di to name
+func (st *Stats) SetFloat32Di(name string, di int, value float32) {
+	st.Floats[DiName(name, di)] = float64(value)
+}
+
+// SetStringDi sets Strings stat value
+// Data parallel index version appends _di to name
+func (st *Stats) SetStringDi(name string, di int, value string) {
+	st.Strings[DiName(name, di)] = value
+}
+
+// SetIntDi sets Ints stat value
+// Data parallel index version appends _di to name
+func (st *Stats) SetIntDi(name string, di int, value int) {
+	st.Ints[DiName(name, di)] = value
+}
+
+// FloatDi returns Floats stat value -- prints error message and returns 0 if not found
+// Data parallel index version appends _di to name
+func (st *Stats) FloatDi(name string, di int) float64 {
+	val, has := st.Floats[DiName(name, di)]
+	if has {
+		return val
+	}
+	fmt.Printf("Value named: %s not found in Stats\n", name)
+	return 0
+}
+
+// Float32Di returns Floats stat value converted to float32.
+// prints error message and returns 0 if not found
+// Data parallel index version appends _di to name
+func (st *Stats) Float32Di(name string, di int) float32 {
+	return float32(st.Float(name))
+}
+
+// StringDi returns Strings stat value -- prints error message and returns "" if not found
+// Data parallel index version appends _di to name
+func (st *Stats) StringDi(name string, di int) string {
+	val, has := st.Strings[DiName(name, di)]
+	if has {
+		return val
+	}
+	fmt.Printf("Value named: %s not found in Stats\n", name)
+	return ""
+}
+
+// IntDi returns Ints stat value -- prints error message and returns 0 if not found
+// Data parallel index version appends _di to name
+func (st *Stats) IntDi(name string, di int) int {
+	val, has := st.Ints[DiName(name, di)]
+	if has {
+		return val
+	}
+	fmt.Printf("Value named: %s not found in Stats\n", name)
+	return 0
+}
+
+// F32TensorDi returns a float32 tensor of given name, creating if not yet made
+// Data parallel index version appends _di to name
+func (st *Stats) F32TensorDi(name string, di int) *etensor.Float32 {
+	tsr, has := st.F32Tensors[DiName(name, di)]
+	if !has {
+		tsr = &etensor.Float32{}
+		st.F32Tensors[DiName(name, di)] = tsr
+	}
+	return tsr
+}
+
+// F64TensorDi returns a float64 tensor of given name, creating if not yet made
+// Data parallel index version appends _di to name
+func (st *Stats) F64TensorDi(name string, di int) *etensor.Float64 {
+	tsr, has := st.F64Tensors[DiName(name, di)]
+	if !has {
+		tsr = &etensor.Float64{}
+		st.F64Tensors[DiName(name, di)] = tsr
+	}
+	return tsr
+}
+
+// IntTensorDi returns a int tensor of given name, creating if not yet made
+// Data parallel index version appends _di to name
+func (st *Stats) IntTensorDi(name string, di int) *etensor.Int {
+	tsr, has := st.IntTensors[DiName(name, di)]
+	if !has {
+		tsr = &etensor.Int{}
+		st.IntTensors[DiName(name, di)] = tsr
+	}
+	return tsr
+}
+
+// SetF32TensorDi sets a float32 tensor of given name.
+// Just does: st.F32Tensors[DiName(name, di)] = tsr
+// Data parallel index version appends _di to name
+func (st *Stats) SetF32TensorDi(name string, di int, tsr *etensor.Float32) {
+	st.F32Tensors[DiName(name, di)] = tsr
+}
+
+// SetF64TensorDi sets a float64 tensor of given name.
+// Just does: st.F64Tensors[DiName(name, di)] = tsr
+// Data parallel index version appends _di to name
+func (st *Stats) SetF64TensorDi(name string, di int, tsr *etensor.Float64) {
+	st.F64Tensors[DiName(name, di)] = tsr
+}
+
+// SetIntTensorDi sets a int tensor of given name.
+// Just does: st.IntTensors[DiName(name, di)] = tsr
+// Data parallel index version appends _di to name
+func (st *Stats) SetIntTensorDi(name string, di int, tsr *etensor.Int) {
+	st.IntTensors[DiName(name, di)] = tsr
+}
+
+/////////////////////////////////////////
+//  Misc items
 
 // SimMat returns a SimMat similarity matrix of given name, creating if not yet made
 func (st *Stats) SimMat(name string) *simat.SimMat {

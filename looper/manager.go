@@ -295,7 +295,7 @@ func (man *Manager) runLevel(currentLevel int) bool {
 			}
 
 			// Increment
-			ctr.Cur = ctr.Cur + 1
+			ctr.Incr()
 			// Reset the counter at the next level. Do this here so that the counter number is visible during loop.OnEnd.
 			if currentLevel+1 < len(st.Order) {
 				st.Loops[st.Order[currentLevel+1]].Counter.Cur = 0

@@ -43,7 +43,6 @@ type Params struct {
 	NoSynData  bool             `desc:"do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
 	PrjnType   string           `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
 	MaxRecs    int              `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
-	MaxData    int              `desc:"max data parallel data per unit"`
 	NVarCols   int              `desc:"number of variable columns"`
 	UnitSize   float32          `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
 	LayNmSize  float32          `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
@@ -60,9 +59,6 @@ func (nv *Params) Defaults() {
 	}
 	if nv.MaxRecs == 0 {
 		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
-	}
-	if nv.MaxData == 0 {
-		nv.MaxData = 1
 	}
 	if nv.UnitSize == 0 {
 		nv.UnitSize = .9

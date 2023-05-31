@@ -238,22 +238,35 @@ func (lg *Logs) Log(mode etime.Modes, time etime.Times) *etable.Table {
 // and saves data to file if open.
 func (lg *Logs) LogScope(sk etime.ScopeKey) *etable.Table {
 	lt := lg.Tables[sk]
-	return lg.LogRowScope(sk, lt.Table.Rows)
+	return lg.LogRowScope(sk, lt.Table.Rows, 0)
 }
 
 // LogRow performs logging for given mode, time, at given row.
 // Saves data to file if open.
 func (lg *Logs) LogRow(mode etime.Modes, time etime.Times, row int) *etable.Table {
-	return lg.LogRowScope(etime.Scope(mode, time), row)
+	return lg.LogRowScope(etime.Scope(mode, time), row, 0)
+}
+
+// LogRowDi performs logging for given mode, time, at given row,
+// using given data parallel index di, which adds to the row and all network
+// access routines use this index for accessing network data.
+// Saves data to file if open.
+func (lg *Logs) LogRowDi(mode etime.Modes, time etime.Times, row int, di int) *etable.Table {
+	return lg.LogRowScope(etime.Scope(mode, time), row, di)
 }
 
 // LogRowScope performs logging for given etime.ScopeKey, at given row.
 // Saves data to file if open.
-func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int) *etable.Table {
+// di is a data parallel index, for networks capable of processing input patterns in parallel.
+// effective row is row + di
+func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int, di int) *etable.Table {
 	lt := lg.Tables[sk]
 	dt := lt.Table
+	lg.Context.Di = di
 	if row < 0 {
 		row = dt.Rows
+	} else {
+		row += di
 	}
 	if dt.Rows <= row {
 		dt.SetNumRows(row + 1)

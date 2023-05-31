@@ -67,7 +67,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.Defaults()
 	nv.Net = net
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
 	nv.Config()
 }
@@ -86,14 +86,7 @@ func (nv *NetView) SetVar(vr string) {
 // resets the current data in the process
 func (nv *NetView) SetMaxRecs(max int) {
 	nv.Params.MaxRecs = max
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
-}
-
-// SetMaxData sets the max data parallel info recorded
-// resets the current data in the process
-func (nv *NetView) SetMaxData(max int) {
-	nv.Params.MaxData = max
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 }
 
 // HasLayers returns true if network has any layers -- else no display
@@ -274,7 +267,7 @@ func (nv *NetView) Config() {
 	ctrs.SetText("Counters: ")
 
 	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Params.MaxData)
+	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
 	nv.ReconfigMeshes()
 	nv.UpdateEnd(updt)
@@ -945,9 +938,10 @@ func (nv *NetView) ToolbarConfig() {
 	disb.SetValue(float32(nv.Di))
 	disb.SpinBoxSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		nvv := recv.Embed(KiT_NetView).(*NetView)
+		maxData := nvv.Net.MaxParallelData()
 		sbb := send.(*gi.SpinBox)
 		md := int(sbb.Value)
-		if md < nvv.Params.MaxData && md >= 0 {
+		if md < maxData && md >= 0 {
 			nvv.Di = md
 		}
 		sbb.Value = float32(nvv.Di)

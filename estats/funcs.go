@@ -19,7 +19,7 @@ import (
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
-	tsr := st.F32Tensor(layNm)
+	tsr := st.F32TensorDi(layNm, di)
 	ly.UnitValsTensor(tsr, unitVar, di)
 	return tsr
 }
@@ -29,7 +29,7 @@ func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int)
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
-	tsr := st.F32Tensor(layNm)
+	tsr := st.F32TensorDi(layNm, di)
 	ly.UnitValsRepTensor(tsr, unitVar, di)
 	return tsr
 }
@@ -38,9 +38,9 @@ func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di i
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
 	ly := net.LayerByName(layNm)
-	tsrA := st.F32Tensor(layNm) // standard re-used storage tensor
+	tsrA := st.F32TensorDi(layNm, di) // standard re-used storage tensor
 	ly.UnitValsTensor(tsrA, unitVarA, di)
-	tsrB := st.F32Tensor(layNm + "_alt") // alternative storage tensor
+	tsrB := st.F32TensorDi(layNm+"_alt", di) // alternative storage tensor
 	ly.UnitValsTensor(tsrB, unitVarB, di)
 	return metric.Correlation32(tsrA.Values, tsrB.Values)
 }
@@ -50,9 +50,9 @@ func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB str
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
 	ly := net.LayerByName(layNm)
-	tsrA := st.F32Tensor(layNm) // standard re-used storage tensor
+	tsrA := st.F32TensorDi(layNm, di) // standard re-used storage tensor
 	ly.UnitValsRepTensor(tsrA, unitVarA, di)
-	tsrB := st.F32Tensor(layNm + "_alt") // alternative storage tensor
+	tsrB := st.F32TensorDi(layNm+"_alt", di) // alternative storage tensor
 	ly.UnitValsRepTensor(tsrB, unitVarB, di)
 	return metric.Correlation32(tsrA.Values, tsrB.Values)
 }

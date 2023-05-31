@@ -140,4 +140,14 @@ type Network interface {
 	// space-separated strings specified in Class for parameter styling, etc.
 	// If no classes are passed, all layer names in order are returned.
 	LayersByClass(classes ...string) []string
+
+	// MaxParallelData returns the maximum number of data inputs that can be
+	// processed in parallel by the network.
+	// The NetView supports display of up to this many data elements.
+	MaxParallelData() int
+
+	// NParallelData returns the current number of data inputs currently being
+	// processed in parallel by the network.
+	// Logging supports recording each of these where appropriate.
+	NParallelData() int
 }

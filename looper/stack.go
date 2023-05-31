@@ -11,9 +11,11 @@ import (
 
 // Stack contains a list of Loops Ordered from top to bottom.
 // For example, a Stack might be created like this:
-//   mystack := manager.AddStack(etime.Train).AddTime(etime.Run, 2).AddTime(etime.Trial, 3)
-//   myStack.Loops[etime.Run].OnStart.Add("NewRun", initRunFunc)
-//   myStack.Loops[etime.Trial].OnStart.Add("PresentTrial", trialFunc)
+//
+//	mystack := manager.AddStack(etime.Train).AddTime(etime.Run, 2).AddTime(etime.Trial, 3)
+//	myStack.Loops[etime.Run].OnStart.Add("NewRun", initRunFunc)
+//	myStack.Loops[etime.Trial].OnStart.Add("PresentTrial", trialFunc)
+//
 // When run, myStack will behave like this:
 // initRunFunc, trialFunc, trialFunc, trialFunc, initRunFunc, trialFunc, trialFunc, trialFunc
 type Stack struct {
@@ -38,9 +40,22 @@ func (stack *Stack) Init(mode etime.Modes) {
 	stack.Order = []etime.Times{}
 }
 
-// AddTime adds a new timescale to this Stack with a given number of iterations. The order in which this method is invoked is important, as it adds loops in order from top to bottom.
-func (stack *Stack) AddTime(time etime.Times, max int) *Stack {
-	stack.Loops[time] = &Loop{Counter: Ctr{Max: max}, IsDone: map[string]func() bool{}}
+// AddTime adds a new timescale to this Stack with a given ctrMax number of iterations.
+// The order in which this method is invoked is important,
+// as it adds loops in order from top to bottom.
+// Sets a default increment of 1 for the counter -- see AddTimeIncr for different increment.
+func (stack *Stack) AddTime(time etime.Times, ctrMax int) *Stack {
+	stack.Loops[time] = &Loop{Counter: Ctr{Max: ctrMax, Inc: 1}, IsDone: map[string]func() bool{}}
+	stack.Order = append(stack.Order, time)
+	return stack
+}
+
+// AddTimeIncr adds a new timescale to this Stack with a given ctrMax number of iterations,
+// and increment per step.
+// The order in which this method is invoked is important,
+// as it adds loops in order from top to bottom.
+func (stack *Stack) AddTimeIncr(time etime.Times, ctrMax, ctrIncr int) *Stack {
+	stack.Loops[time] = &Loop{Counter: Ctr{Max: ctrMax, Inc: ctrIncr}, IsDone: map[string]func() bool{}}
 	stack.Order = append(stack.Order, time)
 	return stack
 }

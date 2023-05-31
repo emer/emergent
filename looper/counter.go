@@ -8,11 +8,12 @@ package looper
 type Ctr struct {
 	Cur int `desc:"current counter value"`
 	Max int `desc:"maximum counter value -- only used if > 0"`
+	Inc int `desc:"increment per iteration"`
 }
 
 // Incr increments the counter by 1. Does not interact with Max.
 func (ct *Ctr) Incr() {
-	ct.Cur++
+	ct.Cur += ct.Inc
 }
 
 // SkipToMax sets the counter to its Max value -- for skipping over rest of loop
