@@ -112,16 +112,24 @@ func (ar *Args) Flag() {
 		return
 	}
 	for _, vl := range ar.Ints {
-		flag.IntVar(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		if flag.Lookup(vl.Name) == nil {
+			flag.IntVar(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		}
 	}
 	for _, vl := range ar.Bools {
-		flag.BoolVar(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		if flag.Lookup(vl.Name) == nil {
+			flag.BoolVar(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		}
 	}
 	for _, vl := range ar.Strings {
-		flag.StringVar(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		if flag.Lookup(vl.Name) == nil {
+			flag.StringVar(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		}
 	}
 	for _, vl := range ar.Floats {
-		flag.Float64Var(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		if flag.Lookup(vl.Name) == nil {
+			flag.Float64Var(&vl.Val, vl.Name, vl.Def, vl.Desc)
+		}
 	}
 	ar.Flagged = true
 }
