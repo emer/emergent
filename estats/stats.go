@@ -265,7 +265,7 @@ func (st *Stats) FloatDi(name string, di int) float64 {
 // Data parallel index version appends _di to name, doesn't print err
 // because often not present at the start
 func (st *Stats) Float32Di(name string, di int) float32 {
-	return float32(st.Float(name))
+	return float32(st.FloatDi(name, di))
 }
 
 // StringDi returns Strings stat value -- returns "" if not found
