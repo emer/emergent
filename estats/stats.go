@@ -249,43 +249,44 @@ func (st *Stats) SetIntDi(name string, di int, value int) {
 	st.Ints[DiName(name, di)] = value
 }
 
-// FloatDi returns Floats stat value -- prints error message and returns 0 if not found
-// Data parallel index version appends _di to name
+// FloatDi returns Floats stat value -- returns 0 if not found
+// Data parallel index version appends _di to name, doesn't print err
+// because often not present at the start
 func (st *Stats) FloatDi(name string, di int) float64 {
 	val, has := st.Floats[DiName(name, di)]
 	if has {
 		return val
 	}
-	fmt.Printf("Value named: %s not found in Stats\n", name)
+	// note: di versions don't complain because often don't exist at the start
 	return 0
 }
 
 // Float32Di returns Floats stat value converted to float32.
-// prints error message and returns 0 if not found
-// Data parallel index version appends _di to name
+// Data parallel index version appends _di to name, doesn't print err
+// because often not present at the start
 func (st *Stats) Float32Di(name string, di int) float32 {
 	return float32(st.Float(name))
 }
 
-// StringDi returns Strings stat value -- prints error message and returns "" if not found
-// Data parallel index version appends _di to name
+// StringDi returns Strings stat value -- returns "" if not found
+// Data parallel index version appends _di to name, doesn't print err
+// because often not present at the start
 func (st *Stats) StringDi(name string, di int) string {
 	val, has := st.Strings[DiName(name, di)]
 	if has {
 		return val
 	}
-	fmt.Printf("Value named: %s not found in Stats\n", name)
 	return ""
 }
 
-// IntDi returns Ints stat value -- prints error message and returns 0 if not found
-// Data parallel index version appends _di to name
+// IntDi returns Ints stat value -- 0 if not found
+// Data parallel index version appends _di to name, doesn't print err
+// because often not present at the start
 func (st *Stats) IntDi(name string, di int) int {
 	val, has := st.Ints[DiName(name, di)]
 	if has {
 		return val
 	}
-	fmt.Printf("Value named: %s not found in Stats\n", name)
 	return 0
 }
 
