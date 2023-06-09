@@ -27,6 +27,7 @@ func (vu *ViewUpdt) Config(nv *NetView, train, test etime.Times) {
 	vu.On = true
 	vu.Train = train
 	vu.Test = test
+	vu.SkipInvis = true // more often running than debugging probably
 }
 
 // UpdtTime returns the relevant update time based on testing flag
