@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
-	github.com/emer/etable v1.1.21
+	github.com/emer/etable v1.1.22
 	github.com/goki/gi v1.3.17
 	github.com/goki/gosl v1.0.13
 	github.com/goki/ki v1.1.11

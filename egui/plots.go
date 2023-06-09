@@ -66,6 +66,8 @@ func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime
 			plt.Params.LegendCol = legend
 		}
 	}
+	plt.ColsFmMetaMap(lt.Table.MetaData)
+	plt.ColsFmMetaMap(lt.Meta)
 }
 
 // Plot returns plot for mode, time scope
