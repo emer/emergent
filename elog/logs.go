@@ -315,6 +315,9 @@ func (lg *Logs) MPIGatherTableRows(mode etime.Modes, time etime.Times, comm *mpi
 // SetLogFile sets the log filename for given scope
 func (lg *Logs) SetLogFile(mode etime.Modes, time etime.Times, fnm string) {
 	lt := lg.TableDetails(mode, time)
+	if lt == nil {
+		return
+	}
 	if LogDir != "" {
 		fnm = filepath.Join(LogDir, fnm)
 	}
