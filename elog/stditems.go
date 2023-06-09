@@ -44,18 +44,13 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 
 // AddStatAggItem adds a Float64 stat that is aggregated across the given time scales,
 // ordered from higher to lower, e.g., Run, Epoch, Trial. 2-5 scales are supported.
-// The itemName is what is saved in the table, and statName is the source
-// statistic in stats at the lowest level.  If either is empty, it is copied from the other.
-func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) *Item {
-	if statName == "" {
-		statName = itemName
-	} else if itemName == "" {
-		itemName = statName
-	}
+// The statName is the source statistic in stats at the lowest level,
+// and is also used for the log item name.
+func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 	switch len(times) {
 	case 2:
 		return lg.AddItem(&Item{
-			Name:   itemName,
+			Name:   statName,
 			Type:   etensor.FLOAT64,
 			FixMin: true,
 			// FixMax: true,
@@ -69,7 +64,7 @@ func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) 
 				}}})
 	case 3:
 		return lg.AddItem(&Item{
-			Name:   itemName,
+			Name:   statName,
 			Type:   etensor.FLOAT64,
 			FixMin: true,
 			// FixMax: true,
@@ -85,7 +80,7 @@ func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) 
 				}}})
 	case 4:
 		return lg.AddItem(&Item{
-			Name:   itemName,
+			Name:   statName,
 			Type:   etensor.FLOAT64,
 			FixMin: true,
 			// FixMax: true,
@@ -103,7 +98,7 @@ func (lg *Logs) AddStatAggItem(itemName, statName string, times ...etime.Times) 
 				}}})
 	case 5:
 		return lg.AddItem(&Item{
-			Name:   itemName,
+			Name:   statName,
 			Type:   etensor.FLOAT64,
 			FixMin: true,
 			// FixMax: true,
