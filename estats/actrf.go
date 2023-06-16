@@ -22,8 +22,7 @@ import (
 // and 'Source' is either the name of another layer (checked first)
 // or the name of a tensor stored in F32Tensors (if layer name not found).
 // If Source is not a layer, it must be populated prior to these calls.
-// di is a data parallel index di, for networks capable of processing input patterns in parallel.
-func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string, di int) error {
+func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error {
 	var err error
 	for _, anm := range arfs {
 		sp := strings.Split(anm, ":")
@@ -33,12 +32,13 @@ func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string, di in
 			fmt.Printf("estats.InitActRFs: %s\n", err)
 			continue
 		}
-		lvt := st.SetLayerRepTensor(net, lnm, varnm, di)
+
+		lvt := st.SetLayerRepTensor(net, lnm, varnm, 0)
 		tnm := sp[1]
 		var tvt *etensor.Float32
 		_, err = net.LayerByNameTry(tnm)
 		if err == nil {
-			tvt = st.SetLayerRepTensor(net, tnm, varnm, di)
+			tvt = st.SetLayerRepTensor(net, tnm, varnm, 0)
 		} else {
 			ok := false
 			tvt, ok = st.F32Tensors[tnm]
