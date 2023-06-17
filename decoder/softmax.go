@@ -62,8 +62,10 @@ func (sm *SoftMax) Init(ncats, ninputs int) {
 // Decode decodes the given variable name from layers (forward pass)
 // See Sorted list of indexes for the decoding output -- i.e., Sorted[0]
 // is the most likely -- that is returned here as a convenience.
-func (sm *SoftMax) Decode(varNm string) int {
-	sm.Input(varNm)
+// di is a data parallel index di, for networks capable
+// of processing input patterns in parallel.
+func (sm *SoftMax) Decode(varNm string, di int) int {
+	sm.Input(varNm, di)
 	sm.Forward()
 	sm.Sort()
 	return sm.Sorted[0]
@@ -89,11 +91,13 @@ func (sm *SoftMax) ValsTsr(name string) *etensor.Float32 {
 }
 
 // Input grabs the input from given variable in layers
-func (sm *SoftMax) Input(varNm string) {
+// di is a data parallel index di, for networks capable
+// of processing input patterns in parallel.
+func (sm *SoftMax) Input(varNm string, di int) {
 	off := 0
 	for _, ly := range sm.Layers {
 		tsr := sm.ValsTsr(ly.Name())
-		ly.UnitValsTensor(tsr, varNm, 0)
+		ly.UnitValsTensor(tsr, varNm, di)
 		for j, v := range tsr.Values {
 			sm.Inputs[off+j] = v
 		}

@@ -32,7 +32,7 @@ type Linear struct {
 // Layer is the subset of emer.Layer that is used by this code
 type Layer interface {
 	Name() string
-	UnitValsTensor(tsr etensor.Tensor, varNm string) error
+	UnitValsTensor(tsr etensor.Tensor, varNm string, di int) error
 	Shape() *etensor.Shape
 }
 
@@ -85,9 +85,11 @@ func (dec *Linear) Init(nOutputs, nInputs int, poolIndex int, activationFn Activ
 }
 
 // Decode decodes the given variable name from layers (forward pass).
-// Decoded values are in Units[i].Act -- see also Output to get into a []float32
-func (dec *Linear) Decode(varNm string) {
-	dec.Input(varNm)
+// Decoded values are in Units[i].Act -- see also Output to get into a []float32.
+// di is a data parallel index di, for networks capable
+// of processing input patterns in parallel.
+func (dec *Linear) Decode(varNm string, di int) {
+	dec.Input(varNm, di)
 	dec.Forward()
 }
 
@@ -136,11 +138,13 @@ func (dec *Linear) ValsTsr(name string) *etensor.Float32 {
 }
 
 // Input grabs the input from given variable in layers
-func (dec *Linear) Input(varNm string) {
+// di is a data parallel index di, for networks capable
+// of processing input patterns in parallel.
+func (dec *Linear) Input(varNm string, di int) {
 	off := 0
 	for _, ly := range dec.Layers {
 		tsr := dec.ValsTsr(ly.Name())
-		ly.UnitValsTensor(tsr, varNm)
+		ly.UnitValsTensor(tsr, varNm, di)
 		if dec.PoolIndex >= 0 {
 			shape := ly.Shape()
 			y := dec.PoolIndex / shape.Dim(1)
