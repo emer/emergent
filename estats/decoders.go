@@ -10,14 +10,16 @@ import "fmt"
 // of the given name, using given training value, saving
 // the results to Float stats named with the decoder + Out and SSE.
 // returns SSE.
-func (st *Stats) LinearDecodeTrain(decName, varNm string, trainVal float32) (float32, error) {
+// di is a data parallel index di, for networks capable
+// of processing input patterns in parallel.
+func (st *Stats) LinearDecodeTrain(decName, varNm string, di int, trainVal float32) (float32, error) {
 	dec, ok := st.LinDecoders[decName]
 	if !ok {
 		err := fmt.Errorf("Linear Decoder named: %s not found", decName)
 		fmt.Println(err)
 		return 0, err
 	}
-	dec.Decode(varNm)
+	dec.Decode(varNm, di)
 	out := []float32{0} // save alloc
 	dec.Output(&out)
 	st.SetFloat32(decName+"Out", out[0])
@@ -35,14 +37,16 @@ func (st *Stats) LinearDecodeTrain(decName, varNm string, trainVal float32) (flo
 // of the given name, using given training index value, saving
 // the results to Float stats named with the decoder + Out and Err.
 // Returns Err which is 1 if output != trainIdx, 0 otherwise.
-func (st *Stats) SoftMaxDecodeTrain(decName, varNm string, trainIdx int) (float32, error) {
+// di is a data parallel index di, for networks capable
+// of processing input patterns in parallel.
+func (st *Stats) SoftMaxDecodeTrain(decName, varNm string, di int, trainIdx int) (float32, error) {
 	dec, ok := st.SoftMaxDecoders[decName]
 	if !ok {
 		err := fmt.Errorf("SoftMax Decoder named: %s not found", decName)
 		fmt.Println(err)
 		return 0, err
 	}
-	out := dec.Decode(varNm)
+	out := dec.Decode(varNm, di)
 	st.SetInt(decName+"Out", out)
 	derr := float32(0)
 	if out != trainIdx {
