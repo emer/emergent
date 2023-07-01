@@ -9,10 +9,10 @@ import "github.com/emer/emergent/erand"
 var (
 	// RandSource is a random source to use for all random numbers used in patgen
 	// By default it just uses the standard Go math/rand source.
-	// If initialized by calling NewRand(seed), then a separate stream of
+	// If initialized, e.g., by calling NewRand(seed), then a separate stream of
 	// random numbers will be generated for all patgen calls, and the
-	// seed is saved as RandSeed.
-	// It can be reinstated by calling RestoreSeed.
+	// seed is saved as RandSeed -- it can be reinstated by calling RestoreSeed.
+	// Can also set RandSource to another existing erand.Rand source to use it.
 	RandSource erand.Rand
 
 	// Random seed last set by NewRand or SetRandSeed.
