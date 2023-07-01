@@ -25,8 +25,8 @@ func FlipBits(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 			ons = append(ons, i)
 		}
 	}
-	erand.PermuteInts(ons)
-	erand.PermuteInts(offs)
+	erand.PermuteInts(ons, RandSource)
+	erand.PermuteInts(offs, RandSource)
 	if nOff > len(ons) {
 		nOff = len(ons)
 	}

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 
 	"github.com/emer/emergent/erand"
 	"github.com/emer/etable/etensor"
@@ -26,7 +25,7 @@ func PermutedBinary(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	if ln == 0 {
 		return
 	}
-	pord := rand.Perm(ln)
+	pord := RandSource.Perm(ln, -1)
 	for i := 0; i < ln; i++ {
 		if i < nOn {
 			tsr.SetFloat1D(pord[i], onVal)
@@ -44,7 +43,7 @@ func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	if rows == 0 || cells == 0 {
 		return
 	}
-	pord := rand.Perm(cells)
+	pord := RandSource.Perm(cells, -1)
 	for rw := 0; rw < rows; rw++ {
 		stidx := rw * cells
 		for i := 0; i < cells; i++ {
@@ -54,7 +53,7 @@ func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 				tsr.SetFloat1D(stidx+pord[i], offVal)
 			}
 		}
-		erand.PermuteInts(pord)
+		erand.PermuteInts(pord, RandSource)
 	}
 }
 
@@ -74,7 +73,7 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 	if rows == 0 || cells == 0 {
 		return errors.New("empty tensor")
 	}
-	pord := rand.Perm(cells)
+	pord := RandSource.Perm(cells, -1)
 	iters := 100
 	nunder := make([]int, rows) // per row
 	fails := 0
@@ -91,7 +90,7 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 					tsr.Values[stidx+pord[i]] = offVal
 				}
 			}
-			erand.PermuteInts(pord)
+			erand.PermuteInts(pord, RandSource)
 		}
 		for i := range nunder {
 			nunder[i] = 0

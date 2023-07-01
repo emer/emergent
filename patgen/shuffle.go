@@ -16,7 +16,7 @@ func Shuffle(dt *etable.Table, rows []int, colNames []string, colIndependent boo
 		for _, colNm := range colNames {
 			sfrows := make([]int, len(rows))
 			copy(sfrows, rows)
-			erand.PermuteInts(sfrows)
+			erand.PermuteInts(sfrows, RandSource)
 			for i, row := range rows {
 				dt.CellTensor(colNm, row).CopyFrom(cl.CellTensor(colNm, sfrows[i]))
 			}
@@ -24,7 +24,7 @@ func Shuffle(dt *etable.Table, rows []int, colNames []string, colIndependent boo
 	} else { // shuffle together
 		sfrows := make([]int, len(rows))
 		copy(sfrows, rows)
-		erand.PermuteInts(sfrows)
+		erand.PermuteInts(sfrows, RandSource)
 		for _, colNm := range colNames {
 			for i, row := range rows {
 				dt.CellTensor(colNm, row).CopyFrom(cl.CellTensor(colNm, sfrows[i]))

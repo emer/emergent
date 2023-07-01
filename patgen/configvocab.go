@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/tsragg"
@@ -152,7 +151,7 @@ func VocabShuffle(mp Vocab, shufflePools []string) {
 		rows := tsr.Shapes()[0]
 		poolY := tsr.Shapes()[1]
 		poolX := tsr.Shapes()[2]
-		sRows := rand.Perm(rows)
+		sRows := RandSource.Perm(rows, -1)
 		sTsr := etensor.NewFloat32([]int{rows, poolY, poolX}, nil, []string{"row", "Y", "X"})
 		for iRow, sRow := range sRows {
 			sTsr.SubSpace([]int{iRow}).CopyFrom(tsr.SubSpace([]int{sRow}))
