@@ -38,6 +38,10 @@ type Layer interface {
 	// SetClass sets CSS-style class name(s) for this layer (space-separated if multiple)
 	SetClass(cls string)
 
+	// AddClass adds a CSS-style class name(s) for this layer,
+	// ensuring that it is not a duplicate, and properly space separated.
+	AddClass(cls string)
+
 	// IsOff returns true if layer has been turned Off (lesioned) -- for experimentation
 	IsOff() bool
 

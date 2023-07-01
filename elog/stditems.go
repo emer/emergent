@@ -43,83 +43,32 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 }
 
 // AddStatAggItem adds a Float64 stat that is aggregated across the given time scales,
-// ordered from higher to lower, e.g., Run, Epoch, Trial. 2-5 scales are supported.
+// ordered from higher to lower, e.g., Run, Epoch, Trial.
 // The statName is the source statistic in stats at the lowest level,
 // and is also used for the log item name.
 func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
-	switch len(times) {
-	case 2:
-		return lg.AddItem(&Item{
-			Name:   statName,
-			Type:   etensor.FLOAT64,
-			FixMin: true,
-			// FixMax: true,
-			Range: minmax.F64{Max: 1},
-			Write: WriteMap{
-				etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
-					ctx.SetFloat64(ctx.Stats.Float(statName))
-				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
-					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
-				}}})
-	case 3:
-		return lg.AddItem(&Item{
-			Name:   statName,
-			Type:   etensor.FLOAT64,
-			FixMin: true,
-			// FixMax: true,
-			Range: minmax.F64{Max: 1},
-			Write: WriteMap{
-				etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
-					ctx.SetFloat64(ctx.Stats.Float(statName))
-				}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
-					ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
-				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
-					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
-				}}})
-	case 4:
-		return lg.AddItem(&Item{
-			Name:   statName,
-			Type:   etensor.FLOAT64,
-			FixMin: true,
-			// FixMax: true,
-			Range: minmax.F64{Max: 1},
-			Write: WriteMap{
-				etime.Scope(etime.AllModes, times[3]): func(ctx *Context) {
-					ctx.SetFloat64(ctx.Stats.Float(statName))
-				}, etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
-					ctx.SetAgg(ctx.Mode, times[3], agg.AggMean)
-				}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
-					ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
-				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
-					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
-				}}})
-	case 5:
-		return lg.AddItem(&Item{
-			Name:   statName,
-			Type:   etensor.FLOAT64,
-			FixMin: true,
-			// FixMax: true,
-			Range: minmax.F64{Max: 1},
-			Write: WriteMap{
-				etime.Scope(etime.AllModes, times[4]): func(ctx *Context) {
-					ctx.SetFloat64(ctx.Stats.Float(statName))
-				}, etime.Scope(etime.AllModes, times[3]): func(ctx *Context) {
-					ctx.SetAgg(ctx.Mode, times[4], agg.AggMean)
-				}, etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
-					ctx.SetAgg(ctx.Mode, times[3], agg.AggMean)
-				}, etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
-					ctx.SetAgg(ctx.Mode, times[2], agg.AggMean)
-				}, etime.Scope(etime.Train, times[0]): func(ctx *Context) {
-					ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-					ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
-				}}})
-	default:
-		panic("only 2-5 time scales supporte")
-		return nil
+	ntimes := len(times)
+	itm := lg.AddItem(&Item{
+		Name:   statName,
+		Type:   etensor.FLOAT64,
+		FixMin: true,
+		// FixMax: true,
+		Range: minmax.F64{Max: 1},
+		Write: WriteMap{
+			etime.Scope(etime.AllModes, times[ntimes-1]): func(ctx *Context) {
+				ctx.SetFloat64(ctx.Stats.Float(statName))
+			}}})
+	for i := ntimes - 2; i >= 1; i-- {
+		i := i
+		itm.Write[etime.Scope(etime.AllModes, times[i])] = func(ctx *Context) {
+			ctx.SetAgg(ctx.Mode, times[i+1], agg.AggMean)
+		}
 	}
+	itm.Write[etime.Scope(etime.Train, times[0])] = func(ctx *Context) {
+		ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
+		ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+	}
+	return itm
 }
 
 // AddStatFloatNoAggItem adds float statistic(s) of given names
@@ -356,18 +305,25 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 
 // AddCopyFromFloatItems adds items that copy from one log to another,
 // adding the given prefix string to each.
+// if toTimes has more than 1 item, subsequent times are AggMean aggregates of first one.
 // float64 type.
-func (lg *Logs) AddCopyFromFloatItems(toMode etime.Modes, toTime etime.Times, fmMode etime.Modes, fmTime etime.Times, prefix string, itemNames ...string) {
+func (lg *Logs) AddCopyFromFloatItems(toMode etime.Modes, toTimes []etime.Times, fmMode etime.Modes, fmTime etime.Times, prefix string, itemNames ...string) {
 	for _, st := range itemNames {
 		stnm := st
 		tonm := prefix + st
-		lg.AddItem(&Item{
+		itm := lg.AddItem(&Item{
 			Name: tonm,
 			Type: etensor.FLOAT64,
 			Write: WriteMap{
-				etime.Scope(toMode, toTime): func(ctx *Context) {
+				etime.Scope(toMode, toTimes[0]): func(ctx *Context) {
 					ctx.SetFloat64(ctx.ItemFloat(fmMode, fmTime, stnm))
 				}}})
+		for i := 1; i < len(toTimes); i++ {
+			i := i
+			itm.Write[etime.Scope(toMode, toTimes[i])] = func(ctx *Context) {
+				ctx.SetAgg(ctx.Mode, toTimes[i-1], agg.AggMean)
+			}
+		}
 	}
 }
 

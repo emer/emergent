@@ -200,7 +200,8 @@ func SelMatch(sel string, name, cls, styp, gotyp string) bool {
 	return styp == sel || gotyp == sel // type
 }
 
-// ClassMatch returns true if given class names -- handles space-separated multiple class names
+// ClassMatch returns true if given class names.
+// handles space-separated multiple class names
 func ClassMatch(sel, cls string) bool {
 	clss := strings.Split(cls, " ")
 	for _, cl := range clss {

@@ -56,6 +56,10 @@ type Prjn interface {
 	// Returns Prjn so it can be chained to set other properties too
 	SetClass(cls string) Prjn
 
+	// AddClass adds a CSS-style class name(s) for this prjn,
+	// ensuring that it is not a duplicate, and properly space separated.
+	AddClass(cls string)
+
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
 

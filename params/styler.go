@@ -4,6 +4,8 @@
 
 package params
 
+import "strings"
+
 // The params.Styler interface exposes TypeName, Class, and Name methods
 // that allow the params.Sel CSS-style selection specifier to determine
 // whether a given parameter applies.
@@ -36,4 +38,18 @@ type StylerObj interface {
 	// Object returns the object that will have its field values set by
 	// the params specifications.
 	Object() interface{}
+}
+
+// AddClass adds given class to current class string,
+// ensuring it is not a duplicate of existing, and properly
+// adding spaces
+func AddClass(cur, class string) string {
+	if ClassMatch(cur, class) {
+		return cur
+	}
+	cur = strings.TrimSpace(cur)
+	if len(cur) == 0 {
+		return class
+	}
+	return cur + " " + class
 }
