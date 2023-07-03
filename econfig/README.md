@@ -1,9 +1,15 @@
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 
+TODO:
+* slice fields
+* OpenFS
+* std stuff from ecmd
+
+
 `econfig` provides methods to set values on a `Config` struct through a (TOML) config file or command-line args (`flags` in Go terminology), with support for setting Network params and values on any other struct as well (e.g., an Env to be constructed later in a ConfigEnv method).
 
 * Standard usage:
-    + `cfg := &ss.Config
+    + `cfg := &ss.Config`
     + `cfg.Defaults()` -- sets hard-coded defaults -- user should define and call this method first.  It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://github.com/goki/gi) GUI.
     + `econfig.Config(cfg, "config.toml")` -- sets config values according to the standard order, with given file name specifying the default config file name.
 
@@ -16,7 +22,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
     + Read any `Include[s]` files in config file in deepest-first (natural) order, then the specified config file last -- includee overwrites included settings.
     + Process command-line args based on Config field names, with `.` separator for sub-fields.
         
-* All field names, including arg names, are case-insensitive.  For args (flags) kebab-case (with either `-` or `_` delimiter) can be used.  For bool args, use "No" prefix in any form (e.g., "NoRunLog" or "no-run-log"). Instead of polluting the flags space with all the different options, custom args processing code is used.
+* All field name references in toml files and command-line args are case-insensitive.  For args (flags) kebab-case (with either `-` or `_` delimiter) can be used.  For bool args, use "No" prefix in any form (e.g., "NoRunLog" or "no-run-log"). Instead of polluting the flags space with all the different options, custom args processing code is used.
 
 * Is a replacement for `ecmd` and includes the helper methods for saving log files etc.
 
