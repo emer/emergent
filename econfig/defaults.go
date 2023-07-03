@@ -31,6 +31,7 @@ func SetFromDefaultsStruct(obj any) error {
 		fv := val.Field(i)
 		if kit.NonPtrType(f.Type).Kind() == reflect.Struct {
 			SetFromDefaultsStruct(kit.PtrValue(fv).Interface())
+			continue
 		}
 		def, ok := f.Tag.Lookup("def")
 		if !ok || def == "" {

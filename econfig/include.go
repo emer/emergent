@@ -27,8 +27,13 @@ func SetFromIncludes(cfg any) error {
 	}
 	for i := ni - 1; i >= 0; i-- {
 		inc := incs[i]
+		fmt.Println("opening include:", inc)
 		err = Open(cfg, inc)
+		if err != nil {
+			log.Println(err)
+		}
 	}
+	SetIncludeField(cfg, incs)
 	return err
 }
 
@@ -39,6 +44,9 @@ func SetFromIncludes(cfg any) error {
 // Does not alter cfg.
 func IncludeStack(cfg any) ([]string, error) {
 	clone := reflect.New(reflect.TypeOf(cfg).Elem())
+	if !CopyIncludeField(clone, cfg) {
+		return nil, nil
+	}
 	return includeStackImpl(clone, nil)
 }
 
@@ -115,6 +123,34 @@ func ResetIncludeField(cfg any) {
 		return
 	}
 	fv.SetZero()
+}
+
+// SetIncludeField sets the Include or Includes field to given include(s).
+// (either the array or a comma-separated list if field is just a string).
+func SetIncludeField(cfg any, includes []string) {
+	fv, ok := FindIncludeField(cfg)
+	if !ok { // shouldn't happen
+		return
+	}
+	if fv.Kind() == reflect.String {
+		fv.SetString(strings.Join(includes, ","))
+	}
+	if fv.Kind() == reflect.Slice {
+		fv.Set(reflect.ValueOf(includes))
+	}
+}
+
+// CopyIncludeField copies include field from one config to the other
+// returns false if include field not found.
+func CopyIncludeField(toCfg, fmCfg any) bool {
+	dfv, ok := FindIncludeField(toCfg)
+	if !ok {
+		fmt.Println("no inc")
+		return false
+	}
+	sfv, _ := FindIncludeField(fmCfg)
+	dfv.Set(sfv)
+	return true
 }
 
 // AllErrors returns an err as a concatenation of errors (nil if none)

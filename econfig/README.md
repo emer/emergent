@@ -31,6 +31,7 @@ econfig provides methods to set values on a `Config` struct through a (TOML) con
 # Special fields, supported types, and field tags
 
 * A limited number of standard field types are supported, consistent with emer neural network usage:
+    + `bool` and `[]bool`
     + `float32` and `[]float32`
     + `int` and `[]int`
     + `string` and `[]string`
@@ -51,7 +52,31 @@ econfig provides methods to set values on a `Config` struct through a (TOML) con
 Here's a standard `Config` struct, corresponding to the `AddStd` args from `ecmd`, which can be used as a starting point.
 
 ```Go
-type Config struct {
+// Config is a standard Sim config -- use as a starting point.
+// don't forget to update defaults, delete unused fields, etc.
+typeConfig struct {
+	Includes     []string       `desc:"specify include files here, and after configuration, it contains list of include files added"`
+	GUI          bool           `desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
+	GPU          bool           `desc:"use the GPU for computation"`
+	Debug        bool           `desc:"log debugging information"`
+	Network      map[string]any `desc:"network parameters"`
+	ParamSet     string         `desc:"ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params"`
+	ParamFile    string         `desc:"Name of the JSON file to input saved parameters from."`
+	ParamDocFile string         `desc:"Name of the file to output all parameter data. If not empty string, program should write file(s) and then exit"`
+	Tag          string         `desc:"extra tag to add to file names and logs saved from this run"`
+	Note         string         `desc:"user note -- describe the run params etc -- like a git commit message for the run"`
+	Run          int            `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
+	Runs         int            `def:"10" desc:"total number of runs to do when running Train"`
+	Epochs       int            `def:"100" desc:"total number of epochs per run"`
+	NTrials      int            `def:"128" desc:"total number of trials per epoch.  Should be an even multiple of NData."`
+	NData        int            `def:"16" desc:"number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning."`
+	SaveWts      bool           `desc:"if true, save final weights after each run"`
+	EpochLog     bool           `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
+	RunLog       bool           `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
+	TrialLog     bool           `def:"true" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
+	TestEpochLog bool           `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
+	TestTrialLog bool           `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
+	NetData      bool           `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
 }
 ```    
 
