@@ -117,3 +117,10 @@ func TestOpen(t *testing.T) {
 		t.Errorf("testcfg.toml didn't overwrite testinc3\n")
 	}
 }
+
+func TestUsage(t *testing.T) {
+	// t.Skip("prints usage string")
+	cfg := &TestConfig{}
+	us := Usage(cfg)
+	fmt.Println(us)
+}

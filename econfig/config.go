@@ -4,6 +4,11 @@
 
 package econfig
 
+import (
+	"flag"
+	"fmt"
+)
+
 var (
 	// DefaultEncoding is the default encoding format for config files.
 	// currently toml is the only supported format, but others could be added
@@ -29,9 +34,26 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	// todo: register args, process config, use default instead
-	// SetFromConfigArg(cfg, defaultFile)
-	err = OpenWithIncludes(cfg, defaultFile)
+
+	helpArg := flag.Bool("help", false, "show available command-line arguments and exit")
+	hArg := flag.Bool("h", false, "show available command-line arguments and exit")
+	configArg := flag.String("config", "", "filename / path for loading Config settings")
+	cfgArg := flag.String("cfg", "", "filename / path for loading Config settings")
+	flag.Parse()
+
+	if *helpArg || *hArg {
+		flag.PrintDefaults()
+		fmt.Println(Usage(cfg))
+	}
+
+	file := defaultFile
+	if *configArg != "" {
+		defaultFile = *configArg
+	} else if *cfgArg != "" {
+		defaultFile = *cfgArg
+	}
+
+	err = OpenWithIncludes(cfg, file)
 	if err != nil {
 		errs = append(errs, err)
 	}

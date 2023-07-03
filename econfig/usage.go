@@ -4,7 +4,53 @@
 
 package econfig
 
+import (
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/goki/ki/kit"
+)
+
 // Usage returns the usage string for args based on given Config object
 func Usage(cfg any) string {
-	return ""
+	var b strings.Builder
+	b.WriteString("The following command-line arguments set fields on the Config struct.\n")
+	b.WriteString("args are case insensitive and kebab-case or snake_case also works\n")
+	b.WriteString("\n")
+	usageStruct(cfg, "", &b)
+	return b.String()
+}
+
+// usageStruct adds usage info to given strings.Builder
+func usageStruct(obj any, path string, b *strings.Builder) {
+	typ := kit.NonPtrType(reflect.TypeOf(obj))
+	val := kit.NonPtrValue(reflect.ValueOf(obj))
+	for i := 0; i < typ.NumField(); i++ {
+		f := typ.Field(i)
+		fv := val.Field(i)
+		if kit.NonPtrType(f.Type).Kind() == reflect.Struct {
+			nwPath := f.Name
+			if path != "" {
+				nwPath = path + "." + nwPath
+			}
+			usageStruct(kit.PtrValue(fv).Interface(), nwPath, b)
+			continue
+		}
+		nm := f.Name
+		if path != "" {
+			nm = path + "." + nm
+		}
+		b.WriteString(fmt.Sprintf("-%s\n", nm))
+		desc, ok := f.Tag.Lookup("desc")
+		if ok && desc != "" {
+			b.WriteString("\t")
+			b.WriteString(desc)
+			def, ok := f.Tag.Lookup("def")
+			if ok && def != "" {
+				b.WriteString(fmt.Sprintf(" (default %s)", def))
+			}
+		}
+		b.WriteString("\n")
+	}
 }
