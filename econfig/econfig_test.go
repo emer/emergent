@@ -26,7 +26,7 @@ type TestConfig struct {
 	GPU          bool           `def:"true" desc:"use the GPU for computation"`
 	Debug        bool           `desc:"log debugging information"`
 	PatParams    TestSubConfig  `desc:"important for testing . notation etc"`
-	Network      map[string]any `desc:"network parameters"`
+	Network      map[string]any `desc:"network parameters applied after built-in params -- use toml map format: '{key = val, key2 = val2}' where key is 'selector:path' (e.g., '.PFCLayer:Layer.Inhib.Layer.Gi' where '.PFCLayer' is a class) and values should be strings to be consistent with standard params format"`
 	ParamSet     string         `desc:"ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params"`
 	ParamFile    string         `desc:"Name of the JSON file to input saved parameters from."`
 	ParamDocFile string         `desc:"Name of the file to output all parameter data. If not empty string, program should write file(s) and then exit"`
@@ -44,6 +44,7 @@ type TestConfig struct {
 	TestEpochLog bool           `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
 	TestTrialLog bool           `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
 	NetData      bool           `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
+	Enum         TestEnum       `desc:"can set these values by string representation if stringer and registered as an enum with kit"`
 }
 
 func (cfg *TestConfig) IncludesPtr() *[]string { return &cfg.Includes }
@@ -69,15 +70,15 @@ func TestArgsPrint(t *testing.T) {
 	sort.Slice(keys, func(i, j int) bool {
 		return strings.ToLower(keys[i]) < strings.ToLower(keys[j])
 	})
-	fmt.Println("Long Args:")
+	fmt.Println("Args:")
 	fmt.Println(strings.Join(keys, "\n"))
 }
 
 func TestArgs(t *testing.T) {
 	cfg := &TestConfig{}
 	SetFromDefaults(cfg)
-	// 	"--Network", "Prjn.Learn.LRate:0.001", "--sparseness=0.1",
-	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "leftover1", "leftover2"}
+	//
+	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "leftover1", "leftover2"}
 	leftovers, err := parseArgs(cfg, args)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -86,6 +87,16 @@ func TestArgs(t *testing.T) {
 	if cfg.Runs != 5 || cfg.Run != 1 || cfg.Tag != "nice" || cfg.PatParams.Sparseness != 0.1 || cfg.SaveWts != true || cfg.GUI != false || cfg.EpochLog != false || cfg.RunLog != false {
 		t.Errorf("args not set properly: %#v", cfg)
 	}
+	if cfg.Enum != TestValue2 {
+		t.Errorf("args enum from string not set properly: %#v", cfg)
+	}
+
+	// if cfg.Network != nil {
+	// 	mv := cfg.Network
+	// 	for k, v := range mv {
+	// 		fmt.Println(k, " = ", v)
+	// 	}
+	// }
 }
 
 func TestOpen(t *testing.T) {
@@ -97,6 +108,13 @@ func TestOpen(t *testing.T) {
 	}
 
 	// fmt.Println("includes:", cfg.Includes)
+
+	// if cfg.Network != nil {
+	// 	mv := cfg.Network
+	// 	for k, v := range mv {
+	// 		fmt.Println(k, " = ", v)
+	// 	}
+	// }
 
 	if cfg.GUI != true || cfg.Tag != "testing" {
 		t.Errorf("testinc.toml not parsed\n")
@@ -116,11 +134,22 @@ func TestOpen(t *testing.T) {
 	if cfg.NData != 12 {
 		t.Errorf("testcfg.toml didn't overwrite testinc3\n")
 	}
+	if cfg.Enum != TestValue2 {
+		t.Errorf("testinc.toml Enum value not parsed\n")
+	}
 }
 
 func TestUsage(t *testing.T) {
-	// t.Skip("prints usage string")
+	t.Skip("prints usage string")
 	cfg := &TestConfig{}
 	us := Usage(cfg)
 	fmt.Println(us)
+}
+
+func TestSave(t *testing.T) {
+	// t.Skip("prints usage string")
+	IncludePaths = []string{".", "testdata"}
+	cfg := &TestConfig{}
+	OpenWithIncludes(cfg, "testcfg.toml")
+	Save(cfg, "testdata/testwrite.toml")
 }

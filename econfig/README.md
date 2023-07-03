@@ -1,34 +1,28 @@
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 
-TODO: 
-
-* fix includes
-* figure out Network syntax (try other toml parser)
-
-
-econfig provides methods to set values on a `Config` struct through a (TOML) config file or command-line args (`flags` in Go terminology), with support for setting Network params and values on any other struct as well (e.g., an Env to be constructed later in a ConfigEnv method).
+`econfig` provides methods to set values on a `Config` struct through a (TOML) config file or command-line args (`flags` in Go terminology), with support for setting Network params and values on any other struct as well (e.g., an Env to be constructed later in a ConfigEnv method).
 
 * Standard usage:
     + `cfg := &ss.Config
     + `cfg.Defaults()` -- sets hard-coded defaults -- user should define and call this method first.  It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://github.com/goki/gi) GUI.
     + `econfig.Config(cfg, "config.toml")` -- sets config values according to the standard order, with given file name specifying the default config file name.
 
+* Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  Config must implement the `IncludesPtr() *[]string` method which satisfies the `Includer` interface, and returns a pointer to an `Includes []string` field containing a list of config files to include.
+
 * Order of setting in `econfig.Config`:
     + Apply any `def:` field tag default values.
-    + Look for `--config`, `--cfg`, or `-c` arg, specifying config file(s) on the command line (comma separated if multiple, with no spaces).
+    + Look for `--config`, `--cfg` arg, specifying config file(s) on the command line (comma separated if multiple, with no spaces).
     + Fall back on default config file name passed to `Config` function, if arg not found.
-    + Read any `Include[s]` files in config file in deepest-first (natural) order, then the specified config file last.
-    + Process command-line args based on Config field names, with `.` separator for sub-fields
+    + Read any `Include[s]` files in config file in deepest-first (natural) order, then the specified config file last -- includee overwrites included settings.
+    + Process command-line args based on Config field names, with `.` separator for sub-fields.
         
 * All field names, including arg names, are case-insensitive.  For args (flags) kebab-case (with either `-` or `_` delimiter) can be used.  For bool args, use "No" prefix in any form (e.g., "NoRunLog" or "no-run-log"). Instead of polluting the flags space with all the different options, custom args processing code is used.
 
 * Is a replacement for `ecmd` and includes the helper methods for saving log files etc.
 
-* Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  Config must implement the `IncludesPtr() *[]string` method which satisfies the `Includer` interface, and returns a pointer to an `Includes []string` field containing a list of config files to include.
+* A `map[string]any` type can be used for deferred raw params to be applied later (`Network`, `Env` etc).  Example: `Network = {'.PFCLayer:Layer.Inhib.Layer.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' =  '0.01'}` where the key expression contains the [params](../params) selector : path to variable.
 
-* A `map[string]any` type can be used for deferred raw params to be applied later (Network, Env etc) (see below).
-
-* Supports full set of `Open` (file), `OpenFS` (takes fs.FS arg, e.g., for embedded), `Read` (bytes) methods for loading config files.  Only the overall `Config()` version processes includes -- others are just for single files.
+* Supports full set of `Open` (file), `OpenFS` (takes fs.FS arg, e.g., for embedded), `Read` (bytes) methods for loading config files.  The overall `Config()` version uses `OpenWithIncludes` which processes includes -- others are just for single files.  Also supports `Write` and `Save` methods for saving from current state.
 
 * If needed, different config file encoding formats can be supported, with TOML being the default (currently only TOML).
 
@@ -39,7 +33,7 @@ econfig provides methods to set values on a `Config` struct through a (TOML) con
     + `float32` and `[]float32`
     + `int` and `[]int`
     + `string` and `[]string`
-    + [kit](https://github.com/goki/ki) registered "enum" `const` types, with names automatically parsed from string values (including | bit flags).  Must use the [goki stringer](https://github.com/goki/stringer) version to generate `FromString()` method, and register the type like this: `var KiT_GlobalVars = kit.Enums.AddEnum(GlobalVarsN, kit.NotBitFlag, nil)`
+    + [kit](https://github.com/goki/ki) registered "enum" `const` types, with names automatically parsed from string values (including | bit flags).  Must use the [goki stringer](https://github.com/goki/stringer) version to generate `FromString()` method, and register the type like this: `var KiT_TestEnum = kit.Enums.AddEnum(TestEnumN, kit.NotBitFlag, nil)` -- see [enum.go](enum.go) file for example.
 
 * To enable include file processing, add a `Includes []string` field and a `func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }` method.  The include file(s) are read first before the current one.  A stack of such includes is created and processed in the natural order encountered, so each includer is applied after the includees, recursively.  Note: use `--config` to specify the first config file read -- the `Includes` field is excluded from arg processing because it would be processed _after_ the point where include files are processed.
 

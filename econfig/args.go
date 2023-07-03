@@ -122,11 +122,31 @@ func parseArg(s string, args []string, allArgs map[string]reflect.Value) (a []st
 }
 
 func setArgValue(name string, fval reflect.Value, value string) error {
-	ok := kit.SetRobust(fval.Interface(), value) // overkill but whatever
-	if !ok {
-		err := fmt.Errorf("SetFromArgs: not able to set field from arg: %s val: %s", name, value)
-		log.Println(err)
-		return err
+	nptyp := kit.NonPtrType(fval.Type())
+	vk := nptyp.Kind()
+	switch {
+	case vk >= reflect.Int && vk <= reflect.Uint64 && kit.Enums.TypeRegistered(nptyp):
+		return kit.SetEnumValueFromString(fval, value)
+	case vk == reflect.Map:
+		mval := make(map[string]any)
+		err := ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		ok := kit.SetRobust(fval.Interface(), mval["tmp"])
+		if !ok {
+			err := fmt.Errorf("SetFromArgs: not able to set field from arg: %s val: %s", name, value)
+			log.Println(err)
+			return err
+		}
+	default:
+		ok := kit.SetRobust(fval.Interface(), value) // overkill but whatever
+		if !ok {
+			err := fmt.Errorf("SetFromArgs: not able to set field from arg: %s val: %s", name, value)
+			log.Println(err)
+			return err
+		}
 	}
 	return nil
 }
@@ -140,6 +160,9 @@ func FieldArgNames(obj any) map[string]reflect.Value {
 }
 
 func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect.Value) {
+	if nm == "Includes" {
+		return // skip
+	}
 	if path != "" {
 		nm = path + "." + nm
 	}
