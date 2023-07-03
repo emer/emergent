@@ -48,7 +48,7 @@ Here's a standard `Config` struct, corresponding to the `AddStd` args from `ecmd
 ```Go
 // Config is a standard Sim config -- use as a starting point.
 // don't forget to update defaults, delete unused fields, etc.
-typeConfig struct {
+type Config struct {
 	Includes     []string       `desc:"specify include files here, and after configuration, it contains list of include files added"`
 	GUI          bool           `def:"true" desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
 	GPU          bool           `desc:"use the GPU for computation"`
@@ -64,6 +64,8 @@ typeConfig struct {
 	Epochs       int            `def:"100" desc:"total number of epochs per run"`
 	NTrials      int            `def:"128" desc:"total number of trials per epoch.  Should be an even multiple of NData."`
 	NData        int            `def:"16" desc:"number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning."`
+	TestInterval int            `def:"5" desc:"how often to run through all the test patterns, in terms of training epochs -- can use 0 or -1 for no testing"`
+	PCAInterval  int            `def:"5" desc:"how frequently (in epochs) to compute PCA on hidden representations to measure variance?"`
 	SaveWts      bool           `desc:"if true, save final weights after each run"`
 	EpochLog     bool           `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
 	RunLog       bool           `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
@@ -72,6 +74,9 @@ typeConfig struct {
 	TestTrialLog bool           `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
 	NetData      bool           `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
 }
+
+func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }
+
 ```    
 
 # Key design considerations

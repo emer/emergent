@@ -57,7 +57,7 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	args, err := SetFromArgs(cfg)
+	args, err := SetFromArgs(cfg, flag.Args())
 	if err != nil {
 		errs = append(errs, err)
 	}

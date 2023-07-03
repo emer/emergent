@@ -77,7 +77,7 @@ func TestArgsPrint(t *testing.T) {
 func TestArgs(t *testing.T) {
 	cfg := &TestConfig{}
 	SetFromDefaults(cfg)
-	//
+	// note: cannot use "-Includes=testcfg.toml",
 	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "leftover1", "leftover2"}
 	leftovers, err := parseArgs(cfg, args)
 	if err != nil {

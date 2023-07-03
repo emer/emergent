@@ -11,7 +11,6 @@ package econfig
 import (
 	"fmt"
 	"log"
-	"os"
 	"reflect"
 	"strings"
 
@@ -26,8 +25,8 @@ import (
 // must refer to fields in the config, so any that fail to match trigger
 // an error.  Errors can also result from parsing.
 // Errors are automatically logged because these are user-facing.
-func SetFromArgs(cfg any) (leftovers []string, err error) {
-	leftovers, err = parseArgs(cfg, os.Args[1:])
+func SetFromArgs(cfg any, args []string) (leftovers []string, err error) {
+	leftovers, err = parseArgs(cfg, args)
 	if err != nil {
 		fmt.Println(Usage(cfg))
 	}
