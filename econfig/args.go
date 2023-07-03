@@ -36,7 +36,7 @@ func SetFromArgs(cfg any) (leftovers []string, err error) {
 
 // parseArgs does the actual arg parsing
 func parseArgs(cfg any, args []string) ([]string, error) {
-	longArgs, shortArgs := FieldArgNames(cfg)
+	allArgs := FieldArgNames(cfg)
 	var leftovers []string
 	var err error
 	for len(args) > 0 {
@@ -47,16 +47,12 @@ func parseArgs(cfg any, args []string) ([]string, error) {
 			continue
 		}
 
-		if s[1] == '-' {
-			if len(s) == 2 { // "--" terminates the flags
-				// f.argsLenAtDash = len(f.args)
-				leftovers = append(leftovers, args...)
-				break
-			}
-			args, err = parseLongArg(s, args, longArgs)
-		} else {
-			args, err = parseShortArg(s, args, shortArgs)
+		if s[1] == '-' && len(s) == 2 { // "--" terminates the flags
+			// f.argsLenAtDash = len(f.args)
+			leftovers = append(leftovers, args...)
+			break
 		}
+		args, err = parseArg(s, args, allArgs)
 		if err != nil {
 			return leftovers, err
 		}
@@ -64,9 +60,12 @@ func parseArgs(cfg any, args []string) ([]string, error) {
 	return leftovers, nil
 }
 
-func parseLongArg(s string, args []string, longArgs map[string]reflect.Value) (a []string, err error) {
+func parseArg(s string, args []string, allArgs map[string]reflect.Value) (a []string, err error) {
 	a = args
-	name := s[2:]
+	name := s[1:]
+	if name[0] == '-' {
+		name = name[1:]
+	}
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
 		err = fmt.Errorf("SetFromArgs: bad flag syntax: %s", s)
 		log.Println(err)
@@ -75,22 +74,43 @@ func parseLongArg(s string, args []string, longArgs map[string]reflect.Value) (a
 
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
-	fval, exists := longArgs[name]
+	fval, exists := allArgs[name]
 	if !exists {
 		err = fmt.Errorf("SetFromArgs: flag name not recognized: %s", name)
 		log.Println(err)
 		return
 	}
 
+	isbool := kit.NonPtrValue(fval).Kind() == reflect.Bool
+
 	var value string
-	if len(split) == 2 {
+	switch {
+	case len(split) == 2:
 		// '--flag=arg'
 		value = split[1]
-	} else if len(a) > 0 {
+	case isbool:
+		// '--flag' bare
+		lcnm := strings.ToLower(name)
+		negate := false
+		if len(lcnm) > 3 {
+			if lcnm[:3] == "no_" || lcnm[:3] == "no-" {
+				negate = true
+			} else if lcnm[:2] == "no" {
+				if _, has := allArgs[lcnm[2:]]; has { // e.g., nogui and gui is on list
+					negate = true
+				}
+			}
+		}
+		if negate {
+			value = "false"
+		} else {
+			value = "true"
+		}
+	case len(a) > 0:
 		// '--flag arg'
 		value = a[0]
 		a = a[1:]
-	} else {
+	default:
 		// '--flag' (arg was required)
 		err = fmt.Errorf("SetFromArgs: flag needs an argument: %s", s)
 		log.Println(err)
@@ -111,69 +131,28 @@ func setArgValue(name string, fval reflect.Value, value string) error {
 	return nil
 }
 
-func parseSingleShortArg(shorthands string, args []string, shortArgs map[string]reflect.Value) (outShorts string, outArgs []string, err error) {
-	outArgs = args
-	// 	if strings.HasPrefix(shorthands, "test.") {
-	// 		return
-	// 	}
-	outShorts = shorthands[1:]
-	c := string(shorthands[0])
-
-	fval, exists := shortArgs[c]
-
-	if !exists {
-		err = fmt.Errorf("SetFromArgs: unknown shorthand flag: %q in -%s", c, shorthands)
-		log.Println(err)
-		return
-	}
-
-	// todo: make sure that next field doesn't start with -
-
-	var value string
-	if len(shorthands) > 2 && shorthands[1] == '=' {
-		// '-f=arg'
-		value = shorthands[2:]
-		outShorts = ""
-	} else if len(args) > 0 {
-		if len(args[0]) > 1 && string(args[0][0]) != "-" {
-			value = args[0]
-			outArgs = args[1:]
-		} else {
-			value = "true"
-		}
-	} else {
-		value = "true"
-	}
-	err = setArgValue(c, fval, value)
-	return
-}
-
-func parseShortArg(s string, args []string, shortArgs map[string]reflect.Value) (a []string, err error) {
-	a = args
-	shorthands := s[1:]
-
-	// "shorthands" can be a series of shorthand letters of flags (e.g. "-vvv").
-	for len(shorthands) > 0 {
-		shorthands, a, err = parseSingleShortArg(shorthands, args, shortArgs)
-		if err != nil {
-			return
-		}
-	}
-	return
-}
-
 // FieldArgNames returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
-func FieldArgNames(obj any) (longArgs, shortArgs map[string]reflect.Value) {
-	longArgs = make(map[string]reflect.Value)
-	shortArgs = make(map[string]reflect.Value)
-	FieldArgNamesStruct(obj, "", longArgs, shortArgs)
-	return
+func FieldArgNames(obj any) map[string]reflect.Value {
+	allArgs := make(map[string]reflect.Value)
+	fieldArgNamesStruct(obj, "", allArgs)
+	return allArgs
 }
 
-// FieldArgNamesStruct returns map of all the different ways the field names
+func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect.Value) {
+	if path != "" {
+		nm = path + "." + nm
+	}
+	allArgs[nm] = pval
+	allArgs[strings.ToLower(nm)] = pval
+	allArgs[strcase.ToKebab(nm)] = pval
+	allArgs[strcase.ToSnake(nm)] = pval
+	allArgs[strcase.ToScreamingSnake(nm)] = pval
+}
+
+// fieldArgNamesStruct returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
-func FieldArgNamesStruct(obj any, path string, longArgs, shortArgs map[string]reflect.Value) {
+func fieldArgNamesStruct(obj any, path string, allArgs map[string]reflect.Value) {
 	typ := kit.NonPtrType(reflect.TypeOf(obj))
 	val := kit.NonPtrValue(reflect.ValueOf(obj))
 	for i := 0; i < typ.NumField(); i++ {
@@ -184,25 +163,13 @@ func FieldArgNamesStruct(obj any, path string, longArgs, shortArgs map[string]re
 			if path != "" {
 				nwPath = path + "." + nwPath
 			}
-			FieldArgNamesStruct(kit.PtrValue(fv).Interface(), nwPath, longArgs, shortArgs)
+			fieldArgNamesStruct(kit.PtrValue(fv).Interface(), nwPath, allArgs)
 			continue
 		}
 		pval := kit.PtrValue(fv)
-		nm := f.Name
-		if path != "" {
-			nm = path + "." + nm
-		}
-		longArgs[nm] = pval
-		longArgs[strings.ToLower(nm)] = pval
-		longArgs[strcase.ToKebab(nm)] = pval
-		longArgs[strcase.ToSnake(nm)] = pval
-		longArgs[strcase.ToScreamingSnake(nm)] = pval
-		sh, ok := f.Tag.Lookup("short")
-		if ok && sh != "" {
-			if _, has := shortArgs[sh]; has {
-				log.Println("Short arg named:", sh, "already defined")
-			}
-			shortArgs[sh] = pval
+		addAllCases(f.Name, path, pval, allArgs)
+		if f.Type.Kind() == reflect.Bool {
+			addAllCases("No"+f.Name, path, pval, allArgs)
 		}
 	}
 }

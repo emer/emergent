@@ -9,32 +9,17 @@ package econfig
 
 import (
 	"errors"
-	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
 	"github.com/goki/ki/kit"
 )
 
-// SetFromIncludes sets config from included files.
-// Returns an error if any of the include files cannot be found on IncludePath.
-func SetFromIncludes(cfg any) error {
-	incs, err := IncludeStack(cfg)
-	ni := len(incs)
-	if ni == 0 {
-		return err
-	}
-	for i := ni - 1; i >= 0; i-- {
-		inc := incs[i]
-		fmt.Println("opening include:", inc)
-		err = Open(cfg, inc)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-	SetIncludeField(cfg, incs)
-	return err
+// Includer facilitates processing include files in Config objects.
+type Includer interface {
+	// IncludesPtr returns a pointer to the Includes []string field containing file(s) to include
+	// before processing the current config file.
+	IncludesPtr() *[]string
 }
 
 // IncludeStack returns the stack of include files in the natural
@@ -42,25 +27,26 @@ func SetFromIncludes(cfg any) error {
 // Files should then be read in reverse order of the slice.
 // Returns an error if any of the include files cannot be found on IncludePath.
 // Does not alter cfg.
-func IncludeStack(cfg any) ([]string, error) {
-	clone := reflect.New(reflect.TypeOf(cfg).Elem())
-	if !CopyIncludeField(clone, cfg) {
-		return nil, nil
-	}
+func IncludeStack(cfg Includer) ([]string, error) {
+	clone := reflect.New(kit.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includer)
+	*clone.IncludesPtr() = *cfg.IncludesPtr()
 	return includeStackImpl(clone, nil)
 }
 
 // includeStackImpl implements IncludeStack, operating on cloned cfg
 // todo: could use a more efficient method to just extract the include field..
-func includeStackImpl(clone any, includes []string) ([]string, error) {
-	incs := GetIncludes(clone)
-	if len(incs) == 0 {
+func includeStackImpl(clone Includer, includes []string) ([]string, error) {
+	incs := *clone.IncludesPtr()
+	ni := len(incs)
+	if ni == 0 {
 		return includes, nil
 	}
-	includes = append(includes, incs...)
+	for i := ni - 1; i >= 0; i-- {
+		includes = append(includes, incs[i]) // reverse order so later overwrite earlier
+	}
 	var errs []error
 	for _, inc := range incs {
-		ResetIncludeField(clone) // key to reset prior to loading so only getting new
+		*clone.IncludesPtr() = nil
 		err := Open(clone, inc)
 		if err == nil {
 			includes, err = includeStackImpl(clone, includes)
@@ -72,85 +58,6 @@ func includeStackImpl(clone any, includes []string) ([]string, error) {
 		}
 	}
 	return includes, AllErrors(errs)
-}
-
-// GetIncludes returns the []string list of element(s) in the Include or Includes field
-// (works with string or []string types).  Returns nil if none found.
-// (case insensitive to field name)
-func GetIncludes(cfg any) []string {
-	fv, ok := FindIncludeField(cfg)
-	if !ok {
-		return nil
-	}
-	if fv.Kind() == reflect.String {
-		return []string{fv.String()}
-	}
-	if fv.Kind() == reflect.Slice {
-		if iss, ok := fv.Interface().([]string); ok {
-			return iss
-		}
-	}
-	return nil
-}
-
-// FindIncludeField returns the reflect.Value for a field named
-// Include or Includes -- must be a string or []string.
-// Returns false if not found.
-func FindIncludeField(cfg any) (reflect.Value, bool) {
-	typ := kit.NonPtrType(reflect.TypeOf(cfg))
-	val := kit.NonPtrValue(reflect.ValueOf(cfg))
-	for i := 0; i < typ.NumField(); i++ {
-		f := typ.Field(i)
-		fnm := strings.ToLower(f.Name)
-		if !(fnm == "include" || fnm == "includes") {
-			continue
-		}
-		if !(f.Type.Kind() == reflect.String || f.Type.Kind() == reflect.Slice) {
-			err := fmt.Errorf("econfig.IncludeField: field named %s must be either a string or []string", f.Name)
-			log.Println(err)
-			return val, false
-		}
-		return val.Field(i), true
-	}
-	return val, false
-}
-
-// ResetIncludeField sets the Include or Includes field to zero / nil value.
-// This is called prior to loading imports.
-func ResetIncludeField(cfg any) {
-	fv, ok := FindIncludeField(cfg)
-	if !ok { // shouldn't happen
-		return
-	}
-	fv.SetZero()
-}
-
-// SetIncludeField sets the Include or Includes field to given include(s).
-// (either the array or a comma-separated list if field is just a string).
-func SetIncludeField(cfg any, includes []string) {
-	fv, ok := FindIncludeField(cfg)
-	if !ok { // shouldn't happen
-		return
-	}
-	if fv.Kind() == reflect.String {
-		fv.SetString(strings.Join(includes, ","))
-	}
-	if fv.Kind() == reflect.Slice {
-		fv.Set(reflect.ValueOf(includes))
-	}
-}
-
-// CopyIncludeField copies include field from one config to the other
-// returns false if include field not found.
-func CopyIncludeField(toCfg, fmCfg any) bool {
-	dfv, ok := FindIncludeField(toCfg)
-	if !ok {
-		fmt.Println("no inc")
-		return false
-	}
-	sfv, _ := FindIncludeField(fmCfg)
-	dfv.Set(sfv)
-	return true
 }
 
 // AllErrors returns an err as a concatenation of errors (nil if none)

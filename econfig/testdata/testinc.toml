@@ -1,3 +1,3 @@
 Includes=["testinc2.toml", "testinc3.toml"]
-NTrials=64
+NTrials=32
 

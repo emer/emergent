@@ -27,6 +27,39 @@ func Open(cfg any, file string) error {
 	return err
 }
 
+// OpenWithIncludes reads config from given config file,
+// looking on IncludePaths for the file,
+// and opens any Includes specified in the given config file
+// in the natural include order so includee overwrites included settings.
+// Is equivalent to Open if there are no Includes.
+// Returns an error if any of the include files cannot be found on IncludePath.
+func OpenWithIncludes(cfg any, file string) error {
+	err := Open(cfg, file)
+	if err != nil {
+		return err
+	}
+	incfg, ok := cfg.(Includer)
+	if !ok {
+		return err
+	}
+	incs, err := IncludeStack(incfg)
+	ni := len(incs)
+	if ni == 0 {
+		return err
+	}
+	for i := ni - 1; i >= 0; i-- {
+		inc := incs[i]
+		err = Open(cfg, inc)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	// reopen original
+	Open(cfg, file)
+	*incfg.IncludesPtr() = incs
+	return err
+}
+
 // FindFileOnPaths attempts to locate given file on given list of paths,
 // returning the full Abs path to file if found, else error
 func FindFileOnPaths(paths []string, file string) (string, error) {

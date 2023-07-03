@@ -1,4 +1,5 @@
 Includes=["testinc.toml"]
-GUI = true
+gui = true
 # Network = [{".PFCLayer:Layer.Inhib.Gi", "2.4"}, {"VSPatchPrjn:Prjn.Learn.LRate", "0.01"},]
 Tag = "testing"
+NData = 12

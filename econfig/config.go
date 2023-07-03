@@ -31,7 +31,7 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 	}
 	// todo: register args, process config, use default instead
 	// SetFromConfigArg(cfg, defaultFile)
-	err = SetFromIncludes(cfg)
+	err = OpenWithIncludes(cfg, defaultFile)
 	if err != nil {
 		errs = append(errs, err)
 	}
