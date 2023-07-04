@@ -1,11 +1,5 @@
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 
-TODO:
-* slice fields
-* OpenFS
-* flag args are conflicting with config args -- just support all flags directly.
-
-
 `econfig` provides methods to set values on a `Config` struct through a (TOML) config file or command-line args (`flags` in Go terminology), with support for setting Network params and values on any other struct as well (e.g., an Env to be constructed later in a ConfigEnv method).
 
 * Standard usage:
@@ -34,55 +28,66 @@ TODO:
 
 # Special fields, supported types, and field tags
 
-* A limited number of standard field types are supported, consistent with emer neural network usage:
-    + `bool` and `[]bool`
-    + `float32` and `[]float32`
-    + `int` and `[]int`
-    + `string` and `[]string`
-    + [kit](https://github.com/goki/ki) registered "enum" `const` types, with names automatically parsed from string values (including | bit flags).  Must use the [goki stringer](https://github.com/goki/stringer) version to generate `FromString()` method, and register the type like this: `var KiT_TestEnum = kit.Enums.AddEnum(TestEnumN, kit.NotBitFlag, nil)` -- see [enum.go](enum.go) file for example.
-
 * To enable include file processing, add a `Includes []string` field and a `func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }` method.  The include file(s) are read first before the current one.  A stack of such includes is created and processed in the natural order encountered, so each includer is applied after the includees, recursively.  Note: use `--config` to specify the first config file read -- the `Includes` field is excluded from arg processing because it would be processed _after_ the point where include files are processed.
 
 * `Field map[string]any` -- allows raw parsing of values that can be applied later.  Use this for `Network`, `Env` etc fields.
 
 * Field tag `def:"value"`, used in the [GoGi](https://github.com/goki/gi) GUI, sets the initial default value and is shown for the `-h` or `--help` usage info.
 
-# Standard Config
+* [kit](https://github.com/goki/ki) registered "enum" `const` types, with names automatically parsed from string values (including bit flags).  Must use the [goki stringer](https://github.com/goki/stringer) version to generate `FromString()` method, and register the type like this: `var KitTestEnum = kit.Enums.AddEnum(TestEnumN, kit.NotBitFlag, nil)` -- see [enum.go](enum.go) file for example.
 
-Here's a standard `Config` struct, corresponding to the `AddStd` args from `ecmd`, which can be used as a starting point.
+# Standard Config Example
+
+Here's the `Config` struct from [axon/examples/ra25](https://github.com/emer/axon), which can provide a useful starting point.  It uses Params, Run and Log sub-structs to better organize things.  For sims with extensive Env config, that should be added as a separate sub-struct as well.  The `view:"add-fields"` struct tag shows all of the fields in one big dialog in the GUI -- if you want separate ones, omit that.
 
 ```Go
+// ParamConfig has config parameters related to sim params
+type ParamConfig struct {
+	Network map[string]any `desc:"network parameters"`
+	Set     string         `desc:"ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params"`
+	File    string         `desc:"Name of the JSON file to input saved parameters from."`
+	Tag     string         `desc:"extra tag to add to file names and logs saved from this run"`
+	Note    string         `desc:"user note -- describe the run params etc -- like a git commit message for the run"`
+	SaveAll bool           `desc:"Save all current param and config files (params_cur.toml, params_layers.txt, params_prjns.txt, config_cur.toml) then quit"`
+}
+
+// RunConfig has config parameters related to running the sim
+type RunConfig struct {
+	GPU          bool   `desc:"use the GPU for computation -- generally faster even for small models if NData ~16"`
+	Threads      int    `def:"0" desc:"number of parallel threads for CPU computation -- 0 = use default"`
+	Run          int    `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
+	Runs         int    `def:"5" min:"1" desc:"total number of runs to do when running Train"`
+	Epochs       int    `def:"100" desc:"total number of epochs per run"`
+	NZero        int    `def:"2" desc:"stop run after this number of perfect, zero-error epochs"`
+	NTrials      int    `def:"32" desc:"total number of trials per epoch.  Should be an even multiple of NData."`
+	NData        int    `def:"16" min:"1" desc:"number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning."`
+	TestInterval int    `def:"5" desc:"how often to run through all the test patterns, in terms of training epochs -- can use 0 or -1 for no testing"`
+	PCAInterval  int    `def:"5" desc:"how frequently (in epochs) to compute PCA on hidden representations to measure variance?"`
+	StartWts     string `desc:"if non-empty, is the name of weights file to load at start of first run -- for testing"`
+}
+
+// LogConfig has config parameters related to logging data
+type LogConfig struct {
+	SaveWts      bool `desc:"if true, save final weights after each run"`
+	EpochLog     bool `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
+	RunLog       bool `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
+	TrialLog     bool `def:"false" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
+	TestEpochLog bool `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
+	TestTrialLog bool `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
+	NetData      bool `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
+}
+
 // Config is a standard Sim config -- use as a starting point.
-// don't forget to update defaults, delete unused fields, etc.
 type Config struct {
-	Includes     []string       `desc:"specify include files here, and after configuration, it contains list of include files added"`
-	GUI          bool           `def:"true" desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
-	GPU          bool           `desc:"use the GPU for computation"`
-	Debug        bool           `desc:"log debugging information"`
-	Network      map[string]any `desc:"network parameters"`
-	ParamSet     string         `desc:"ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params"`
-	ParamFile    string         `desc:"Name of the JSON file to input saved parameters from."`
-	ParamDocFile string         `desc:"Name of the file to output all parameter data. If not empty string, program should write file(s) and then exit"`
-	Tag          string         `desc:"extra tag to add to file names and logs saved from this run"`
-	Note         string         `desc:"user note -- describe the run params etc -- like a git commit message for the run"`
-	Run          int            `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
-	Runs         int            `def:"10" desc:"total number of runs to do when running Train"`
-	Epochs       int            `def:"100" desc:"total number of epochs per run"`
-	NTrials      int            `def:"128" desc:"total number of trials per epoch.  Should be an even multiple of NData."`
-	NData        int            `def:"16" desc:"number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning."`
-	TestInterval int            `def:"5" desc:"how often to run through all the test patterns, in terms of training epochs -- can use 0 or -1 for no testing"`
-	PCAInterval  int            `def:"5" desc:"how frequently (in epochs) to compute PCA on hidden representations to measure variance?"`
-	SaveWts      bool           `desc:"if true, save final weights after each run"`
-	EpochLog     bool           `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
-	RunLog       bool           `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
-	TrialLog     bool           `def:"true" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
-	TestEpochLog bool           `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
-	TestTrialLog bool           `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
-	NetData      bool           `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
+	Includes []string    `desc:"specify include files here, and after configuration, it contains list of include files added"`
+	GUI      bool        `def:"true" desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
+	Debug    bool        `desc:"log debugging information"`
+	Params   ParamConfig `view:"add-fields" desc:"parameter related configuration options"`
+	Run      RunConfig   `view:"add-fields" desc:"sim running related configuration options"`
+	Log      LogConfig   `view:"add-fields" desc:"data logging related configuration options"`
 }
 
 func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }
-
 ```    
 
 # Key design considerations
@@ -91,7 +96,7 @@ func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }
     + current axon models only support args. obelisk models only support TOML.  conflicts happen.
 
 * Sims use a Config struct with fields that represents the definitive value of all arg / config settings (vs a `map[string]interface{}`)
-    + struct provides _compile time_ error checking -- very important and precludes map.
+    + struct provides _compile time_ error checking (and IDE completion) -- very important and precludes map.
     + Add Config to Sim so it is visible in the GUI for easy visual debugging etc (current args map is organized by types -- makes it hard to see everything).
 
 * Enable setting Network or Env params directly:

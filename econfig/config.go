@@ -5,9 +5,9 @@
 package econfig
 
 import (
-	"flag"
 	"fmt"
 	"os"
+	"reflect"
 )
 
 var (
@@ -20,6 +20,17 @@ var (
 	// specified in Include field or via the command line --config --cfg or -c args.
 	// Set this prior to calling Config -- default is just current directory '.'
 	IncludePaths = []string{"."}
+
+	//	NonFlagArgs are the command-line args that remain after all the flags have
+	// been processed.  This is set after the call to Config.
+	NonFlagArgs = []string{}
+
+	// ConfigFile is the name of the config file actually loaded, specified by the
+	// -config or -cfg command-line arg or the default file given in Config
+	ConfigFile string
+
+	// Help is variable target for -help or -h args
+	Help bool
 )
 
 // Config is the overall config setting function, processing config files
@@ -27,8 +38,12 @@ var (
 //   - Apply any `def:` field tag default values.
 //   - Look for `--config`, `--cfg`, or `-c` arg, specifying a config file on the command line.
 //   - Fall back on default config file name passed to `Config` function, if arg not found.
-//   - Read any `Include[s]` files in config file in deepest-first (natural) order, then the specified config file last.
-//   - Process command-line args based on Config field names, with `.` separator for sub-fields (see field tags for shorthand and aliases)
+//   - Read any `Include[s]` files in config file in deepest-first (natural) order,
+//     then the specified config file last.
+//   - Process command-line args based on Config field names, with `.` separator
+//     for sub-fields (see field tags for shorthand and aliases)
+//
+// Also processes -help or -h and prints usage and quits immediately.
 func Config(cfg any, defaultFile string) ([]string, error) {
 	var errs []error
 	err := SetFromDefaults(cfg)
@@ -36,31 +51,25 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 		errs = append(errs, err)
 	}
 
-	helpArg := flag.Bool("help", false, "show available command-line arguments and exit")
-	hArg := flag.Bool("h", false, "show available command-line arguments and exit")
-	configArg := flag.String("config", "", "filename / path for loading Config settings")
-	cfgArg := flag.String("cfg", "", "filename / path for loading Config settings")
-	flag.Parse()
+	allArgs := make(map[string]reflect.Value)
+	CommandArgs(allArgs)
 
-	if *helpArg || *hArg {
-		flag.PrintDefaults()
-		fmt.Println("")
+	args := os.Args[1:]
+	_, err = ParseArgs(cfg, args, allArgs, false) // false = ignore non-matches
+
+	if Help {
 		fmt.Println(Usage(cfg))
 		os.Exit(0)
 	}
 
-	file := defaultFile
-	if *configArg != "" {
-		file = *configArg
-	} else if *cfgArg != "" {
-		file = *cfgArg
+	if ConfigFile == "" {
+		ConfigFile = defaultFile
 	}
-
-	err = OpenWithIncludes(cfg, file)
+	err = OpenWithIncludes(cfg, ConfigFile)
 	if err != nil {
 		errs = append(errs, err)
 	}
-	args, err := SetFromArgs(cfg, flag.Args())
+	NonFlagArgs, err = SetFromArgs(cfg, args)
 	if err != nil {
 		errs = append(errs, err)
 	}

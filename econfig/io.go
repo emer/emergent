@@ -7,6 +7,7 @@ package econfig
 import (
 	"bufio"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -25,6 +26,18 @@ func Open(cfg any, file string) error {
 	}
 	// _, err = toml.DecodeFile(fp, cfg)
 	fp, err := os.Open(filename)
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return Read(cfg, bufio.NewReader(fp))
+}
+
+// OpenFS reads config from given config file,
+// using the fs.FS filesystem -- e.g., for embed files.
+func OpenFS(cfg any, fsys fs.FS, file string) error {
+	fp, err := fsys.Open(file)
 	defer fp.Close()
 	if err != nil {
 		log.Println(err)

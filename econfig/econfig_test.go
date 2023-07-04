@@ -6,6 +6,7 @@ package econfig
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -45,6 +46,7 @@ type TestConfig struct {
 	TestTrialLog bool           `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
 	NetData      bool           `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
 	Enum         TestEnum       `desc:"can set these values by string representation if stringer and registered as an enum with kit"`
+	Slice        []float32      `desc:"test slice case"`
 }
 
 func (cfg *TestConfig) IncludesPtr() *[]string { return &cfg.Includes }
@@ -64,7 +66,8 @@ func TestArgsPrint(t *testing.T) {
 	t.Skip("prints all possible args")
 
 	cfg := &TestConfig{}
-	allArgs := FieldArgNames(cfg)
+	allArgs := make(map[string]reflect.Value)
+	FieldArgNames(cfg, allArgs)
 
 	keys := maps.Keys(allArgs)
 	sort.Slice(keys, func(i, j int) bool {
@@ -78,8 +81,10 @@ func TestArgs(t *testing.T) {
 	cfg := &TestConfig{}
 	SetFromDefaults(cfg)
 	// note: cannot use "-Includes=testcfg.toml",
-	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "leftover1", "leftover2"}
-	leftovers, err := parseArgs(cfg, args)
+	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "-Slice=[3.2, 2.4, 1.9]", "leftover1", "leftover2"}
+	allArgs := make(map[string]reflect.Value)
+	FieldArgNames(cfg, allArgs)
+	leftovers, err := ParseArgs(cfg, args, allArgs, true)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -89,6 +94,9 @@ func TestArgs(t *testing.T) {
 	}
 	if cfg.Enum != TestValue2 {
 		t.Errorf("args enum from string not set properly: %#v", cfg)
+	}
+	if len(cfg.Slice) != 3 || cfg.Slice[2] != 1.9 {
+		t.Errorf("args Slice not set properly: %#v", cfg)
 	}
 
 	// if cfg.Network != nil {

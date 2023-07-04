@@ -25,48 +25,53 @@ import (
 // must refer to fields in the config, so any that fail to match trigger
 // an error.  Errors can also result from parsing.
 // Errors are automatically logged because these are user-facing.
-func SetFromArgs(cfg any, args []string) (leftovers []string, err error) {
-	leftovers, err = parseArgs(cfg, args)
+func SetFromArgs(cfg any, args []string) (nonFlags []string, err error) {
+	allArgs := make(map[string]reflect.Value)
+	CommandArgs(allArgs) // need these to not trigger not-found errors
+	FieldArgNames(cfg, allArgs)
+	nonFlags, err = ParseArgs(cfg, args, allArgs, true)
 	if err != nil {
 		fmt.Println(Usage(cfg))
 	}
 	return
 }
 
-// parseArgs does the actual arg parsing
-func parseArgs(cfg any, args []string) ([]string, error) {
-	allArgs := FieldArgNames(cfg)
-	var leftovers []string
+// ParseArgs parses given args using map of all available args
+// setting the value accordingly, and returning any leftover args.
+// setting errNotFound = true causes args that are not in allArgs to
+// trigger an error.  Otherwise, it just skips those.
+func ParseArgs(cfg any, args []string, allArgs map[string]reflect.Value, errNotFound bool) ([]string, error) {
+	var nonFlags []string
 	var err error
 	for len(args) > 0 {
 		s := args[0]
 		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
-			leftovers = append(leftovers, s)
+			nonFlags = append(nonFlags, s)
 			continue
 		}
 
 		if s[1] == '-' && len(s) == 2 { // "--" terminates the flags
 			// f.argsLenAtDash = len(f.args)
-			leftovers = append(leftovers, args...)
+			nonFlags = append(nonFlags, args...)
 			break
 		}
-		args, err = parseArg(s, args, allArgs)
+		args, err = ParseArg(s, args, allArgs, errNotFound)
 		if err != nil {
-			return leftovers, err
+			return nonFlags, err
 		}
 	}
-	return leftovers, nil
+	return nonFlags, nil
 }
 
-func parseArg(s string, args []string, allArgs map[string]reflect.Value) (a []string, err error) {
+func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotFound bool) (a []string, err error) {
 	a = args
 	name := s[1:]
 	if name[0] == '-' {
 		name = name[1:]
 	}
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
-		err = fmt.Errorf("SetFromArgs: bad flag syntax: %s", s)
+		err = fmt.Errorf("econfig.ParseArgs: bad flag syntax: %s", s)
 		log.Println(err)
 		return
 	}
@@ -75,8 +80,10 @@ func parseArg(s string, args []string, allArgs map[string]reflect.Value) (a []st
 	name = split[0]
 	fval, exists := allArgs[name]
 	if !exists {
-		err = fmt.Errorf("SetFromArgs: flag name not recognized: %s", name)
-		log.Println(err)
+		if errNotFound {
+			err = fmt.Errorf("econfig.ParseArgs: flag name not recognized: %s", name)
+			log.Println(err)
+		}
 		return
 	}
 
@@ -111,21 +118,22 @@ func parseArg(s string, args []string, allArgs map[string]reflect.Value) (a []st
 		a = a[1:]
 	default:
 		// '--flag' (arg was required)
-		err = fmt.Errorf("SetFromArgs: flag needs an argument: %s", s)
+		err = fmt.Errorf("econfig.ParseArgs: flag needs an argument: %s", s)
 		log.Println(err)
 		return
 	}
 
-	err = setArgValue(name, fval, value)
+	err = SetArgValue(name, fval, value)
 	return
 }
 
-func setArgValue(name string, fval reflect.Value, value string) error {
+// SetArgValue sets given arg name to given value, into settable reflect.Value
+func SetArgValue(name string, fval reflect.Value, value string) error {
 	nptyp := kit.NonPtrType(fval.Type())
 	vk := nptyp.Kind()
 	switch {
 	case vk >= reflect.Int && vk <= reflect.Uint64 && kit.Enums.TypeRegistered(nptyp):
-		return kit.SetEnumValueFromString(fval, value)
+		return kit.Enums.SetAnyEnumValueFromString(fval, value)
 	case vk == reflect.Map:
 		mval := make(map[string]any)
 		err := ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
@@ -135,14 +143,28 @@ func setArgValue(name string, fval reflect.Value, value string) error {
 		}
 		ok := kit.SetRobust(fval.Interface(), mval["tmp"])
 		if !ok {
-			err := fmt.Errorf("SetFromArgs: not able to set field from arg: %s val: %s", name, value)
+			err := fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
+			log.Println(err)
+			return err
+		}
+	case vk == reflect.Slice:
+		mval := make(map[string]any)
+		err := ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		err = kit.CopySliceRobust(fval, reflect.ValueOf(mval["tmp"]))
+		if err != nil {
+			log.Println(err)
+			err = fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
 			log.Println(err)
 			return err
 		}
 	default:
 		ok := kit.SetRobust(fval.Interface(), value) // overkill but whatever
 		if !ok {
-			err := fmt.Errorf("SetFromArgs: not able to set field from arg: %s val: %s", name, value)
+			err := fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
 			log.Println(err)
 			return err
 		}
@@ -150,12 +172,10 @@ func setArgValue(name string, fval reflect.Value, value string) error {
 	return nil
 }
 
-// FieldArgNames returns map of all the different ways the field names
+// FieldArgNames adds to given args map all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
-func FieldArgNames(obj any) map[string]reflect.Value {
-	allArgs := make(map[string]reflect.Value)
+func FieldArgNames(obj any, allArgs map[string]reflect.Value) {
 	fieldArgNamesStruct(obj, "", allArgs)
-	return allArgs
 }
 
 func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect.Value) {
@@ -194,4 +214,13 @@ func fieldArgNamesStruct(obj any, path string, allArgs map[string]reflect.Value)
 			addAllCases("No"+f.Name, path, pval, allArgs)
 		}
 	}
+}
+
+// CommandArgs adds non-field args that control the config process:
+// -config -cfg -help -h
+func CommandArgs(allArgs map[string]reflect.Value) {
+	allArgs["config"] = reflect.ValueOf(&ConfigFile)
+	allArgs["cfg"] = reflect.ValueOf(&ConfigFile)
+	allArgs["help"] = reflect.ValueOf(&Help)
+	allArgs["h"] = reflect.ValueOf(&Help)
 }
