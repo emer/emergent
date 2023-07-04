@@ -6,23 +6,19 @@ package econfig
 
 import (
 	"bufio"
-	"errors"
-	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/BurntSushi/toml" // either one of these works fine
-	// "github.com/pelletier/go-toml/v2"
+	"github.com/goki/ki/dirs"
 )
 
 // Open reads config from given config file,
 // looking on IncludePaths for the file.
 func Open(cfg any, file string) error {
-	filename, err := FindFileOnPaths(IncludePaths, file)
+	filename, err := dirs.FindFileOnPaths(IncludePaths, file)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -90,30 +86,6 @@ func OpenWithIncludes(cfg any, file string) error {
 	Open(cfg, file)
 	*incfg.IncludesPtr() = incs
 	return err
-}
-
-// FindFileOnPaths attempts to locate given file on given list of paths,
-// returning the full Abs path to file if found, else error
-func FindFileOnPaths(paths []string, file string) (string, error) {
-	for _, path := range paths {
-		filePath := filepath.Join(path, file)
-		ok, _ := FileExists(filePath)
-		if ok {
-			return filePath, nil
-		}
-	}
-	return "", fmt.Errorf("FindFileOnPaths: unable to find file: %s on paths: %v\n", file, paths)
-}
-
-func FileExists(filePath string) (bool, error) {
-	fileInfo, err := os.Stat(filePath)
-	if err == nil {
-		return !fileInfo.IsDir(), nil
-	}
-	if errors.Is(err, fs.ErrNotExist) {
-		return false, nil
-	}
-	return false, err
 }
 
 /////////////////////////////////////////////////////////

@@ -3,7 +3,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 TODO:
 * slice fields
 * OpenFS
-* std stuff from ecmd
+* flag args are conflicting with config args -- just support all flags directly.
 
 
 `econfig` provides methods to set values on a `Config` struct through a (TOML) config file or command-line args (`flags` in Go terminology), with support for setting Network params and values on any other struct as well (e.g., an Env to be constructed later in a ConfigEnv method).

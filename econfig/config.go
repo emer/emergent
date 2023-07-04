@@ -7,6 +7,7 @@ package econfig
 import (
 	"flag"
 	"fmt"
+	"os"
 )
 
 var (
@@ -43,14 +44,16 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 
 	if *helpArg || *hArg {
 		flag.PrintDefaults()
+		fmt.Println("")
 		fmt.Println(Usage(cfg))
+		os.Exit(0)
 	}
 
 	file := defaultFile
 	if *configArg != "" {
-		defaultFile = *configArg
+		file = *configArg
 	} else if *cfgArg != "" {
-		defaultFile = *cfgArg
+		file = *cfgArg
 	}
 
 	err = OpenWithIncludes(cfg, file)
