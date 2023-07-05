@@ -13,7 +13,7 @@ import (
 )
 
 var paramSets = Sets{
-	"Base": {Name: "Base", Desc: "these are the best params", Sheets: Sheets{
+	"Base": {Desc: "these are the best params", Sheets: Sheets{
 		"Network": &Sheet{
 			{Sel: "Prjn", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
 				Params: Params{
@@ -45,7 +45,7 @@ var paramSets = Sets{
 				}},
 		},
 	}},
-	"DefaultInhib": {Name: "DefaultInhib", Desc: "output uses default inhib instead of lower", Sheets: Sheets{
+	"DefaultInhib": {Desc: "output uses default inhib instead of lower", Sheets: Sheets{
 		"Network": &Sheet{
 			{Sel: "#Output", Desc: "go back to default",
 				Params: Params{
@@ -61,7 +61,7 @@ var paramSets = Sets{
 				}},
 		},
 	}},
-	"NoMomentum": {Name: "NoMomentum", Desc: "no momentum or normalization", Sheets: Sheets{
+	"NoMomentum": {Desc: "no momentum or normalization", Sheets: Sheets{
 		"Network": &Sheet{
 			{Sel: "Prjn", Desc: "no norm or momentum",
 				Params: Params{
@@ -70,7 +70,7 @@ var paramSets = Sets{
 				}},
 		},
 	}},
-	"WtBalOn": {Name: "WtBalOn", Desc: "try with weight bal on", Sheets: Sheets{
+	"WtBalOn": {Desc: "try with weight bal on", Sheets: Sheets{
 		"Network": &Sheet{
 			{Sel: "Prjn", Desc: "weight bal on",
 				Params: Params{
@@ -81,7 +81,7 @@ var paramSets = Sets{
 }
 
 var trgCode = `params.Sets{
-	{Name: "Base", Desc: "these are the best params", Sheets: params.Sheets{
+	{Desc: "these are the best params", Sheets: params.Sheets{
 		"Network": &params.Sheet{
 			{Sel: "Prjn", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
 				Params: params.Params{
@@ -111,7 +111,7 @@ var trgCode = `params.Sets{
 				}},
 		},
 	}},
-	{Name: "DefaultInhib", Desc: "output uses default inhib instead of lower", Sheets: params.Sheets{
+	{Desc: "output uses default inhib instead of lower", Sheets: params.Sheets{
 		"Network": &params.Sheet{
 			{Sel: "#Output", Desc: "go back to default",
 				Params: params.Params{
@@ -127,7 +127,7 @@ var trgCode = `params.Sets{
 				}},
 		},
 	}},
-	{Name: "NoMomentum", Desc: "no momentum or normalization", Sheets: params.Sheets{
+	{Desc: "no momentum or normalization", Sheets: params.Sheets{
 		"Network": &params.Sheet{
 			{Sel: "Prjn", Desc: "no norm or momentum",
 				Params: params.Params{
@@ -136,7 +136,7 @@ var trgCode = `params.Sets{
 				}},
 		},
 	}},
-	{Name: "WtBalOn", Desc: "try with weight bal on", Sheets: params.Sheets{
+	{Desc: "try with weight bal on", Sheets: params.Sheets{
 		"Network": &params.Sheet{
 			{Sel: "Prjn", Desc: "weight bal on",
 				Params: params.Params{
