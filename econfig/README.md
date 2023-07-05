@@ -96,7 +96,7 @@ func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }
 * Can set config values from command-line args and/or config file (TOML being the preferred format) (or env vars)
     + current axon models only support args. obelisk models only support TOML.  conflicts happen.
 
-* Sims use a Config struct with fields that represents the definitive value of all arg / config settings (vs a `map[string]interface{}`)
+* Sims use a Config struct with fields that represents the definitive value of all arg / config settings (vs a `map[string]any`)
     + struct provides _compile time_ error checking (and IDE completion) -- very important and precludes map.
     + Add Config to Sim so it is visible in the GUI for easy visual debugging etc (current args map is organized by types -- makes it hard to see everything).
 

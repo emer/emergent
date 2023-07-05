@@ -26,12 +26,24 @@ func (ct *Ctr) IsOverMax() bool {
 	return ct.Max > 0 && ct.Cur >= ct.Max
 }
 
-// Set sets the Cur value if different from Cur, while preserving previous value.
-// Returns true if changed
+// Set sets the Cur value with return value indicating whether it is different
+// from current Cur.
 func (ct *Ctr) Set(cur int) bool {
 	if ct.Cur == cur {
 		return false
 	}
 	ct.Cur = cur
 	return true
+}
+
+// SetCurMax sets the Cur and Max values, as a convenience.
+func (ct *Ctr) SetCurMax(cur, max int) {
+	ct.Cur = cur
+	ct.Max = max
+}
+
+// SetCurMaxPlusN sets the Cur value and Max as Cur + N -- run N more beyond current.
+func (ct *Ctr) SetCurMaxPlusN(cur, n int) {
+	ct.Cur = cur
+	ct.Max = cur + n
 }

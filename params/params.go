@@ -96,6 +96,12 @@ func (sl *Sel) ParamVal(param string) (string, error) {
 // application must be done under explicit program control.
 type Sheet []*Sel
 
+// NewSheet returns a new Sheet
+func NewSheet() *Sheet {
+	sh := make(Sheet, 0)
+	return &sh
+}
+
 // ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
 func (sh *Sheet) ElemLabel(idx int) string {
 	return (*sh)[idx].Sel

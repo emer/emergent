@@ -24,18 +24,18 @@ func (gui *GUI) AddToolbarItem(item ToolbarItem) {
 	case ActiveStopped:
 		gui.ToolBar.AddAction(gi.ActOpts{Label: item.Label, Icon: item.Icon, Tooltip: item.Tooltip, UpdateFunc: func(act *gi.Action) {
 			act.SetActiveStateUpdt(!gui.IsRunning)
-		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
 			item.Func()
 		})
 	case ActiveRunning:
 		gui.ToolBar.AddAction(gi.ActOpts{Label: item.Label, Icon: item.Icon, Tooltip: item.Tooltip, UpdateFunc: func(act *gi.Action) {
 			act.SetActiveStateUpdt(gui.IsRunning)
-		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
 			item.Func()
 		})
 	case ActiveAlways:
 		gui.ToolBar.AddAction(gi.ActOpts{Label: item.Label, Icon: item.Icon, Tooltip: item.Tooltip}, gui.Win.This(),
-			func(recv, send ki.Ki, sig int64, data interface{}) {
+			func(recv, send ki.Ki, sig int64, data any) {
 				item.Func()
 			})
 	}

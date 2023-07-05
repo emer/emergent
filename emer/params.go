@@ -6,6 +6,7 @@ package emer
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/emer/emergent/params"
@@ -16,21 +17,22 @@ import (
 // always applied first, followed optionally by additional Set(s)
 // that can have different parameters to try.
 type Params struct {
-	Params    params.Sets            `view:"no-inline" desc:"full collection of param sets to use"`
-	ExtraSets string                 `desc:"optional additional set(s) of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Set names!)"`
-	Tag       string                 `desc:"optional additional tag to add to file names, logs to identify params / run config"`
-	Objects   map[string]interface{} `view:"-" desc:"map of objects to apply parameters to -- the key is the name of the Sheet for each object, e.g., "Network", "Sim" are typically used"`
-	NetHypers params.Flex            `view:"-" desc:"list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used"`
-	SetMsg    bool                   `desc:"print out messages for each parameter that is set"`
+	Params    params.Sets    `view:"no-inline" desc:"full collection of param sets to use"`
+	ExtraSets string         `desc:"optional additional set(s) of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Set names!)"`
+	Tag       string         `desc:"optional additional tag to add to file names, logs to identify params / run config"`
+	Objects   map[string]any `view:"-" desc:"map of objects to apply parameters to -- the key is the name of the Sheet for each object, e.g., "Network", "Sim" are typically used"`
+	NetHypers params.Flex    `view:"-" desc:"list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used"`
+	SetMsg    bool           `desc:"print out messages for each parameter that is set"`
 }
 
-// AddNetwork adds network to those configured by params
+// AddNetwork adds network to those configured by params -- replaces any existing
+// network that was set previously.
 func (pr *Params) AddNetwork(net Network) {
 	pr.AddObject("Network", net)
 }
 
-// AddSim adds Sim object to those configured by params
-func (pr *Params) AddSim(sim interface{}) {
+// AddSim adds Sim object to those configured by params -- replaces any existing.
+func (pr *Params) AddSim(sim any) {
 	pr.AddObject("Sim", sim)
 }
 
@@ -110,10 +112,12 @@ func (pr *Params) PoolY(name string, def int) int {
 	return ns.PoolY(name, def)
 }
 
-// AddObject adds given object with given sheet name to set of those to set params on
-func (pr *Params) AddObject(name string, object interface{}) {
+// AddObject adds given object with given sheet name that applies to this object.
+// It is based on a map keyed on the name, so any existing object is replaced
+// (safe to call repeatedly).
+func (pr *Params) AddObject(name string, object any) {
 	if pr.Objects == nil {
-		pr.Objects = make(map[string]interface{})
+		pr.Objects = make(map[string]any)
 	}
 	pr.Objects[name] = object
 }
@@ -189,13 +193,7 @@ func (pr *Params) SetAllSet(setName string) error {
 		sh.SelMatchReset(setName)
 		if nm == "Network" {
 			net := obj.(Network)
-			net.ApplyParams(sh, pr.SetMsg)
-			hypers := NetworkHyperParams(net, sh)
-			if setName == "Base" {
-				pr.NetHypers = hypers
-			} else {
-				pr.NetHypers.CopyFrom(hypers)
-			}
+			pr.SetNetworkSheet(net, sh, setName)
 		} else if nm == "NetSize" {
 			ns := obj.(*NetSize)
 			ns.ApplySheet(sh, pr.SetMsg)
@@ -221,6 +219,29 @@ func (pr *Params) SetObject(objName string) error {
 	return err
 }
 
+// SetNetworkMap applies params from given map of values
+// The map keys are Selector:Path and the value is the value to apply, as a string.
+func (pr *Params) SetNetworkMap(net Network, vals map[string]any) error {
+	sh, err := params.MapToSheet(vals)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	pr.SetNetworkSheet(net, sh, "ApplyMap")
+	return nil
+}
+
+// SetNetworkSheet applies params from given sheet
+func (pr *Params) SetNetworkSheet(net Network, sh *params.Sheet, setName string) {
+	net.ApplyParams(sh, pr.SetMsg)
+	hypers := NetworkHyperParams(net, sh)
+	if setName == "Base" {
+		pr.NetHypers = hypers
+	} else {
+		pr.NetHypers.CopyFrom(hypers)
+	}
+}
+
 // SetObjectSet sets parameters for given Set name to given object
 func (pr *Params) SetObjectSet(objName, setName string) error {
 	pset, err := pr.Params.SetByNameTry(setName)
@@ -240,7 +261,7 @@ func (pr *Params) SetObjectSet(objName, setName string) error {
 	sh.SelMatchReset(setName)
 	if objName == "Network" {
 		net := obj.(Network)
-		net.ApplyParams(sh, pr.SetMsg)
+		pr.SetNetworkSheet(net, sh, setName)
 	} else if objName == "NetSize" {
 		ns := obj.(*NetSize)
 		ns.ApplySheet(sh, pr.SetMsg)

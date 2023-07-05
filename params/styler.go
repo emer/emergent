@@ -37,7 +37,7 @@ type StylerObj interface {
 
 	// Object returns the object that will have its field values set by
 	// the params specifications.
-	Object() interface{}
+	Object() any
 }
 
 // AddClass adds given class to current class string,

@@ -31,7 +31,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 
 		gui.ToolBar.AddAction(gi.ActOpts{Label: mode.String() + " Run", Icon: "play", Tooltip: "Run the " + mode.String() + " process", UpdateFunc: func(act *gi.Action) {
 			act.SetActiveStateUpdt(!gui.IsRunning)
-		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
 			if !gui.IsRunning {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
@@ -53,7 +53,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 
 		gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
 			act.SetActiveStateUpdt(!gui.IsRunning)
-		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
 			if !gui.IsRunning {
 				gui.IsRunning = true
 				gui.ToolBar.UpdateActions()
@@ -81,11 +81,11 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 		sb.HasMin = true
 		sb.Min = 1
 		sb.Value = 1
-		sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data any) {
 			stepN[scb.CurVal.(string)] = int(data.(float32))
 		})
 
-		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data any) {
 			stack := loops.Stacks[mode]
 			stack.StepLevel = stringToEnumTime[scb.CurVal.(string)]
 			sb.Value = float32(stepN[stack.StepLevel.String()])

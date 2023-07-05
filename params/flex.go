@@ -17,10 +17,10 @@ import (
 // FlexVal is a specific flexible value for the Flex parameter map
 // that implements the StylerObj interface for CSS-style selection logic
 type FlexVal struct {
-	Nm   string      `desc:"name of this specific object -- matches #Name selections"`
-	Type string      `desc:"type name of this object -- matches plain TypeName selections"`
-	Cls  string      `desc:"space-separated list of class name(s) -- match the .Class selections"`
-	Obj  interface{} `desc:"actual object with data that is set by the parameters"`
+	Nm   string `desc:"name of this specific object -- matches #Name selections"`
+	Type string `desc:"type name of this object -- matches plain TypeName selections"`
+	Cls  string `desc:"space-separated list of class name(s) -- match the .Class selections"`
+	Obj  any    `desc:"actual object with data that is set by the parameters"`
 }
 
 func (fv *FlexVal) TypeName() string {
@@ -35,7 +35,7 @@ func (fv *FlexVal) Name() string {
 	return fv.Nm
 }
 
-func (fv *FlexVal) Object() interface{} {
+func (fv *FlexVal) Object() any {
 	return fv.Obj
 }
 
@@ -51,7 +51,7 @@ func (fv *FlexVal) CopyFrom(cp *FlexVal) {
 }
 
 // Flex supports arbitrary named parameter values that can be set
-// by a Set of parameters, as a map of interface{} objects.
+// by a Set of parameters, as a map of any objects.
 // First initialize the map with set of names and a type to create
 // blank values, then apply the Set to it.
 type Flex map[string]*FlexVal

@@ -38,7 +38,7 @@ func (pr *Params) Path(path string) string {
 // If setMsg is true, then it will log a confirmation that the parameter
 // was set (it always prints an error message if it fails to set the
 // parameter at given path, and returns error if so).
-func (pr *Params) Apply(obj interface{}, setMsg bool) error {
+func (pr *Params) Apply(obj any, setMsg bool) error {
 	objNm := ""
 	if stylr, has := obj.(Styler); has {
 		objNm = stylr.Name()
@@ -96,7 +96,7 @@ func (pr *Hypers) Path(path string) string {
 // If setMsg is true, then it will log a confirmation that the parameter
 // was set (it always prints an error message if it fails to set the
 // parameter at given path, and returns error if so).
-func (pr *Hypers) Apply(obj interface{}, setMsg bool) error {
+func (pr *Hypers) Apply(obj any, setMsg bool) error {
 	objNm := ""
 	if stylr, has := obj.(Styler); has {
 		objNm = stylr.Name()
@@ -138,7 +138,7 @@ func (pr *Hypers) Apply(obj interface{}, setMsg bool) error {
 // If it does apply, or is not a Styler, then the Params values are set.
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // It always prints a message if a parameter fails to be set, and returns an error.
-func (ps *Sel) Apply(obj interface{}, setMsg bool) (bool, error) {
+func (ps *Sel) Apply(obj any, setMsg bool) (bool, error) {
 	if !ps.TargetTypeMatch(obj) {
 		return false, nil
 	}
@@ -154,7 +154,7 @@ func (ps *Sel) Apply(obj interface{}, setMsg bool) (bool, error) {
 }
 
 // TargetTypeMatch return true if target type applies to object
-func (ps *Sel) TargetTypeMatch(obj interface{}) bool {
+func (ps *Sel) TargetTypeMatch(obj any) bool {
 	trg := ps.Params.TargetType()
 	if stylr, has := obj.(Styler); has {
 		tnm := stylr.TypeName()
@@ -174,7 +174,7 @@ func (ps *Sel) TargetTypeMatch(obj interface{}) bool {
 }
 
 // SelMatch returns true if Sel selector matches the target object properties
-func (ps *Sel) SelMatch(obj interface{}) bool {
+func (ps *Sel) SelMatch(obj any) bool {
 	stylr, has := obj.(Styler)
 	if !has {
 		return true // default match if no styler..
@@ -220,7 +220,7 @@ func ClassMatch(sel, cls string) bool {
 // returns true if any Sel's applied, and error if any errors.
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // It always prints a message if a parameter fails to be set, and returns an error.
-func (ps *Sheet) Apply(obj interface{}, setMsg bool) (bool, error) {
+func (ps *Sheet) Apply(obj any, setMsg bool) (bool, error) {
 	applied := false
 	var rerr error
 	for _, sl := range *ps {
@@ -307,7 +307,7 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 // SetParam sets parameter at given path on given object to given value
 // converts the string param val as appropriate for target type.
 // returns error if path not found or cannot set (always logged).
-func SetParam(obj interface{}, path string, val string) error {
+func SetParam(obj any, path string, val string) error {
 	npv := kit.NonPtrValue(reflect.ValueOf(obj))
 	if npv.Kind() == reflect.Map { // only for string maps
 		npv.SetMapIndex(reflect.ValueOf(path), reflect.ValueOf(val))
@@ -365,7 +365,7 @@ func SetParam(obj interface{}, path string, val string) error {
 // GetParam gets parameter value at given path on given object.
 // converts target type to float64.
 // returns error if path not found or target is not a numeric type (always logged).
-func GetParam(obj interface{}, path string) (float64, error) {
+func GetParam(obj any, path string) (float64, error) {
 	fld, err := FindParam(reflect.ValueOf(obj), path)
 	if err != nil {
 		return 0, err

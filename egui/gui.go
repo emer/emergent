@@ -57,7 +57,7 @@ func (gui *GUI) Stopped() {
 }
 
 // MakeWindow specifies default window settings that are largely used in all windwos
-func (gui *GUI) MakeWindow(sim interface{}, appname, title, about string) {
+func (gui *GUI) MakeWindow(sim any, appname, title, about string) {
 	width := 1600
 	height := 1200
 
@@ -119,7 +119,7 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 			inQuitPrompt = true
 			gi.PromptDialog(vp, gi.DlgOpts{Title: "Really Quit?",
 				Prompt: "Are you <i>sure</i> you want to quit and lose any unsaved params, weights, logs, etc?"}, gi.AddOk, gi.AddCancel,
-				gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+				gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
 					if sig == int64(gi.DialogAccepted) {
 						gi.Quit()
 					} else {
@@ -136,7 +136,7 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 			inClosePrompt = true
 			gi.PromptDialog(vp, gi.DlgOpts{Title: "Really Close gui.Window?",
 				Prompt: "Are you <i>sure</i> you want to close the gui.Window?  This will Quit the App as well, losing all unsaved params, weights, logs, etc"}, gi.AddOk, gi.AddCancel,
-				gui.Win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+				gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
 					if sig == int64(gi.DialogAccepted) {
 						gi.Quit()
 					} else {
