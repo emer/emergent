@@ -77,6 +77,10 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 		return
 	}
 
+	if strings.HasPrefix(name, "test.") { // go test passes args..
+		return
+	}
+
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
 	fval, exists := allArgs[name]
