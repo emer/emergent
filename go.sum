@@ -8,8 +8,9 @@ github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298 h1:1qlsVAQJ
 github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298/go.mod h1:D+QujdIlUNfa0igpNMk6UIvlb6C252URs4yupRUV4lQ=
 github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 h1:lTG4HQym5oPKjL7nGs+csTgiDna685ZXjxijkne828g=
 github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966/go.mod h1:Mid70uvE93zn9wgF92A/r5ixgnvX8Lh68fxp9KQBaI0=
-github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
+github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/BurntSushi/xgb v0.0.0-20210121224620-deaf085860bc h1:7D+Bh06CRPCJO3gr2F7h1sriovOZ8BMhca2Rg85c2nk=
 github.com/BurntSushi/xgb v0.0.0-20210121224620-deaf085860bc/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
@@ -106,8 +107,8 @@ github.com/goki/go-difflib v1.2.1/go.mod h1:uZuY072AYTnMjRxCn6IkpZQKRVcTj4SIpHHX
 github.com/goki/gosl v1.0.13 h1:fA0Qhr5tK3qdEl7B0Ju8l3ZUfhvElWAfM2xW2QUNaSI=
 github.com/goki/gosl v1.0.13/go.mod h1:NYtMWc78Gqvua2vH84iwVyLfV/3iKpK43AQlLYz6i7k=
 github.com/goki/ki v1.0.0/go.mod h1:X+gmVeAym3JDSbbiA7iF1qkgAlTVWl1JV9sRsGDzxOA=
-github.com/goki/ki v1.1.12 h1:GgyvLDpXkH0Xll/oz/UqwXhS3QFHSbS2Pf4AJk2fTEs=
-github.com/goki/ki v1.1.12/go.mod h1:2jEwdmafoYJV8jQXCxVt5Esd73S2AlUMucaaFbvKcvQ=
+github.com/goki/ki v1.1.13 h1:4D7A9wfqCKnFFGmEj8pqzZQkTVL4SPBWXxfKTEByF/0=
+github.com/goki/ki v1.1.13/go.mod h1:E+kCXzhA/chnUfo7ecneVn0A4n35KkXpJmFlRSkXhIY=
 github.com/goki/kigen v1.0.2 h1:I/s/ce84wiP99CYKdju/MVjY6jzvAL3d4XobERsK1JY=
 github.com/goki/kigen v1.0.2/go.mod h1:ib29cR7secYGaGXWv68WDq83y5tfRMh7dOXi4XRsPOM=
 github.com/goki/mat32 v1.0.15 h1:aPegF2QkpUO+T85n5F9ZvuVWRwPDDKY9URCJafTav0o=

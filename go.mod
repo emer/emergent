@@ -8,7 +8,7 @@ require (
 	github.com/emer/etable v1.1.23
 	github.com/goki/gi v1.3.19
 	github.com/goki/gosl v1.0.13
-	github.com/goki/ki v1.1.12
+	github.com/goki/ki v1.1.13
 	github.com/goki/mat32 v1.0.15
 	github.com/goki/vgpu v1.0.27
 	github.com/iancoleman/strcase v0.2.0
@@ -20,7 +20,7 @@ require (
 	git.sr.ht/~sbinet/gg v0.3.1 // indirect
 	github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298 // indirect
 	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 // indirect
-	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/BurntSushi/xgb v0.0.0-20210121224620-deaf085860bc // indirect
 	github.com/BurntSushi/xgbutil v0.0.0-20190907113008-ad855c713046 // indirect
 	github.com/Masterminds/vcs v1.13.3 // indirect
