@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/goki/ki/kit"
+	"github.com/goki/ki/toml"
 )
 
 // Includer facilitates processing include files in Config objects.
@@ -47,7 +48,7 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 	var errs []error
 	for _, inc := range incs {
 		*clone.IncludesPtr() = nil
-		err := Open(clone, inc)
+		err := toml.OpenFromPaths(clone, inc, IncludePaths)
 		if err == nil {
 			includes, err = includeStackImpl(clone, includes)
 			if err != nil {

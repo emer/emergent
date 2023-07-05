@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/goki/ki/kit"
+	"github.com/goki/ki/toml"
 	"github.com/iancoleman/strcase"
 )
 
@@ -136,7 +137,7 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 		return kit.Enums.SetAnyEnumValueFromString(fval, value)
 	case vk == reflect.Map:
 		mval := make(map[string]any)
-		err := ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		err := toml.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
 			log.Println(err)
 			return err
@@ -149,7 +150,7 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 		}
 	case vk == reflect.Slice:
 		mval := make(map[string]any)
-		err := ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		err := toml.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
 			log.Println(err)
 			return err

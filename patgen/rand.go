@@ -13,7 +13,7 @@ var (
 	// random numbers will be generated for all patgen calls, and the
 	// seed is saved as RandSeed -- it can be reinstated by calling RestoreSeed.
 	// Can also set RandSource to another existing erand.Rand source to use it.
-	RandSource erand.Rand
+	RandSource = &erand.SysRand{}
 
 	// Random seed last set by NewRand or SetRandSeed.
 	RandSeed int64

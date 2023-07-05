@@ -60,8 +60,8 @@ type Sel struct {
 	Desc    string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
 	Params  Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
 	Hypers  Hypers `desc:"Put your hyperparams here"`
-	NMatch  int    `inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
-	SetName string `inactive:"+" desc:"name of current Set being applied"`
+	NMatch  int    `toml:"-" json:"-" xml:"-" inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+	SetName string `toml:"-" json:"-" xml:"-" inactive:"+" desc:"name of current Set being applied"`
 }
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
@@ -268,7 +268,7 @@ func (ps *Set) ParamVal(sheet, sel, param string) (string, error) {
 // depending on different desired configurations etc.  Thus, each Set
 // represents a collection of different possible specific configurations,
 // and different such configurations can be chosen by name to apply as desired.
-type Sets []*Set
+type Sets map[string]*Set
 
 var KiT_Sets = kit.Types.AddType(&Sets{}, SetsProps)
 
@@ -306,10 +306,10 @@ func (ps *Sets) ValidateSheets(valids []string) error {
 	return err
 }
 
-// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
-func (ps *Sets) ElemLabel(idx int) string {
-	return (*ps)[idx].Name
-}
+// // ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+// func (ps *Sets) ElemLabel(idx int) string {
+// 	return (*ps)[idx].Name
+// }
 
 // SetFloat sets the value of given parameter, in selection sel,
 // in sheet and set.

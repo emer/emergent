@@ -48,12 +48,12 @@ type ParamConfig struct {
 	File    string         `desc:"Name of the JSON file to input saved parameters from."`
 	Tag     string         `desc:"extra tag to add to file names and logs saved from this run"`
 	Note    string         `desc:"user note -- describe the run params etc -- like a git commit message for the run"`
-	SaveAll bool           `desc:"Save all current param and config files (params_cur.toml, params_layers.txt, params_prjns.txt, config_cur.toml) then quit"`
+	SaveAll bool           `desc:"Save a snapshot of all current param and config settings in a directory named params_<datestamp> then quit -- useful for comparing to later changes and seeing multiple views of current params"`
 }
 
 // RunConfig has config parameters related to running the sim
 type RunConfig struct {
-	GPU          bool   `desc:"use the GPU for computation -- generally faster even for small models if NData ~16"`
+	GPU          bool   `def:"true" desc:"use the GPU for computation -- generally faster even for small models if NData ~16"`
 	Threads      int    `def:"0" desc:"number of parallel threads for CPU computation -- 0 = use default"`
 	Run          int    `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
 	Runs         int    `def:"5" min:"1" desc:"total number of runs to do when running Train"`
@@ -68,13 +68,13 @@ type RunConfig struct {
 
 // LogConfig has config parameters related to logging data
 type LogConfig struct {
-	SaveWts      bool `desc:"if true, save final weights after each run"`
-	EpochLog     bool `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
-	RunLog       bool `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
-	TrialLog     bool `def:"false" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
-	TestEpochLog bool `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
-	TestTrialLog bool `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
-	NetData      bool `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
+	SaveWts   bool `desc:"if true, save final weights after each run"`
+	Epoch     bool `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
+	Run       bool `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
+	Trial     bool `def:"false" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
+	TestEpoch bool `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
+	TestTrial bool `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
+	NetData   bool `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
 }
 
 // Config is a standard Sim config -- use as a starting point.
@@ -88,6 +88,7 @@ type Config struct {
 }
 
 func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }
+
 ```    
 
 # Key design considerations

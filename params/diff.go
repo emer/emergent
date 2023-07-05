@@ -8,42 +8,42 @@ import "fmt"
 
 // DiffsAll reports all the cases where the same param path is being set
 // to different values across different sets
-func (ps *Sets) DiffsAll() string {
-	pd := ""
-	sz := len(*ps)
-	for i, set := range *ps {
-		for j := i + 1; j < sz; j++ {
-			oset := (*ps)[j]
-			spd := set.Diffs(oset)
-			if spd != "" {
-				pd += "//////////////////////////////////////\n"
-				pd += spd
-			}
-		}
-	}
-	return pd
-}
+// func (ps *Sets) DiffsAll() string {
+// 	pd := ""
+// 	sz := len(*ps)
+// 	for i, set := range *ps {
+// 		for j := i + 1; j < sz; j++ {
+// 			oset := (*ps)[j]
+// 			spd := set.Diffs(oset)
+// 			if spd != "" {
+// 				pd += "//////////////////////////////////////\n"
+// 				pd += spd
+// 			}
+// 		}
+// 	}
+// 	return pd
+// }
 
 // DiffsFirst reports all the cases where the same param path is being set
 // to different values between the first set (e.g., the "Base" set) and
 // all other sets
-func (ps *Sets) DiffsFirst() string {
-	pd := ""
-	sz := len(*ps)
-	if sz < 2 {
-		return ""
-	}
-	set := (*ps)[0]
-	for j := 1; j < sz; j++ {
-		oset := (*ps)[j]
-		spd := set.Diffs(oset)
-		if spd != "" {
-			pd += "//////////////////////////////////////\n"
-			pd += spd
-		}
-	}
-	return pd
-}
+// func (ps *Sets) DiffsFirst() string {
+// 	pd := ""
+// 	sz := len(*ps)
+// 	if sz < 2 {
+// 		return ""
+// 	}
+// 	set := (*ps)[0]
+// 	for j := 1; j < sz; j++ {
+// 		oset := (*ps)[j]
+// 		spd := set.Diffs(oset)
+// 		if spd != "" {
+// 			pd += "//////////////////////////////////////\n"
+// 			pd += spd
+// 		}
+// 	}
+// 	return pd
+// }
 
 // DiffsWithin reports all the cases where the same param path is being set
 // to different values within different sheets in given set
