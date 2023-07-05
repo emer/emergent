@@ -448,29 +448,9 @@ func (pr *Set) SaveTOML(filename gi.FileName) error {
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
-func (pr *Set) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("Name: %q, Desc: %q, Sheets: ", pr.Name, pr.Desc)))
+func (pr *Set) WriteGoCode(w io.Writer, depth int, name string) {
+	w.Write([]byte(fmt.Sprintf("Name: %q, Desc: %q, Sheets: ", name, pr.Desc)))
 	pr.Sheets.WriteGoCode(w, depth)
-}
-
-// StringGoCode returns Go initializer code as a byte string.
-func (pr *Set) StringGoCode() []byte {
-	var buf bytes.Buffer
-	pr.WriteGoCode(&buf, 0)
-	return buf.Bytes()
-}
-
-// SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Set) SaveGoCode(filename gi.FileName) error {
-	fp, err := os.Create(string(filename))
-	defer fp.Close()
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	WriteGoPrelude(fp, "SavedParamsSet")
-	pr.WriteGoCode(fp, 0)
-	return nil
 }
 
 /////////////////////////////////////////////////////////
@@ -516,10 +496,10 @@ func (pr *Sets) SaveTOML(filename gi.FileName) error {
 func (pr *Sets) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte(fmt.Sprintf("params.Sets{\n")))
 	depth++
-	for _, st := range *pr {
+	for nm, st := range *pr {
 		w.Write(indent.TabBytes(depth))
 		w.Write([]byte("{"))
-		st.WriteGoCode(w, depth)
+		st.WriteGoCode(w, depth, nm)
 		w.Write([]byte("},\n"))
 	}
 	depth--
@@ -901,16 +881,6 @@ var SetProps = ki.Props{
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
-				"label": "Save Code As...",
-				"desc":  "save to Go-formatted initializer code in file",
-				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
-						"ext": ".go",
-					}},
-				},
-			}},
 		}},
 		{"Open", ki.PropSlice{
 			{"OpenTOML", ki.Props{
@@ -933,12 +903,6 @@ var SetProps = ki.Props{
 					}},
 				},
 			}},
-		}},
-		{"StringGoCode", ki.Props{
-			"label":       "Show Code",
-			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
-			"icon":        "go",
-			"show-return": true,
 		}},
 		{"sep-diffs", ki.BlankProp{}},
 		{"DiffsWithin", ki.Props{

@@ -170,13 +170,14 @@ var KiT_Sheets = kit.Types.AddType(&Sheets{}, SheetsProps)
 
 ///////////////////////////////////////////////////////////////////////
 
-// Set is a collection of Sheet's that constitute a coherent set of parameters --
+// Set is a collection of Sheets that constitute a coherent set of parameters --
 // a particular specific configuration of parameters, which the user selects to use.
+// The Set name is stored in the Sets map from which it is typically accessed.
 // A good strategy is to have a "Base" set that has all the best parameters so far,
 // and then other sets can modify relative to that one.  It is up to the Sim code to
 // apply parameter sets in whatever order is desired.
 //
-// Within a params.Set, multiple different params.Sheet's can be organized,
+// Within a params.Set, multiple different params.Sheets can be organized,
 // with each CSS-style sheet achieving a relatively complete parameter styling
 // of a given element of the overal model, e.g., "Network", "Sim", "Env".
 // Or Network could be further broken down into "Learn" vs. "Act" etc,
@@ -188,7 +189,6 @@ var KiT_Sheets = kit.Types.AddType(&Sheets{}, SheetsProps)
 // a Go map structure, which specifically randomizes order, so simply iterating over them
 // and applying may produce unexpected results -- it is better to lookup by name.
 type Set struct {
-	Name   string `desc:"unique name of this set of parameters"`
 	Desc   string `width:"60" desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
 	Sheets Sheets `desc:"Sheet's grouped according to their target and / or function, e.g., "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
 }
@@ -200,7 +200,7 @@ var KiT_Set = kit.Types.AddType(&Set{}, SetProps)
 func (ps *Set) SheetByNameTry(name string) (*Sheet, error) {
 	psht, ok := ps.Sheets[name]
 	if !ok {
-		err := fmt.Errorf("params.Set: %v Sheet named %v not found", ps.Name, name)
+		err := fmt.Errorf("params.Set: Sheet named %v not found", name)
 		log.Println(err)
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func (ps *Set) ValidateSheets(valids []string) error {
 		}
 	}
 	if len(invalids) > 0 {
-		err := fmt.Errorf("params.Set: %v Invalid sheet names: %v", ps.Name, invalids)
+		err := fmt.Errorf("params.Set: Invalid sheet names: %v", invalids)
 		log.Println(err)
 		return err
 	}
@@ -281,12 +281,11 @@ var KiT_Sets = kit.Types.AddType(&Sets{}, SetsProps)
 // SetByNameTry tries to find given set by name, and returns error
 // if not found (also logs the error)
 func (ps *Sets) SetByNameTry(name string) (*Set, error) {
-	for _, st := range *ps {
-		if st.Name == name {
-			return st, nil
-		}
+	st, ok := (*ps)[name]
+	if ok {
+		return st, nil
 	}
-	err := fmt.Errorf("params.Sets: Param Set named %v not found", name)
+	err := fmt.Errorf("params.Sets: Param Set named %s not found", name)
 	log.Println(err)
 	return nil, err
 }
@@ -294,8 +293,7 @@ func (ps *Sets) SetByNameTry(name string) (*Set, error) {
 // SetByName returns given set by name -- for use when confident
 // that it exists, as a nil will return if not found with no error
 func (ps *Sets) SetByName(name string) *Set {
-	st, _ := ps.SetByNameTry(name)
-	return st
+	return (*ps)[name]
 }
 
 // ValidateSheets ensures that the sheet names are among those listed -- returns

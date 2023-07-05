@@ -4,46 +4,63 @@
 
 package params
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+
+	"golang.org/x/exp/maps"
+)
 
 // DiffsAll reports all the cases where the same param path is being set
 // to different values across different sets
-// func (ps *Sets) DiffsAll() string {
-// 	pd := ""
-// 	sz := len(*ps)
-// 	for i, set := range *ps {
-// 		for j := i + 1; j < sz; j++ {
-// 			oset := (*ps)[j]
-// 			spd := set.Diffs(oset)
-// 			if spd != "" {
-// 				pd += "//////////////////////////////////////\n"
-// 				pd += spd
-// 			}
-// 		}
-// 	}
-// 	return pd
-// }
+func (ps *Sets) DiffsAll() string {
+	pd := ""
+	sz := len(*ps)
+	keys := maps.Keys(*ps)
+	sort.Strings(keys)
+	for i, sNm := range keys {
+		set := (*ps)[sNm]
+		for j := i + 1; j < sz; j++ {
+			osNm := keys[j]
+			oset := (*ps)[osNm]
+			spd := set.Diffs(oset, sNm, osNm)
+			if spd != "" {
+				pd += "//////////////////////////////////////\n"
+				pd += spd
+			}
+		}
+	}
+	return pd
+}
 
 // DiffsFirst reports all the cases where the same param path is being set
-// to different values between the first set (e.g., the "Base" set) and
-// all other sets
-// func (ps *Sets) DiffsFirst() string {
-// 	pd := ""
-// 	sz := len(*ps)
-// 	if sz < 2 {
-// 		return ""
-// 	}
-// 	set := (*ps)[0]
-// 	for j := 1; j < sz; j++ {
-// 		oset := (*ps)[j]
-// 		spd := set.Diffs(oset)
-// 		if spd != "" {
-// 			pd += "//////////////////////////////////////\n"
-// 			pd += spd
-// 		}
-// 	}
-// 	return pd
-// }
+// to different values between the "Base" set and all other sets.
+// Only works if there is a set named "Base".
+func (ps *Sets) DiffsFirst() string {
+	pd := ""
+	sz := len(*ps)
+	if sz < 2 {
+		return ""
+	}
+	set, ok := (*ps)["Base"]
+	if !ok {
+		return "params.DiffsFirst: Set named 'Base' not found\n"
+	}
+	keys := maps.Keys(*ps)
+	sort.Strings(keys)
+	for _, sNm := range keys {
+		if sNm == "Base" {
+			continue
+		}
+		oset := (*ps)[sNm]
+		spd := set.Diffs(oset, "Base", sNm)
+		if spd != "" {
+			pd += "//////////////////////////////////////\n"
+			pd += spd
+		}
+	}
+	return pd
+}
 
 // DiffsWithin reports all the cases where the same param path is being set
 // to different values within different sheets in given set
@@ -60,11 +77,11 @@ func (ps *Sets) DiffsWithin(setName string) string {
 
 // Diffs reports all the cases where the same param path is being set
 // to different values between this set and the other set.
-func (ps *Set) Diffs(ops *Set) string {
+func (ps *Set) Diffs(ops *Set, name, otherName string) string {
 	pd := ""
 	for snm, sht := range ps.Sheets {
 		for osnm, osht := range ops.Sheets {
-			spd := sht.Diffs(osht, ps.Name+"."+snm, ops.Name+"."+osnm)
+			spd := sht.Diffs(osht, name+"."+snm, otherName+"."+osnm)
 			pd += spd
 		}
 	}

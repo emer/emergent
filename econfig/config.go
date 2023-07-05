@@ -41,7 +41,9 @@ var (
 //   - Read any `Include[s]` files in config file in deepest-first (natural) order,
 //     then the specified config file last.
 //   - Process command-line args based on Config field names, with `.` separator
-//     for sub-fields (see field tags for shorthand and aliases)
+//     for sub-fields.
+//   - Boolean flags are set on with plain -flag; use No prefix to turn off
+//     (or explicitly set values to true or false).
 //
 // Also processes -help or -h and prints usage and quits immediately.
 func Config(cfg any, defaultFile string) ([]string, error) {
