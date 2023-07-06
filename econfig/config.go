@@ -18,8 +18,8 @@ var (
 
 	// IncludePaths is a list of file paths to try for finding config files
 	// specified in Include field or via the command line --config --cfg or -c args.
-	// Set this prior to calling Config -- default is just current directory '.'
-	IncludePaths = []string{"."}
+	// Set this prior to calling Config -- default is current directory '.' and 'configs'
+	IncludePaths = []string{".", "configs"}
 
 	//	NonFlagArgs are the command-line args that remain after all the flags have
 	// been processed.  This is set after the call to Config.
