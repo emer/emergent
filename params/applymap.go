@@ -7,47 +7,47 @@ package params
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
+
+	"github.com/goki/ki/kit"
 )
 
 // ApplyMap applies given map[string]any values, where the map keys
-// are Selector:Path and the value is the value to apply.
-// returns true if any Sel's applied, and error if any errors.
+// are a Path and the value is the value to apply (any appropriate type).
+// This is not for Network params, which should use MapToSheet -- see emer.Params wrapper.
 // If setMsg is true, then a message is printed to confirm each parameter that is set.
 // It always prints a message if a parameter fails to be set, and returns an error.
-func ApplyMap(obj any, vals map[string]any, setMsg bool) (bool, error) {
-	applied := false
-	var rerr error
-	for k, v := range vals {
-		fld := strings.Split(k, ":")
-		if len(fld) != 2 {
-			rerr = fmt.Errorf("ApplyMap: map key value must be colon-separated Selector:Path, not: %s", k)
-			continue
-		}
-		vstr, ok := v.(string)
-		if !ok {
-			rerr = fmt.Errorf("ApplyMap: map value must be  a string type")
-			continue
-		}
-
-		sl := &Sel{Sel: fld[0], SetName: "ApplyMap"}
-		sl.Params = make(Params)
-		sl.Params[fld[1]] = vstr
-		fmt.Printf("applying: sel: %s  params: %#v\n", sl.Sel, sl.Params)
-		app, err := sl.Apply(obj, setMsg)
+func ApplyMap(obj any, vals map[string]any, setMsg bool) error {
+	objv := reflect.ValueOf(obj)
+	npv := kit.NonPtrValue(objv)
+	if npv.Kind() == reflect.Map {
+		err := kit.CopyMapRobust(obj, vals)
 		if err != nil {
 			log.Println(err)
-			rerr = err
+			return err
 		}
-		if app {
-			applied = true
-			sl.NMatch++
-			if hist, ok := obj.(History); ok {
-				hist.ParamsApplied(sl)
-			}
+		if setMsg {
+			log.Printf("ApplyMap: set map object to %#v\n", obj)
 		}
 	}
-	return applied, rerr
+	var errs []error
+	for k, v := range vals {
+		fld, err := FindParam(objv, k)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		ok := kit.SetRobust(fld.Interface(), v)
+		if !ok {
+			err = fmt.Errorf("ApplyMap: was not able to apply value: %v to field: %s", v, k)
+			log.Println(err)
+			errs = append(errs, err)
+		}
+		if setMsg {
+			log.Printf("ApplyMap: set field: %s = %#v\n", k, kit.NonPtrValue(fld).Interface())
+		}
+	}
+	return kit.AllErrors(errs, 10)
 }
 
 // MapToSheet returns a Sheet from given map[string]any values,
@@ -55,24 +55,22 @@ func ApplyMap(obj any, vals map[string]any, setMsg bool) (bool, error) {
 // ApplyParams method.
 // The map keys are Selector:Path and the value is the value to apply.
 func MapToSheet(vals map[string]any) (*Sheet, error) {
-	var rerr error
 	sh := NewSheet()
+	var errs []error
 	for k, v := range vals {
 		fld := strings.Split(k, ":")
 		if len(fld) != 2 {
-			rerr = fmt.Errorf("ApplyMap: map key value must be colon-separated Selector:Path, not: %s", k)
+			err := fmt.Errorf("ApplyMap: map key value must be colon-separated Selector:Path, not: %s", k)
+			log.Println(err)
+			errs = append(errs, err)
 			continue
 		}
-		vstr, ok := v.(string)
-		if !ok {
-			rerr = fmt.Errorf("ApplyMap: map value must be  a string type")
-			continue
-		}
+		vstr := kit.ToString(v)
 
 		sl := &Sel{Sel: fld[0], SetName: "ApplyMap"}
 		sl.Params = make(Params)
 		sl.Params[fld[1]] = vstr
 		*sh = append(*sh, sl)
 	}
-	return sh, rerr
+	return sh, kit.AllErrors(errs, 10)
 }

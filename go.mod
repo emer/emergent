@@ -6,11 +6,11 @@ require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi v1.0.17
 	github.com/emer/etable v1.1.23
-	github.com/goki/gi v1.3.19
+	github.com/goki/gi v1.3.20
 	github.com/goki/gosl v1.0.13
-	github.com/goki/ki v1.1.13
+	github.com/goki/ki v1.1.14
 	github.com/goki/mat32 v1.0.15
-	github.com/goki/vgpu v1.0.27
+	github.com/goki/vgpu v1.0.33
 	github.com/iancoleman/strcase v0.2.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29

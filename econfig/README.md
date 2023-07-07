@@ -7,7 +7,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
     + `cfg.Defaults()` -- sets hard-coded defaults -- user should define and call this method first.  It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://github.com/goki/gi) GUI.
     + `econfig.Config(cfg, "config.toml")` -- sets config values according to the standard order, with given file name specifying the default config file name.
 
-* Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  Config must implement the `IncludesPtr() *[]string` method which satisfies the `Includer` interface, and returns a pointer to an `Includes []string` field containing a list of config files to include.
+* Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  Config must implement the `IncludesPtr() *[]string` method which satisfies the `Includer` interface, and returns a pointer to an `Includes []string` field containing a list of config files to include.  The default `IncludePaths` includes current dir (`.`) and `configs` directory, which is recommended location to store different configs.
 
 * Order of setting in `econfig.Config`:
     + Apply any `def:` field tag default values.

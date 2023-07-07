@@ -8,9 +8,7 @@
 package econfig
 
 import (
-	"errors"
 	"reflect"
-	"strings"
 
 	"github.com/goki/ki/kit"
 	"github.com/goki/ki/toml"
@@ -58,17 +56,5 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 			errs = append(errs, err)
 		}
 	}
-	return includes, AllErrors(errs)
-}
-
-// AllErrors returns an err as a concatenation of errors (nil if none)
-func AllErrors(errs []error) error {
-	if len(errs) == 0 {
-		return nil
-	}
-	ers := make([]string, len(errs))
-	for i, err := range errs {
-		ers[i] = err.Error()
-	}
-	return errors.New(strings.Join(ers, "\n"))
+	return includes, kit.AllErrors(errs, 10)
 }

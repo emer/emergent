@@ -146,9 +146,10 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 			log.Println(err)
 			return err
 		}
-		ok := kit.SetRobust(fval.Interface(), mval["tmp"])
-		if !ok {
-			err := fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
+		err = kit.CopyMapRobust(fval.Interface(), mval["tmp"])
+		if err != nil {
+			log.Println(err)
+			err = fmt.Errorf("econfig.ParseArgs: not able to set map field from arg: %s val: %s", name, value)
 			log.Println(err)
 			return err
 		}
@@ -159,10 +160,10 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 			log.Println(err)
 			return err
 		}
-		err = kit.CopySliceRobust(fval, reflect.ValueOf(mval["tmp"]))
+		err = kit.CopySliceRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
 			log.Println(err)
-			err = fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
+			err = fmt.Errorf("econfig.ParseArgs: not able to set slice field from arg: %s val: %s", name, value)
 			log.Println(err)
 			return err
 		}

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+
+	"github.com/goki/ki/kit"
 )
 
 var (
@@ -75,5 +77,5 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	return args, AllErrors(errs)
+	return args, kit.AllErrors(errs, 10)
 }
