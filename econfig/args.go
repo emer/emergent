@@ -10,10 +10,10 @@ package econfig
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
+	"github.com/emer/empi/mpi"
 	"github.com/goki/ki/kit"
 	"github.com/goki/ki/toml"
 	"github.com/iancoleman/strcase"
@@ -32,7 +32,7 @@ func SetFromArgs(cfg any, args []string) (nonFlags []string, err error) {
 	FieldArgNames(cfg, allArgs)
 	nonFlags, err = ParseArgs(cfg, args, allArgs, true)
 	if err != nil {
-		fmt.Println(Usage(cfg))
+		mpi.Println(Usage(cfg))
 	}
 	return
 }
@@ -73,7 +73,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 	}
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
 		err = fmt.Errorf("econfig.ParseArgs: bad flag syntax: %s", s)
-		log.Println(err)
+		mpi.Println(err)
 		return
 	}
 
@@ -87,7 +87,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 	if !exists {
 		if errNotFound {
 			err = fmt.Errorf("econfig.ParseArgs: flag name not recognized: %s", name)
-			log.Println(err)
+			mpi.Println(err)
 		}
 		return
 	}
@@ -124,7 +124,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 	default:
 		// '--flag' (arg was required)
 		err = fmt.Errorf("econfig.ParseArgs: flag needs an argument: %s", s)
-		log.Println(err)
+		mpi.Println(err)
 		return
 	}
 
@@ -143,35 +143,35 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 		mval := make(map[string]any)
 		err := toml.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
-			log.Println(err)
+			mpi.Println(err)
 			return err
 		}
 		err = kit.CopyMapRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
-			log.Println(err)
+			mpi.Println(err)
 			err = fmt.Errorf("econfig.ParseArgs: not able to set map field from arg: %s val: %s", name, value)
-			log.Println(err)
+			mpi.Println(err)
 			return err
 		}
 	case vk == reflect.Slice:
 		mval := make(map[string]any)
 		err := toml.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
-			log.Println(err)
+			mpi.Println(err)
 			return err
 		}
 		err = kit.CopySliceRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
-			log.Println(err)
+			mpi.Println(err)
 			err = fmt.Errorf("econfig.ParseArgs: not able to set slice field from arg: %s val: %s", name, value)
-			log.Println(err)
+			mpi.Println(err)
 			return err
 		}
 	default:
 		ok := kit.SetRobust(fval.Interface(), value) // overkill but whatever
 		if !ok {
 			err := fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
-			log.Println(err)
+			mpi.Println(err)
 			return err
 		}
 	}
@@ -181,7 +181,7 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 // FieldArgNames adds to given args map all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
 func FieldArgNames(obj any, allArgs map[string]reflect.Value) {
-	fieldArgNamesStruct(obj, "", allArgs)
+	fieldArgNamesStruct(obj, "", false, allArgs)
 }
 
 func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect.Value) {
@@ -200,7 +200,7 @@ func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect
 
 // fieldArgNamesStruct returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
-func fieldArgNamesStruct(obj any, path string, allArgs map[string]reflect.Value) {
+func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]reflect.Value) {
 	typ := kit.NonPtrType(reflect.TypeOf(obj))
 	val := kit.NonPtrValue(reflect.ValueOf(obj))
 	for i := 0; i < typ.NumField(); i++ {
@@ -211,13 +211,36 @@ func fieldArgNamesStruct(obj any, path string, allArgs map[string]reflect.Value)
 			if path != "" {
 				nwPath = path + "." + nwPath
 			}
-			fieldArgNamesStruct(kit.PtrValue(fv).Interface(), nwPath, allArgs)
+			nwNest := nest
+			if !nwNest {
+				neststr, ok := f.Tag.Lookup("nest")
+				if ok && (neststr == "+" || neststr == "true") {
+					nwNest = true
+				}
+			}
+			fieldArgNamesStruct(kit.PtrValue(fv).Interface(), nwPath, nwNest, allArgs)
 			continue
 		}
 		pval := kit.PtrValue(fv)
 		addAllCases(f.Name, path, pval, allArgs)
 		if f.Type.Kind() == reflect.Bool {
 			addAllCases("No"+f.Name, path, pval, allArgs)
+		}
+		// now process adding non-nested version of field
+		if path == "" || nest {
+			continue
+		}
+		neststr, ok := f.Tag.Lookup("nest")
+		if ok && (neststr == "+" || neststr == "true") {
+			continue
+		}
+		if _, has := allArgs[f.Name]; has {
+			mpi.Printf(`econfig Field: %s.%s cannot be added as a non-nested %s arg because it has already been registered -- add 'nest:"+"' field tag to the one you want to keep only as a nested arg with path, to eliminate this message\n`, path, f.Name, f.Name)
+			continue
+		}
+		addAllCases(f.Name, "", pval, allArgs)
+		if f.Type.Kind() == reflect.Bool {
+			addAllCases("No"+f.Name, "", pval, allArgs)
 		}
 	}
 }

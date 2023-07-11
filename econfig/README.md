@@ -18,6 +18,8 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
         
 * All field name references in toml files and command-line args are case-insensitive.  For args (flags) kebab-case (with either `-` or `_` delimiter) can be used.  For bool args, use "No" prefix in any form (e.g., "NoRunLog" or "no-run-log"). Instead of polluting the flags space with all the different options, custom args processing code is used.
 
+* Args in sub-structs are automatically available with just the field name and also nested within the name of the parent struct field -- for example, `-Run.NEpochs` and just `-NEpochs` (or `-nepochs` lowercase).  Use `nest:"+"` to force a field to only be available in its nested form, in case of conflict of names without nesting (which are logged).
+
 * Is a replacement for `ecmd` and includes the helper methods for saving log files etc.
 
 * A `map[string]any` type can be used for deferred raw params to be applied later (`Network`, `Env` etc).  Example: `Network = {'.PFCLayer:Layer.Inhib.Layer.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' =  '0.01'}` where the key expression contains the [params](../params) selector : path to variable.
