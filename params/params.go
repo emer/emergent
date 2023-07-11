@@ -60,8 +60,8 @@ type Sel struct {
 	Desc    string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
 	Params  Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
 	Hypers  Hypers `desc:"Put your hyperparams here"`
-	NMatch  int    `toml:"-" json:"-" xml:"-" inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
-	SetName string `toml:"-" json:"-" xml:"-" inactive:"+" desc:"name of current Set being applied"`
+	NMatch  int    `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"name of current Set being applied"`
 }
 
 var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
