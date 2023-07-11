@@ -17,6 +17,7 @@ func Usage(cfg any) string {
 	var b strings.Builder
 	b.WriteString("The following command-line arguments set fields on the Config struct.\n")
 	b.WriteString("args are case insensitive and kebab-case or snake_case also works\n")
+	b.WriteString("most can be used without nesting path (e.g. -nepochs instead of -run.nepochs)\n")
 	b.WriteString("\n")
 	b.WriteString("-help or -h\tshow available command-line arguments and exit\n")
 	b.WriteString("-config or -cfg\tspecify filename for loading Config settings\n")
