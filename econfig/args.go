@@ -235,7 +235,7 @@ func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]ref
 			continue
 		}
 		if _, has := allArgs[f.Name]; has {
-			mpi.Printf(`econfig Field: %s.%s cannot be added as a non-nested %s arg because it has already been registered -- add 'nest:"+"' field tag to the one you want to keep only as a nested arg with path, to eliminate this message\n`, path, f.Name, f.Name)
+			mpi.Printf("econfig Field: %s.%s cannot be added as a non-nested %s arg because it has already been registered -- add 'nest:'+'' field tag to the one you want to keep only as a nested arg with path, to eliminate this message\n", path, f.Name, f.Name)
 			continue
 		}
 		addAllCases(f.Name, "", pval, allArgs)
