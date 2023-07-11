@@ -4,6 +4,8 @@ See [Wiki Params](https://github.com/emer/emergent/wiki/Params) page for detaile
 
 Package `params` provides general-purpose parameter management functionality for organizing multiple sets of parameters efficiently, and basic IO for saving / loading from JSON files and generating Go code to embed into applications, and a basic GUI for viewing and editing.
 
+IMPORTANT: as of July, 2023, `params` has been deprecated in favor of [netparams](../netparams) which is focused only on `Network` params, for which the styling and structure of this params system makes the most sense.  Use [econfig](../econfig) for setting params on standard struct objects such as Config structs.
+
 The main overall unit that is generally operated upon at run-time is the `params.Set`, which is a collection of `params.Sheet`'s (akin to CSS style sheets) that constitute a coherent set of parameters.  Here's the structure:
 
 ```

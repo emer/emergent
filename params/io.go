@@ -18,6 +18,7 @@ import (
 	"github.com/goki/ki/indent"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/toml"
+	"golang.org/x/exp/maps"
 )
 
 // WriteGoPrelude writes the start of a go file in package main that starts a
@@ -149,17 +150,19 @@ func (pr *Hypers) SaveTOML(filename gi.FileName) error {
 func (pr *Hypers) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte(fmt.Sprintf("params.Hypers{\n")))
 	depth++
-	paths := make([]string, len(*pr)) // alpha-sort paths for consistent output
-	ctr := 0
-	for pt := range *pr {
-		paths[ctr] = pt
-		ctr++
-	}
+	paths := maps.Keys(*pr)
 	sort.StringSlice(paths).Sort()
 	for _, pt := range paths {
 		pv := (*pr)[pt]
 		w.Write(indent.TabBytes(depth))
-		w.Write([]byte(fmt.Sprintf("%q: %q,\n", pt, pv)))
+		w.Write([]byte(fmt.Sprintf("%q: {", pt)))
+		ks := maps.Keys(pv)
+		sort.StringSlice(ks).Sort()
+		for _, k := range ks {
+			v := pv[k]
+			w.Write([]byte(fmt.Sprintf("%q: %q,", k, v)))
+		}
+		w.Write([]byte("},\n"))
 	}
 	depth--
 	w.Write(indent.TabBytes(depth))
@@ -231,6 +234,7 @@ func (pr *Sel) WriteGoCode(w io.Writer, depth int) {
 	w.Write([]byte("Params: "))
 	pr.Params.WriteGoCode(w, depth)
 	if len(pr.Hypers) > 0 {
+		w.Write([]byte(", Hypers: "))
 		pr.Hypers.WriteGoCode(w, depth)
 	}
 }
@@ -296,7 +300,7 @@ func (pr *Sheet) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes params to corresponding Go initializer code.
 func (pr *Sheet) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("params.Sheet{\n")))
+	w.Write([]byte(fmt.Sprintf("{\n")))
 	depth++
 	for _, pv := range *pr {
 		w.Write(indent.TabBytes(depth))
