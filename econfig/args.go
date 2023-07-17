@@ -201,8 +201,15 @@ func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect
 // fieldArgNamesStruct returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
 func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]reflect.Value) {
-	typ := kit.NonPtrType(reflect.TypeOf(obj))
-	val := kit.NonPtrValue(reflect.ValueOf(obj))
+	if kit.IfaceIsNil(obj) {
+		return
+	}
+	ov := reflect.ValueOf(obj)
+	if ov.Kind() == reflect.Pointer && ov.IsNil() {
+		return
+	}
+	val := kit.NonPtrValue(ov)
+	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
