@@ -42,10 +42,13 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 	}
 }
 
-// AddStatAggItem adds a Float64 stat that is aggregated across the given time scales,
+// AddStatAggItem adds a Float64 stat that is aggregated
+// with agg.Mean across the given time scales,
 // ordered from higher to lower, e.g., Run, Epoch, Trial.
 // The statName is the source statistic in stats at the lowest level,
 // and is also used for the log item name.
+// For the Run level, aggregation is the mean over last 5 rows of prior
+// level (Epoch)
 func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 	ntimes := len(times)
 	itm := lg.AddItem(&Item{
@@ -58,15 +61,19 @@ func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 			etime.Scope(etime.AllModes, times[ntimes-1]): func(ctx *Context) {
 				ctx.SetFloat64(ctx.Stats.Float(statName))
 			}}})
-	for i := ntimes - 2; i >= 1; i-- {
+	for i := ntimes - 2; i >= 0; i-- {
 		i := i
-		itm.Write[etime.Scope(etime.AllModes, times[i])] = func(ctx *Context) {
-			ctx.SetAgg(ctx.Mode, times[i+1], agg.AggMean)
+		tm := times[i]
+		if tm == etime.Run {
+			itm.Write[etime.Scope(etime.Train, tm)] = func(ctx *Context) {
+				ix := ctx.LastNRows(etime.Train, times[i+1], 5) // cached
+				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+			}
+		} else {
+			itm.Write[etime.Scope(etime.AllModes, times[i])] = func(ctx *Context) {
+				ctx.SetAgg(ctx.Mode, times[i+1], agg.AggMean)
+			}
 		}
-	}
-	itm.Write[etime.Scope(etime.Train, times[0])] = func(ctx *Context) {
-		ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-		ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
 	}
 	return itm
 }
