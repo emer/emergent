@@ -58,15 +58,11 @@ func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 			etime.Scope(etime.AllModes, times[ntimes-1]): func(ctx *Context) {
 				ctx.SetFloat64(ctx.Stats.Float(statName))
 			}}})
-	for i := ntimes - 2; i >= 1; i-- {
+	for i := ntimes - 2; i >= 0; i-- {
 		i := i
 		itm.Write[etime.Scope(etime.AllModes, times[i])] = func(ctx *Context) {
 			ctx.SetAgg(ctx.Mode, times[i+1], agg.AggMean)
 		}
-	}
-	itm.Write[etime.Scope(etime.Train, times[0])] = func(ctx *Context) {
-		ix := ctx.LastNRows(etime.Train, times[1], 5) // cached
-		ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
 	}
 	return itm
 }
