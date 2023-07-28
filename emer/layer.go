@@ -12,6 +12,7 @@ import (
 	"github.com/emer/emergent/relpos"
 	"github.com/emer/emergent/weights"
 	"github.com/emer/etable/etensor"
+	"github.com/goki/ki/ints"
 	"github.com/goki/ki/kit"
 	"github.com/goki/mat32"
 )
@@ -321,6 +322,27 @@ func CenterPoolIdxs(ly Layer, n int) []int {
 // Useful for setting RepShape on Layer.
 func CenterPoolShape(ly Layer, n int) []int {
 	return []int{n, n, ly.Shape().Dim(2), ly.Shape().Dim(3)}
+}
+
+// Layer2DRepIdxs returns neuron indexes and corresponding 2D shape
+// for the representative neurons within a large 2D layer, for passing to
+// [SetRepIdxsShape].  These neurons are used for the raster plot
+// in the GUI and for computing PCA, among other cases where the full set
+// of neurons is problematic. The lower-left corner of neurons up to
+// given maxSize is selected.
+func Layer2DRepIdxs(ly Layer, maxSize int) (idxs, shape []int) {
+	sh := ly.Shape()
+	my := ints.MinInt(maxSize, sh.Dim(0))
+	mx := ints.MinInt(maxSize, sh.Dim(1))
+	shape = []int{my, mx}
+	idxs = make([]int, my*mx)
+	i := 0
+	for y := 0; y < my; y++ {
+		for x := 0; x < mx; x++ {
+			idxs[i] = sh.Offset([]int{y, x})
+		}
+	}
+	return
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
