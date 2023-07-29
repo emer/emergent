@@ -340,6 +340,7 @@ func Layer2DRepIdxs(ly Layer, maxSize int) (idxs, shape []int) {
 	for y := 0; y < my; y++ {
 		for x := 0; x < mx; x++ {
 			idxs[i] = sh.Offset([]int{y, x})
+			i++
 		}
 	}
 	return
