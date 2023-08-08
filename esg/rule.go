@@ -44,15 +44,33 @@ const (
 
 // Rule is one rule containing some number of items
 type Rule struct {
-	Name    string    `desc:"name of rule"`
-	Desc    string    `desc:"description / notes on rule"`
-	Type    RuleTypes `desc:"type of rule -- how to choose the items"`
-	Items   []*Item   `desc:"items in rule"`
-	State   State     `desc:"state update for rule"`
-	PrevIdx int       `desc:"previously selected item (from perspective of current rule)"`
-	CurIdx  int       `desc:"current index in Items (what will be used next)"`
-	RepeatP float32   `desc:"probability of repeating same item -- signaled by =%p"`
-	Order   []int     `desc:"permuted order if doing that"`
+
+	// name of rule
+	Name string `desc:"name of rule"`
+
+	// description / notes on rule
+	Desc string `desc:"description / notes on rule"`
+
+	// type of rule -- how to choose the items
+	Type RuleTypes `desc:"type of rule -- how to choose the items"`
+
+	// items in rule
+	Items []*Item `desc:"items in rule"`
+
+	// state update for rule
+	State State `desc:"state update for rule"`
+
+	// previously selected item (from perspective of current rule)
+	PrevIdx int `desc:"previously selected item (from perspective of current rule)"`
+
+	// current index in Items (what will be used next)
+	CurIdx int `desc:"current index in Items (what will be used next)"`
+
+	// probability of repeating same item -- signaled by =%p
+	RepeatP float32 `desc:"probability of repeating same item -- signaled by =%p"`
+
+	// permuted order if doing that
+	Order []int `desc:"permuted order if doing that"`
 }
 
 // Init initializes the rules -- only relevant for ordered rules (restarts at start)

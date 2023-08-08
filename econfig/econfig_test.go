@@ -16,37 +16,91 @@ import (
 
 // TestSubConfig is a sub-struct with special params
 type TestSubConfig struct {
-	NPats      int     `def:"10" desc:"number of patterns to create"`
+
+	// [def: 10] number of patterns to create
+	NPats int `def:"10" desc:"number of patterns to create"`
+
+	// [def: 0.15] proportion activity of created params
 	Sparseness float32 `def:"0.15" desc:"proportion activity of created params"`
 }
 
 // TestConfig is a testing config
 type TestConfig struct {
-	Includes     []string       `desc:"specify include files here, and after configuration, it contains list of include files added"`
-	GUI          bool           `def:"true" desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
-	GPU          bool           `def:"true" desc:"use the GPU for computation"`
-	Debug        bool           `desc:"log debugging information"`
-	PatParams    TestSubConfig  `desc:"important for testing . notation etc"`
-	Network      map[string]any `desc:"network parameters applied after built-in params -- use toml map format: '{key = val, key2 = val2}' where key is 'selector:path' (e.g., '.PFCLayer:Layer.Inhib.Layer.Gi' where '.PFCLayer' is a class) and values should be strings to be consistent with standard params format"`
-	ParamSet     string         `desc:"ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params"`
-	ParamFile    string         `desc:"Name of the JSON file to input saved parameters from."`
-	ParamDocFile string         `desc:"Name of the file to output all parameter data. If not empty string, program should write file(s) and then exit"`
-	Tag          string         `desc:"extra tag to add to file names and logs saved from this run"`
-	Note         string         `def:"testing is fun" desc:"user note -- describe the run params etc -- like a git commit message for the run"`
-	Run          int            `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
-	Runs         int            `def:"10" desc:"total number of runs to do when running Train"`
-	Epochs       int            `def:"100" desc:"total number of epochs per run"`
-	NTrials      int            `def:"128" desc:"total number of trials per epoch.  Should be an even multiple of NData."`
-	NData        int            `def:"16" desc:"number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning."`
-	SaveWts      bool           `desc:"if true, save final weights after each run"`
-	EpochLog     bool           `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
-	RunLog       bool           `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
-	TrialLog     bool           `def:"true" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
-	TestEpochLog bool           `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
-	TestTrialLog bool           `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
-	NetData      bool           `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
-	Enum         TestEnum       `desc:"can set these values by string representation if stringer and registered as an enum with kit"`
-	Slice        []float32      `desc:"test slice case"`
+
+	// specify include files here, and after configuration, it contains list of include files added
+	Includes []string `desc:"specify include files here, and after configuration, it contains list of include files added"`
+
+	// [def: true] open the GUI -- does not automatically run -- if false, then runs automatically and quits
+	GUI bool `def:"true" desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
+
+	// [def: true] use the GPU for computation
+	GPU bool `def:"true" desc:"use the GPU for computation"`
+
+	// log debugging information
+	Debug bool `desc:"log debugging information"`
+
+	// important for testing . notation etc
+	PatParams TestSubConfig `desc:"important for testing . notation etc"`
+
+	// network parameters applied after built-in params -- use toml map format: '{key = val, key2 = val2}' where key is 'selector:path' (e.g., '.PFCLayer:Layer.Inhib.Layer.Gi' where '.PFCLayer' is a class) and values should be strings to be consistent with standard params format
+	Network map[string]any `desc:"network parameters applied after built-in params -- use toml map format: '{key = val, key2 = val2}' where key is 'selector:path' (e.g., '.PFCLayer:Layer.Inhib.Layer.Gi' where '.PFCLayer' is a class) and values should be strings to be consistent with standard params format"`
+
+	// ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params
+	ParamSet string `desc:"ParamSet name to use -- must be valid name as listed in compiled-in params or loaded params"`
+
+	// Name of the JSON file to input saved parameters from.
+	ParamFile string `desc:"Name of the JSON file to input saved parameters from."`
+
+	// Name of the file to output all parameter data. If not empty string, program should write file(s) and then exit
+	ParamDocFile string `desc:"Name of the file to output all parameter data. If not empty string, program should write file(s) and then exit"`
+
+	// extra tag to add to file names and logs saved from this run
+	Tag string `desc:"extra tag to add to file names and logs saved from this run"`
+
+	// [def: testing is fun] user note -- describe the run params etc -- like a git commit message for the run
+	Note string `def:"testing is fun" desc:"user note -- describe the run params etc -- like a git commit message for the run"`
+
+	// [def: 0] starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1
+	Run int `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
+
+	// [def: 10] total number of runs to do when running Train
+	Runs int `def:"10" desc:"total number of runs to do when running Train"`
+
+	// [def: 100] total number of epochs per run
+	Epochs int `def:"100" desc:"total number of epochs per run"`
+
+	// [def: 128] total number of trials per epoch.  Should be an even multiple of NData.
+	NTrials int `def:"128" desc:"total number of trials per epoch.  Should be an even multiple of NData."`
+
+	// [def: 16] number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning.
+	NData int `def:"16" desc:"number of data-parallel items to process in parallel per trial -- works (and is significantly faster) for both CPU and GPU.  Results in an effective mini-batch of learning."`
+
+	// if true, save final weights after each run
+	SaveWts bool `desc:"if true, save final weights after each run"`
+
+	// [def: true] if true, save train epoch log to file, as .epc.tsv typically
+	EpochLog bool `def:"true" desc:"if true, save train epoch log to file, as .epc.tsv typically"`
+
+	// [def: true] if true, save run log to file, as .run.tsv typically
+	RunLog bool `def:"true" desc:"if true, save run log to file, as .run.tsv typically"`
+
+	// [def: true] if true, save train trial log to file, as .trl.tsv typically. May be large.
+	TrialLog bool `def:"true" desc:"if true, save train trial log to file, as .trl.tsv typically. May be large."`
+
+	// [def: false] if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there.
+	TestEpochLog bool `def:"false" desc:"if true, save testing epoch log to file, as .tst_epc.tsv typically.  In general it is better to copy testing items over to the training epoch log and record there."`
+
+	// [def: false] if true, save testing trial log to file, as .tst_trl.tsv typically. May be large.
+	TestTrialLog bool `def:"false" desc:"if true, save testing trial log to file, as .tst_trl.tsv typically. May be large."`
+
+	// if true, save network activation etc data from testing trials, for later viewing in netview
+	NetData bool `desc:"if true, save network activation etc data from testing trials, for later viewing in netview"`
+
+	// can set these values by string representation if stringer and registered as an enum with kit
+	Enum TestEnum `desc:"can set these values by string representation if stringer and registered as an enum with kit"`
+
+	// test slice case
+	Slice []float32 `desc:"test slice case"`
 }
 
 func (cfg *TestConfig) IncludesPtr() *[]string { return &cfg.Includes }

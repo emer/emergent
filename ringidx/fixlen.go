@@ -9,7 +9,11 @@ package ringidx
 // FIx is a fixed-length ring index structure -- does not grow
 // or shrink dynamically.
 type FIx struct {
-	Zi  uint32 `desc:"the zero index position -- where logical 0 is in physical buffer"`
+
+	// the zero index position -- where logical 0 is in physical buffer
+	Zi uint32 `desc:"the zero index position -- where logical 0 is in physical buffer"`
+
+	// the length of the buffer -- wraps around at this modulus
 	Len uint32 `desc:"the length of the buffer -- wraps around at this modulus"`
 
 	pad, pad1 uint32

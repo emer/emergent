@@ -14,8 +14,12 @@ import (
 // and a lookup map of counters by timescale
 // used to manage counters in the Env.
 type Ctrs struct {
-	Order []TimeScales        `desc:"ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)"`
-	Ctrs  map[TimeScales]*Ctr `desc:"map of the counters by timescale"`
+
+	// ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)
+	Order []TimeScales `desc:"ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)"`
+
+	// map of the counters by timescale
+	Ctrs map[TimeScales]*Ctr `desc:"map of the counters by timescale"`
 }
 
 // SetTimes initializes Ctrs for given mode

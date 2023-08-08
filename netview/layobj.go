@@ -19,7 +19,11 @@ import (
 // LayObj is the Layer 3D object within the NetView
 type LayObj struct {
 	gi3d.Solid
-	LayName string   `desc:"name of the layer we represent"`
+
+	// name of the layer we represent
+	LayName string `desc:"name of the layer we represent"`
+
+	// [view: -] our netview
 	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview"`
 }
 

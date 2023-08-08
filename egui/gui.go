@@ -18,22 +18,48 @@ import (
 
 // GUI manages all standard elements of a simulation Graphical User Interface
 type GUI struct {
-	CycleUpdateInterval int  `desc:"how many cycles between updates of cycle-level plots"`
-	Active              bool `view:"-" desc:"true if the GUI is configured and running"`
-	IsRunning           bool `view:"-" desc:"true if sim is running"`
-	StopNow             bool `view:"-" desc:"flag to stop running"`
 
-	Plots      map[etime.ScopeKey]*eplot.Plot2D     `desc:"plots by scope"`
+	// how many cycles between updates of cycle-level plots
+	CycleUpdateInterval int `desc:"how many cycles between updates of cycle-level plots"`
+
+	// [view: -] true if the GUI is configured and running
+	Active bool `view:"-" desc:"true if the GUI is configured and running"`
+
+	// [view: -] true if sim is running
+	IsRunning bool `view:"-" desc:"true if sim is running"`
+
+	// [view: -] flag to stop running
+	StopNow bool `view:"-" desc:"flag to stop running"`
+
+	// plots by scope
+	Plots map[etime.ScopeKey]*eplot.Plot2D `desc:"plots by scope"`
+
+	// plots by scope
 	TableViews map[etime.ScopeKey]*etview.TableView `desc:"plots by scope"`
-	Grids      map[string]*etview.TensorGrid        `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
 
-	ViewUpdt   *netview.ViewUpdt `view:"-" desc:"the view update for managing updates of netview"`
-	NetData    *netview.NetData  `view:"-" desc:"net data for recording in nogui mode, if !nil"`
-	ToolBar    *gi.ToolBar       `view:"-" desc:"the master toolbar"`
-	StructView *giv.StructView   `view:"-" desc:"displays Sim fields on left"`
-	TabView    *gi.TabView       `view:"-" desc:"tabs for different view elements: plots, rasters"`
-	Win        *gi.Window        `view:"-" desc:"main GUI gui.Window"`
-	ViewPort   *gi.Viewport2D    `view:"-" desc:"main viewport for Window"`
+	// tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access
+	Grids map[string]*etview.TensorGrid `desc:"tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access"`
+
+	// [view: -] the view update for managing updates of netview
+	ViewUpdt *netview.ViewUpdt `view:"-" desc:"the view update for managing updates of netview"`
+
+	// [view: -] net data for recording in nogui mode, if !nil
+	NetData *netview.NetData `view:"-" desc:"net data for recording in nogui mode, if !nil"`
+
+	// [view: -] the master toolbar
+	ToolBar *gi.ToolBar `view:"-" desc:"the master toolbar"`
+
+	// [view: -] displays Sim fields on left
+	StructView *giv.StructView `view:"-" desc:"displays Sim fields on left"`
+
+	// [view: -] tabs for different view elements: plots, rasters
+	TabView *gi.TabView `view:"-" desc:"tabs for different view elements: plots, rasters"`
+
+	// [view: -] main GUI gui.Window
+	Win *gi.Window `view:"-" desc:"main GUI gui.Window"`
+
+	// [view: -] main viewport for Window
+	ViewPort *gi.Viewport2D `view:"-" desc:"main viewport for Window"`
 }
 
 // UpdateWindow renders the viewport associated with the main window

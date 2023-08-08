@@ -17,14 +17,30 @@ import (
 // and associated position within a given X-Y plane,
 // and Z vertical stacking of layers above and below each other.
 type Rel struct {
-	Rel     Relations `desc:"spatial relationship between this layer and the other layer"`
-	XAlign  XAligns   `viewif:"Rel=[FrontOf,Behind,Above,Below]" desc:"horizontal (x-axis) alignment relative to other"`
-	YAlign  YAligns   `viewif:"Rel=[LeftOf,RightOf,Above,Below]" desc:"vertical (y-axis) alignment relative to other"`
-	Other   string    `desc:"name of the other layer we are in relationship to"`
-	Scale   float32   `desc:"scaling factor applied to layer size for displaying"`
-	Space   float32   `desc:"number of unit-spaces between us"`
-	XOffset float32   `desc:"for vertical (y-axis) alignment, amount we are offset relative to perfect alignment"`
-	YOffset float32   `desc:"for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment"`
+
+	// spatial relationship between this layer and the other layer
+	Rel Relations `desc:"spatial relationship between this layer and the other layer"`
+
+	// [viewif: Rel=[FrontOf,Behind,Above,Below]] horizontal (x-axis) alignment relative to other
+	XAlign XAligns `viewif:"Rel=[FrontOf,Behind,Above,Below]" desc:"horizontal (x-axis) alignment relative to other"`
+
+	// [viewif: Rel=[LeftOf,RightOf,Above,Below]] vertical (y-axis) alignment relative to other
+	YAlign YAligns `viewif:"Rel=[LeftOf,RightOf,Above,Below]" desc:"vertical (y-axis) alignment relative to other"`
+
+	// name of the other layer we are in relationship to
+	Other string `desc:"name of the other layer we are in relationship to"`
+
+	// scaling factor applied to layer size for displaying
+	Scale float32 `desc:"scaling factor applied to layer size for displaying"`
+
+	// number of unit-spaces between us
+	Space float32 `desc:"number of unit-spaces between us"`
+
+	// for vertical (y-axis) alignment, amount we are offset relative to perfect alignment
+	XOffset float32 `desc:"for vertical (y-axis) alignment, amount we are offset relative to perfect alignment"`
+
+	// for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment
+	YOffset float32 `desc:"for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment"`
 }
 
 // Defaults sets default scale, space, offset values -- rel, align must be set specifically

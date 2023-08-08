@@ -6,7 +6,11 @@ package env
 
 // CurPrvF32 is basic state management for current and previous values, float32 values
 type CurPrvF32 struct {
+
+	// current value
 	Cur float32 `desc:"current value"`
+
+	// previous value
 	Prv float32 `desc:"previous value"`
 }
 
@@ -32,7 +36,11 @@ func (cv *CurPrvF32) Diff() float32 {
 
 // CurPrvInt is basic state management for current and previous values, int values
 type CurPrvInt struct {
+
+	// current value
 	Cur int `desc:"current value"`
+
+	// previous value
 	Prv int `desc:"previous value"`
 }
 
@@ -58,7 +66,11 @@ func (cv *CurPrvInt) Diff() int {
 
 // CurPrvString is basic state management for current and previous values, string values
 type CurPrvString struct {
+
+	// current value
 	Cur string `desc:"current value"`
+
+	// previous value
 	Prv string `desc:"previous value"`
 }
 

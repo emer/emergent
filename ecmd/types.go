@@ -6,10 +6,18 @@ package ecmd
 
 // Int represents a int valued arg
 type Int struct {
+
+	// name of arg -- must be unique
 	Name string `desc:"name of arg -- must be unique"`
+
+	// description of arg
 	Desc string `desc:"description of arg"`
-	Val  int    `desc:"value as parsed"`
-	Def  int    `desc:"default initial value"`
+
+	// value as parsed
+	Val int `desc:"value as parsed"`
+
+	// default initial value
+	Def int `desc:"default initial value"`
 }
 
 // NewInt returns a new Int arg
@@ -25,10 +33,18 @@ func (vl *Int) Set(val int) {
 
 // Bool represents a bool valued arg
 type Bool struct {
+
+	// name of arg -- must be unique
 	Name string `desc:"name of arg -- must be unique"`
+
+	// description of arg
 	Desc string `desc:"description of arg"`
-	Val  bool   `desc:"value as parsed"`
-	Def  bool   `desc:"default initial value"`
+
+	// value as parsed
+	Val bool `desc:"value as parsed"`
+
+	// default initial value
+	Def bool `desc:"default initial value"`
 }
 
 // NewBool returns a new Bool arg
@@ -44,10 +60,18 @@ func (vl *Bool) Set(val bool) {
 
 // String represents a string valued arg
 type String struct {
+
+	// name of arg -- must be unique
 	Name string `desc:"name of arg -- must be unique"`
+
+	// description of arg
 	Desc string `desc:"description of arg"`
-	Val  string `desc:"value as parsed"`
-	Def  string `desc:"default initial value"`
+
+	// value as parsed
+	Val string `desc:"value as parsed"`
+
+	// default initial value
+	Def string `desc:"default initial value"`
 }
 
 // NewString returns a new String arg
@@ -63,10 +87,18 @@ func (vl *String) Set(val string) {
 
 // Float represents a float64 valued arg
 type Float struct {
-	Name string  `desc:"name of arg -- must be unique"`
-	Desc string  `desc:"description of arg"`
-	Val  float64 `desc:"value as parsed"`
-	Def  float64 `desc:"default initial value"`
+
+	// name of arg -- must be unique
+	Name string `desc:"name of arg -- must be unique"`
+
+	// description of arg
+	Desc string `desc:"description of arg"`
+
+	// value as parsed
+	Val float64 `desc:"value as parsed"`
+
+	// default initial value
+	Def float64 `desc:"default initial value"`
 }
 
 // NewFloat returns a new Float arg

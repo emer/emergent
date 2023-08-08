@@ -12,9 +12,17 @@ import (
 
 // LaySize contains parameters for size of layers
 type LaySize struct {
-	Y     int `desc:"Y (vertical) size of layer -- in units for 2D, or number of pools (outer dimension) for 4D layer"`
-	X     int `desc:"X (horizontal) size of layer -- in units for 2D, or number of pools (outer dimension) for 4D layer"`
+
+	// Y (vertical) size of layer -- in units for 2D, or number of pools (outer dimension) for 4D layer
+	Y int `desc:"Y (vertical) size of layer -- in units for 2D, or number of pools (outer dimension) for 4D layer"`
+
+	// X (horizontal) size of layer -- in units for 2D, or number of pools (outer dimension) for 4D layer
+	X int `desc:"X (horizontal) size of layer -- in units for 2D, or number of pools (outer dimension) for 4D layer"`
+
+	// Y (vertical) size of each pool in units, only for 4D layers (inner dimension)
 	PoolY int `desc:"Y (vertical) size of each pool in units, only for 4D layers (inner dimension)"`
+
+	// Y (horizontal) size of each pool in units, only for 4D layers (inner dimension)
 	PoolX int `desc:"Y (horizontal) size of each pool in units, only for 4D layers (inner dimension)"`
 }
 

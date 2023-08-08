@@ -12,12 +12,24 @@ import (
 
 // LogTable contains all the data for one log table
 type LogTable struct {
-	Table        *etable.Table              `desc:"Actual data stored."`
-	Meta         map[string]string          `desc:"arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxisCol, LegendCol"`
-	IdxView      *etable.IdxView            `view:"-" desc:"Index View of the table -- automatically updated when a new row of data is logged to the table."`
-	NamedViews   map[string]*etable.IdxView `view:"-" desc:"named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIdxView funtion for more details."`
-	File         *os.File                   `view:"-" desc:"File to store the log into."`
-	WroteHeaders bool                       `view:"-" desc:"true if headers for File have already been written"`
+
+	// Actual data stored.
+	Table *etable.Table `desc:"Actual data stored."`
+
+	// arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxisCol, LegendCol
+	Meta map[string]string `desc:"arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxisCol, LegendCol"`
+
+	// [view: -] Index View of the table -- automatically updated when a new row of data is logged to the table.
+	IdxView *etable.IdxView `view:"-" desc:"Index View of the table -- automatically updated when a new row of data is logged to the table."`
+
+	// [view: -] named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIdxView funtion for more details.
+	NamedViews map[string]*etable.IdxView `view:"-" desc:"named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIdxView funtion for more details."`
+
+	// [view: -] File to store the log into.
+	File *os.File `view:"-" desc:"File to store the log into."`
+
+	// [view: -] true if headers for File have already been written
+	WroteHeaders bool `view:"-" desc:"true if headers for File have already been written"`
 }
 
 // NewLogTable returns a new LogTable entry for given table, initializing values

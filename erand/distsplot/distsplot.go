@@ -39,15 +39,33 @@ const LogPrec = 4
 
 // Sim holds the params, table, etc
 type Sim struct {
-	Dist    erand.RndParams `desc:"random params"`
-	NSamp   int             `desc:"number of samples"`
-	NBins   int             `desc:"number of bins in the histogram"`
-	Range   minmax.F64      `desc:"range for histogram"`
-	Table   *etable.Table   `view:"no-inline" desc:"table for raw data"`
-	Hist    *etable.Table   `view:"no-inline" desc:"histogram of data"`
-	Plot    *eplot.Plot2D   `view:"-" desc:"the plot"`
-	Win     *gi.Window      `view:"-" desc:"main GUI window"`
-	ToolBar *gi.ToolBar     `view:"-" desc:"the master toolbar"`
+
+	// random params
+	Dist erand.RndParams `desc:"random params"`
+
+	// number of samples
+	NSamp int `desc:"number of samples"`
+
+	// number of bins in the histogram
+	NBins int `desc:"number of bins in the histogram"`
+
+	// range for histogram
+	Range minmax.F64 `desc:"range for histogram"`
+
+	// [view: no-inline] table for raw data
+	Table *etable.Table `view:"no-inline" desc:"table for raw data"`
+
+	// [view: no-inline] histogram of data
+	Hist *etable.Table `view:"no-inline" desc:"histogram of data"`
+
+	// [view: -] the plot
+	Plot *eplot.Plot2D `view:"-" desc:"the plot"`
+
+	// [view: -] main GUI window
+	Win *gi.Window `view:"-" desc:"main GUI window"`
+
+	// [view: -] the master toolbar
+	ToolBar *gi.ToolBar `view:"-" desc:"the master toolbar"`
 }
 
 // TheSim is the overall state for this simulation

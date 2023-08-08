@@ -11,8 +11,14 @@ import (
 
 // OneToOne implements point-to-point one-to-one pattern of connectivity between two layers
 type OneToOne struct {
-	NCons     int `desc:"number of recv connections to make (0 for entire size of recv layer)"`
+
+	// number of recv connections to make (0 for entire size of recv layer)
+	NCons int `desc:"number of recv connections to make (0 for entire size of recv layer)"`
+
+	// starting unit index for sending connections
 	SendStart int `desc:"starting unit index for sending connections"`
+
+	// starting unit index for recv connections
 	RecvStart int `desc:"starting unit index for recv connections"`
 }
 

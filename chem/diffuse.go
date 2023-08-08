@@ -9,7 +9,11 @@ package chem
 // rate constants: A Kf -> B and B Kb -> A
 // computes the difference between each direction and applies to each
 type Diffuse struct {
+
+	// A -> B forward diffusion rate constant, sec-1
 	Kf float64 `desc:"A -> B forward diffusion rate constant, sec-1"`
+
+	// B -> A backward diffusion rate constant, sec-1
 	Kb float64 `desc:"B -> A backward diffusion rate constant, sec-1"`
 }
 

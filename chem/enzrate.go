@@ -6,9 +6,13 @@ package chem
 
 // EnzRate models an enzyme-catalyzed reaction based on the Michaelis-Menten kinetics
 // that transforms S = substrate into P product via SE bound C complex
-//       K1         K3
+//
+//	K1         K3
+//
 // S + E --> C(SE) ---> P + E
-//      <-- K2
+//
+//	<-- K2
+//
 // S = substrate, E = enzyme, C = SE complex, P = product
 // This version does NOT consume the E enzyme or directly use the C complex
 // as an accumulated factor: instead it directly computes an overall rate
@@ -22,9 +26,17 @@ package chem
 // two factors while reverse only has one, so a corrective volume factor needs
 // to be divided out to set the actual forward factor.
 type EnzRate struct {
+
+	// S+E forward rate constant, in μM-1 msec-1
 	K1 float64 `desc:"S+E forward rate constant, in μM-1 msec-1"`
+
+	// SE backward rate constant, in μM-1 msec-1
 	K2 float64 `desc:"SE backward rate constant, in μM-1 msec-1"`
+
+	// SE -> P + E catalyzed rate constant, in μM-1 msec-1
 	K3 float64 `desc:"SE -> P + E catalyzed rate constant, in μM-1 msec-1"`
+
+	// Michaelis constant = (K2 + K3) / K1 -- goes into the rate
 	Km float64 `inactive:"+" desc:"Michaelis constant = (K2 + K3) / K1 -- goes into the rate"`
 }
 

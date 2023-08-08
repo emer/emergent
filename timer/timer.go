@@ -10,9 +10,15 @@ import "time"
 
 // Time manages the timer accumulated time and count
 type Time struct {
-	St    time.Time     `desc:"the most recent starting time"`
+
+	// the most recent starting time
+	St time.Time `desc:"the most recent starting time"`
+
+	// the total accumulated time
 	Total time.Duration `desc:"the total accumulated time"`
-	N     int           `desc:"the number of start/stops"`
+
+	// the number of start/stops
+	N int `desc:"the number of start/stops"`
 }
 
 // Reset resets the overall accumulated Total and N counters and start time to zero

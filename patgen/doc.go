@@ -4,5 +4,4 @@
 
 // Package patgen contains functions that generate patterns, typically based on
 // various constrained-forms of random patterns
-//
 package patgen

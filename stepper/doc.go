@@ -16,7 +16,7 @@ between Paused and Stopped is that in the Paused state, the application waits fo
 Stopped state, the Stepper exits, and no application state is preserved. After entering Stopped, the controlling
 program (i.e., the user interface) should make sure that everything is properly reinitialized before running again.
 
-Usage Basics
+# Usage Basics
 
 The Stepper struct includes an integer field, "StepGrain", which controls whether it will actually pause. The StepPoint
 function checks that its argument is equal to the current StepGrain, and if so, calls the PauseNotifyFn callback
@@ -40,6 +40,5 @@ StepPoint decrements the value of StepsPer. If stepsLeft goes to zero, PauseNoti
 a wait loop, waiting for RunState to be something other than Paused. If RunState becomes Stopped, StepPoint exits with
 a value of true, indicating that the caller should end the current run. If the new state is either Running or Stepping,
 StepPoint returns false, indicating that the caller should continue.
-
 */
 package stepper

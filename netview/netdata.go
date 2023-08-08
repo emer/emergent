@@ -32,28 +32,72 @@ import (
 // up to a given maximum number of records (updates), using efficient ring index logic
 // with no copying to store in fixed-sized buffers.
 type NetData struct {
-	Net        emer.Network        `json:"-" desc:"the network that we're viewing"`
-	NoSynData  bool                `desc:"copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
-	PrjnLay    string              `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
-	PrjnUnIdx  int                 `desc:"1D index of unit within PrjnLay for for viewing projections"`
-	PrjnType   string              `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
-	UnVars     []string            `desc:"the list of unit variables saved"`
-	UnVarIdxs  map[string]int      `desc:"index of each variable in the Vars slice"`
-	SynVars    []string            `desc:"the list of synaptic variables saved"`
-	SynVarIdxs map[string]int      `desc:"index of synaptic variable in the SynVars slice"`
-	Ring       ringidx.Idx         `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
-	MaxData    int                 `desc:"max data parallel data per unit"`
-	LayData    map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
-	UnMinPer   []float32           `desc:"unit var min values for each Ring.Max * variable"`
-	UnMaxPer   []float32           `desc:"unit var max values for each Ring.Max * variable"`
-	UnMinVar   []float32           `desc:"min values for unit variables"`
-	UnMaxVar   []float32           `desc:"max values for unit variables"`
-	SynMinVar  []float32           `desc:"min values for syn variables"`
-	SynMaxVar  []float32           `desc:"max values for syn variables"`
-	Counters   []string            `desc:"counter strings"`
-	RasterCtrs []int               `desc:"raster counter values"`
-	RasterMap  map[int]int         `desc:"map of raster counter values to record numbers"`
-	RastCtr    int                 `desc:"dummy raster counter when passed a -1 -- increments and wraps around"`
+
+	// the network that we're viewing
+	Net emer.Network `json:"-" desc:"the network that we're viewing"`
+
+	// copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
+	NoSynData bool `desc:"copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
+
+	// name of the layer with unit for viewing projections (connection / synapse-level values)
+	PrjnLay string `desc:"name of the layer with unit for viewing projections (connection / synapse-level values)"`
+
+	// 1D index of unit within PrjnLay for for viewing projections
+	PrjnUnIdx int `desc:"1D index of unit within PrjnLay for for viewing projections"`
+
+	// copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc
+	PrjnType string `inactive:"+" desc:"copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
+
+	// the list of unit variables saved
+	UnVars []string `desc:"the list of unit variables saved"`
+
+	// index of each variable in the Vars slice
+	UnVarIdxs map[string]int `desc:"index of each variable in the Vars slice"`
+
+	// the list of synaptic variables saved
+	SynVars []string `desc:"the list of synaptic variables saved"`
+
+	// index of synaptic variable in the SynVars slice
+	SynVarIdxs map[string]int `desc:"index of synaptic variable in the SynVars slice"`
+
+	// the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc
+	Ring ringidx.Idx `desc:"the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc"`
+
+	// max data parallel data per unit
+	MaxData int `desc:"max data parallel data per unit"`
+
+	// the layer data -- map keyed by layer name
+	LayData map[string]*LayData `desc:"the layer data -- map keyed by layer name"`
+
+	// unit var min values for each Ring.Max * variable
+	UnMinPer []float32 `desc:"unit var min values for each Ring.Max * variable"`
+
+	// unit var max values for each Ring.Max * variable
+	UnMaxPer []float32 `desc:"unit var max values for each Ring.Max * variable"`
+
+	// min values for unit variables
+	UnMinVar []float32 `desc:"min values for unit variables"`
+
+	// max values for unit variables
+	UnMaxVar []float32 `desc:"max values for unit variables"`
+
+	// min values for syn variables
+	SynMinVar []float32 `desc:"min values for syn variables"`
+
+	// max values for syn variables
+	SynMaxVar []float32 `desc:"max values for syn variables"`
+
+	// counter strings
+	Counters []string `desc:"counter strings"`
+
+	// raster counter values
+	RasterCtrs []int `desc:"raster counter values"`
+
+	// map of raster counter values to record numbers
+	RasterMap map[int]int `desc:"map of raster counter values to record numbers"`
+
+	// dummy raster counter when passed a -1 -- increments and wraps around
+	RastCtr int `desc:"dummy raster counter when passed a -1 -- increments and wraps around"`
 }
 
 var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)

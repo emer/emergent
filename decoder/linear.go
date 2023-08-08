@@ -17,16 +17,36 @@ type ActivationFunc func(float32) float32
 // activation function. By default it will use the identity function.
 // It learns using the delta rule for each output unit.
 type Linear struct {
-	LRate        float32                     `def:"0.1" desc:"learning rate"`
-	Layers       []Layer                     `desc:"layers to decode"`
-	Units        []LinearUnit                `desc:"unit values -- read this for decoded output"`
-	NInputs      int                         `desc:"number of inputs -- total sizes of layer inputs"`
-	NOutputs     int                         `desc:"number of outputs -- total sizes of layer inputs"`
-	Inputs       []float32                   `desc:"input values, copied from layers"`
-	ValsTsrs     map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
-	Weights      etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
-	ActivationFn ActivationFunc              `desc:"activation function"`
-	PoolIndex    int                         `desc:"which pool to use within a layer"`
+
+	// [def: 0.1] learning rate
+	LRate float32 `def:"0.1" desc:"learning rate"`
+
+	// layers to decode
+	Layers []Layer `desc:"layers to decode"`
+
+	// unit values -- read this for decoded output
+	Units []LinearUnit `desc:"unit values -- read this for decoded output"`
+
+	// number of inputs -- total sizes of layer inputs
+	NInputs int `desc:"number of inputs -- total sizes of layer inputs"`
+
+	// number of outputs -- total sizes of layer inputs
+	NOutputs int `desc:"number of outputs -- total sizes of layer inputs"`
+
+	// input values, copied from layers
+	Inputs []float32 `desc:"input values, copied from layers"`
+
+	// [view: -] for holding layer values
+	ValsTsrs map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
+
+	// synaptic weights: outer loop is units, inner loop is inputs
+	Weights etensor.Float32 `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
+
+	// activation function
+	ActivationFn ActivationFunc `desc:"activation function"`
+
+	// which pool to use within a layer
+	PoolIndex int `desc:"which pool to use within a layer"`
 }
 
 // Layer is the subset of emer.Layer that is used by this code
@@ -45,9 +65,15 @@ func LogisticFunc(x float32) float32 { return 1 / (1 + mat32.FastExp(-x)) }
 
 // LinearUnit has variables for Linear decoder unit
 type LinearUnit struct {
+
+	// target activation value -- typically 0 or 1 but can be within that range too
 	Target float32 `desc:"target activation value -- typically 0 or 1 but can be within that range too"`
-	Act    float32 `desc:"final activation = sum x * w -- this is the decoded output"`
-	Net    float32 `desc:"net input = sum x * w"`
+
+	// final activation = sum x * w -- this is the decoded output
+	Act float32 `desc:"final activation = sum x * w -- this is the decoded output"`
+
+	// net input = sum x * w
+	Net float32 `desc:"net input = sum x * w"`
 }
 
 // InitLayer initializes detector with number of categories and layers

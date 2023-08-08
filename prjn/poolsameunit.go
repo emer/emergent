@@ -17,6 +17,8 @@ import (
 // The logic works if either layer does not have pools.
 // If neither is 4D, then it is equivalent to OneToOne.
 type PoolSameUnit struct {
+
+	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
 	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
 }
 

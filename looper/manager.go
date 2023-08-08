@@ -28,11 +28,17 @@ var (
 // It's also a control object for stepping through Stacks of Loops.
 // It holds data about how the flow is going.
 type Manager struct {
-	Stacks    map[etime.Modes]*Stack `desc:"map of stacks by Mode"`
-	Mode      etime.Modes            `desc:"The current evaluation mode."`
-	isRunning bool                   `desc:"Set to true while looping, false when done. Read only."`
 
-	// For internal use
+	// map of stacks by Mode
+	Stacks map[etime.Modes]*Stack `desc:"map of stacks by Mode"`
+
+	// The current evaluation mode.
+	Mode etime.Modes `desc:"The current evaluation mode."`
+
+	// Set to true while looping, false when done. Read only.
+	isRunning bool `desc:"Set to true while looping, false when done. Read only."`
+
+	// The Cur value of the Ctr associated with the last started level, for each timescale.
 	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
 	internalStop   bool
 }

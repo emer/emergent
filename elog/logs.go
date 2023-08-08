@@ -32,14 +32,29 @@ var LogDir = ""
 // Call Log with a scope to add a new row of data to the log
 // and ResetLog to reset the log to empty.
 type Logs struct {
-	Tables     map[etime.ScopeKey]*LogTable `desc:"Tables storing log data, auto-generated from Items."`
-	MiscTables map[string]*etable.Table     `desc:"holds additional tables not computed from items -- e.g., aggregation results, intermediate computations, etc"`
 
-	Items      []*Item          `view:"-" desc:"A list of the items that should be logged. Each item should describe one column that you want to log, and how.  Order in list determines order in logs."`
-	Context    Context          `view:"-" desc:"context information passed to logging Write functions -- has all the information needed to compute and write log values -- is updated for each item in turn"`
-	Modes      map[string]bool  `view:"-" desc:"All the eval modes that appear in any of the items of this log."`
-	Times      map[string]bool  `view:"-" desc:"All the timescales that appear in any of the items of this log."`
-	ItemIdxMap map[string]int   `view:"-" desc:"map of item indexes by name, for rapid access to items if they need to be modified after adding."`
+	// Tables storing log data, auto-generated from Items.
+	Tables map[etime.ScopeKey]*LogTable `desc:"Tables storing log data, auto-generated from Items."`
+
+	// holds additional tables not computed from items -- e.g., aggregation results, intermediate computations, etc
+	MiscTables map[string]*etable.Table `desc:"holds additional tables not computed from items -- e.g., aggregation results, intermediate computations, etc"`
+
+	// [view: -] A list of the items that should be logged. Each item should describe one column that you want to log, and how.  Order in list determines order in logs.
+	Items []*Item `view:"-" desc:"A list of the items that should be logged. Each item should describe one column that you want to log, and how.  Order in list determines order in logs."`
+
+	// [view: -] context information passed to logging Write functions -- has all the information needed to compute and write log values -- is updated for each item in turn
+	Context Context `view:"-" desc:"context information passed to logging Write functions -- has all the information needed to compute and write log values -- is updated for each item in turn"`
+
+	// [view: -] All the eval modes that appear in any of the items of this log.
+	Modes map[string]bool `view:"-" desc:"All the eval modes that appear in any of the items of this log."`
+
+	// [view: -] All the timescales that appear in any of the items of this log.
+	Times map[string]bool `view:"-" desc:"All the timescales that appear in any of the items of this log."`
+
+	// [view: -] map of item indexes by name, for rapid access to items if they need to be modified after adding.
+	ItemIdxMap map[string]int `view:"-" desc:"map of item indexes by name, for rapid access to items if they need to be modified after adding."`
+
+	// [view: -] sorted order of table scopes
 	TableOrder []etime.ScopeKey `view:"-" desc:"sorted order of table scopes"`
 }
 

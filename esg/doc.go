@@ -15,11 +15,11 @@ There are two types of rules:
 
 Unconditional items are chosen at random, optionally with specified probabilities:
 
-RuleName {
-    %50 Rule2 Rule4
-    %30 'token1' 'token2'
-    ...
-}
+	RuleName {
+	    %50 Rule2 Rule4
+	    %30 'token1' 'token2'
+	    ...
+	}
 
 where Items on separate lines within each rule are orthogonal options,
 chosen at uniform random unless otherwise specified with a leading %pct.
@@ -32,17 +32,17 @@ error message will flag missing rules.
 
 Conditional items are specified by the ? after the rule name:
 
-RuleName ? {
-    Rule2 || Rule3 {
-        Item1
-        Item2
-        ...
-    }
-    Rule5 && Rule6 {
-        ...
-    }
-    ...
-}
+	RuleName ? {
+	    Rule2 || Rule3 {
+	        Item1
+	        Item2
+	        ...
+	    }
+	    Rule5 && Rule6 {
+	        ...
+	    }
+	    ...
+	}
 
 The expression before the opening bracket for each item is a standard logical
 expression using || (or), && (and), and ! (not), along with parens,
@@ -67,10 +67,10 @@ direct state map with no ambiguity.
 
 In the rules text file, an `=` prefix indicates a state-setting expression
 -- it can either be a full expression or get the value automatically:
-* `=Name=Value` -- directly sets state Name to Value
-* `=Name`  -- sets state Name to value of Item or Rule that it is associated with.
-  Only non-conditional Items can be used to set the value, which is the first
-  element in the item expression -- conditionals with sub-rules must set the value explicitly.
+  - `=Name=Value` -- directly sets state Name to Value
+  - `=Name`  -- sets state Name to value of Item or Rule that it is associated with.
+    Only non-conditional Items can be used to set the value, which is the first
+    element in the item expression -- conditionals with sub-rules must set the value explicitly.
 
 Expressions at the start of a rule (or sub-rule), on a separate line, are
 associated with the rule and activate when that rule is fired (and the implicit
@@ -82,11 +82,15 @@ Std Modifiers:
 
 Conventional modifiers, used for defining sub-rules:
 A = Agent
+
 	Ao = Co-Agent
+
 V = Verb
 P = Patient,
+
 	Pi = Instrument
 	Pc = Co-Patient
+
 L = Location
 R = adverb
 */

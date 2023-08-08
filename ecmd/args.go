@@ -15,6 +15,8 @@ type Args struct {
 	Bools   map[string]*Bool
 	Strings map[string]*String
 	Floats  map[string]*Float
+
+	// true when all args have been set to flag package
 	Flagged bool `inactive:"+" desc:"true when all args have been set to flag package"`
 }
 

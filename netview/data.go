@@ -11,10 +11,20 @@ import (
 
 // LayData maintains a record of all the data for a given layer
 type LayData struct {
-	LayName   string      `desc:"the layer name"`
-	NUnits    int         `desc:"cached number of units"`
-	Data      []float32   `desc:"the full data, [Ring.Max][len(Vars)][MaxData][NUnits] in that order"`
+
+	// the layer name
+	LayName string `desc:"the layer name"`
+
+	// cached number of units
+	NUnits int `desc:"cached number of units"`
+
+	// the full data, [Ring.Max][len(Vars)][MaxData][NUnits] in that order
+	Data []float32 `desc:"the full data, [Ring.Max][len(Vars)][MaxData][NUnits] in that order"`
+
+	// receiving projection data -- shared with SendPrjns
 	RecvPrjns []*PrjnData `desc:"receiving projection data -- shared with SendPrjns"`
+
+	// sending projection data -- shared with RecvPrjns
 	SendPrjns []*PrjnData `desc:"sending projection data -- shared with RecvPrjns"`
 }
 
@@ -47,9 +57,17 @@ func (ld *LayData) FreePrjns() {
 
 // PrjnData holds display state for a projection
 type PrjnData struct {
-	Send    string    `desc:"name of sending layer"`
-	Recv    string    `desc:"name of recv layer"`
-	Prjn    emer.Prjn `desc:"source projection"`
+
+	// name of sending layer
+	Send string `desc:"name of sending layer"`
+
+	// name of recv layer
+	Recv string `desc:"name of recv layer"`
+
+	// source projection
+	Prjn emer.Prjn `desc:"source projection"`
+
+	// synaptic data, by variable in SynVars and number of data points
 	SynData []float32 `desc:"synaptic data, by variable in SynVars and number of data points"`
 }
 

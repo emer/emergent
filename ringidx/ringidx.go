@@ -16,9 +16,15 @@ package ringidx
 // to overwrite the oldest items with the new ones.  No moving is ever
 // required -- just a fixed-length buffer of size Max.
 type Idx struct {
+
+	// the starting index where current data starts -- the oldest data is at this index, and continues for Len items, wrapping around at Max, coming back up at most to StIdx-1
 	StIdx int `desc:"the starting index where current data starts -- the oldest data is at this index, and continues for Len items, wrapping around at Max, coming back up at most to StIdx-1"`
-	Len   int `desc:"the number of items stored starting at StIdx.  Capped at Max"`
-	Max   int `desc:"the maximum number of items that can be stored in this ring"`
+
+	// the number of items stored starting at StIdx.  Capped at Max
+	Len int `desc:"the number of items stored starting at StIdx.  Capped at Max"`
+
+	// the maximum number of items that can be stored in this ring
+	Max int `desc:"the maximum number of items that can be stored in this ring"`
 }
 
 // Idx returns the index of the i'th item starting from StIdx.

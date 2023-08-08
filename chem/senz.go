@@ -9,11 +9,14 @@ package chem
 // assuming there is much more E than S and P -- E effectively acts as a
 // rate constant multiplier
 //
-//   Kf*E
+//	Kf*E
+//
 // S ----> P
 //
 // S = substrate, E = enzyme, P = product, Kf is the rate of the reaction
 type SimpleEnz struct {
+
+	// S->P forward rate constant, in μM-1 msec-1
 	Kf float64 `desc:"S->P forward rate constant, in μM-1 msec-1"`
 }
 

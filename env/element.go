@@ -10,8 +10,14 @@ import (
 
 // Element specifies one element of State or Action in an environment
 type Element struct {
-	Name     string   `desc:"name of this element -- must be unique"`
-	Shape    []int    `desc:"shape of the tensor for this element -- each element should generally have a well-defined consistent shape to enable the model to process it consistently"`
+
+	// name of this element -- must be unique
+	Name string `desc:"name of this element -- must be unique"`
+
+	// shape of the tensor for this element -- each element should generally have a well-defined consistent shape to enable the model to process it consistently
+	Shape []int `desc:"shape of the tensor for this element -- each element should generally have a well-defined consistent shape to enable the model to process it consistently"`
+
+	// names of the dimensions within the Shape -- optional but useful for ensuring correct usage
 	DimNames []string `desc:"names of the dimensions within the Shape -- optional but useful for ensuring correct usage"`
 }
 

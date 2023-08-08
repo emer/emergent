@@ -6,8 +6,14 @@ package looper
 
 // Ctr combines an integer with a maximum value. It supports time tracking within looper.
 type Ctr struct {
+
+	// current counter value
 	Cur int `desc:"current counter value"`
+
+	// maximum counter value -- only used if > 0
 	Max int `desc:"maximum counter value -- only used if > 0"`
+
+	// increment per iteration
 	Inc int `desc:"increment per iteration"`
 }
 

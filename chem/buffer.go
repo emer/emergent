@@ -7,7 +7,11 @@ package chem
 // Buffer provides a soft buffering driving deltas relative to a target N
 // which can be set by concentration and volume.
 type Buffer struct {
-	K      float64 `desc:"rate of buffering (akin to permeability / conductance of a channel)"`
+
+	// rate of buffering (akin to permeability / conductance of a channel)
+	K float64 `desc:"rate of buffering (akin to permeability / conductance of a channel)"`
+
+	// buffer target concentration -- drives delta relative to this
 	Target float64 `desc:"buffer target concentration -- drives delta relative to this"`
 }
 

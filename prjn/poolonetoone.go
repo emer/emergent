@@ -16,8 +16,14 @@ import (
 // otherwise each pool connects to the entire set of other units.
 // If neither is 4D, then it is equivalent to OneToOne.
 type PoolOneToOne struct {
-	NPools    int `desc:"number of recv pools to connect (0 for entire number of pools in recv layer)"`
+
+	// number of recv pools to connect (0 for entire number of pools in recv layer)
+	NPools int `desc:"number of recv pools to connect (0 for entire number of pools in recv layer)"`
+
+	// starting pool index for sending connections
 	SendStart int `desc:"starting pool index for sending connections"`
+
+	// starting pool index for recv connections
 	RecvStart int `desc:"starting pool index for recv connections"`
 }
 

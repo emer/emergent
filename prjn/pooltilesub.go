@@ -28,18 +28,42 @@ import (
 // Various initial weight / scaling patterns are also available -- code
 // must specifically apply these to the receptive fields.
 type PoolTileSub struct {
-	Recip       bool        `desc:"reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv"`
-	Size        evec.Vec2i  `desc:"size of receptive field tile, in terms of pools on the sending layer"`
-	Skip        evec.Vec2i  `desc:"how many pools to skip in tiling over sending layer -- typically 1/2 of Size"`
-	Start       evec.Vec2i  `desc:"starting pool offset for lower-left corner of first receptive field in sending layer"`
-	Subs        evec.Vec2i  `desc:"number of sub-pools within each pool"`
-	SendSubs    bool        `desc:"sending layer has sub-pools"`
-	Wrap        bool        `desc:"if true, pool coordinates wrap around sending shape -- otherwise truncated at edges, which can lead to assymmetries in connectivity etc"`
-	GaussFull   GaussTopo   `desc:"gaussian topographic weights / scaling parameters for full receptive field width. multiplies any other factors present"`
-	GaussInPool GaussTopo   `desc:"gaussian topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for gaussian) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present"`
-	SigFull     SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters for full receptive field width.  left / bottom half have increasing sigmoids, and second half decrease.  Multiplies any other factors present (only used if Gauss versions are not On!)"`
-	SigInPool   SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for sigmoid) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present  (only used if Gauss versions are not On!).  left / bottom half have increasing sigmoids, and second half decrease."`
-	TopoRange   minmax.F32  `desc:"min..max range of topographic weight values to generate "`
+
+	// reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv
+	Recip bool `desc:"reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv"`
+
+	// size of receptive field tile, in terms of pools on the sending layer
+	Size evec.Vec2i `desc:"size of receptive field tile, in terms of pools on the sending layer"`
+
+	// how many pools to skip in tiling over sending layer -- typically 1/2 of Size
+	Skip evec.Vec2i `desc:"how many pools to skip in tiling over sending layer -- typically 1/2 of Size"`
+
+	// starting pool offset for lower-left corner of first receptive field in sending layer
+	Start evec.Vec2i `desc:"starting pool offset for lower-left corner of first receptive field in sending layer"`
+
+	// number of sub-pools within each pool
+	Subs evec.Vec2i `desc:"number of sub-pools within each pool"`
+
+	// sending layer has sub-pools
+	SendSubs bool `desc:"sending layer has sub-pools"`
+
+	// if true, pool coordinates wrap around sending shape -- otherwise truncated at edges, which can lead to assymmetries in connectivity etc
+	Wrap bool `desc:"if true, pool coordinates wrap around sending shape -- otherwise truncated at edges, which can lead to assymmetries in connectivity etc"`
+
+	// gaussian topographic weights / scaling parameters for full receptive field width. multiplies any other factors present
+	GaussFull GaussTopo `desc:"gaussian topographic weights / scaling parameters for full receptive field width. multiplies any other factors present"`
+
+	// gaussian topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for gaussian) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present
+	GaussInPool GaussTopo `desc:"gaussian topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for gaussian) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present"`
+
+	// sigmoidal topographic weights / scaling parameters for full receptive field width.  left / bottom half have increasing sigmoids, and second half decrease.  Multiplies any other factors present (only used if Gauss versions are not On!)
+	SigFull SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters for full receptive field width.  left / bottom half have increasing sigmoids, and second half decrease.  Multiplies any other factors present (only used if Gauss versions are not On!)"`
+
+	// sigmoidal topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for sigmoid) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present  (only used if Gauss versions are not On!).  left / bottom half have increasing sigmoids, and second half decrease.
+	SigInPool SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for sigmoid) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present  (only used if Gauss versions are not On!).  left / bottom half have increasing sigmoids, and second half decrease."`
+
+	// min..max range of topographic weight values to generate
+	TopoRange minmax.F32 `desc:"min..max range of topographic weight values to generate "`
 }
 
 func NewPoolTileSub() *PoolTileSub {

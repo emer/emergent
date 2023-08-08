@@ -11,8 +11,14 @@ import (
 // A Event has function(s) that can be called at a particular point
 // in the loop, when the counter is AtCtr value.
 type Event struct {
-	Name    string     `desc:"Might be 'plus' or 'minus' for example."`
-	AtCtr   int        `desc:"The counter value upon which this Event occurs."`
+
+	// Might be 'plus' or 'minus' for example.
+	Name string `desc:"Might be 'plus' or 'minus' for example."`
+
+	// The counter value upon which this Event occurs.
+	AtCtr int `desc:"The counter value upon which this Event occurs."`
+
+	// Callback function for the Event.
 	OnEvent NamedFuncs `desc:"Callback function for the Event."`
 }
 

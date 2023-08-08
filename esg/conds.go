@@ -102,9 +102,15 @@ func (cs *Conds) Validate(rl *Rule, it *Item, rls *Rules) []error {
 
 // Cond is one element of a conditional
 type Cond struct {
-	El    CondEls `desc:"what type of conditional element is this"`
-	Rule  string  `desc:"name of rule or token to evaluate for CRule"`
-	Conds Conds   `desc:"sub-conditions for SubCond"`
+
+	// what type of conditional element is this
+	El CondEls `desc:"what type of conditional element is this"`
+
+	// name of rule or token to evaluate for CRule
+	Rule string `desc:"name of rule or token to evaluate for CRule"`
+
+	// sub-conditions for SubCond
+	Conds Conds `desc:"sub-conditions for SubCond"`
 }
 
 // String returns string rep

@@ -14,12 +14,24 @@ package looper
 // and Start and End are functions on the loop.
 // See Stack for more details on how loops are combined.
 type Loop struct {
-	Counter Ctr            `desc:"Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first."`
-	OnStart NamedFuncs     `desc:"OnStart is called at the beginning of each loop."`
-	Main    NamedFuncs     `desc:"OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here."`
-	OnEnd   NamedFuncs     `desc:"OnStart is called at the end of each loop."`
-	IsDone  NamedFuncsBool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
-	Events  []*Event       `desc:"Events occur when Ctr.Cur gets to their AtCtr."`
+
+	// Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first.
+	Counter Ctr `desc:"Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first."`
+
+	// OnStart is called at the beginning of each loop.
+	OnStart NamedFuncs `desc:"OnStart is called at the beginning of each loop."`
+
+	// OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here.
+	Main NamedFuncs `desc:"OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here."`
+
+	// OnStart is called at the end of each loop.
+	OnEnd NamedFuncs `desc:"OnStart is called at the end of each loop."`
+
+	// If true, end loop. Maintained as an unordered map because they should not have side effects.
+	IsDone NamedFuncsBool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
+
+	// Events occur when Ctr.Cur gets to their AtCtr.
+	Events []*Event `desc:"Events occur when Ctr.Cur gets to their AtCtr."`
 }
 
 // AddEvents to the list of events.

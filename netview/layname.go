@@ -17,6 +17,8 @@ import (
 // LayName is the Layer name as a Text2D within the NetView
 type LayName struct {
 	gi3d.Text2D
+
+	// [view: -] our netview
 	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview"`
 }
 

@@ -19,12 +19,24 @@ import (
 // always applied first, followed optionally by additional Set(s)
 // that can have different parameters to try.
 type NetParams struct {
-	Params      netparams.Sets `view:"no-inline" desc:"full collection of param sets to use"`
-	ExtraSheets string         `desc:"optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)"`
-	Tag         string         `desc:"optional additional tag to add to file names, logs to identify params / run config"`
-	Network     Network        `view:"-" desc:"the network to apply parameters to"`
-	NetHypers   params.Flex    `view:"-" desc:"list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used"`
-	SetMsg      bool           `desc:"print out messages for each parameter that is set"`
+
+	// [view: no-inline] full collection of param sets to use
+	Params netparams.Sets `view:"no-inline" desc:"full collection of param sets to use"`
+
+	// optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)
+	ExtraSheets string `desc:"optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)"`
+
+	// optional additional tag to add to file names, logs to identify params / run config
+	Tag string `desc:"optional additional tag to add to file names, logs to identify params / run config"`
+
+	// [view: -] the network to apply parameters to
+	Network Network `view:"-" desc:"the network to apply parameters to"`
+
+	// [view: -] list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used
+	NetHypers params.Flex `view:"-" desc:"list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used"`
+
+	// print out messages for each parameter that is set
+	SetMsg bool `desc:"print out messages for each parameter that is set"`
 }
 
 // Config configures the ExtraSheets, Tag, and Network fields

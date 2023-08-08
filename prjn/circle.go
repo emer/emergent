@@ -19,15 +19,33 @@ import (
 // Makes for a good center-surround connectivity pattern.
 // 4D layers are automatically flattened to 2D for this connection.
 type Circle struct {
-	Radius    int        `desc:"radius of the circle, in units from center in sending layer"`
-	Start     evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position"`
-	Scale     mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute sending center as function of recv unit position"`
-	AutoScale bool       `desc:"auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size"`
-	Wrap      bool       `desc:"if true, connectivity wraps around edges"`
-	TopoWts   bool       `desc:"if true, this prjn should set gaussian topographic weights, according to following parameters"`
-	Sigma     float32    `desc:"gaussian sigma (width) as a proportion of the radius of the circle"`
-	MaxWt     float32    `desc:"maximum weight value for GaussWts function -- multiplies values"`
-	SelfCon   bool       `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+
+	// radius of the circle, in units from center in sending layer
+	Radius int `desc:"radius of the circle, in units from center in sending layer"`
+
+	// starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position
+	Start evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position"`
+
+	// scaling to apply to receiving unit position to compute sending center as function of recv unit position
+	Scale mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute sending center as function of recv unit position"`
+
+	// auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size
+	AutoScale bool `desc:"auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size"`
+
+	// if true, connectivity wraps around edges
+	Wrap bool `desc:"if true, connectivity wraps around edges"`
+
+	// if true, this prjn should set gaussian topographic weights, according to following parameters
+	TopoWts bool `desc:"if true, this prjn should set gaussian topographic weights, according to following parameters"`
+
+	// gaussian sigma (width) as a proportion of the radius of the circle
+	Sigma float32 `desc:"gaussian sigma (width) as a proportion of the radius of the circle"`
+
+	// maximum weight value for GaussWts function -- multiplies values
+	MaxWt float32 `desc:"maximum weight value for GaussWts function -- multiplies values"`
+
+	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
 }
 
 func NewCircle() *Circle {

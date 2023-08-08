@@ -23,21 +23,47 @@ type WriteMap map[etime.ScopeKey]WriteFunc
 // Item describes one item to be logged -- has all the info
 // for this item, across all scopes where it is relevant.
 type Item struct {
-	Name      string       `desc:"name of column -- must be unique for a table"`
-	Type      etensor.Type `desc:"data type, using etensor types which are isomorphic with arrow.Type"`
-	CellShape []int        `desc:"shape of a single cell in the column (i.e., without the row dimension) -- for scalars this is nil -- tensor column will add the outer row dimension to this shape"`
-	DimNames  []string     `desc:"names of the dimensions within the CellShape -- 'Row' will be added to outer dimension"`
-	Write     WriteMap     `desc:"holds Write functions for different scopes.  After processing, the scope key will be a single mode and time, from Scope(mode, time), but the initial specification can lists for each, or the All* option, if there is a Write function that works across scopes"`
-	Plot      bool         `desc:"Whether or not to plot it"`
-	Range     minmax.F64   `desc:"The minimum and maximum values, for plotting"`
-	FixMin    bool         `desc:"Whether to fix the minimum in the display"`
-	FixMax    bool         `desc:"Whether to fix the maximum in the display"`
-	ErrCol    string       `desc:"Name of other item that has the error bar values for this item -- for plotting"`
-	TensorIdx int          `desc:"index of tensor to plot -- defaults to 0 -- use -1 to plot all"`
-	Color     string       `desc:"specific color for plot -- uses default ordering of colors if empty"`
 
-	// following are updated in final Process step
+	// name of column -- must be unique for a table
+	Name string `desc:"name of column -- must be unique for a table"`
+
+	// data type, using etensor types which are isomorphic with arrow.Type
+	Type etensor.Type `desc:"data type, using etensor types which are isomorphic with arrow.Type"`
+
+	// shape of a single cell in the column (i.e., without the row dimension) -- for scalars this is nil -- tensor column will add the outer row dimension to this shape
+	CellShape []int `desc:"shape of a single cell in the column (i.e., without the row dimension) -- for scalars this is nil -- tensor column will add the outer row dimension to this shape"`
+
+	// names of the dimensions within the CellShape -- 'Row' will be added to outer dimension
+	DimNames []string `desc:"names of the dimensions within the CellShape -- 'Row' will be added to outer dimension"`
+
+	// holds Write functions for different scopes.  After processing, the scope key will be a single mode and time, from Scope(mode, time), but the initial specification can lists for each, or the All* option, if there is a Write function that works across scopes
+	Write WriteMap `desc:"holds Write functions for different scopes.  After processing, the scope key will be a single mode and time, from Scope(mode, time), but the initial specification can lists for each, or the All* option, if there is a Write function that works across scopes"`
+
+	// Whether or not to plot it
+	Plot bool `desc:"Whether or not to plot it"`
+
+	// The minimum and maximum values, for plotting
+	Range minmax.F64 `desc:"The minimum and maximum values, for plotting"`
+
+	// Whether to fix the minimum in the display
+	FixMin bool `desc:"Whether to fix the minimum in the display"`
+
+	// Whether to fix the maximum in the display
+	FixMax bool `desc:"Whether to fix the maximum in the display"`
+
+	// Name of other item that has the error bar values for this item -- for plotting
+	ErrCol string `desc:"Name of other item that has the error bar values for this item -- for plotting"`
+
+	// index of tensor to plot -- defaults to 0 -- use -1 to plot all
+	TensorIdx int `desc:"index of tensor to plot -- defaults to 0 -- use -1 to plot all"`
+
+	// specific color for plot -- uses default ordering of colors if empty
+	Color string `desc:"specific color for plot -- uses default ordering of colors if empty"`
+
+	// map of eval modes that this item has a Write function for
 	Modes map[string]bool `desc:"map of eval modes that this item has a Write function for"`
+
+	// map of times that this item has a Write function for
 	Times map[string]bool `desc:"map of times that this item has a Write function for"`
 }
 

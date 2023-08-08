@@ -5,16 +5,24 @@
 package chem
 
 // React models a basic chemical reaction:
-//       Kf
+//
+//	Kf
+//
 // A + B --> AB
-//      <-- Kb
+//
+//	<-- Kb
+//
 // where Kf is the forward and Kb is the backward time constant.
 // The source Kf and Kb constants are in terms of concentrations μM-1 and sec-1
 // but calculations take place using N's, and the forward direction has
 // two factors while reverse only has one, so a corrective volume factor needs
 // to be divided out to set the actual forward factor.
 type React struct {
+
+	// forward rate constant for N / sec assuming 2 forward factors
 	Kf float64 `desc:"forward rate constant for N / sec assuming 2 forward factors"`
+
+	// backward rate constant for N / sec assuming 1 backward factor
 	Kb float64 `desc:"backward rate constant for N / sec assuming 1 backward factor"`
 }
 

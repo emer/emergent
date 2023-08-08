@@ -20,22 +20,48 @@ import (
 // Stats provides maps for storing statistics as named scalar and tensor values.
 // These stats are available in the elog.Context for use during logging.
 type Stats struct {
-	Floats          map[string]float64
-	Strings         map[string]string
-	Ints            map[string]int
-	F32Tensors      map[string]*etensor.Float32 `desc:"float32 tensors used for grabbing values from layers"`
-	F64Tensors      map[string]*etensor.Float64 `desc:"float64 tensors as needed for other computations"`
-	IntTensors      map[string]*etensor.Int     `desc:"int tensors as needed for other computations"`
-	Confusion       confusion.Matrix            `view:"no-inline" desc:"confusion matrix"`
-	SimMats         map[string]*simat.SimMat    `desc:"similarity matrix for comparing pattern similarities"`
-	Plots           map[string]*eplot.Plot2D    `desc:"analysis plots -- created by analysis routines"`
-	PCA             pca.PCA                     `desc:"one PCA object can be reused for all PCA computations"`
-	SVD             pca.SVD                     `desc:"one SVD object can be reused for all SVD computations"`
-	ActRFs          actrf.RFs                   `view:"no-inline" desc:"activation-based receptive fields"`
-	Rasters         []string                    `desc:"list of layer names configured for recording raster plots"`
-	LinDecoders     map[string]*decoder.Linear  `desc:"linear decoders"`
+	Floats  map[string]float64
+	Strings map[string]string
+	Ints    map[string]int
+
+	// float32 tensors used for grabbing values from layers
+	F32Tensors map[string]*etensor.Float32 `desc:"float32 tensors used for grabbing values from layers"`
+
+	// float64 tensors as needed for other computations
+	F64Tensors map[string]*etensor.Float64 `desc:"float64 tensors as needed for other computations"`
+
+	// int tensors as needed for other computations
+	IntTensors map[string]*etensor.Int `desc:"int tensors as needed for other computations"`
+
+	// [view: no-inline] confusion matrix
+	Confusion confusion.Matrix `view:"no-inline" desc:"confusion matrix"`
+
+	// similarity matrix for comparing pattern similarities
+	SimMats map[string]*simat.SimMat `desc:"similarity matrix for comparing pattern similarities"`
+
+	// analysis plots -- created by analysis routines
+	Plots map[string]*eplot.Plot2D `desc:"analysis plots -- created by analysis routines"`
+
+	// one PCA object can be reused for all PCA computations
+	PCA pca.PCA `desc:"one PCA object can be reused for all PCA computations"`
+
+	// one SVD object can be reused for all SVD computations
+	SVD pca.SVD `desc:"one SVD object can be reused for all SVD computations"`
+
+	// [view: no-inline] activation-based receptive fields
+	ActRFs actrf.RFs `view:"no-inline" desc:"activation-based receptive fields"`
+
+	// list of layer names configured for recording raster plots
+	Rasters []string `desc:"list of layer names configured for recording raster plots"`
+
+	// linear decoders
+	LinDecoders map[string]*decoder.Linear `desc:"linear decoders"`
+
+	// softmax decoders
 	SoftMaxDecoders map[string]*decoder.SoftMax `desc:"softmax decoders"`
-	Timers          map[string]*timer.Time      `desc:"named timers available for timing how long different computations take (wall-clock time)"`
+
+	// named timers available for timing how long different computations take (wall-clock time)
+	Timers map[string]*timer.Time `desc:"named timers available for timing how long different computations take (wall-clock time)"`
 }
 
 // Init must be called before use to create all the maps

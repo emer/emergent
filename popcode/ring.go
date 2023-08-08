@@ -17,7 +17,11 @@ import (
 // the other side in this case.
 type Ring struct {
 	OneD
-	LowVec  []float32 `view:"-" desc:"low-end encoding vector"`
+
+	// [view: -] low-end encoding vector
+	LowVec []float32 `view:"-" desc:"low-end encoding vector"`
+
+	// [view: -] high-end encoding vector
 	HighVec []float32 `view:"-" desc:"high-end encoding vector"`
 }
 

@@ -41,6 +41,5 @@ in C++ emergent (e.g., PermutedBinary and FlipBits).
 
 * python contains a template Makefile that uses [GoPy](https://github.com/goki/gopy) to generate
 python bindings to the entire emergent system.  See the leabra package version to actually run an example.
-
 */
 package emergent

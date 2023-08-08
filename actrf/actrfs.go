@@ -14,8 +14,12 @@ import (
 // RFs manages multiple named RF's -- each one must be initialized first
 // but functions like Avg, Norm, and Reset can be called generically on all.
 type RFs struct {
+
+	// map of names to indexes of RFs
 	NameMap map[string]int `desc:"map of names to indexes of RFs"`
-	RFs     []*RF          `desc:"the RFs"`
+
+	// the RFs
+	RFs []*RF `desc:"the RFs"`
 }
 
 // RFByName returns RF of given name, nil if not found

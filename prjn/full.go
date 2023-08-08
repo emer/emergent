@@ -10,6 +10,8 @@ import (
 
 // Full implements full all-to-all pattern of connectivity between two layers
 type Full struct {
+
+	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
 	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
 }
 

@@ -84,6 +84,8 @@ type Rand interface {
 // for either a separate rand.Rand source, or, if that
 // is nil, the global rand stream.
 type SysRand struct {
+
+	// [view: -] if non-nil, use this random number source instead of the global default one
 	Rand *rand.Rand `view:"-" desc:"if non-nil, use this random number source instead of the global default one"`
 }
 

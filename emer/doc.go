@@ -13,6 +13,5 @@ so that those can be purely encoded in the implementation structs.
 
 At this point, given the extra complexity it would require, these interfaces do not support
 the ability to build or modify networks.
-
 */
 package emer

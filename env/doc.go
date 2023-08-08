@@ -49,6 +49,5 @@ all of this is paradigm-specific and outside the scope of this basic interface.
 
 See the emergent github wiki for more info:
 https://github.com/emer/emergent/wiki/Env
-
 */
 package env

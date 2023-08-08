@@ -27,20 +27,48 @@ import (
 // evenly divisible by number of MPI procs!
 // If all nodes start with the same seed, it should remain synchronized.
 type MPIFixedTable struct {
-	Nm         string          `desc:"name of this environment"`
-	Dsc        string          `desc:"description of this environment"`
-	Table      *etable.IdxView `desc:"this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential"`
-	Sequential bool            `desc:"present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order"`
-	Order      []int           `desc:"permuted order of items to present if not sequential -- updated every time through the list"`
-	Run        Ctr             `view:"inline" desc:"current run of model as provided during Init"`
-	Epoch      Ctr             `view:"inline" desc:"number of times through entire set of patterns"`
-	Trial      Ctr             `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
-	TrialName  CurPrvString    `desc:"if Table has a Name column, this is the contents of that"`
-	GroupName  CurPrvString    `desc:"if Table has a Group column, this is contents of that"`
-	NameCol    string          `desc:"name of the Name column -- defaults to 'Name'"`
-	GroupCol   string          `desc:"name of the Group column -- defaults to 'Group'"`
-	TrialSt    int             `desc:"for MPI, trial we start each epoch on, as index into Order"`
-	TrialEd    int             `desc:"for MPI, trial number we end each epoch before (i.e., when ctr gets to Ed, restarts)"`
+
+	// name of this environment
+	Nm string `desc:"name of this environment"`
+
+	// description of this environment
+	Dsc string `desc:"description of this environment"`
+
+	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
+	Table *etable.IdxView `desc:"this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential"`
+
+	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order
+	Sequential bool `desc:"present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order"`
+
+	// permuted order of items to present if not sequential -- updated every time through the list
+	Order []int `desc:"permuted order of items to present if not sequential -- updated every time through the list"`
+
+	// [view: inline] current run of model as provided during Init
+	Run Ctr `view:"inline" desc:"current run of model as provided during Init"`
+
+	// [view: inline] number of times through entire set of patterns
+	Epoch Ctr `view:"inline" desc:"number of times through entire set of patterns"`
+
+	// [view: inline] current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
+	Trial Ctr `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
+
+	// if Table has a Name column, this is the contents of that
+	TrialName CurPrvString `desc:"if Table has a Name column, this is the contents of that"`
+
+	// if Table has a Group column, this is contents of that
+	GroupName CurPrvString `desc:"if Table has a Group column, this is contents of that"`
+
+	// name of the Name column -- defaults to 'Name'
+	NameCol string `desc:"name of the Name column -- defaults to 'Name'"`
+
+	// name of the Group column -- defaults to 'Group'
+	GroupCol string `desc:"name of the Group column -- defaults to 'Group'"`
+
+	// for MPI, trial we start each epoch on, as index into Order
+	TrialSt int `desc:"for MPI, trial we start each epoch on, as index into Order"`
+
+	// for MPI, trial number we end each epoch before (i.e., when ctr gets to Ed, restarts)
+	TrialEd int `desc:"for MPI, trial number we end each epoch before (i.e., when ctr gets to Ed, restarts)"`
 }
 
 func (ft *MPIFixedTable) Name() string { return ft.Nm }

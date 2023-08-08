@@ -26,16 +26,36 @@ import (
 // Various initial weight / scaling patterns are also available -- code
 // must specifically apply these to the receptive fields.
 type PoolTile struct {
-	Recip       bool        `desc:"reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv"`
-	Size        evec.Vec2i  `desc:"size of receptive field tile, in terms of pools on the sending layer"`
-	Skip        evec.Vec2i  `desc:"how many pools to skip in tiling over sending layer -- typically 1/2 of Size"`
-	Start       evec.Vec2i  `desc:"starting pool offset for lower-left corner of first receptive field in sending layer"`
-	Wrap        bool        `desc:"if true, pool coordinates wrap around sending shape -- otherwise truncated at edges, which can lead to assymmetries in connectivity etc"`
-	GaussFull   GaussTopo   `desc:"gaussian topographic weights / scaling parameters for full receptive field width. multiplies any other factors present"`
-	GaussInPool GaussTopo   `desc:"gaussian topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for gaussian) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present"`
-	SigFull     SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters for full receptive field width.  left / bottom half have increasing sigmoids, and second half decrease.  Multiplies any other factors present (only used if Gauss versions are not On!)"`
-	SigInPool   SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for sigmoid) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present  (only used if Gauss versions are not On!).  left / bottom half have increasing sigmoids, and second half decrease."`
-	TopoRange   minmax.F32  `desc:"min..max range of topographic weight values to generate "`
+
+	// reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv
+	Recip bool `desc:"reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv"`
+
+	// size of receptive field tile, in terms of pools on the sending layer
+	Size evec.Vec2i `desc:"size of receptive field tile, in terms of pools on the sending layer"`
+
+	// how many pools to skip in tiling over sending layer -- typically 1/2 of Size
+	Skip evec.Vec2i `desc:"how many pools to skip in tiling over sending layer -- typically 1/2 of Size"`
+
+	// starting pool offset for lower-left corner of first receptive field in sending layer
+	Start evec.Vec2i `desc:"starting pool offset for lower-left corner of first receptive field in sending layer"`
+
+	// if true, pool coordinates wrap around sending shape -- otherwise truncated at edges, which can lead to assymmetries in connectivity etc
+	Wrap bool `desc:"if true, pool coordinates wrap around sending shape -- otherwise truncated at edges, which can lead to assymmetries in connectivity etc"`
+
+	// gaussian topographic weights / scaling parameters for full receptive field width. multiplies any other factors present
+	GaussFull GaussTopo `desc:"gaussian topographic weights / scaling parameters for full receptive field width. multiplies any other factors present"`
+
+	// gaussian topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for gaussian) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present
+	GaussInPool GaussTopo `desc:"gaussian topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for gaussian) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present"`
+
+	// sigmoidal topographic weights / scaling parameters for full receptive field width.  left / bottom half have increasing sigmoids, and second half decrease.  Multiplies any other factors present (only used if Gauss versions are not On!)
+	SigFull SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters for full receptive field width.  left / bottom half have increasing sigmoids, and second half decrease.  Multiplies any other factors present (only used if Gauss versions are not On!)"`
+
+	// sigmoidal topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for sigmoid) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present  (only used if Gauss versions are not On!).  left / bottom half have increasing sigmoids, and second half decrease.
+	SigInPool SigmoidTopo `desc:"sigmoidal topographic weights / scaling parameters within individual sending pools (i.e., unit positions within their parent pool drive distance for sigmoid) -- this helps organize / differentiate units more within pools, not just across entire receptive field. multiplies any other factors present  (only used if Gauss versions are not On!).  left / bottom half have increasing sigmoids, and second half decrease."`
+
+	// min..max range of topographic weight values to generate
+	TopoRange minmax.F32 `desc:"min..max range of topographic weight values to generate "`
 }
 
 func NewPoolTile() *PoolTile {
@@ -235,9 +255,17 @@ func (pt *PoolTile) TopoWts(send, recv *etensor.Shape, wts *etensor.Float32) err
 
 // GaussTopo has parameters for Gaussian topographic weights or scaling factors
 type GaussTopo struct {
-	On      bool    `desc:"use gaussian topographic weights / scaling values"`
-	Sigma   float32 `viewif:"On" def:"0.6" desc:"gaussian sigma (width) in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from .3 to 1.5, with .6 default"`
-	Wrap    bool    `viewif:"On" desc:"wrap the gaussian around on other sides of the receptive field, with the closest distance being used -- this removes strict topography but ensures a more uniform distribution of weight values so edge units don't have weaker overall weights"`
+
+	// use gaussian topographic weights / scaling values
+	On bool `desc:"use gaussian topographic weights / scaling values"`
+
+	// [def: 0.6] [viewif: On] gaussian sigma (width) in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from .3 to 1.5, with .6 default
+	Sigma float32 `viewif:"On" def:"0.6" desc:"gaussian sigma (width) in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from .3 to 1.5, with .6 default"`
+
+	// [viewif: On] wrap the gaussian around on other sides of the receptive field, with the closest distance being used -- this removes strict topography but ensures a more uniform distribution of weight values so edge units don't have weaker overall weights
+	Wrap bool `viewif:"On" desc:"wrap the gaussian around on other sides of the receptive field, with the closest distance being used -- this removes strict topography but ensures a more uniform distribution of weight values so edge units don't have weaker overall weights"`
+
+	// [def: 0.8,1] [viewif: On] proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
 	CtrMove float32 `viewif:"On" def:"0.8,1" desc:"proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false"`
 }
 
@@ -450,8 +478,14 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 
 // SigmoidTopo has parameters for Gaussian topographic weights or scaling factors
 type SigmoidTopo struct {
-	On      bool    `desc:"use gaussian topographic weights / scaling values"`
-	Gain    float32 `viewif:"On" desc:"gain of sigmoid that determines steepness of curve, in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from 0.01 to 0.1"`
+
+	// use gaussian topographic weights / scaling values
+	On bool `desc:"use gaussian topographic weights / scaling values"`
+
+	// [viewif: On] gain of sigmoid that determines steepness of curve, in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from 0.01 to 0.1
+	Gain float32 `viewif:"On" desc:"gain of sigmoid that determines steepness of curve, in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from 0.01 to 0.1"`
+
+	// [def: 0.5,1] [viewif: On] proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
 	CtrMove float32 `viewif:"On" def:"0.5,1" desc:"proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false"`
 }
 

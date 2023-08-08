@@ -54,16 +54,36 @@ type PauseNotifyFn func()
 // The Stepper struct contains all of the state info for stepping a program, enabling step points.
 // where the running application can be suspended with no loss of state.
 type Stepper struct {
-	RunState      RunState      `desc:"current run state"`
-	StepGrain     int           `desc:"granularity of one step. No enum type here so clients can define their own"`
-	StepsPer      int           `desc:"number of steps to execute before returning"`
+
+	// current run state
+	RunState RunState `desc:"current run state"`
+
+	// granularity of one step. No enum type here so clients can define their own
+	StepGrain int `desc:"granularity of one step. No enum type here so clients can define their own"`
+
+	// number of steps to execute before returning
+	StepsPer int `desc:"number of steps to execute before returning"`
+
+	// [view: -] function to deal with any changes on client side when paused after stepping
 	PauseNotifyFn PauseNotifyFn `view:"-" desc:"function to deal with any changes on client side when paused after stepping"`
-	StopCheckFn   StopCheckFn   `view:"-" desc:"function to test for special stopping conditions"`
-	stateMut      sync.Mutex    `view:"-" desc:"mutex for RunState"`
-	stateChange   *sync.Cond    `view:"-" desc:"state change condition variable"`
-	stepsLeft     int           `view:"-" desc:"number of steps yet to execute before returning"`
-	waitTimer     chan RunState `desc:"watchdog timer channel"`
-	initOnce      sync.Once     `view:"-" desc:"this ensures that global initialization only happens once"`
+
+	// [view: -] function to test for special stopping conditions
+	StopCheckFn StopCheckFn `view:"-" desc:"function to test for special stopping conditions"`
+
+	// [view: -] mutex for RunState
+	stateMut sync.Mutex `view:"-" desc:"mutex for RunState"`
+
+	// [view: -] state change condition variable
+	stateChange *sync.Cond `view:"-" desc:"state change condition variable"`
+
+	// [view: -] number of steps yet to execute before returning
+	stepsLeft int `view:"-" desc:"number of steps yet to execute before returning"`
+
+	// watchdog timer channel
+	waitTimer chan RunState `desc:"watchdog timer channel"`
+
+	// [view: -] this ensures that global initialization only happens once
+	initOnce sync.Once `view:"-" desc:"this ensures that global initialization only happens once"`
 }
 
 // New makes a new Stepper. Always call this to create a Stepper, so that initialization will be run correctly.

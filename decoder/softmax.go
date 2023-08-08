@@ -16,22 +16,48 @@ import (
 // SoftMax is a softmax decoder, which is the best choice for a 1-hot classification
 // using the widely-used SoftMax function: https://en.wikipedia.org/wiki/Softmax_function
 type SoftMax struct {
-	Lrate    float32                     `def:"0.1" desc:"learning rate"`
-	Layers   []emer.Layer                `desc:"layers to decode"`
-	NCats    int                         `desc:"number of different categories to decode"`
-	Units    []SoftMaxUnit               `desc:"unit values"`
-	Sorted   []int                       `desc:"sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act"`
-	NInputs  int                         `desc:"number of inputs -- total sizes of layer inputs"`
-	Inputs   []float32                   `desc:"input values, copied from layers"`
-	Target   int                         `desc:"current target index of correct category"`
+
+	// [def: 0.1] learning rate
+	Lrate float32 `def:"0.1" desc:"learning rate"`
+
+	// layers to decode
+	Layers []emer.Layer `desc:"layers to decode"`
+
+	// number of different categories to decode
+	NCats int `desc:"number of different categories to decode"`
+
+	// unit values
+	Units []SoftMaxUnit `desc:"unit values"`
+
+	// sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act
+	Sorted []int `desc:"sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act"`
+
+	// number of inputs -- total sizes of layer inputs
+	NInputs int `desc:"number of inputs -- total sizes of layer inputs"`
+
+	// input values, copied from layers
+	Inputs []float32 `desc:"input values, copied from layers"`
+
+	// current target index of correct category
+	Target int `desc:"current target index of correct category"`
+
+	// [view: -] for holding layer values
 	ValsTsrs map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
-	Weights  etensor.Float32             `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
+
+	// synaptic weights: outer loop is units, inner loop is inputs
+	Weights etensor.Float32 `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 }
 
 // SoftMaxUnit has variables for softmax decoder unit
 type SoftMaxUnit struct {
+
+	// final activation = e^Ge / sum e^Ge
 	Act float32 `desc:"final activation = e^Ge / sum e^Ge"`
+
+	// net input = sum x * w
 	Net float32 `desc:"net input = sum x * w"`
+
+	// exp(Net)
 	Exp float32 `desc:"exp(Net)"`
 }
 

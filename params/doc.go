@@ -17,10 +17,10 @@ and then other sets can modify specific params relative to that one.
 Order of application is critical, as subsequent params applications overwrite
 earlier ones, and the typical order is:
 
-* Defaults() method called that establishes the hard-coded default parameters.
-* Then apply "Base" params.Set for any changes relative to those.
-* Then optionally apply one or more additional params.Set's with current
-  experimental parameters.
+  - Defaults() method called that establishes the hard-coded default parameters.
+  - Then apply "Base" params.Set for any changes relative to those.
+  - Then optionally apply one or more additional params.Set's with current
+    experimental parameters.
 
 Critically, all of this is entirely up to the particular model program(s) to
 determine and control -- this package just provides the basic data structures
@@ -69,6 +69,5 @@ and can be set as such).
 Finally, there are methods to show where params.Set's set the same parameter
 differently, and to compare with the default settings on a given object type
 using go struct field tags of the form def:"val1[,val2...]".
-
 */
 package params

@@ -56,11 +56,23 @@ var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
 type Sel struct {
-	Sel     string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
-	Desc    string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
-	Params  Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
-	Hypers  Hypers `desc:"Put your hyperparams here"`
-	NMatch  int    `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+
+	// selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'
+	Sel string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
+
+	// description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params.
+	Desc string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
+
+	// [view: no-inline] parameter values to apply to whatever matches the selector
+	Params Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
+
+	// Put your hyperparams here
+	Hypers Hypers `desc:"Put your hyperparams here"`
+
+	// [tableview: -] number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
+	NMatch int `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+
+	// [tableview: -] name of current Set being applied
 	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"name of current Set being applied"`
 }
 
@@ -189,7 +201,11 @@ var KiT_Sheets = kit.Types.AddType(&Sheets{}, SheetsProps)
 // a Go map structure, which specifically randomizes order, so simply iterating over them
 // and applying may produce unexpected results -- it is better to lookup by name.
 type Set struct {
-	Desc   string `width:"60" desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
+
+	// description of this param set -- when should it be used?  how is it different from the other sets?
+	Desc string `width:"60" desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
+
+	// Sheet's grouped according to their target and / or function, e.g.,
 	Sheets Sheets `desc:"Sheet's grouped according to their target and / or function, e.g., "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
 }
 

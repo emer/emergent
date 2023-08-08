@@ -20,9 +20,15 @@ import (
 // NetView applies an overall scaling to make it fit within the larger view.
 type LayMesh struct {
 	gi3d.MeshBase
-	Lay   emer.Layer    `desc:"layer that we render"`
+
+	// layer that we render
+	Lay emer.Layer `desc:"layer that we render"`
+
+	// current shape that has been constructed -- if same, just update
 	Shape etensor.Shape `desc:"current shape that has been constructed -- if same, just update"`
-	View  *NetView      `desc:"netview that we're in"`
+
+	// netview that we're in
+	View *NetView `desc:"netview that we're in"`
 }
 
 var KiT_LayMesh = kit.Types.AddType(&LayMesh{}, nil)

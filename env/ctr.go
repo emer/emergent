@@ -8,10 +8,20 @@ package env
 // It keeps track of when it has been incremented or not, and
 // retains the previous value.
 type Ctr struct {
-	Cur   int        `desc:"current counter value"`
-	Prv   int        `view:"-" desc:"previous counter value, prior to last Incr() call (init to -1)"`
-	Chg   bool       `view:"-" desc:"did this change on the last Step() call or not?"`
-	Max   int        `desc:"where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0"`
+
+	// current counter value
+	Cur int `desc:"current counter value"`
+
+	// [view: -] previous counter value, prior to last Incr() call (init to -1)
+	Prv int `view:"-" desc:"previous counter value, prior to last Incr() call (init to -1)"`
+
+	// [view: -] did this change on the last Step() call or not?
+	Chg bool `view:"-" desc:"did this change on the last Step() call or not?"`
+
+	// where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0
+	Max int `desc:"where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0"`
+
+	// [view: -] the unit of time scale represented by this counter (just FYI)
 	Scale TimeScales `view:"-" desc:"the unit of time scale represented by this counter (just FYI)"`
 }
 

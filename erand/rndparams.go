@@ -11,10 +11,18 @@ import (
 // RndParams provides parameterized random number generation according to different distributions
 // and variance, mean params
 type RndParams struct {
+
+	// distribution to generate random numbers from
 	Dist RndDists `desc:"distribution to generate random numbers from"`
-	Mean float64  `desc:"mean of random distribution -- typically added to generated random variants"`
-	Var  float64  `desc:"variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)"`
-	Par  float64  `view:"if Dist=Gamma,Binomial,Beta" desc:"extra parameter for distribution (depends on each one)"`
+
+	// mean of random distribution -- typically added to generated random variants
+	Mean float64 `desc:"mean of random distribution -- typically added to generated random variants"`
+
+	// variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)
+	Var float64 `desc:"variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)"`
+
+	// [view: if Dist=Gamma,Binomial,Beta] extra parameter for distribution (depends on each one)
+	Par float64 `view:"if Dist=Gamma,Binomial,Beta" desc:"extra parameter for distribution (depends on each one)"`
 }
 
 func (rp *RndParams) Defaults() {

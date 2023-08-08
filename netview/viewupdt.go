@@ -12,13 +12,27 @@ import (
 
 // ViewUpdt manages time scales for updating the NetView
 type ViewUpdt struct {
-	View      *NetView    `view:"-" desc:"the network view"`
-	Testing   bool        `view:"-" desc:"whether in testing mode -- can be set in advance to drive appropriate updating"`
-	Text      string      `view:"-" desc:"text to display at the bottom of the view"`
-	On        bool        `desc:"toggles update of display on"`
-	SkipInvis bool        `desc:"if true, do not record network data when the NetView is invisible -- this speeds up running when not visible, but the NetView display will not show the current state when switching back to it"`
-	Train     etime.Times `desc:"at what time scale to update the display during training?"`
-	Test      etime.Times `desc:"at what time scale to update the display during testing?"`
+
+	// [view: -] the network view
+	View *NetView `view:"-" desc:"the network view"`
+
+	// [view: -] whether in testing mode -- can be set in advance to drive appropriate updating
+	Testing bool `view:"-" desc:"whether in testing mode -- can be set in advance to drive appropriate updating"`
+
+	// [view: -] text to display at the bottom of the view
+	Text string `view:"-" desc:"text to display at the bottom of the view"`
+
+	// toggles update of display on
+	On bool `desc:"toggles update of display on"`
+
+	// if true, do not record network data when the NetView is invisible -- this speeds up running when not visible, but the NetView display will not show the current state when switching back to it
+	SkipInvis bool `desc:"if true, do not record network data when the NetView is invisible -- this speeds up running when not visible, but the NetView display will not show the current state when switching back to it"`
+
+	// at what time scale to update the display during training?
+	Train etime.Times `desc:"at what time scale to update the display during training?"`
+
+	// at what time scale to update the display during testing?
+	Test etime.Times `desc:"at what time scale to update the display during testing?"`
 }
 
 // Config configures for given NetView and default train, test times

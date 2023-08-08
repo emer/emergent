@@ -18,15 +18,33 @@ import (
 // across a 2D tensor, using row-major XY encoding:
 // Y = outer, first dim, X = inner, second dim
 type TwoD struct {
-	Code   PopCodes   `desc:"how to encode the value"`
-	Min    mat32.Vec2 `desc:"minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
-	Max    mat32.Vec2 `desc:"maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
-	Sigma  mat32.Vec2 `def:"0.2" viewif:"Code=GaussBump" desc:"sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range"`
-	Clip   bool       `desc:"ensure that encoded and decoded value remains within specified range -- generally not useful with wrap"`
-	WrapX  bool       `desc:"x axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
-	WrapY  bool       `desc:"y axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
-	Thr    float32    `def:"0.1" desc:"threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)"`
-	MinSum float32    `def:"0.2" desc:"minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by"`
+
+	// how to encode the value
+	Code PopCodes `desc:"how to encode the value"`
+
+	// minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode
+	Min mat32.Vec2 `desc:"minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
+
+	// maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode
+	Max mat32.Vec2 `desc:"maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
+
+	// [def: 0.2] [viewif: Code=GaussBump] sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
+	Sigma mat32.Vec2 `def:"0.2" viewif:"Code=GaussBump" desc:"sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range"`
+
+	// ensure that encoded and decoded value remains within specified range -- generally not useful with wrap
+	Clip bool `desc:"ensure that encoded and decoded value remains within specified range -- generally not useful with wrap"`
+
+	// x axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values
+	WrapX bool `desc:"x axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
+
+	// y axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values
+	WrapY bool `desc:"y axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
+
+	// [def: 0.1] threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)
+	Thr float32 `def:"0.1" desc:"threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)"`
+
+	// [def: 0.2] minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by
+	MinSum float32 `def:"0.2" desc:"minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by"`
 }
 
 func (pc *TwoD) Defaults() {

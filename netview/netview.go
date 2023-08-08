@@ -32,20 +32,48 @@ import (
 // 3D framework.
 type NetView struct {
 	gi.Layout
-	Net          emer.Network          `desc:"the network that we're viewing"`
-	Var          string                `desc:"current variable that we're viewing"`
-	Di           int                   `desc:"current data parallel index di, for networks capable of processing input patterns in parallel."`
-	Vars         []string              `desc:"the list of variables to view"`
-	SynVars      []string              `desc:"list of synaptic variables"`
-	SynVarsMap   map[string]int        `desc:"map of synaptic variable names to index"`
-	VarParams    map[string]*VarParams `desc:"parameters for the list of variables to view"`
-	CurVarParams *VarParams            `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
-	Params       Params                `desc:"parameters controlling how the view is rendered"`
-	ColorMap     *colormap.Map         `desc:"color map for mapping values to colors -- set by name in Params"`
-	RecNo        int                   `desc:"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]"`
-	LastCtrs     string                `desc:"last non-empty counters string provided -- re-used if no new one"`
-	Data         NetData               `desc:"contains all the network data with history"`
-	DataMu       sync.RWMutex          `view:"-" copy:"-" json:"-" xml:"-" desc:"mutex on data access"`
+
+	// the network that we're viewing
+	Net emer.Network `desc:"the network that we're viewing"`
+
+	// current variable that we're viewing
+	Var string `desc:"current variable that we're viewing"`
+
+	// current data parallel index di, for networks capable of processing input patterns in parallel.
+	Di int `desc:"current data parallel index di, for networks capable of processing input patterns in parallel."`
+
+	// the list of variables to view
+	Vars []string `desc:"the list of variables to view"`
+
+	// list of synaptic variables
+	SynVars []string `desc:"list of synaptic variables"`
+
+	// map of synaptic variable names to index
+	SynVarsMap map[string]int `desc:"map of synaptic variable names to index"`
+
+	// parameters for the list of variables to view
+	VarParams map[string]*VarParams `desc:"parameters for the list of variables to view"`
+
+	// [view: -] current var params -- only valid during Update of display
+	CurVarParams *VarParams `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
+
+	// parameters controlling how the view is rendered
+	Params Params `desc:"parameters controlling how the view is rendered"`
+
+	// color map for mapping values to colors -- set by name in Params
+	ColorMap *colormap.Map `desc:"color map for mapping values to colors -- set by name in Params"`
+
+	// record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]
+	RecNo int `desc:"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]"`
+
+	// last non-empty counters string provided -- re-used if no new one
+	LastCtrs string `desc:"last non-empty counters string provided -- re-used if no new one"`
+
+	// contains all the network data with history
+	Data NetData `desc:"contains all the network data with history"`
+
+	// [view: -] mutex on data access
+	DataMu sync.RWMutex `view:"-" copy:"-" json:"-" xml:"-" desc:"mutex on data access"`
 }
 
 var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
