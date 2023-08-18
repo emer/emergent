@@ -68,7 +68,21 @@ func (af *RF) InitShape(act, src etensor.Tensor) []int {
 	af.SumProd.SetShape(oshp, nil, snm)
 	af.NormSrc.SetShape(sshp, nil, ssnm)
 	af.SumSrc.SetShape(sshp, nil, ssnm)
+
+	af.ConfigView(&af.RF)
+	af.ConfigView(&af.NormRF)
+	af.ConfigView(&af.SumProd)
+	af.ConfigView(&af.NormSrc)
+	af.ConfigView(&af.SumSrc)
 	return oshp
+}
+
+// ConfigView configures the view params on the tensor
+func (af *RF) ConfigView(tsr *etensor.Float32) {
+	tsr.SetMetaData("colormap", "Viridis")
+	tsr.SetMetaData("grid-fill", "1") // remove extra lines
+	tsr.SetMetaData("fix-min", "true")
+	tsr.SetMetaData("min", "0")
 }
 
 // Reset reinitializes the Sum accumulators -- must have called Init first
