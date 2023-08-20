@@ -99,8 +99,11 @@ type TestConfig struct {
 	// can set these values by string representation if stringer and registered as an enum with kit
 	Enum TestEnum `desc:"can set these values by string representation if stringer and registered as an enum with kit"`
 
-	// test slice case
-	Slice []float32 `desc:"test slice case"`
+	// [def: [1, 2.14, 3.14]] test slice case
+	Slice []float32 `def:"[1, 2.14, 3.14]" desc:"test slice case"`
+
+	// [def: ['cat','dog one','dog two']] test string slice case
+	StrSlice []string `def:"['cat','dog one','dog two']" desc:"test string slice case"`
 }
 
 func (cfg *TestConfig) IncludesPtr() *[]string { return &cfg.Includes }
@@ -113,6 +116,13 @@ func TestDefaults(t *testing.T) {
 	}
 	if cfg.PatParams.NPats != 10 || cfg.PatParams.Sparseness != 0.15 {
 		t.Errorf("PatParams defaults failed to set")
+	}
+	// fmt.Printf("%#v\n", cfg.Slice)
+	if len(cfg.Slice) != 3 || cfg.Slice[2] != 3.14 {
+		t.Errorf("Slice defaults failed to set")
+	}
+	if len(cfg.StrSlice) != 3 || cfg.StrSlice[1] != "dog one" {
+		t.Errorf("StrSlice defaults failed to set")
 	}
 }
 

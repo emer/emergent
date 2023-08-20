@@ -4,7 +4,8 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 
 * Standard usage:
     + `cfg := &ss.Config`
-    + `cfg.Defaults()` -- sets hard-coded defaults -- user should define and call this method first.  It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://github.com/goki/gi) GUI.
+    + `cfg.Defaults()` -- sets hard-coded defaults -- user should define and call this method first.
+    + It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://github.com/goki/gi) GUI.  See [Default Tags](#def_default_tags) for how to specify def values for more complex types.
     + `econfig.Config(cfg, "config.toml")` -- sets config values according to the standard order, with given file name specifying the default config file name.
 
 * Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  Config must implement the `IncludesPtr() *[]string` method which satisfies the `Includer` interface, and returns a pointer to an `Includes []string` field containing a list of config files to include.  The default `IncludePaths` includes current dir (`.`) and `configs` directory, which is recommended location to store different configs.
@@ -37,6 +38,20 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 * Field tag `def:"value"`, used in the [GoGi](https://github.com/goki/gi) GUI, sets the initial default value and is shown for the `-h` or `--help` usage info.
 
 * [kit](https://github.com/goki/ki) registered "enum" `const` types, with names automatically parsed from string values (including bit flags).  Must use the [goki stringer](https://github.com/goki/stringer) version to generate `FromString()` method, and register the type like this: `var KitTestEnum = kit.Enums.AddEnum(TestEnumN, kit.NotBitFlag, nil)` -- see [enum.go](enum.go) file for example.
+
+# `def` Default Tags
+
+The [GoGi](https://github.com/goki/gi) GUI processes `def:"value"` struct tags to highlight values that are not at their defaults.  econfig uses these same tags to auto-initialize fields as well, ensuring that the tag and the actual initial value are the same.  The value for strings or numbers is just the string representation.  For more complex types, here ar some examples:
+
+* `struct`: specify using standard Go literal expression as a string, with single-quotes `'` used instead of double-quotes around strings, such as the name of the fields:
+    + `evec.Vec2i`: `def:"{'X':10,'Y':10}"`
+
+* `slice`: comma-separated list of values in square braces -- use `'` for internal string boundaries:
+    + `[]float32`: `def:"[1, 2.14, 3.14]"`
+    + `[]string`: `def:"{'A', 'bbb bbb', 'c c c'}"`
+
+* `map`: comma-separated list of key:value in curly braces -- use `'` for internal string boundaries:
+    + `map[string]float32`: `def:"{'key1': 1, 'key2': 2.14, 'key3': 3.14]"`
 
 # Standard Config Example
 
