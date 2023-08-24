@@ -5,10 +5,13 @@
 package econfig
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"reflect"
 
 	"github.com/emer/empi/mpi"
+	"github.com/goki/ki/dirs"
 	"github.com/goki/ki/kit"
 )
 
@@ -42,13 +45,14 @@ var (
 //   - Fall back on default config file name passed to `Config` function, if arg not found.
 //   - Read any `Include[s]` files in config file in deepest-first (natural) order,
 //     then the specified config file last.
+//   - if multiple config files are listed, then the first one that exists is used
 //   - Process command-line args based on Config field names, with `.` separator
 //     for sub-fields.
 //   - Boolean flags are set on with plain -flag; use No prefix to turn off
 //     (or explicitly set values to true or false).
 //
 // Also processes -help or -h and prints usage and quits immediately.
-func Config(cfg any, defaultFile string) ([]string, error) {
+func Config(cfg any, defaultFile ...string) ([]string, error) {
 	var errs []error
 	err := SetFromDefaults(cfg)
 	if err != nil {
@@ -67,7 +71,22 @@ func Config(cfg any, defaultFile string) ([]string, error) {
 	}
 
 	if ConfigFile == "" {
-		ConfigFile = defaultFile
+		nd := len(defaultFile)
+		if nd == 0 {
+			err = errors.New("econfig.Config: no config file or defaultFile specified")
+			return nil, err
+		}
+		for _, fn := range defaultFile {
+			_, err := dirs.FindFileOnPaths(IncludePaths, fn)
+			if err == nil {
+				ConfigFile = fn
+				break
+			}
+		}
+		if ConfigFile == "" {
+			err = fmt.Errorf("econfig.Config: none of the specified default config files exist: %v", defaultFile)
+			return nil, err
+		}
 	}
 	err = OpenWithIncludes(cfg, ConfigFile)
 	if err != nil {

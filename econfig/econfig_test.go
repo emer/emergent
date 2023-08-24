@@ -225,3 +225,25 @@ func TestSave(t *testing.T) {
 	OpenWithIncludes(cfg, "testcfg.toml")
 	Save(cfg, "testdata/testwrite.toml")
 }
+
+func TestConfigOpen(t *testing.T) {
+	// t.Skip("prints usage string")
+	IncludePaths = []string{".", "testdata"}
+	cfg := &TestConfig{}
+	_, err := Config(cfg)
+	if err == nil {
+		t.Errorf("should have Config error")
+		// } else {
+		// 	fmt.Println(err)
+	}
+	_, err = Config(cfg, "aldfkj.toml")
+	if err == nil {
+		t.Errorf("should have Config error")
+		// } else {
+		// 	fmt.Println(err)
+	}
+	_, err = Config(cfg, "aldfkj.toml", "testcfg.toml")
+	if err != nil {
+		t.Error(err)
+	}
+}
