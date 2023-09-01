@@ -14,7 +14,8 @@ import (
 	"github.com/emer/empi/mpi"
 )
 
-// NetParams handles standard parameters for a Network and other objects.
+// NetParams handles standard parameters for a Network only
+// (use econfig and a Config struct for other configuration params)
 // Assumes a Set named "Base" has the base-level parameters, which are
 // always applied first, followed optionally by additional Set(s)
 // that can have different parameters to try.
@@ -93,7 +94,7 @@ func (pr *NetParams) Validate() error {
 }
 
 // SetAll sets all parameters, using "Base" Set then any ExtraSheets,
-// for all the Objects that have been added.  Does a Validate call first.
+// Does a Validate call first.
 func (pr *NetParams) SetAll() error {
 	err := pr.Validate()
 	if err != nil {
@@ -112,7 +113,7 @@ func (pr *NetParams) SetAll() error {
 	return err
 }
 
-// SetAllSheet sets parameters for given Sheet name to all Objects
+// SetAllSheet sets parameters for given Sheet name to the Network
 func (pr *NetParams) SetAllSheet(sheetName string) error {
 	err := pr.Validate()
 	if err != nil {
@@ -124,6 +125,7 @@ func (pr *NetParams) SetAllSheet(sheetName string) error {
 	}
 	psheet.SelMatchReset(sheetName)
 	pr.SetNetworkSheet(pr.Network, psheet, sheetName)
+	err = psheet.SelNoMatchWarn(sheetName, "Network")
 	return err
 }
 
