@@ -247,3 +247,39 @@ func TestConfigOpen(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+// TestIncConfig is a testing config with Include instead of Includes
+type TestIncConfig struct {
+
+	// specify include file here, and after configuration, it contains list of include files added
+	Include string `desc:"specify include file here, and after configuration, it contains list of include files added"`
+
+	// [def: true] open the GUI -- does not automatically run -- if false, then runs automatically and quits
+	GUI bool `def:"true" desc:"open the GUI -- does not automatically run -- if false, then runs automatically and quits"`
+
+	// extra tag to add to file names and logs saved from this run
+	Tag string `desc:"extra tag to add to file names and logs saved from this run"`
+
+	// [def: 0] starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1
+	Run int `def:"0" desc:"starting run number -- determines the random seed -- runs counts from there -- can do all runs in parallel by launching separate jobs with each run, runs = 1"`
+}
+
+func (cfg *TestIncConfig) IncludePtr() *string { return &cfg.Include }
+
+func TestIncOpen(t *testing.T) {
+	IncludePaths = []string{".", "testdata"}
+	cfg := &TestIncConfig{}
+	err := OpenWithIncludes(cfg, "testcfginc.toml")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	fmt.Println("include:", cfg.Include)
+
+	if cfg.GUI != true {
+		t.Errorf("testcfginc.toml not parsed\n")
+	}
+	if cfg.Tag != "initial" {
+		t.Errorf("testincinc.toml not parsed\n")
+	}
+}

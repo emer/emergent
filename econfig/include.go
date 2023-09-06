@@ -14,27 +14,34 @@ import (
 	"github.com/goki/ki/toml"
 )
 
-// Includer facilitates processing include files in Config objects.
-type Includer interface {
+// Includeser enables processing of Includes []string field with files to include in Config objects.
+type Includeser interface {
 	// IncludesPtr returns a pointer to the Includes []string field containing file(s) to include
 	// before processing the current config file.
 	IncludesPtr() *[]string
 }
 
-// IncludeStack returns the stack of include files in the natural
+// Includer enables processing of Include string field with file to include in Config objects.
+type Includer interface {
+	// IncludePtr returns a pointer to the Include string field containing single file to include
+	// before processing the current config file.
+	IncludePtr() *string
+}
+
+// IncludesStack returns the stack of include files in the natural
 // order in which they are encountered (nil if none).
 // Files should then be read in reverse order of the slice.
 // Returns an error if any of the include files cannot be found on IncludePath.
 // Does not alter cfg.
-func IncludeStack(cfg Includer) ([]string, error) {
-	clone := reflect.New(kit.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includer)
+func IncludesStack(cfg Includeser) ([]string, error) {
+	clone := reflect.New(kit.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includeser)
 	*clone.IncludesPtr() = *cfg.IncludesPtr()
-	return includeStackImpl(clone, nil)
+	return includesStackImpl(clone, nil)
 }
 
 // includeStackImpl implements IncludeStack, operating on cloned cfg
 // todo: could use a more efficient method to just extract the include field..
-func includeStackImpl(clone Includer, includes []string) ([]string, error) {
+func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 	incs := *clone.IncludesPtr()
 	ni := len(incs)
 	if ni == 0 {
@@ -48,13 +55,46 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 		*clone.IncludesPtr() = nil
 		err := toml.OpenFromPaths(clone, inc, IncludePaths)
 		if err == nil {
-			includes, err = includeStackImpl(clone, includes)
+			includes, err = includesStackImpl(clone, includes)
 			if err != nil {
 				errs = append(errs, err)
 			}
 		} else {
 			errs = append(errs, err)
 		}
+	}
+	return includes, kit.AllErrors(errs, 10)
+}
+
+// IncludeStack returns the stack of include files in the natural
+// order in which they are encountered (nil if none).
+// Files should then be read in reverse order of the slice.
+// Returns an error if any of the include files cannot be found on IncludePath.
+// Does not alter cfg.
+func IncludeStack(cfg Includer) ([]string, error) {
+	clone := reflect.New(kit.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includer)
+	*clone.IncludePtr() = *cfg.IncludePtr()
+	return includeStackImpl(clone, nil)
+}
+
+// includeStackImpl implements IncludeStack, operating on cloned cfg
+// todo: could use a more efficient method to just extract the include field..
+func includeStackImpl(clone Includer, includes []string) ([]string, error) {
+	inc := *clone.IncludePtr()
+	if inc == "" {
+		return includes, nil
+	}
+	includes = append(includes, inc)
+	var errs []error
+	*clone.IncludePtr() = ""
+	err := toml.OpenFromPaths(clone, inc, IncludePaths)
+	if err == nil {
+		includes, err = includeStackImpl(clone, includes)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	} else {
+		errs = append(errs, err)
 	}
 	return includes, kit.AllErrors(errs, 10)
 }

@@ -8,8 +8,11 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
     + It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://github.com/goki/gi) GUI.  See [Default Tags](#def_default_tags) for how to specify def values for more complex types.
     + `econfig.Config(cfg, "config.toml")` -- sets config values according to the standard order, with given file name specifying the default config file name.
 
-* Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  Config must implement the `IncludesPtr() *[]string` method which satisfies the `Includer` interface, and returns a pointer to an `Includes []string` field containing a list of config files to include.  The default `IncludePaths` includes current dir (`.`) and `configs` directory, which is recommended location to store different configs.
-
+* Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  There are two options for include file support:
+    + `Includes []string` for multiple includes in one config: Config implements the `IncludesPtr() *[]string` method which satisfies the `Includeser` interface, and returns a pointer to the `Includes` field containing a list of config files to include.
+    + `Include string` for single include in one config: Config implements the `IncludePtr() *string` method which satisfies the `Includer` interface, and returns a pointer to the Include field.
+    + The default `IncludePaths` includes current dir (`.`) and `configs` directory, which is recommended location to store different configs.    
+    
 * Order of setting in `econfig.Config`:
     + Apply any `def:` field tag default values.
     + Look for `--config`, `--cfg` arg, specifying config file(s) on the command line (comma separated if multiple, with no spaces).

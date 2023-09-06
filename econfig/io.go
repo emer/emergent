@@ -6,6 +6,7 @@ package econfig
 
 import (
 	"io/fs"
+	"strings"
 
 	"github.com/emer/empi/mpi"
 	"github.com/goki/ki/toml"
@@ -22,13 +23,19 @@ func OpenWithIncludes(cfg any, file string) error {
 	if err != nil {
 		return err
 	}
-	incfg, ok := cfg.(Includer)
-	if !ok {
-		return err
+	incsObj, hasIncludes := cfg.(Includeser)
+	incObj, hasInclude := cfg.(Includer)
+	if !hasInclude && !hasIncludes {
+		return nil // no further processing
 	}
-	incs, err := IncludeStack(incfg)
+	var incs []string
+	if hasIncludes {
+		incs, err = IncludesStack(incsObj)
+	} else {
+		incs, err = IncludeStack(incObj)
+	}
 	ni := len(incs)
-	if ni == 0 {
+	if err != nil || ni == 0 {
 		return err
 	}
 	for i := ni - 1; i >= 0; i-- {
@@ -40,7 +47,11 @@ func OpenWithIncludes(cfg any, file string) error {
 	}
 	// reopen original
 	toml.OpenFromPaths(cfg, file, IncludePaths)
-	*incfg.IncludesPtr() = incs
+	if hasIncludes {
+		*incsObj.IncludesPtr() = incs
+	} else {
+		*incObj.IncludePtr() = strings.Join(incs, ",")
+	}
 	return err
 }
 
