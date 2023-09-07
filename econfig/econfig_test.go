@@ -231,17 +231,18 @@ func TestConfigOpen(t *testing.T) {
 	IncludePaths = []string{".", "testdata"}
 	cfg := &TestConfig{}
 	_, err := Config(cfg)
-	if err == nil {
-		t.Errorf("should have Config error")
-		// } else {
-		// 	fmt.Println(err)
-	}
+	// no errors for missing config fiels
+	// if err == nil {
+	// 	t.Errorf("should have Config error")
+	// 	// } else {
+	// 	// 	fmt.Println(err)
+	// }
 	_, err = Config(cfg, "aldfkj.toml")
-	if err == nil {
-		t.Errorf("should have Config error")
-		// } else {
-		// 	fmt.Println(err)
-	}
+	// if err == nil {
+	// 	t.Errorf("should have Config error")
+	// 	// } else {
+	// 	// 	fmt.Println(err)
+	// }
 	_, err = Config(cfg, "aldfkj.toml", "testcfg.toml")
 	if err != nil {
 		t.Error(err)

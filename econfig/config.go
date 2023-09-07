@@ -5,8 +5,6 @@
 package econfig
 
 import (
-	"errors"
-	"fmt"
 	"os"
 	"reflect"
 
@@ -70,27 +68,25 @@ func Config(cfg any, defaultFile ...string) ([]string, error) {
 		os.Exit(0)
 	}
 
-	if ConfigFile == "" {
-		nd := len(defaultFile)
-		if nd == 0 {
-			err = errors.New("econfig.Config: no config file or defaultFile specified")
-			return nil, err
+	var cfgFiles []string
+	if ConfigFile != "" {
+		_, err := dirs.FindFileOnPaths(IncludePaths, ConfigFile)
+		if err == nil {
+			cfgFiles = append(cfgFiles, ConfigFile)
 		}
+	} else {
 		for _, fn := range defaultFile {
 			_, err := dirs.FindFileOnPaths(IncludePaths, fn)
 			if err == nil {
-				ConfigFile = fn
-				break
+				cfgFiles = append(cfgFiles, fn)
 			}
 		}
-		if ConfigFile == "" {
-			err = fmt.Errorf("econfig.Config: none of the specified default config files exist: %v", defaultFile)
-			return nil, err
-		}
 	}
-	err = OpenWithIncludes(cfg, ConfigFile)
-	if err != nil {
-		errs = append(errs, err)
+	for _, fn := range cfgFiles {
+		err = OpenWithIncludes(cfg, fn)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 	NonFlagArgs, err = SetFromArgs(cfg, args)
 	if err != nil {
