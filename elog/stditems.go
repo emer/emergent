@@ -47,7 +47,7 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 // ordered from higher to lower, e.g., Run, Epoch, Trial.
 // The statName is the source statistic in stats at the lowest level,
 // and is also used for the log item name.
-// For the Run level, aggregation is the mean over last 5 rows of prior
+// For the Run or Condition level, aggregation is the mean over last 5 rows of prior
 // level (Epoch)
 func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 	ntimes := len(times)
@@ -64,7 +64,7 @@ func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 	for i := ntimes - 2; i >= 0; i-- {
 		i := i
 		tm := times[i]
-		if tm == etime.Run {
+		if tm == etime.Run || tm == etime.Condition {
 			itm.Write[etime.Scope(etime.Train, tm)] = func(ctx *Context) {
 				ix := ctx.LastNRows(etime.Train, times[i+1], 5) // cached
 				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
@@ -394,4 +394,22 @@ func (lg *Logs) SetFixMinItems(min float64, itemNames ...string) {
 		itm.FixMin = true
 		itm.Range.Min = min
 	}
+}
+
+// log filenames
+
+// LogFileName returns a standard log file name as netName_runName_logName.tsv
+func LogFileName(logName, netName, runName string) string {
+	return netName + "_" + runName + "_" + logName + ".tsv"
+}
+
+// SetLogFile sets the log file for given mode and time,
+// using given logName (extension), netName and runName,
+// if the Config flag is set.
+func SetLogFile(logs *Logs, configOn bool, mode etime.Modes, time etime.Times, logName, netName, runName string) {
+	if !configOn {
+		return
+	}
+	fnm := LogFileName(logName, netName, runName)
+	logs.SetLogFile(mode, time, fnm)
 }

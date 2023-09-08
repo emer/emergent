@@ -43,3 +43,21 @@ func (i *Modes) FromString(s string) error {
 	}
 	return errors.New("String: " + s + " is not a valid option for type: Modes")
 }
+
+var _Modes_descMap = map[Modes]string{
+	0: ``,
+	1: `AllModes indicates that the log should occur over all modes present in other items.`,
+	2: `Train is when the network is learning`,
+	3: `Test is when testing, typically without learning`,
+	4: `Validate is typically for a special held-out testing set`,
+	5: `Analyze is when analyzing the representations and behavior of the network`,
+	6: `Debug is for recording info particularly useful for debugging`,
+	7: ``,
+}
+
+func (i Modes) Desc() string {
+	if str, ok := _Modes_descMap[i]; ok {
+		return str
+	}
+	return "Modes(" + strconv.FormatInt(int64(i), 10) + ")"
+}

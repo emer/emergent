@@ -52,14 +52,6 @@ const (
 	// Sequence is a sequential group of Trials (not always needed).
 	Sequence = TimeScales(etime.Sequence)
 
-	// Block is a collection of Trials, Sequences or Events, often used in experiments
-	// when conditions are varied across blocks.
-	Block = TimeScales(etime.Block)
-
-	// Condition is a collection of Blocks that share the same set of parameters.
-	// This is intermediate between Block and Run levels.
-	Condition = TimeScales(etime.Condition)
-
 	// Epoch is used in two different contexts.  In machine learning, it represents a
 	// collection of Trials, Sequences or Events that constitute a "representative sample"
 	// of the environment.  In the simplest case, it is the entire collection of Trials
@@ -67,9 +59,19 @@ const (
 	// the analysis of electrode data.
 	Epoch = TimeScales(etime.Epoch)
 
+	// Block is a collection of Trials, Sequences or Events, often used in experiments
+	// when conditions are varied across blocks.
+	Block = TimeScales(etime.Block)
+
+	// Condition is a collection of Blocks that share the same set of parameters.
+	// This is intermediate between Block and Run levels.
+	// Aggregation of stats at this level is based on the last 5 rows by default.
+	Condition = TimeScales(etime.Condition)
+
 	// Run is a complete run of a model / subject, from training to testing, etc.
 	// Often multiple runs are done in an Expt to obtain statistics over initial
 	// random weights etc.
+	// Aggregation of stats at this level is based on the last 5 rows by default.
 	Run = TimeScales(etime.Run)
 
 	// Expt is an entire experiment -- multiple Runs through a given protocol / set of
