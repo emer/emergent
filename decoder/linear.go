@@ -256,7 +256,7 @@ func (dec *Linear) Back() float32 {
 // BackMPI compute the backward error propagation pass
 // Returns SSE (sum squared error) of difference between targets and outputs.
 func (dec *Linear) BackMPI() float32 {
-	if dec.MPIDWts.Len() == 0 {
+	if dec.MPIDWts.Len() != dec.Weights.Len() {
 		dec.MPIDWts.CopyShapeFrom(&dec.Weights)
 	}
 	var sse float32

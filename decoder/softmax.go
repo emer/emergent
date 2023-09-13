@@ -206,7 +206,7 @@ func (sm *SoftMax) Back() {
 // BackMPI compute the backward error propagation pass
 // MPI version shares weight changes across nodes
 func (sm *SoftMax) BackMPI() {
-	if sm.MPIDWts.Len() == 0 {
+	if sm.MPIDWts.Len() != sm.Weights.Len() {
 		sm.MPIDWts.CopyShapeFrom(&sm.Weights)
 	}
 	lr := sm.Lrate
