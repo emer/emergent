@@ -66,7 +66,7 @@ func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 		tm := times[i]
 		if tm == etime.Run || tm == etime.Condition {
 			itm.Write[etime.Scope(etime.Train, tm)] = func(ctx *Context) {
-				ix := ctx.LastNRows(etime.Train, times[i+1], 5) // cached
+				ix := ctx.LastNRows(ctx.Mode, times[i+1], 5) // cached
 				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
 			}
 		} else {

@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/emer/emergent/emer"
+	"github.com/emer/empi/mpi"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
@@ -46,6 +47,12 @@ type SoftMax struct {
 
 	// synaptic weights: outer loop is units, inner loop is inputs
 	Weights etensor.Float32 `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
+
+	// [view: -] mpi communicator
+	Comm *mpi.Comm `view:"-" desc:"mpi communicator"`
+
+	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
+	MPIDWts etensor.Float32 `desc:"delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs"`
 }
 
 // SoftMaxUnit has variables for softmax decoder unit
@@ -101,6 +108,13 @@ func (sm *SoftMax) Decode(varNm string, di int) int {
 func (sm *SoftMax) Train(targ int) {
 	sm.Target = targ
 	sm.Back()
+}
+
+// TrainMPI trains the decoder with given target correct answer (0..NCats-1)
+// MPI version uses mpi to synchronize weight changes across parallel nodes.
+func (sm *SoftMax) TrainMPI(targ int) {
+	sm.Target = targ
+	sm.BackMPI()
 }
 
 // ValsTsr gets value tensor of given name, creating if not yet made
@@ -186,5 +200,32 @@ func (sm *SoftMax) Back() {
 		for j, in := range sm.Inputs {
 			sm.Weights.Values[off+j] += del * in
 		}
+	}
+}
+
+// BackMPI compute the backward error propagation pass
+func (sm *SoftMax) BackMPI() {
+	if sm.MPIDWts.Len() == 0 {
+		sm.MPIDWts.CopyShapeFrom(&sm.Weights)
+	}
+	lr := sm.Lrate
+	for ui := range sm.Units {
+		u := &sm.Units[ui]
+		var del float32
+		if ui == sm.Target {
+			del = lr * (1 - u.Act)
+		} else {
+			del = -lr * u.Act
+		}
+		off := ui * sm.NInputs
+		for j, in := range sm.Inputs {
+			sm.MPIDWts.Values[off+j] = del * in
+		}
+	}
+
+	sm.Comm.AllReduceF32(mpi.OpSum, sm.MPIDWts.Values, nil)
+
+	for i, dw := range sm.MPIDWts.Values {
+		sm.Weights.Values[i] += dw
 	}
 }
