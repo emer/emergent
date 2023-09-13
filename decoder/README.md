@@ -2,6 +2,8 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/decoder)
 
 The decoder package provides standalone decoders that can sample variables from `emer` network layers and provide a supervised one-layer categorical decoding of what is being represented in those layers.  This can provide an important point of reference relative to whatever the network itself is generating, and is especially useful for more self-organizing networks that may not have supervised training at all.
 
+An MPI version of `TrainMPI` and `BackMPI` shares weight changes across MPI nodes, using the `mpi.Comm`, which must be set to the initialized communicator by the sim.
+
 # SoftMax
 
 The `SoftMax` decoder is the best choice for a 1-hot classification decoder, using the [SoftMax function](https://en.wikipedia.org/wiki/Softmax_function).

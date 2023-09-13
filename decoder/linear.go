@@ -7,6 +7,7 @@ package decoder
 import (
 	"fmt"
 
+	"github.com/emer/empi/mpi"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
 )
@@ -47,6 +48,12 @@ type Linear struct {
 
 	// which pool to use within a layer
 	PoolIndex int `desc:"which pool to use within a layer"`
+
+	// [view: -] mpi communicator -- MPI users must set this to their comm -- do direct assignment
+	Comm *mpi.Comm `view:"-" desc:"mpi communicator -- MPI users must set this to their comm -- do direct assignment"`
+
+	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
+	MPIDWts etensor.Float32 `desc:"delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs"`
 }
 
 // Layer is the subset of emer.Layer that is used by this code
@@ -137,17 +144,40 @@ func (dec *Linear) Output(acts *[]float32) {
 // Returns SSE (sum squared error) of difference between targets and outputs.
 // Also returns and prints an error if targets are not sufficient length for NOutputs.
 func (dec *Linear) Train(targs []float32) (float32, error) {
+	err := dec.SetTargets(targs)
+	if err != nil {
+		return 0, err
+	}
+	sse := dec.Back()
+	return sse, nil
+}
+
+// TrainMPI trains the decoder with given target correct answers, as []float32 values.
+// Returns SSE (sum squared error) of difference between targets and outputs.
+// Also returns and prints an error if targets are not sufficient length for NOutputs.
+// MPI version uses mpi to synchronize weight changes across parallel nodes.
+func (dec *Linear) TrainMPI(targs []float32) (float32, error) {
+	err := dec.SetTargets(targs)
+	if err != nil {
+		return 0, err
+	}
+	sse := dec.BackMPI()
+	return sse, nil
+}
+
+// SetTargets sets given target correct answers, as []float32 values.
+// Also returns and prints an error if targets are not sufficient length for NOutputs.
+func (dec *Linear) SetTargets(targs []float32) error {
 	if len(targs) < dec.NOutputs {
 		err := fmt.Errorf("decoder.Linear: number of targets < NOutputs: %d < %d", len(targs), dec.NOutputs)
 		fmt.Println(err)
-		return 0, err
+		return err
 	}
 	for ui := range dec.Units {
 		u := &dec.Units[ui]
 		u.Target = targs[ui]
 	}
-	sse := dec.Back()
-	return sse, nil
+	return nil
 }
 
 // ValsTsr gets value tensor of given name, creating if not yet made
@@ -198,16 +228,17 @@ func (dec *Linear) Forward() {
 	}
 }
 
+// https://en.wikipedia.org/wiki/Delta_rule
+// Delta rule: delta = learning rate * error * input
+// We don't need the g' (derivative of activation function) term assuming:
+// 1. Identity activation function with SSE loss (beecause it's 1), OR
+// 2. Logistic activation function with Cross Entropy loss (because it cancels out, see
+//    https://towardsdatascience.com/deriving-backpropagation-with-cross-entropy-loss-d24811edeaf9)
+// The fact that we return SSE does not mean we're optimizing SSE.
+
 // Back compute the backward error propagation pass
 // Returns SSE (sum squared error) of difference between targets and outputs.
 func (dec *Linear) Back() float32 {
-	// https://en.wikipedia.org/wiki/Delta_rule
-	// Delta rule: delta = learning rate * error * input
-	// We don't need the g' (derivative of activation function) term assuming:
-	// 1. Identity activation function with SSE loss (beecause it's 1), OR
-	// 2. Logistic activation function with Cross Entropy loss (because it cancels out, see
-	//    https://towardsdatascience.com/deriving-backpropagation-with-cross-entropy-loss-d24811edeaf9)
-	// The fact that we return SSE does not mean we're optimizing SSE.
 	var sse float32
 	for ui := range dec.Units {
 		u := &dec.Units[ui]
@@ -219,5 +250,31 @@ func (dec *Linear) Back() float32 {
 			dec.Weights.Values[off+j] += del * in
 		}
 	}
+	return sse
+}
+
+// BackMPI compute the backward error propagation pass
+// Returns SSE (sum squared error) of difference between targets and outputs.
+func (dec *Linear) BackMPI() float32 {
+	if dec.MPIDWts.Len() == 0 {
+		dec.MPIDWts.CopyShapeFrom(&dec.Weights)
+	}
+	var sse float32
+	for ui := range dec.Units {
+		u := &dec.Units[ui]
+		err := u.Target - u.Act
+		sse += err * err
+		del := dec.LRate * err
+		off := ui * dec.NInputs
+		for j, in := range dec.Inputs {
+			dec.MPIDWts.Values[off+j] = del * in
+		}
+	}
+	dec.Comm.AllReduceF32(mpi.OpSum, dec.MPIDWts.Values, nil)
+
+	for i, dw := range dec.MPIDWts.Values {
+		dec.Weights.Values[i] += dw
+	}
+
 	return sse
 }

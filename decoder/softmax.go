@@ -48,8 +48,8 @@ type SoftMax struct {
 	// synaptic weights: outer loop is units, inner loop is inputs
 	Weights etensor.Float32 `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
 
-	// [view: -] mpi communicator
-	Comm *mpi.Comm `view:"-" desc:"mpi communicator"`
+	// [view: -] mpi communicator -- MPI users must set this to their comm -- do direct assignment
+	Comm *mpi.Comm `view:"-" desc:"mpi communicator -- MPI users must set this to their comm -- do direct assignment"`
 
 	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
 	MPIDWts etensor.Float32 `desc:"delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs"`
@@ -204,6 +204,7 @@ func (sm *SoftMax) Back() {
 }
 
 // BackMPI compute the backward error propagation pass
+// MPI version shares weight changes across nodes
 func (sm *SoftMax) BackMPI() {
 	if sm.MPIDWts.Len() == 0 {
 		sm.MPIDWts.CopyShapeFrom(&sm.Weights)
