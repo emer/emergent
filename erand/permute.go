@@ -4,6 +4,14 @@
 
 package erand
 
+// SequentialInts initializes slice of ints to sequential start..start+N-1
+// numbers -- for cases where permuting the order is optional.
+func SequentialInts(ins []int, start int) {
+	for i := range ins {
+		ins[i] = start + i
+	}
+}
+
 // PermuteInts permutes (shuffles) the order of elements in the given int slice
 // using the standard Fisher-Yates shuffle
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
@@ -46,7 +54,7 @@ func PermuteStrings(ins []string, randOpt ...Rand) {
 // So you don't have to remember how to call rand.Shuffle
 // Optionally can pass a single Rand interface to use --
 // otherwise uses system global Rand source.
-func Permutefloat32s(ins []float32, randOpt ...Rand) {
+func PermuteFloat32s(ins []float32, randOpt ...Rand) {
 	var rnd Rand
 	if len(randOpt) == 0 {
 		rnd = NewGlobalRand()
@@ -64,7 +72,7 @@ func Permutefloat32s(ins []float32, randOpt ...Rand) {
 // So you don't have to remember how to call rand.Shuffle
 // Optionally can pass a single Rand interface to use --
 // otherwise uses system global Rand source.
-func Permutefloat64s(ins []float64, randOpt ...Rand) {
+func PermuteFloat64s(ins []float64, randOpt ...Rand) {
 	var rnd Rand
 	if len(randOpt) == 0 {
 		rnd = NewGlobalRand()
