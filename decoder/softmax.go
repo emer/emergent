@@ -5,7 +5,14 @@
 package decoder
 
 import (
+	"bufio"
+	"compress/gzip"
+	"encoding/json"
+	"fmt"
+	"io"
 	"math"
+	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/emer/emergent/emer"
@@ -229,4 +236,64 @@ func (sm *SoftMax) BackMPI() {
 	for i, dw := range sm.MPIDWts.Values {
 		sm.Weights.Values[i] += dw
 	}
+}
+
+type softMaxForSerialization struct {
+	Weights []float32 `json:"weights"`
+}
+
+// Save saves the decoder weights to given file path.
+// If path ends in .gz, it will be gzipped.
+func (sm *SoftMax) Save(path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	ext := filepath.Ext(path)
+	var writer io.Writer
+	if ext == ".gz" {
+		gw := gzip.NewWriter(file)
+		defer gw.Close()
+		writer = gw
+	} else {
+		bw := bufio.NewWriter(file)
+		defer bw.Flush()
+		writer = bw
+	}
+	encoder := json.NewEncoder(writer)
+	return encoder.Encode(softMaxForSerialization{Weights: sm.Weights.Values})
+}
+
+// Load loads the decoder weights from given file path.
+// If the shape of the decoder does not match the shape of the saved weights,
+// an error will be returned.
+func (sm *SoftMax) Load(path string) error {
+	ext := filepath.Ext(path)
+	var reader io.Reader
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	if ext == ".gz" {
+		gr, err := gzip.NewReader(file)
+		if err != nil {
+			return err
+		}
+		defer gr.Close()
+		reader = gr
+	} else {
+		reader = bufio.NewReader(file)
+	}
+	decoder := json.NewDecoder(reader)
+	var s softMaxForSerialization
+	if err := decoder.Decode(&s); err != nil {
+		return err
+	}
+	if len(sm.Weights.Values) != len(s.Weights) {
+		return fmt.Errorf("loaded weights length %d does not match expected length %d", len(s.Weights), len(sm.Weights.Values))
+	}
+	sm.Weights.Values = s.Weights
+	return nil
 }
