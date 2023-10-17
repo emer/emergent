@@ -68,7 +68,7 @@ func (pr *Params) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes params to corresponding Go initializer code.
 func (pr *Params) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("params.Params{\n")))
+	w.Write([]byte("params.Params{\n"))
 	depth++
 	paths := make([]string, len(*pr)) // alpha-sort paths for consistent output
 	ctr := 0
@@ -148,7 +148,7 @@ func (pr *Hypers) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes hypers to corresponding Go initializer code.
 func (pr *Hypers) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("params.Hypers{\n")))
+	w.Write([]byte("params.Hypers{\n"))
 	depth++
 	paths := maps.Keys(*pr)
 	sort.StringSlice(paths).Sort()
@@ -300,7 +300,7 @@ func (pr *Sheet) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes params to corresponding Go initializer code.
 func (pr *Sheet) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("{\n")))
+	w.Write([]byte("{\n"))
 	depth++
 	for _, pv := range *pr {
 		w.Write(indent.TabBytes(depth))
@@ -374,7 +374,7 @@ func (pr *Sheets) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes params to corresponding Go initializer code.
 func (pr *Sheets) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("params.Sheets{\n")))
+	w.Write([]byte("params.Sheets{\n"))
 	depth++
 	nms := make([]string, len(*pr)) // alpha-sort names for consistent output
 	ctr := 0
@@ -498,7 +498,7 @@ func (pr *Sets) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes params to corresponding Go initializer code.
 func (pr *Sets) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("params.Sets{\n")))
+	w.Write([]byte("params.Sets{\n"))
 	depth++
 	for nm, st := range *pr {
 		w.Write(indent.TabBytes(depth))
