@@ -7,8 +7,8 @@ package elog
 import (
 	"testing"
 
-	"github.com/emer/emergent/etime"
-	"github.com/emer/etable/etensor"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/etable/v2/etensor"
 )
 
 func TestScopeKeyStringing(t *testing.T) {

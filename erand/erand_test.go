@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/goki/ki/ints"
+	"goki.dev/ki/v2/ints"
 )
 
 func TestPoisson(t *testing.T) {

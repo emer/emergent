@@ -10,11 +10,10 @@ import (
 	"log"
 	"math"
 
-	"github.com/emer/emergent/erand"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/metric"
-	"github.com/goki/ki/ints"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/erand"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/metric"
+	"goki.dev/mat32/v2"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
@@ -105,9 +104,9 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 				df := int(math.Round(float64(.5 * dst)))
 				if df < minDiff {
 					nunder[r1]++
-					mxnun = ints.MaxInt(mxnun, nunder[r1])
+					mxnun = max(nunder[r1])
 					nunder[r2]++
-					mxnun = ints.MaxInt(mxnun, nunder[r2])
+					mxnun = max(nunder[r2])
 					nbad++
 				}
 			}

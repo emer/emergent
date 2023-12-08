@@ -8,9 +8,9 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/emer/empi/mpi"
-	"github.com/goki/ki/dirs"
-	"github.com/goki/ki/kit"
+	"github.com/emer/empi/v2/mpi"
+	"goki.dev/ki/v2/dirs"
+	"goki.dev/ki/v2/kit"
 )
 
 var (

@@ -8,17 +8,15 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/simat"
-	"github.com/goki/gi/gi"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/simat"
+	"goki.dev/gi/v2/gi"
 )
 
 // Matrix computes the confusion matrix, with rows representing
 // the ground truth correct class, and columns representing the
 // actual answer produced.  Correct answers are along the diagonal.
-type Matrix struct {
+type Matrix struct { //git:add
 
 	// [view: no-inline] normalized probability of confusion: Row = ground truth class, Col = actual response for that class.
 	Prob etensor.Float64 `view:"no-inline" desc:"normalized probability of confusion: Row = ground truth class, Col = actual response for that class."`
@@ -41,8 +39,6 @@ type Matrix struct {
 	// [view: no-inline] micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class
 	MatrixScores etensor.Float64 `view:"no-inline" desc:"micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class"`
 }
-
-var KiT_Matrix = kit.Types.AddType(&Matrix{}, MatrixProps)
 
 // Init initializes the Matrix for given number of classes,
 // and resets the data to zero.
@@ -211,6 +207,7 @@ func (cm *Matrix) OpenCSV(filename gi.FileName) {
 	etensor.OpenCSV(&cm.Prob, filename, ',')
 }
 
+/*
 var MatrixProps = ki.Props{
 	"ToolBar": ki.PropSlice{
 		{"SaveCSV", ki.Props{
@@ -235,3 +232,4 @@ var MatrixProps = ki.Props{
 		}},
 	},
 }
+*/

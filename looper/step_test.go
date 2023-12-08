@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/emer/emergent/etime"
+	"github.com/emer/emergent/v2/etime"
 )
 
 var printTest = false

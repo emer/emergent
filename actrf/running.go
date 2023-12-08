@@ -4,7 +4,7 @@
 
 package actrf
 
-import "github.com/emer/etable/etensor"
+import "goki.dev/etable/v2/etensor"
 
 // RunningAvg computes a running-average activation-based receptive field
 // for activities act relative to source activations src (the thing we're projecting rf onto)

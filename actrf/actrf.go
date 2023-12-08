@@ -5,8 +5,8 @@
 package actrf
 
 import (
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/norm"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/norm"
 )
 
 // RF is used for computing an activation-based receptive field.

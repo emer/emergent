@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/emer/emergent/params"
-	"github.com/emer/emergent/prjn"
-	"github.com/emer/emergent/weights"
-	"github.com/goki/ki/kit"
+	"github.com/emer/emergent/v2/params"
+	"github.com/emer/emergent/v2/prjn"
+	"github.com/emer/emergent/v2/weights"
+	"goki.dev/laser"
 )
 
 // Prjn defines the basic interface for a projection which connects two layers.
@@ -180,7 +180,7 @@ func (pl *Prjns) ElemLabel(idx int) string {
 		return ""
 	}
 	pj := (*pl)[idx]
-	if kit.IfaceIsNil(pj) {
+	if laser.AnyIsNil(pj) {
 		return "nil"
 	}
 	return pj.Name()
@@ -280,14 +280,7 @@ func (pl *Prjns) RecvNameTypeTry(recv, typ string) (Prjn, error) {
 
 // PrjnType is the type of the projection (extensible for more specialized algorithms).
 // Class parameter styles automatically key off of these types.
-type PrjnType int32
-
-//go:generate stringer -type=PrjnType
-
-var KiT_PrjnType = kit.Enums.AddEnum(PrjnTypeN, kit.NotBitFlag, nil)
-
-func (ev PrjnType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *PrjnType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type PrjnType int32 //enums:enum
 
 // The projection types
 const (
@@ -302,6 +295,4 @@ const (
 
 	// Inhib is an inhibitory projection that drives inhibitory synaptic inputs instead of excitatory
 	Inhib
-
-	PrjnTypeN
 )

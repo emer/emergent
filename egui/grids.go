@@ -5,10 +5,10 @@
 package egui
 
 import (
-	"github.com/emer/emergent/actrf"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/etview"
-	"github.com/goki/gi/gi"
+	"github.com/emer/emergent/v2/actrf"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/etview"
+	"goki.dev/gi/v2/gi"
 )
 
 // Grid gets tensor grid view of given name, creating if not yet made

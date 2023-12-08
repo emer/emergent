@@ -4,7 +4,7 @@
 
 package env
 
-import "github.com/emer/etable/etensor"
+import "goki.dev/etable/v2/etensor"
 
 // Env defines an interface for environments, which determine the nature and
 // sequence of States that can be used as inputs to a model, and the Env

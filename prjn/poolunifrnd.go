@@ -8,9 +8,8 @@ import (
 	"math"
 	"sort"
 
-	"github.com/emer/emergent/erand"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
+	"github.com/emer/emergent/v2/erand"
+	"goki.dev/etable/v2/etensor"
 )
 
 // PoolUnifRnd implements random pattern of connectivity between pools within layers.
@@ -74,7 +73,7 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 	slist := make([]int, nsend)
 
 	if ur.NPools > 0 {
-		npl = ints.MinInt(ur.NPools, rNp)
+		npl = min(ur.NPools, rNp)
 	}
 	for i := 0; i < npl; i++ {
 		rpi := ur.RecvStart + i

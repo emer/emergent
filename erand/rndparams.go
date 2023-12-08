@@ -4,13 +4,11 @@
 
 package erand
 
-import (
-	"github.com/goki/ki/kit"
-)
+//go:generate goki generate
 
 // RndParams provides parameterized random number generation according to different distributions
 // and variance, mean params
-type RndParams struct {
+type RndParams struct { //git:add
 
 	// distribution to generate random numbers from
 	Dist RndDists `desc:"distribution to generate random numbers from"`
@@ -59,14 +57,7 @@ func (rp *RndParams) Gen(thr int, randOpt ...Rand) float64 {
 }
 
 // RndDists are different random number distributions
-type RndDists int
-
-//go:generate stringer -type=RndDists
-
-var KiT_RndDists = kit.Enums.AddEnum(RndDistsN, kit.NotBitFlag, nil)
-
-func (ev RndDists) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *RndDists) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type RndDists int32 //enums:enum
 
 // The random number distributions
 const (
@@ -91,8 +82,6 @@ const (
 
 	// Mean is just the constant Mean, no randomness
 	Mean
-
-	RndDistsN
 )
 
 // IntZeroN returns uniform random integer in the range between 0 and n, exclusive of n: [0,n).

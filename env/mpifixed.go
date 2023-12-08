@@ -9,10 +9,10 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/emer/emergent/erand"
-	"github.com/emer/empi/empi"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
+	"github.com/emer/emergent/v2/erand"
+	"github.com/emer/empi/v2/empi"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
 )
 
 // MPIFixedTable is an MPI-enabled version of the FixedTable, which is

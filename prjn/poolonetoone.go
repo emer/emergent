@@ -5,8 +5,7 @@
 package prjn
 
 import (
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
+	"goki.dev/etable/v2/etensor"
 )
 
 // PoolOneToOne implements one-to-one connectivity between pools within layers.
@@ -62,7 +61,7 @@ func (ot *PoolOneToOne) ConnectPools(send, recv *etensor.Shape, same bool) (send
 	snv := sendn.Values
 	npl := rNp
 	if ot.NPools > 0 {
-		npl = ints.MinInt(ot.NPools, rNp)
+		npl = min(ot.NPools, rNp)
 	}
 	for i := 0; i < npl; i++ {
 		rpi := ot.RecvStart + i
@@ -94,7 +93,7 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *etensor.Shape, same bool) (s
 	snv := sendn.Values
 	npl := rNp
 	if ot.NPools > 0 {
-		npl = ints.MinInt(ot.NPools, rNp)
+		npl = min(ot.NPools, rNp)
 	}
 
 	if sNtot == rNp { // one-to-one
@@ -143,7 +142,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *etensor.Shape, same bool) (s
 	snv := sendn.Values
 	npl := sNp
 	if ot.NPools > 0 {
-		npl = ints.MinInt(ot.NPools, sNp)
+		npl = min(ot.NPools, sNp)
 	}
 
 	if rNtot == sNp { // one-to-one
@@ -190,7 +189,7 @@ func (ot *PoolOneToOne) ConnectOneToOne(send, recv *etensor.Shape, same bool) (s
 	snv := sendn.Values
 	npl := rNtot
 	if ot.NPools > 0 {
-		npl = ints.MinInt(ot.NPools, rNtot)
+		npl = min(ot.NPools, rNtot)
 	}
 	for i := 0; i < npl; i++ {
 		ri := ot.RecvStart + i

@@ -7,10 +7,10 @@ package emer
 import (
 	"io"
 
-	"github.com/emer/emergent/params"
-	"github.com/emer/emergent/weights"
-	"github.com/goki/gi/gi"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/params"
+	"github.com/emer/emergent/v2/weights"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/mat32/v2"
 )
 
 // Network defines the basic interface for a neural network, used for managing the structural

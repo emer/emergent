@@ -8,8 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
+	"goki.dev/etable/v2/etensor"
 )
 
 func CheckAllN(ns *etensor.Int32, trg int, t *testing.T) {
@@ -214,8 +213,8 @@ func TestUnifRnd(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = ints.MaxInt(nrMax, nr)
-		nrMin = ints.MinInt(nrMin, nr)
+		nrMax = max(r)
+		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("sendn: %v\n", sendn.Values)
@@ -250,8 +249,8 @@ func TestUnifRndLg(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = ints.MaxInt(nrMax, nr)
-		nrMin = ints.MinInt(nrMin, nr)
+		nrMax = max(r)
+		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("unif rnd large rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
@@ -277,8 +276,8 @@ func TestUnifRndSelf(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = ints.MaxInt(nrMax, nr)
-		nrMin = ints.MinInt(nrMin, nr)
+		nrMax = max(r)
+		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("sendn: %v\n", sendn.Values)
@@ -304,8 +303,8 @@ func TestPoolUnifRnd(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = ints.MaxInt(nrMax, nr)
-		nrMin = ints.MinInt(nrMin, nr)
+		nrMax = max(r)
+		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("sendn: %v\n", sendn.Values)
@@ -340,8 +339,8 @@ func TestPoolUnifRndLg(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = ints.MaxInt(nrMax, nr)
-		nrMin = ints.MinInt(nrMin, nr)
+		nrMax = max(r)
+		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("unif rnd large rNtot: %d  pcon: %g  max: %d  min: %d  mean: %g\n", rNtot, pj.PCon, nrMax, nrMin, float32(nrMean)/float32(sNtot))
@@ -367,8 +366,8 @@ func TestPoolUnifRndSelf(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = ints.MaxInt(nrMax, nr)
-		nrMin = ints.MinInt(nrMin, nr)
+		nrMax = max(r)
+		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
 	fmt.Printf("sendn: %v\n", sendn.Values)

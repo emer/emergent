@@ -8,18 +8,18 @@ package main
 import (
 	"strconv"
 
-	"github.com/emer/emergent/erand"
-	"github.com/emer/etable/eplot"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	_ "github.com/emer/etable/etview" // include to get gui views
-	"github.com/emer/etable/histogram"
-	"github.com/emer/etable/minmax"
-	"github.com/goki/gi/gi"
-	"github.com/goki/gi/gimain"
-	"github.com/goki/gi/giv"
-	"github.com/goki/ki/ki"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/erand"
+	"goki.dev/etable/v2/eplot"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	_ "goki.dev/etable/v2/etview" // include to get gui views
+	"goki.dev/etable/v2/histogram"
+	"goki.dev/etable/v2/minmax"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/gimain"
+	"goki.dev/gi/v2/giv"
+	"goki.dev/ki/v2/ki"
+	"goki.dev/mat32/v2"
 )
 
 func main() {
@@ -139,7 +139,7 @@ func (ss *Sim) ConfigGui() *gi.Window {
 	// gi.WinEventTrace = true
 
 	gi.SetAppName("distplot")
-	gi.SetAppAbout(`This plots histograms of random distributions. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
+	gi.SetAppAbout(`This plots histograms of random distributions. See <a href="https://github.com/emer/emergent/v2">emergent on GitHub</a>.</p>`)
 
 	win := gi.NewMainWindow("distplot", "Plotting Random Distributions", width, height)
 	ss.Win = win
@@ -174,7 +174,7 @@ func (ss *Sim) ConfigGui() *gi.Window {
 
 	tbar.AddAction(gi.ActOpts{Label: "README", Icon: "file-markdown", Tooltip: "Opens your browser on the README file that contains instructions for how to run this model."}, win.This(),
 		func(recv, send ki.Ki, sig int64, data interface{}) {
-			gi.OpenURL("https://github.com/emer/emergent/blob/master/erand/distplot/README.md")
+			gi.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
 		})
 
 	vp.UpdateEndNoSig(updt)

@@ -4,7 +4,7 @@
 
 package patgen
 
-import "github.com/emer/emergent/erand"
+import "github.com/emer/emergent/v2/erand"
 
 var (
 	// RandSource is a random source to use for all random numbers used in patgen

@@ -11,12 +11,12 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/emer/emergent/emer"
-	"github.com/emer/emergent/estats"
-	"github.com/emer/emergent/etime"
-	"github.com/emer/empi/empi"
-	"github.com/emer/empi/mpi"
-	"github.com/emer/etable/etable"
+	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/emergent/v2/estats"
+	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/empi/v2/empi"
+	"github.com/emer/empi/v2/mpi"
+	"goki.dev/etable/v2/etable"
 )
 
 // LogPrec is precision for saving float values in logs

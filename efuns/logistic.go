@@ -4,7 +4,7 @@
 
 package efuns
 
-import "github.com/goki/mat32"
+import "goki.dev/mat32/v2"
 
 // Logistic is the logistic (sigmoid) function of x: 1/(1 + e^(-gain*(x-off)))
 func Logistic(x, gain, off float32) float32 {

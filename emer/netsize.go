@@ -7,7 +7,7 @@ package emer
 import (
 	"fmt"
 
-	"github.com/emer/emergent/params"
+	"github.com/emer/emergent/v2/params"
 )
 
 // LaySize contains parameters for size of layers

@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/emer/etable/minmax"
-	"github.com/goki/gi/giv"
+	"goki.dev/etable/v2/minmax"
+	"goki.dev/gi/v2/giv"
 )
 
 // NVarCols is the default number of variable columns in the NetView

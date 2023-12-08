@@ -9,9 +9,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/emer/emergent/netparams"
-	"github.com/emer/emergent/params"
-	"github.com/emer/empi/mpi"
+	"github.com/emer/emergent/v2/netparams"
+	"github.com/emer/emergent/v2/params"
+	"github.com/emer/empi/v2/mpi"
 )
 
 // NetParams handles standard parameters for a Network only

@@ -4,17 +4,8 @@
 
 package etime
 
-import "github.com/goki/ki/kit"
-
 // Times the enum
-type Times int32
-
-//go:generate stringer -type=Times
-
-var KiT_Times = kit.Enums.AddEnum(TimesN, kit.NotBitFlag, nil)
-
-func (ev Times) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *Times) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type Times int32 //enums:enum
 
 // A list of predefined time scales at which logging can occur
 const (
@@ -111,13 +102,11 @@ const (
 	// restaurant, attending a wedding or other "event".
 	// This could be a chapter in a book.
 	Episode
-
-	TimesN
 )
 
 // TimeFromString returns Time int value from string name
 func TimeFromString(str string) Times {
 	var time Times
-	time.FromString(str)
+	time.SetString(str)
 	return time
 }

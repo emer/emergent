@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/goki/gi/gi"
+	"goki.dev/gi/v2/gi"
 )
 
 // FlexVal is a specific flexible value for the Flex parameter map

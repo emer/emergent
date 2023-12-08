@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/emer/emergent/params"
+	"github.com/emer/emergent/v2/params"
 )
 
 // Params handles standard parameters for a Network and other objects.

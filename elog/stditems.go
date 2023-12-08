@@ -7,13 +7,13 @@ package elog
 import (
 	"fmt"
 
-	"github.com/emer/emergent/emer"
-	"github.com/emer/emergent/etime"
-	"github.com/emer/etable/agg"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/minmax"
-	"github.com/emer/etable/split"
+	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/etable/v2/agg"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/minmax"
+	"goki.dev/etable/v2/split"
 )
 
 // AddCounterItems adds given Int counters from Stats,

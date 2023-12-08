@@ -7,7 +7,7 @@ package env
 import (
 	"fmt"
 
-	"github.com/emer/emergent/etime"
+	"github.com/emer/emergent/v2/etime"
 )
 
 // Envs is a map of environments organized according

@@ -9,8 +9,8 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/emer/emergent/erand"
-	"github.com/goki/ki/kit"
+	"github.com/emer/emergent/v2/erand"
+	"goki.dev/ki/v2/kit"
 )
 
 // RuleTypes are different types of rules (i.e., how the items are selected)

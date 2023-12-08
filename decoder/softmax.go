@@ -15,10 +15,10 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/emer/emergent/emer"
-	"github.com/emer/empi/mpi"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/empi/v2/mpi"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // SoftMax is a softmax decoder, which is the best choice for a 1-hot classification

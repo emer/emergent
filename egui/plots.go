@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/emer/emergent/elog"
-	"github.com/emer/emergent/etime"
-	"github.com/emer/etable/eplot"
-	"github.com/emer/etable/etview"
-	"github.com/goki/gi/gi"
+	"github.com/emer/emergent/v2/elog"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/etable/v2/eplot"
+	"goki.dev/etable/v2/etview"
+	"goki.dev/gi/v2/gi"
 )
 
 // AddPlots adds plots based on the unique tables we have, currently assumes they should always be plotted

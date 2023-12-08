@@ -5,8 +5,8 @@
 package egui
 
 import (
-	"github.com/goki/gi/gi"
-	"github.com/goki/ki/ki"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/ki/v2/ki"
 )
 
 // ToolbarItem holds the configuration values for a toolbar item

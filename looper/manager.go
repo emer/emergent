@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emer/emergent/etime"
-	"github.com/goki/ki/indent"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/glop/indent"
 )
 
 var (

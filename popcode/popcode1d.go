@@ -7,7 +7,7 @@ package popcode
 import (
 	"sort"
 
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 type PopCodes int

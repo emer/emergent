@@ -7,14 +7,14 @@ package estats
 import (
 	"fmt"
 
-	"github.com/emer/emergent/actrf"
-	"github.com/emer/emergent/confusion"
-	"github.com/emer/emergent/decoder"
-	"github.com/emer/emergent/timer"
-	"github.com/emer/etable/eplot"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/pca"
-	"github.com/emer/etable/simat"
+	"github.com/emer/emergent/v2/actrf"
+	"github.com/emer/emergent/v2/confusion"
+	"github.com/emer/emergent/v2/decoder"
+	"github.com/emer/emergent/v2/timer"
+	"goki.dev/etable/v2/eplot"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/pca"
+	"goki.dev/etable/v2/simat"
 )
 
 // Stats provides maps for storing statistics as named scalar and tensor values.

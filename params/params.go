@@ -7,8 +7,6 @@ package params
 import (
 	"fmt"
 	"log"
-
-	"github.com/goki/ki/kit"
 )
 
 // Params is a name-value map for parameter values that can be applied
@@ -22,7 +20,7 @@ import (
 // is used for checking the type of the target.  Also, they all fall within the same
 // Sel selector scope which is used to determine what specific objects to apply the
 // parameters to.
-type Params map[string]string
+type Params map[string]string //git:add
 
 // ParamByNameTry returns given parameter, by name.
 // Returns error if not found.
@@ -48,14 +46,12 @@ func (pr *Params) SetByName(name, value string) {
 	(*pr)[name] = value
 }
 
-var KiT_Params = kit.Types.AddType(&Params{}, ParamsProps)
-
 ///////////////////////////////////////////////////////////////////////
 
 // params.Sel specifies a selector for the scope of application of a set of
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
-type Sel struct {
+type Sel struct { //git:add
 
 	// selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'
 	Sel string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
@@ -75,8 +71,6 @@ type Sel struct {
 	// [tableview: -] name of current Set being applied
 	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"name of current Set being applied"`
 }
-
-var KiT_Sel = kit.Types.AddType(&Sel{}, SelProps)
 
 // SetFloat sets the value of given parameter
 func (sl *Sel) SetFloat(param string, val float64) {
@@ -106,7 +100,7 @@ func (sl *Sel) ParamVal(param string) (string, error) {
 //
 // This is the highest level of params that has an Apply method -- above this level
 // application must be done under explicit program control.
-type Sheet []*Sel
+type Sheet []*Sel //git:add
 
 // NewSheet returns a new Sheet
 func NewSheet() *Sheet {
@@ -118,8 +112,6 @@ func NewSheet() *Sheet {
 func (sh *Sheet) ElemLabel(idx int) string {
 	return (*sh)[idx].Sel
 }
-
-var KiT_Sheet = kit.Types.AddType(&Sheet{}, SheetProps)
 
 // SelByNameTry returns given selector within the Sheet, by Name.
 // Returns nil and error if not found.
@@ -176,9 +168,7 @@ func (sh *Sheet) ParamVal(sel, param string) (string, error) {
 ///////////////////////////////////////////////////////////////////////
 
 // Sheets is a map of named sheets -- used in the Set
-type Sheets map[string]*Sheet
-
-var KiT_Sheets = kit.Types.AddType(&Sheets{}, SheetsProps)
+type Sheets map[string]*Sheet //git:add
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -200,7 +190,7 @@ var KiT_Sheets = kit.Types.AddType(&Sheets{}, SheetsProps)
 // Note that there is NO deterministic ordering of the Sheets due to the use of
 // a Go map structure, which specifically randomizes order, so simply iterating over them
 // and applying may produce unexpected results -- it is better to lookup by name.
-type Set struct {
+type Set struct { //git:add
 
 	// description of this param set -- when should it be used?  how is it different from the other sets?
 	Desc string `width:"60" desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
@@ -208,8 +198,6 @@ type Set struct {
 	// Sheet's grouped according to their target and / or function, e.g.,
 	Sheets Sheets `desc:"Sheet's grouped according to their target and / or function, e.g., "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
 }
-
-var KiT_Set = kit.Types.AddType(&Set{}, SetProps)
 
 // SheetByNameTry tries to find given sheet by name, and returns error
 // if not found (also logs the error)
@@ -290,9 +278,7 @@ func (ps *Set) ParamVal(sheet, sel, param string) (string, error) {
 // depending on different desired configurations etc.  Thus, each Set
 // represents a collection of different possible specific configurations,
 // and different such configurations can be chosen by name to apply as desired.
-type Sets map[string]*Set
-
-var KiT_Sets = kit.Types.AddType(&Sets{}, SetsProps)
+type Sets map[string]*Set //git:add
 
 // SetByNameTry tries to find given set by name, and returns error
 // if not found (also logs the error)

@@ -4,17 +4,17 @@
 
 package emer
 
+//go:generate goki generate
+
 import (
 	"fmt"
 	"io"
 
-	"github.com/emer/emergent/params"
-	"github.com/emer/emergent/relpos"
-	"github.com/emer/emergent/weights"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/params"
+	"github.com/emer/emergent/v2/relpos"
+	"github.com/emer/emergent/v2/weights"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // Layer defines the basic interface for neural network layers, used for managing the structural
@@ -332,8 +332,8 @@ func CenterPoolShape(ly Layer, n int) []int {
 // given maxSize is selected.
 func Layer2DRepIdxs(ly Layer, maxSize int) (idxs, shape []int) {
 	sh := ly.Shape()
-	my := ints.MinInt(maxSize, sh.Dim(0))
-	mx := ints.MinInt(maxSize, sh.Dim(1))
+	my := min(maxSize, sh.Dim(0))
+	mx := min(maxSize, sh.Dim(1))
 	shape = []int{my, mx}
 	idxs = make([]int, my*mx)
 	i := 0
@@ -364,14 +364,7 @@ func (ls *Layers) ElemLabel(idx int) string {
 // Class parameter styles automatically key off of these types.
 // Specialized algorithms can extend this to other types, but these types encompass
 // most standard neural network models.
-type LayerType int32
-
-//go:generate stringer -type=LayerType
-
-var KiT_LayerType = kit.Enums.AddEnum(LayerTypeN, kit.NotBitFlag, nil)
-
-func (ev LayerType) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *LayerType) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type LayerType int32 //enums:enum
 
 // The layer types
 const (
@@ -387,8 +380,6 @@ const (
 	// Compare is a layer that receives external comparison inputs, which drive statistics but
 	// do NOT drive activation or learning directly
 	Compare
-
-	LayerTypeN
 )
 
 // we keep these here to make it easier for other packages to implement the emer.Layer interface

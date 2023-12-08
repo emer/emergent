@@ -7,9 +7,9 @@ package decoder
 import (
 	"fmt"
 
-	"github.com/emer/empi/mpi"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/mat32"
+	"github.com/emer/empi/v2/mpi"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 type ActivationFunc func(float32) float32

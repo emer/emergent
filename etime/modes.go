@@ -4,21 +4,12 @@
 
 package etime
 
-import (
-	"github.com/goki/ki/kit"
-)
-
-//go:generate stringer -type=Modes
-
-var KiT_Modes = kit.Enums.AddEnum(ModesN, kit.NotBitFlag, nil)
-
-func (ev Modes) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *Modes) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+//go:generate goki generate
 
 //gosl: start etime
 
 // Modes are evaluation modes (Training, Testing, etc)
-type Modes int32
+type Modes int32 //enums:enum
 
 // The evaluation modes
 const (
@@ -41,8 +32,6 @@ const (
 
 	// Debug is for recording info particularly useful for debugging
 	Debug
-
-	ModesN
 )
 
 //gosl: end etime
@@ -50,6 +39,6 @@ const (
 // ModeFromString returns Mode int value from string name
 func ModeFromString(str string) Modes {
 	var mode Modes
-	mode.FromString(str)
+	mode.SetString(str)
 	return mode
 }

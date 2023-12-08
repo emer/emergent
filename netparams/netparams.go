@@ -8,17 +8,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/emer/emergent/params"
-	"github.com/goki/ki/kit"
+	"github.com/emer/emergent/v2/params"
 )
 
 // Sets is a collection of Sheets that can be chosen among
 // depending on different desired configurations etc.  Thus, each Set
 // represents a collection of different possible specific configurations,
 // and different such configurations can be chosen by name to apply as desired.
-type Sets map[string]*params.Sheet
-
-var KiT_Sets = kit.Types.AddType(&Sets{}, SetsProps)
+type Sets map[string]*params.Sheet //git:add
 
 // SheetByNameTry tries to find given set by name, and returns error
 // if not found (also logs the error)

@@ -10,8 +10,8 @@ package econfig
 import (
 	"reflect"
 
-	"github.com/goki/ki/kit"
-	"github.com/goki/ki/toml"
+	"goki.dev/ki/v2/kit"
+	"goki.dev/ki/v2/toml"
 )
 
 // Includeser enables processing of Includes []string field with files to include in Config objects.

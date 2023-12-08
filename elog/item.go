@@ -5,9 +5,9 @@
 package elog
 
 import (
-	"github.com/emer/emergent/etime"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/minmax"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/minmax"
 )
 
 const (

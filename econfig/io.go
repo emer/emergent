@@ -8,8 +8,8 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/emer/empi/mpi"
-	"github.com/goki/ki/toml"
+	"github.com/emer/empi/v2/mpi"
+	"goki.dev/ki/v2/toml"
 )
 
 // OpenWithIncludes reads config from given config file,

@@ -4,7 +4,7 @@
 
 package chem
 
-import "github.com/emer/etable/etable"
+import "goki.dev/etable/v2/etable"
 
 // The Stater interface defines the functions implemented for State
 // structures containing chem state variables.

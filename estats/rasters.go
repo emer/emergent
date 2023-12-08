@@ -5,8 +5,8 @@
 package estats
 
 import (
-	"github.com/emer/emergent/emer"
-	"github.com/emer/etable/etensor"
+	"github.com/emer/emergent/v2/emer"
+	"goki.dev/etable/v2/etensor"
 )
 
 // ConfigRasters configures spike rasters for given maximum number of cycles

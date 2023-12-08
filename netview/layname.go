@@ -5,13 +5,13 @@
 package netview
 
 import (
-	"github.com/goki/gi/gi"
-	"github.com/goki/gi/gi3d"
-	"github.com/goki/gi/giv"
-	"github.com/goki/gi/oswin"
-	"github.com/goki/gi/oswin/mouse"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/gi3d"
+	"goki.dev/gi/v2/giv"
+	"goki.dev/gi/v2/oswin"
+	"goki.dev/gi/v2/oswin/mouse"
+	"goki.dev/ki/v2/ki"
+	"goki.dev/ki/v2/kit"
 )
 
 // LayName is the Layer name as a Text2D within the NetView

@@ -5,11 +5,10 @@
 package prjn
 
 import (
-	"github.com/emer/emergent/edge"
-	"github.com/emer/emergent/evec"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/edge"
+	"github.com/emer/emergent/v2/evec"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // PoolRect implements a rectangular pattern of connectivity between
@@ -100,11 +99,11 @@ func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 
 	rNyEff := rNy
 	if cr.RecvN.Y > 0 {
-		rNyEff = ints.MinInt(rNy, cr.RecvStart.Y+cr.RecvN.Y)
+		rNyEff = min(rNy, cr.RecvStart.Y+cr.RecvN.Y)
 	}
 	rNxEff := rNx
 	if cr.RecvN.X > 0 {
-		rNxEff = ints.MinInt(rNx, cr.RecvStart.X+cr.RecvN.X)
+		rNxEff = min(rNx, cr.RecvStart.X+cr.RecvN.X)
 	}
 
 	for ry := cr.RecvStart.Y; ry < rNyEff; ry++ {

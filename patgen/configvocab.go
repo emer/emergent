@@ -9,8 +9,8 @@ import (
 	"log"
 	"math"
 
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/tsragg"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/tsragg"
 )
 
 // Vocab is a map of named tensors that contain patterns used for creating

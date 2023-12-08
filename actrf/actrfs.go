@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/emer/etable/etensor"
+	"goki.dev/etable/v2/etensor"
 )
 
 // RFs manages multiple named RF's -- each one must be initialized first

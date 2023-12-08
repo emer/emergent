@@ -17,15 +17,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emer/emergent/emer"
-	"github.com/emer/emergent/ringidx"
-	"github.com/emer/etable/eplot"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/gi"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/emergent/v2/ringidx"
+	"goki.dev/etable/v2/eplot"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/ki/v2/ki"
+	"goki.dev/ki/v2/kit"
+	"goki.dev/mat32/v2"
 )
 
 // NetData maintains a record of all the network data that has been displayed

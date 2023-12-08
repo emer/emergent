@@ -7,7 +7,7 @@ package netview
 import (
 	"strings"
 
-	"github.com/emer/emergent/etime"
+	"github.com/emer/emergent/v2/etime"
 )
 
 // ViewUpdt manages time scales for updating the NetView

@@ -5,8 +5,8 @@
 package patgen
 
 import (
-	"github.com/emer/emergent/erand"
-	"github.com/emer/etable/etensor"
+	"github.com/emer/emergent/v2/erand"
+	"goki.dev/etable/v2/etensor"
 )
 
 // FlipBits turns nOff bits that are currently On to Off and

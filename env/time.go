@@ -5,10 +5,10 @@
 package env
 
 import (
-	"github.com/emer/emergent/etime"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/kit"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/ki/v2/kit"
 )
 
 // TimeScales are the different time scales associated with overall simulation running, and

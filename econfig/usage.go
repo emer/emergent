@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/goki/ki/kit"
+	"goki.dev/ki/v2/kit"
 )
 
 // Usage returns the usage string for args based on given Config object

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/andreyvit/diff"
-	"github.com/emer/emergent/params"
+	"github.com/emer/emergent/v2/params"
 	// "github.com/andreyvit/diff"
 )
 

@@ -7,7 +7,7 @@
 package efuns
 
 import (
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // GaussVecDistNoNorm returns the gaussian of the distance between two 2D vectors

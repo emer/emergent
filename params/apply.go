@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goki/gi/gi"
-	"github.com/goki/ki/kit"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/laser"
 )
 
 // TargetType returns the first part of the path, indicating what type of
@@ -169,7 +169,7 @@ func (ps *Sel) TargetTypeMatch(obj any) bool {
 			return true
 		}
 	}
-	tnm := kit.NonPtrType(reflect.TypeOf(obj)).Name()
+	tnm := laser.NonPtrType(reflect.TypeOf(obj)).Name()
 	return tnm == trg || tnm == trgh
 }
 
@@ -182,7 +182,7 @@ func (ps *Sel) SelMatch(obj any) bool {
 	if styob, has := obj.(StylerObj); has {
 		obj = styob.Object()
 	}
-	gotyp := kit.NonPtrType(reflect.TypeOf(obj)).Name()
+	gotyp := laser.NonPtrType(reflect.TypeOf(obj)).Name()
 	return SelMatch(ps.Sel, stylr.Name(), stylr.Class(), stylr.TypeName(), gotyp)
 }
 
@@ -279,7 +279,7 @@ func (ps *Sheet) SelNoMatchWarn(setName, objName string) error {
 // the target type should already have been identified and this should only
 // be called when there is an expectation of the path working.
 func FindParam(val reflect.Value, path string) (reflect.Value, error) {
-	npv := kit.NonPtrValue(val)
+	npv := laser.NonPtrValue(val)
 	if npv.Kind() != reflect.Struct {
 		if !npv.IsValid() {
 			err := fmt.Errorf("params.FindParam: object is nil -- must Build *before* applying params!  path: %v\n", path)
@@ -308,7 +308,7 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 // converts the string param val as appropriate for target type.
 // returns error if path not found or cannot set (always logged).
 func SetParam(obj any, path string, val string) error {
-	npv := kit.NonPtrValue(reflect.ValueOf(obj))
+	npv := laser.NonPtrValue(reflect.ValueOf(obj))
 	if npv.Kind() == reflect.Map { // only for string maps
 		npv.SetMapIndex(reflect.ValueOf(path), reflect.ValueOf(val))
 		return nil
@@ -318,7 +318,7 @@ func SetParam(obj any, path string, val string) error {
 	if err != nil {
 		return err
 	}
-	npf := kit.NonPtrValue(fld)
+	npf := laser.NonPtrValue(fld)
 	switch npf.Kind() {
 	case reflect.String:
 		npf.SetString(val)
@@ -332,11 +332,12 @@ func SetParam(obj any, path string, val string) error {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		r, err := strconv.ParseInt(val, 0, 64)
 		if err != nil {
-			enerr := kit.SetEnumValueFromString(fld, val)
-			if enerr != nil {
-				log.Println(err)
-				return err
-			}
+			// todo: enum fix
+			// enerr := laser.SetEnumValueFromString(fld, val)
+			// if enerr != nil {
+			// 	log.Println(err)
+			// 	return err
+			// }
 		} else {
 			npf.SetInt(r)
 		}
@@ -370,7 +371,7 @@ func GetParam(obj any, path string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	npf := kit.NonPtrValue(fld)
+	npf := laser.NonPtrValue(fld)
 	switch npf.Kind() {
 	case reflect.Float64, reflect.Float32:
 		return npf.Float(), nil

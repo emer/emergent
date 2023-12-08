@@ -5,8 +5,7 @@
 package prjn
 
 import (
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
+	"goki.dev/etable/v2/etensor"
 )
 
 // OneToOne implements point-to-point one-to-one pattern of connectivity between two layers
@@ -38,7 +37,7 @@ func (ot *OneToOne) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 	snv := sendn.Values
 	ncon := nrecv
 	if ot.NCons > 0 {
-		ncon = ints.MinInt(ot.NCons, nrecv)
+		ncon = min(ot.NCons, nrecv)
 	}
 	for i := 0; i < ncon; i++ {
 		ri := ot.RecvStart + i

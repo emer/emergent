@@ -11,7 +11,7 @@ See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installati
 
 The single clearest motivation for using Go vs. the ubiquitous Python, is that Python is too slow to implement the full computational model: it can only serve as a wrapper around backend code which is often written in C or C++.  By contrast, *Go can implement the entire model* in one coherent language.  This, along with the advantages of the strongly typed, rapidly compiled Go language vs. duck typed Python for developing large scale frameworks, and the many other benefits of the Go language environment for reproducible, reliable builds across platforms, results in a satisfying and productive programming experience.  Note also that we are not able to leverage existing Python backends such as PyTorch or TensorFlow due to the unique demands of biologically-based neural models.
 
-See the [ra25 example](https://github.com/emer/leabra/blob/master/examples/ra25/README.md) in the `leabra` package for a complete working example (intended to be a good starting point for creating your own models), and any of the 26 models in the [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) repository which also provide good starting points.  See the [etable wiki](https://github.com/emer/etable/wiki) for docs and example code for the widely-used etable data table structure, and the `family_trees` example in the CCN textbook sims which has good examples of many standard network representation analysis techniques (PCA, cluster plots, RSA).
+See the [ra25 example](https://github.com/emer/leabra/blob/master/examples/ra25/README.md) in the `leabra` package for a complete working example (intended to be a good starting point for creating your own models), and any of the 26 models in the [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) repository which also provide good starting points.  See the [etable wiki](https://goki.dev/etable/v2/wiki) for docs and example code for the widely-used etable data table structure, and the `family_trees` example in the CCN textbook sims which has good examples of many standard network representation analysis techniques (PCA, cluster plots, RSA).
 
 See [python README](https://github.com/emer/leabra/blob/master/python/README.md) and [Python Wiki](https://github.com/emer/emergent/wiki/Python) for info on using Python to run models.  See [eTorch](https://github.com/emer/etorch) for how to get an interactive 3D NetView for PyTorch models.
 
@@ -39,7 +39,7 @@ See [python README](https://github.com/emer/leabra/blob/master/python/README.md)
 
 * The system is fully usable from within Python -- see the [Python Wiki](https://github.com/emer/emergent/wiki/Python).  This includes interoperating with PyTorch via [eTorch](https://github.com/emer/etorch), and [PsyNeuLink](https://princetonuniversity.github.io/PsyNeuLink/) to make Leabra models accessible in that framework, and vice-versa.  Furthermore, interactive, IDE-level tools such as `Jupyter` and `nteract` can be used to interactively develop and analyze the models, etc.
 
-* We are leveraging the [GoGi Gui](https://github.com/goki/gi) to provide interactive 2D and 3D GUI interfaces to models, capturing the essential functionality of the original C++ emergent interface, but in a much more a-la-carte fashion.  We also use and support the [GoNum](https://github.com/gonum) framework for analyzing and plotting results within Go.
+* We are leveraging the [GoGi Gui](https://goki.dev/gi/v2) to provide interactive 2D and 3D GUI interfaces to models, capturing the essential functionality of the original C++ emergent interface, but in a much more a-la-carte fashion.  We also use and support the [GoNum](https://github.com/gonum) framework for analyzing and plotting results within Go.
 
 # Design / Organization
 
@@ -136,7 +136,7 @@ The following all work together to provide a convenient layer of abstraction for
 
 Here are the other repositories within `emer` that provide additional, optional elements for simulations:
 
-* [etable](https://github.com/emer/etable) repository holds all of the more general-purpose "DataTable" or DataFrame (`etable.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `etensor` n-dimensional array, `eplot` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`, and lots of data analysis tools like similarity / distance matricies, PCA, cluster plots, etc.
+* [etable](https://goki.dev/etable/v2) repository holds all of the more general-purpose "DataTable" or DataFrame (`etable.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `etensor` n-dimensional array, `eplot` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`, and lots of data analysis tools like similarity / distance matricies, PCA, cluster plots, etc.
 
 * [eMPI](https://github.com/emer/empi) provides an MPI (message passing interface) distributed memory implementation -- see [MPI Wiki page](https://github.com/emer/emergent/wiki/MPI)
 

@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"github.com/emer/etable/etensor"
+	"goki.dev/etable/v2/etensor"
 )
 
 // PoolSameUnit connects a given unit to the unit at the same index

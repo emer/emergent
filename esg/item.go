@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goki/ki/kit"
+	"goki.dev/ki/v2/kit"
 )
 
 // Item is one item within a rule

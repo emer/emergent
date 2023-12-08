@@ -3,20 +3,23 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package relpos defines a position relationship among layers, in terms of X,Y width and height of layer
-and associated position within a given X-Y plane, and Z vertical stacking of layers above and below each other.
+Package relpos defines a position relationship among layers,
+in terms of X,Y width and height of layer
+and associated position within a given X-Y plane,
+and Z vertical stacking of layers above and below each other.
 */
 package relpos
 
+//go:generate goki generate
+
 import (
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // Rel defines a position relationship among layers, in terms of X,Y width and height of layer
 // and associated position within a given X-Y plane,
 // and Z vertical stacking of layers above and below each other.
-type Rel struct {
+type Rel struct { //git:add
 
 	// spatial relationship between this layer and the other layer
 	Rel Relations `desc:"spatial relationship between this layer and the other layer"`
@@ -130,14 +133,7 @@ func (rp *Rel) AlignXPos(xop, xosz, xsz float32) float32 {
 }
 
 // Relations are different spatial relationships (of layers)
-type Relations int
-
-//go:generate stringer -type=Relations
-
-var KiT_Relations = kit.Enums.AddEnum(RelationsN, kit.NotBitFlag, nil)
-
-func (ev Relations) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *Relations) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type Relations int32 //enums:enum
 
 // The relations
 const (
@@ -148,42 +144,22 @@ const (
 	FrontOf
 	Above
 	Below
-
-	RelationsN
 )
 
 // XAligns are different horizontal alignments
-type XAligns int
-
-//go:generate stringer -type=XAligns
-
-var KiT_XAligns = kit.Enums.AddEnum(XAlignsN, kit.NotBitFlag, nil)
-
-func (ev XAligns) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *XAligns) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type XAligns int32 //enums:enum
 
 const (
 	Left XAligns = iota
 	Middle
 	Right
-
-	XAlignsN
 )
 
 // YAligns are different vertical alignments
-type YAligns int
-
-//go:generate stringer -type=YAligns
-
-var KiT_YAligns = kit.Enums.AddEnum(YAlignsN, kit.NotBitFlag, nil)
-
-func (ev YAligns) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *YAligns) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type YAligns int32 //enums:enum
 
 const (
 	Front YAligns = iota
 	Center
 	Back
-
-	YAlignsN
 )

@@ -7,7 +7,7 @@ package esg
 import (
 	"fmt"
 
-	"github.com/goki/ki/kit"
+	"goki.dev/ki/v2/kit"
 )
 
 // Conds are conditionals

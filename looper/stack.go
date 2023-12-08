@@ -5,8 +5,8 @@
 package looper
 
 import (
-	"github.com/emer/emergent/estats"
-	"github.com/emer/emergent/etime"
+	"github.com/emer/emergent/v2/estats"
+	"github.com/emer/emergent/v2/etime"
 )
 
 // Stack contains a list of Loops Ordered from top to bottom.

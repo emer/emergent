@@ -5,8 +5,8 @@
 package actrf
 
 import (
-	"github.com/emer/empi/empi"
-	"github.com/emer/empi/mpi"
+	"github.com/emer/empi/v2/empi"
+	"github.com/emer/empi/v2/mpi"
 )
 
 // MPISum aggregates RF Sum data across all processors in given mpi communicator.

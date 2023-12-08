@@ -4,7 +4,7 @@
 
 package egui
 
-import "github.com/goki/ki/kit"
+import "goki.dev/ki/v2/kit"
 
 // ToolGhosting the mode enum
 type ToolGhosting int32

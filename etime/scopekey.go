@@ -101,14 +101,14 @@ func (sk *ScopeKey) ModeAndTime() (mode Modes, time Times) {
 	if len(modes) != 1 {
 		mode = NoEvalMode
 	} else {
-		if mode.FromString(modes[0]) != nil {
+		if mode.SetString(modes[0]) != nil {
 			mode = NoEvalMode
 		}
 	}
 	if len(times) != 1 {
 		time = NoTime
 	} else {
-		if time.FromString(times[0]) != nil {
+		if time.SetString(times[0]) != nil {
 			time = NoTime
 		}
 	}

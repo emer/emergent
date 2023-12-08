@@ -5,11 +5,10 @@
 package prjn
 
 import (
-	"github.com/emer/emergent/edge"
-	"github.com/emer/emergent/evec"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/ints"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/edge"
+	"github.com/emer/emergent/v2/evec"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // Rect implements a rectangular pattern of connectivity between two layers
@@ -87,18 +86,18 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	rNyEff := rNy
 	if cr.RecvN.Y > 0 {
-		rNyEff = ints.MinInt(rNy, cr.RecvN.Y)
+		rNyEff = min(rNy, cr.RecvN.Y)
 	}
 	if cr.RecvStart.Y > 0 {
-		rNyEff = ints.MinInt(rNyEff, rNy-cr.RecvStart.Y)
+		rNyEff = min(rNyEff, rNy-cr.RecvStart.Y)
 	}
 
 	rNxEff := rNx
 	if cr.RecvN.X > 0 {
-		rNxEff = ints.MinInt(rNx, cr.RecvN.X)
+		rNxEff = min(rNx, cr.RecvN.X)
 	}
 	if cr.RecvStart.X > 0 {
-		rNxEff = ints.MinInt(rNxEff, rNx-cr.RecvStart.X)
+		rNxEff = min(rNxEff, rNx-cr.RecvStart.X)
 	}
 
 	sc := cr.Scale
@@ -155,18 +154,18 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 
 	rNyEff := rNy
 	if cr.RecvN.Y > 0 {
-		rNyEff = ints.MinInt(rNy, cr.RecvN.Y)
+		rNyEff = min(rNy, cr.RecvN.Y)
 	}
 	if cr.RecvStart.Y > 0 {
-		rNyEff = ints.MinInt(rNyEff, rNy-cr.RecvStart.Y)
+		rNyEff = min(rNyEff, rNy-cr.RecvStart.Y)
 	}
 
 	rNxEff := rNx
 	if cr.RecvN.X > 0 {
-		rNxEff = ints.MinInt(rNx, cr.RecvN.X)
+		rNxEff = min(rNx, cr.RecvN.X)
 	}
 	if cr.RecvStart.X > 0 {
-		rNxEff = ints.MinInt(rNxEff, rNx-cr.RecvStart.X)
+		rNxEff = min(rNxEff, rNx-cr.RecvStart.X)
 	}
 
 	sc := cr.Scale

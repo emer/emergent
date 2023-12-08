@@ -5,15 +5,15 @@
 package egui
 
 import (
-	"github.com/emer/emergent/etime"
-	"github.com/emer/emergent/netview"
-	"github.com/emer/etable/eplot"
-	"github.com/emer/etable/etview"
-	"github.com/goki/gi/gi"
-	"github.com/goki/gi/giv"
+	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/emergent/v2/netview"
 	_ "github.com/goki/gosl/slboolview" // include to get gui views
-	"github.com/goki/ki/ki"
-	"github.com/goki/mat32"
+	"goki.dev/etable/v2/eplot"
+	"goki.dev/etable/v2/etview"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/giv"
+	"goki.dev/ki/v2/ki"
+	"goki.dev/mat32/v2"
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface

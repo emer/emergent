@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/emer/emergent/emer"
-	"github.com/emer/emergent/estats"
-	"github.com/emer/emergent/etime"
-	"github.com/emer/etable/agg"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/metric"
+	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/emergent/v2/estats"
+	"github.com/emer/emergent/v2/etime"
+	"goki.dev/etable/v2/agg"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/metric"
 )
 
 // WriteFunc function that computes and sets log values

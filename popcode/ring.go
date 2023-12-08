@@ -5,7 +5,7 @@
 package popcode
 
 import (
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // Ring is a OneD popcode that encodes a circular value such as an angle

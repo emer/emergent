@@ -16,29 +16,23 @@ between Paused and Stopped is that in the Paused state, the application waits fo
 Stopped state, the Stepper exits, and no application state is preserved. After entering Stopped, the controlling
 program (i.e., the user interface) should make sure that everything is properly reinitialized before running again.
 */
-
 package stepper
+
+//go:generate goki generate
 
 import (
 	"sync"
 	"time"
-
-	"github.com/goki/ki/kit"
 )
 
-type RunState int
+type RunState int32 //enums:enum
 
 const (
 	Stopped  RunState = iota // execution is stopped. The Stepper is NOT waiting, so running again is basically a restart. The only way to go from Running or Stepping to Stopped is to explicitly call Stop(). Program state will not be preserved once the Stopped state is entered.
 	Paused                   // execution is paused. The sim is waiting for further instructions, and can continue, or stop.
 	Stepping                 // the application is running, but will pause if it hits a StepPoint that matches the current StepGrain.
 	Running                  // the application is running, and will NOT pause at StepPoints. It will pause if a stop has been requested.
-	RunStateN
 )
-
-var KiT_RunState = kit.Enums.AddEnum(RunStateN, kit.NotBitFlag, nil)
-
-//go:generate stringer -type=RunState
 
 // A StopCheckFn is a callback to check whether an arbitrary condition has been matched.
 // If a StopCheckFn returns true, the program is suspended with a RunState of Paused,

@@ -48,6 +48,6 @@ multiple parameters etc that can be modified to control env behavior --
 all of this is paradigm-specific and outside the scope of this basic interface.
 
 See the emergent github wiki for more info:
-https://github.com/emer/emergent/wiki/Env
+https://github.com/emer/emergent/v2/wiki/Env
 */
 package env

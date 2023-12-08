@@ -4,19 +4,14 @@
 
 package evec
 
-import "github.com/goki/ki/kit"
+//go:generate goki generate
 
 // Dims is a list of vector dimension (component) names
-type Dims int
+type Dims int32 //enums:enum
 
 const (
 	X Dims = iota
 	Y
 	Z
 	W
-	DimsN
 )
-
-//go:generate stringer -type=Dims
-
-var KiT_Dims = kit.Enums.AddEnum(DimsN, kit.NotBitFlag, nil)

@@ -7,7 +7,7 @@ package env
 import (
 	"fmt"
 
-	"github.com/emer/emergent/estats"
+	"github.com/emer/emergent/v2/estats"
 )
 
 // Ctrs contains an ordered slice of timescales,

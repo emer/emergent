@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/emer/emergent/edge"
-	"github.com/emer/emergent/efuns"
-	"github.com/emer/emergent/evec"
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/minmax"
-	"github.com/goki/mat32"
+	"github.com/emer/emergent/v2/edge"
+	"github.com/emer/emergent/v2/efuns"
+	"github.com/emer/emergent/v2/evec"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/minmax"
+	"goki.dev/mat32/v2"
 )
 
 // PoolTile implements tiled 2D connectivity between pools within layers, where
