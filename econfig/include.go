@@ -8,10 +8,10 @@
 package econfig
 
 import (
+	"errors"
 	"reflect"
 
 	"goki.dev/grows/tomls"
-	"goki.dev/grr"
 	"goki.dev/laser"
 )
 
@@ -64,7 +64,7 @@ func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 			errs = append(errs, err)
 		}
 	}
-	return includes, grr.AllErrors(errs, 10)
+	return includes, errors.Join(errs...)
 }
 
 // IncludeStack returns the stack of include files in the natural
@@ -97,5 +97,5 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 	} else {
 		errs = append(errs, err)
 	}
-	return includes, grr.AllErrors(errs, 10)
+	return includes, errors.Join(errs...)
 }

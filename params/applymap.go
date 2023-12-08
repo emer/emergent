@@ -5,12 +5,12 @@
 package params
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
 	"strings"
 
-	"goki.dev/grr"
 	"goki.dev/laser"
 )
 
@@ -48,7 +48,7 @@ func ApplyMap(obj any, vals map[string]any, setMsg bool) error {
 			log.Printf("ApplyMap: set field: %s = %#v\n", k, laser.NonPtrValue(fld).Interface())
 		}
 	}
-	return grr.AllErrors(errs, 10)
+	return errors.Join(errs...)
 }
 
 // MapToSheet returns a Sheet from given map[string]any values,
@@ -73,5 +73,5 @@ func MapToSheet(vals map[string]any) (*Sheet, error) {
 		sl.Params[fld[1]] = vstr
 		*sh = append(*sh, sl)
 	}
-	return sh, grr.AllErrors(errs, 10)
+	return sh, errors.Join(errs...)
 }

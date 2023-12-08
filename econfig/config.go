@@ -5,12 +5,12 @@
 package econfig
 
 import (
+	"errors"
 	"os"
 	"reflect"
 
 	"github.com/emer/empi/v2/mpi"
 	"goki.dev/glop/dirs"
-	"goki.dev/grr"
 )
 
 var (
@@ -92,5 +92,5 @@ func Config(cfg any, defaultFile ...string) ([]string, error) {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	return args, grr.AllErrors(errs, 10)
+	return args, errors.Join(errs...)
 }
