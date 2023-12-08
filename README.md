@@ -1,5 +1,7 @@
 # emergent reboot in Go
 
+**IMPORTANT:** This is version v1, which uses v1 of the [GoGi Gui](https://github.com/goki/gi) and related infrastructure.  A version v2 is now available which uses the new v2 version of GoGi at https://goki.dev, which has been fully rewritten from the ground up to be more reliable, faster, and has updated material-3 based styling.
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/emer/emergent)](https://goreportcard.com/report/github.com/emer/emergent)
 [![Go Reference](https://pkg.go.dev/badge/github.com/emer/emergent.svg)](https://pkg.go.dev/github.com/emer/emergent)
 [![CI](https://github.com/emer/emergent/actions/workflows/ci.yml/badge.svg)](https://github.com/emer/emergent/actions/workflows/ci.yml)
