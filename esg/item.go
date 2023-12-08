@@ -7,12 +7,10 @@ package esg
 import (
 	"fmt"
 	"strings"
-
-	"goki.dev/ki/v2/kit"
 )
 
 // Item is one item within a rule
-type Item struct {
+type Item struct { //git:add
 
 	// probability for choosing this item -- 0 if uniform random
 	Prob float32 `desc:"probability for choosing this item -- 0 if uniform random"`
@@ -95,7 +93,7 @@ func (it *Item) Validate(rl *Rule, rls *Rules) []error {
 // Elem
 
 // Elem is one elemenent in a concrete Item: either rule or token
-type Elem struct {
+type Elem struct { //git:add
 
 	// type of element: Rule, Token, or SubItems
 	El Elements `desc:"type of element: Rule, Token, or SubItems"`
@@ -145,14 +143,7 @@ func (el *Elem) Validate(it *Item, rl *Rule, rls *Rules) []error {
 }
 
 // Elements are different types of elements
-type Elements int32
-
-//go:generate stringer -type=Elements
-
-var KiT_Elements = kit.Enums.AddEnum(ElementsN, kit.NotBitFlag, nil)
-
-func (ev Elements) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *Elements) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type Elements int32 //enums:enum
 
 const (
 	// RuleEl means Value is name of a rule
@@ -160,8 +151,6 @@ const (
 
 	// TokenEl means Value is a token to emit
 	TokenEl
-
-	ElementsN
 )
 
 /////////////////////////////////////////////////////////////////////

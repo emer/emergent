@@ -4,11 +4,12 @@
 
 package env
 
+//go:generate goki generate
+
 import (
 	"github.com/emer/emergent/v2/etime"
 	"goki.dev/etable/v2/etable"
 	"goki.dev/etable/v2/etensor"
-	"goki.dev/ki/v2/kit"
 )
 
 // TimeScales are the different time scales associated with overall simulation running, and
@@ -20,13 +21,6 @@ import (
 // simulations to add needed additional levels, although using one of the existing standard
 // values is recommended wherever possible.
 type TimeScales etime.Times
-
-//go:generate stringer -type=TimeScales
-
-var KiT_TimeScales = kit.Enums.AddEnum(TimeScalesN, kit.NotBitFlag, nil)
-
-func (ev TimeScales) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *TimeScales) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
 
 // The time scales
 const (

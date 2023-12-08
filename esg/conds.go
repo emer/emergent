@@ -4,10 +4,10 @@
 
 package esg
 
+//go:generate goki generate
+
 import (
 	"fmt"
-
-	"goki.dev/ki/v2/kit"
 )
 
 // Conds are conditionals
@@ -169,14 +169,7 @@ func (cd *Cond) Validate(rl *Rule, it *Item, rls *Rules) []error {
 }
 
 // CondEls are different types of conditional elements
-type CondEls int32
-
-//go:generate stringer -type=CondEls
-
-var KiT_CondEls = kit.Enums.AddEnum(CondElsN, kit.NotBitFlag, nil)
-
-func (ev CondEls) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *CondEls) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type CondEls int32 //enums:enum
 
 const (
 	// CRule means Rule is name of a rule to evaluate truth value
@@ -187,6 +180,4 @@ const (
 
 	// SubCond is a sub-condition expression
 	SubCond
-
-	CondElsN
 )

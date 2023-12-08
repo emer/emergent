@@ -15,17 +15,16 @@ import (
 	"sync"
 
 	"github.com/emer/emergent/v2/emer"
+	"goki.dev/colors/colormap"
 	"goki.dev/etable/v2/minmax"
-	"goki.dev/gi/v2/colormap"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/gi3d"
-	"goki.dev/gi/v2/gist"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/gi/v2/oswin/key"
-	"goki.dev/gi/v2/units"
-	"goki.dev/ki/v2/ki"
-	"goki.dev/ki/v2/kit"
+	"goki.dev/girl/styles"
+	"goki.dev/girl/units"
+	"goki.dev/goosi/events/key"
+	"goki.dev/ki/v2"
 	"goki.dev/mat32/v2"
+	"goki.dev/xyz"
 )
 
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
@@ -75,8 +74,6 @@ type NetView struct {
 	// [view: -] mutex on data access
 	DataMu sync.RWMutex `view:"-" copy:"-" json:"-" xml:"-" desc:"mutex on data access"`
 }
-
-var KiT_NetView = kit.Types.AddType(&NetView{}, NetViewProps)
 
 // AddNewNetView adds a new NetView to given parent node, with given name.
 func AddNewNetView(parent ki.Ki, name string) *NetView {
@@ -282,7 +279,7 @@ func (nv *NetView) Config() {
 
 	vncfg := kit.TypeAndNameList{}
 	vncfg.Add(gi.KiT_Frame, "vars")
-	vncfg.Add(gi3d.KiT_Scene, "scene")
+	vncfg.Add(xyz.KiT_Scene, "scene")
 	nlay.ConfigChildren(vncfg) // won't do update b/c of above updt
 
 	nv.VarsConfig()
@@ -337,8 +334,8 @@ func (nv *NetView) Viewbar() *gi.ToolBar {
 	return nv.ChildByName("vbar", 3).(*gi.ToolBar)
 }
 
-func (nv *NetView) Scene() *gi3d.Scene {
-	return nv.NetLay().ChildByName("scene", 1).(*gi3d.Scene)
+func (nv *NetView) Scene() *xyz.Scene {
+	return nv.NetLay().ChildByName("scene", 1).(*xyz.Scene)
 }
 
 func (nv *NetView) VarsLay() *gi.Frame {
@@ -583,7 +580,7 @@ func (nv *NetView) VarsConfig() {
 	vl.Lay = gi.LayoutGrid
 	vl.SetProp("columns", nv.Params.NVarCols)
 	vl.SetProp("spacing", 0)
-	vl.SetProp("vertical-align", gist.AlignTop)
+	vl.SetProp("vertical-align", styles.Start)
 	nv.VarsListUpdate()
 	if len(nv.Vars) == 0 {
 		vl.DeleteChildren(true)
@@ -646,7 +643,7 @@ func (nv *NetView) ViewConfig() {
 	nlay := nv.Net.NLayers()
 	laysGp, err := vs.ChildByNameTry("Layers", 0)
 	if err != nil {
-		laysGp = gi3d.AddNewGroup(vs, vs, "Layers")
+		laysGp = xyz.AddNewGroup(vs, vs, "Layers")
 	}
 	layConfig := kit.TypeAndNameList{}
 	for li := 0; li < nlay; li++ {
@@ -657,7 +654,7 @@ func (nv *NetView) ViewConfig() {
 		} else {
 			lmesh.(*LayMesh).Lay = lay // make sure
 		}
-		layConfig.Add(gi3d.KiT_Group, lay.Name())
+		layConfig.Add(xyz.KiT_Group, lay.Name())
 	}
 	gpConfig := kit.TypeAndNameList{}
 	gpConfig.Add(KiT_LayObj, "layer")
@@ -675,7 +672,7 @@ func (nv *NetView) ViewConfig() {
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
-		lg := lgi.(*gi3d.Group)
+		lg := lgi.(*xyz.Group)
 		lg.ConfigChildren(gpConfig) // won't do update b/c of above
 		lp := ly.Pos()
 		lp.Y = -lp.Y // reverse direction
@@ -702,8 +699,8 @@ func (nv *NetView) ViewConfig() {
 		txt.NetView = nv
 		txt.SetText(vs, ly.Name())
 		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
-		txt.SetProp("text-align", gist.AlignLeft)
-		txt.SetProp("text-vertical-align", gist.AlignTop)
+		txt.SetProp("text-align", styles.Start)
+		txt.SetProp("text-vertical-align", styles.Start)
 	}
 	laysGp.UpdateEnd(updt)
 }
@@ -718,14 +715,14 @@ func (nv *NetView) ViewDefaults() {
 	vs.Camera.Near = 0.1
 	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
 	vs.BgColor = gi.Prefs.Colors.Background
-	gi3d.AddNewAmbientLight(vs, "ambient", 0.1, gi3d.DirectSun)
-	dir := gi3d.AddNewDirLight(vs, "dirUp", 0.3, gi3d.DirectSun)
+	xyz.AddNewAmbientLight(vs, "ambient", 0.1, xyz.DirectSun)
+	dir := xyz.AddNewDirLight(vs, "dirUp", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, 0)
-	dir = gi3d.AddNewDirLight(vs, "dirBack", 0.3, gi3d.DirectSun)
+	dir = xyz.AddNewDirLight(vs, "dirBack", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, -2.5)
-	// point := gi3d.AddNewPointLight(vs, "point", 1, gi3d.DirectSun)
+	// point := xyz.AddNewPointLight(vs, "point", 1, xyz.DirectSun)
 	// point.Pos.Set(0, 2, 5)
-	// spot := gi3d.AddNewSpotLight(vs, "spot", 1, gi3d.DirectSun)
+	// spot := xyz.AddNewSpotLight(vs, "spot", 1, xyz.DirectSun)
 	// spot.Pose.Pos.Set(0, 2, 5)
 	// spot.LookAtOrigin()
 }
@@ -816,7 +813,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	return
 }
 
-// ConfigLabels ensures that given label gi3d.Text2D objects are created and initialized
+// ConfigLabels ensures that given label xyz.Text2D objects are created and initialized
 // in a top-level group called Labels.  Use LabelByName() to get a given label, and
 // LayerByName() to get a Layer group, whose Pose can be copied to put a label in
 // position relative to a layer.  Default alignment is Left, Top.
@@ -825,22 +822,22 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 	vs := nv.Scene()
 	lgp, err := vs.ChildByNameTry("Labels", 1)
 	if err != nil {
-		lgp = gi3d.AddNewGroup(vs, vs, "Labels")
+		lgp = xyz.AddNewGroup(vs, vs, "Labels")
 	}
 
 	lbConfig := kit.TypeAndNameList{}
 	for _, ls := range labs {
-		lbConfig.Add(gi3d.KiT_Text2D, ls)
+		lbConfig.Add(xyz.KiT_Text2D, ls)
 	}
 	mods, updt := lgp.ConfigChildren(lbConfig)
 	if mods {
 		for i, ls := range labs {
-			lb := lgp.ChildByName(ls, i).(*gi3d.Text2D)
+			lb := lgp.ChildByName(ls, i).(*xyz.Text2D)
 			lb.Defaults(vs)
 			lb.SetText(vs, ls)
-			lb.SetProp("text-align", gist.AlignLeft)
-			lb.SetProp("vertical-align", gist.AlignTop)
-			lb.SetProp("white-space", gist.WhiteSpacePre)
+			lb.SetProp("text-align", styles.Start)
+			lb.SetProp("vertical-align", styles.Start)
+			lb.SetProp("white-space", styles.WhiteSpacePre)
 		}
 	}
 	lgp.UpdateEnd(updt)
@@ -849,7 +846,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 
 // LabelByName returns given Text2D label (see ConfigLabels).
 // nil if not found.
-func (nv *NetView) LabelByName(lab string) *gi3d.Text2D {
+func (nv *NetView) LabelByName(lab string) *xyz.Text2D {
 	vs := nv.Scene()
 	lgp, err := vs.ChildByNameTry("Labels", 1)
 	if err != nil {
@@ -859,12 +856,12 @@ func (nv *NetView) LabelByName(lab string) *gi3d.Text2D {
 	if err != nil {
 		return nil
 	}
-	return txt.(*gi3d.Text2D)
+	return txt.(*xyz.Text2D)
 }
 
-// LayerByName returns the gi3d.Group that represents layer of given name.
+// LayerByName returns the xyz.Group that represents layer of given name.
 // nil if not found.
-func (nv *NetView) LayerByName(lay string) *gi3d.Group {
+func (nv *NetView) LayerByName(lay string) *xyz.Group {
 	vs := nv.Scene()
 	lgp, err := vs.ChildByNameTry("Layers", 0)
 	if err != nil {
@@ -874,7 +871,7 @@ func (nv *NetView) LayerByName(lay string) *gi3d.Group {
 	if err != nil {
 		return nil
 	}
-	return ly.(*gi3d.Group)
+	return ly.(*xyz.Group)
 }
 
 func (nv *NetView) ToolbarConfig() {

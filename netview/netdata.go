@@ -19,12 +19,9 @@ import (
 
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
-	"goki.dev/etable/v2/eplot"
 	"goki.dev/etable/v2/etable"
 	"goki.dev/etable/v2/etensor"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/ki/v2/ki"
-	"goki.dev/ki/v2/kit"
 	"goki.dev/mat32/v2"
 )
 
@@ -99,8 +96,6 @@ type NetData struct {
 	// dummy raster counter when passed a -1 -- increments and wraps around
 	RastCtr int `desc:"dummy raster counter when passed a -1 -- increments and wraps around"`
 }
-
-var KiT_NetData = kit.Types.AddType(&NetData{}, NetDataProps)
 
 // Init initializes the main params and configures the data
 func (nd *NetData) Init(net emer.Network, max int, noSynData bool, maxData int) {
@@ -540,7 +535,7 @@ func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 //   IO
 
 // OpenJSON opens colors from a JSON-formatted file.
-func (nd *NetData) OpenJSON(filename gi.FileName) error {
+func (nd *NetData) OpenJSON(filename gi.FileName) error { //git:add
 	fp, err := os.Open(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -562,7 +557,7 @@ func (nd *NetData) OpenJSON(filename gi.FileName) error {
 }
 
 // SaveJSON saves colors to a JSON-formatted file.
-func (nd *NetData) SaveJSON(filename gi.FileName) error {
+func (nd *NetData) SaveJSON(filename gi.FileName) error { //git:add
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -629,6 +624,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // PlotSelectedUnit opens a window with a plot of all the data for the
 // currently-selected unit.
 // Useful for replaying detailed trace for units of interest.
+/*
 func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D) {
 	width := 1600
 	height := 1200
@@ -672,6 +668,7 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 	win.GoStartEventLoop() // in a separate goroutine
 	return win, dt, plt
 }
+*/
 
 // SelectedUnitTable returns a table with all of the data for the
 // currently-selected unit, and data parallel index.
@@ -720,6 +717,7 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 	return dt
 }
 
+/*
 var NetDataProps = ki.Props{
 	"CallMethods": ki.PropSlice{
 		{"SaveJSON", ki.Props{
@@ -742,3 +740,4 @@ var NetDataProps = ki.Props{
 		}},
 	},
 }
+*/

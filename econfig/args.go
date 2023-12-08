@@ -15,8 +15,8 @@ import (
 
 	"github.com/emer/empi/v2/mpi"
 	"github.com/iancoleman/strcase"
-	"goki.dev/ki/v2/kit"
-	"goki.dev/ki/v2/toml"
+	"goki.dev/grows/tomls"
+	"goki.dev/laser"
 )
 
 // SetFromArgs sets Config values from command-line args,
@@ -92,7 +92,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 		return
 	}
 
-	isbool := kit.NonPtrValue(fval).Kind() == reflect.Bool
+	isbool := laser.NonPtrValue(fval).Kind() == reflect.Bool
 
 	var value string
 	switch {
@@ -134,19 +134,20 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 
 // SetArgValue sets given arg name to given value, into settable reflect.Value
 func SetArgValue(name string, fval reflect.Value, value string) error {
-	nptyp := kit.NonPtrType(fval.Type())
+	nptyp := laser.NonPtrType(fval.Type())
 	vk := nptyp.Kind()
 	switch {
-	case vk >= reflect.Int && vk <= reflect.Uint64 && kit.Enums.TypeRegistered(nptyp):
-		return kit.Enums.SetAnyEnumValueFromString(fval, value)
+	// todo: enum
+	// case vk >= reflect.Int && vk <= reflect.Uint64 && kit.Enums.TypeRegistered(nptyp):
+	// 	return kit.Enums.SetAnyEnumValueFromString(fval, value)
 	case vk == reflect.Map:
 		mval := make(map[string]any)
-		err := toml.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		err := tomls.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
 			mpi.Println(err)
 			return err
 		}
-		err = kit.CopyMapRobust(fval.Interface(), mval["tmp"])
+		err = laser.CopyMapRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
 			mpi.Println(err)
 			err = fmt.Errorf("econfig.ParseArgs: not able to set map field from arg: %s val: %s", name, value)
@@ -155,12 +156,12 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 		}
 	case vk == reflect.Slice:
 		mval := make(map[string]any)
-		err := toml.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		err := tomls.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
 			mpi.Println(err)
 			return err
 		}
-		err = kit.CopySliceRobust(fval.Interface(), mval["tmp"])
+		err = laser.CopySliceRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
 			mpi.Println(err)
 			err = fmt.Errorf("econfig.ParseArgs: not able to set slice field from arg: %s val: %s", name, value)
@@ -168,8 +169,8 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 			return err
 		}
 	default:
-		ok := kit.SetRobust(fval.Interface(), value) // overkill but whatever
-		if !ok {
+		err := laser.SetRobust(fval.Interface(), value) // overkill but whatever
+		if err != nil {
 			err := fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
 			mpi.Println(err)
 			return err
@@ -201,19 +202,19 @@ func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect
 // fieldArgNamesStruct returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
 func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]reflect.Value) {
-	if kit.IfaceIsNil(obj) {
+	if laser.AnyIsNil(obj) {
 		return
 	}
 	ov := reflect.ValueOf(obj)
 	if ov.Kind() == reflect.Pointer && ov.IsNil() {
 		return
 	}
-	val := kit.NonPtrValue(ov)
+	val := laser.NonPtrValue(ov)
 	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
-		if kit.NonPtrType(f.Type).Kind() == reflect.Struct {
+		if laser.NonPtrType(f.Type).Kind() == reflect.Struct {
 			nwPath := f.Name
 			if path != "" {
 				nwPath = path + "." + nwPath
@@ -225,10 +226,10 @@ func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]ref
 					nwNest = true
 				}
 			}
-			fieldArgNamesStruct(kit.PtrValue(fv).Interface(), nwPath, nwNest, allArgs)
+			fieldArgNamesStruct(laser.PtrValue(fv).Interface(), nwPath, nwNest, allArgs)
 			continue
 		}
-		pval := kit.PtrValue(fv)
+		pval := laser.PtrValue(fv)
 		addAllCases(f.Name, path, pval, allArgs)
 		if f.Type.Kind() == reflect.Bool {
 			addAllCases("No"+f.Name, path, pval, allArgs)

@@ -6,20 +6,19 @@ package netview
 
 import (
 	"github.com/emer/emergent/v2/emer"
-	"github.com/goki/vgpu/vshape"
 	"goki.dev/etable/v2/etensor"
-	"goki.dev/gi/v2/gi3d"
-	"goki.dev/ki/v2/kit"
 	"goki.dev/mat32/v2"
+	"goki.dev/vgpu/v2/vshape"
+	"goki.dev/xyz"
 )
 
-// LayMesh is a gi3d.Mesh that represents a layer -- it is dynamically updated using the
+// LayMesh is a xyz.Mesh that represents a layer -- it is dynamically updated using the
 // Update method which only resets the essential Vertex elements.
 // The geometry is literal in the layer size: 0,0,0 lower-left corner and increasing X,Z
 // for the width and height of the layer, in unit (1) increments per unit..
 // NetView applies an overall scaling to make it fit within the larger view.
 type LayMesh struct {
-	gi3d.MeshBase
+	xyz.MeshBase
 
 	// layer that we render
 	Lay emer.Layer `desc:"layer that we render"`
@@ -31,10 +30,8 @@ type LayMesh struct {
 	View *NetView `desc:"netview that we're in"`
 }
 
-var KiT_LayMesh = kit.Types.AddType(&LayMesh{}, nil)
-
 // AddNewLayMesh adds LayMesh mesh to given scene for given layer
-func AddNewLayMesh(sc *gi3d.Scene, nv *NetView, lay emer.Layer) *LayMesh {
+func AddNewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	lm := &LayMesh{}
 	lm.View = nv
 	lm.Lay = lay
@@ -93,7 +90,7 @@ func (lm *LayMesh) Size4D() (nVtx, nIdx int) {
 	return
 }
 
-func (lm *LayMesh) Set(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) Set(sc *xyz.Scene, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
@@ -123,7 +120,7 @@ func (lm *LayMesh) Set(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.Arr
 
 }
 
-func (lm *LayMesh) Update(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) Update(sc *xyz.Scene, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
@@ -158,7 +155,7 @@ func (lm *LayMesh) Update(sc *gi3d.Scene, vtxAry, normAry, texAry, clrAry mat32.
 // to the unit cubes -- affects transparency rendering etc
 var MinUnitHeight = float32(1.0e-6)
 
-func (lm *LayMesh) Set2D(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	nz := lm.Shape.Dim(0)
 	nx := lm.Shape.Dim(1)
 
@@ -210,7 +207,7 @@ func (lm *LayMesh) Set2D(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clr
 	lm.BBoxMu.Unlock()
 }
 
-func (lm *LayMesh) Set4D(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	npz := lm.Shape.Dim(0) // p = pool
 	npx := lm.Shape.Dim(1)
 	nuz := lm.Shape.Dim(2) // u = unit

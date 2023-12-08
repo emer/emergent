@@ -5,9 +5,9 @@
 package netview
 
 import (
-	"github.com/goki/vgpu/vshape"
-	"goki.dev/gi/v2/gi3d"
 	"goki.dev/mat32/v2"
+	"goki.dev/vgpu/v2/vshape"
+	"goki.dev/xyz"
 )
 
 func (lm *LayMesh) RasterSize2D() (nVtx, nIdx int) {
@@ -42,7 +42,7 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIdx int) {
 	return
 }
 
-func (lm *LayMesh) RasterSet2DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	nuz := rs.Dim(0)
 	nux := rs.Dim(1)
@@ -125,7 +125,7 @@ func (lm *LayMesh) RasterSet2DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	lm.BBoxMu.Unlock()
 }
 
-func (lm *LayMesh) RasterSet2DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	nuz := rs.Dim(0)
 	nux := rs.Dim(1)
@@ -208,7 +208,7 @@ func (lm *LayMesh) RasterSet2DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	lm.BBoxMu.Unlock()
 }
 
-func (lm *LayMesh) RasterSet4DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	npz := rs.Dim(0) // p = pool
 	npx := rs.Dim(1)
@@ -312,7 +312,7 @@ func (lm *LayMesh) RasterSet4DX(sc *gi3d.Scene, init bool, vtxAry, normAry, texA
 	lm.BBoxMu.Unlock()
 }
 
-func (lm *LayMesh) RasterSet4DZ(sc *gi3d.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
+func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry mat32.ArrayF32, idxAry mat32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	npz := rs.Dim(0) // p = pool
 	npx := rs.Dim(1)

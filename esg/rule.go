@@ -10,18 +10,10 @@ import (
 	"strings"
 
 	"github.com/emer/emergent/v2/erand"
-	"goki.dev/ki/v2/kit"
 )
 
 // RuleTypes are different types of rules (i.e., how the items are selected)
-type RuleTypes int32
-
-//go:generate stringer -type=RuleTypes
-
-var KiT_RuleTypes = kit.Enums.AddEnum(RuleTypesN, kit.NotBitFlag, nil)
-
-func (ev RuleTypes) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *RuleTypes) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type RuleTypes int32 //enums:enum
 
 const (
 	// UniformItems is the default mutually exclusive items chosen at uniform random
@@ -38,12 +30,10 @@ const (
 
 	// PermutedItems progresses through items in permuted order, indicated by $
 	PermutedItems
-
-	RuleTypesN
 )
 
 // Rule is one rule containing some number of items
-type Rule struct {
+type Rule struct { //git:add
 
 	// name of rule
 	Name string `desc:"name of rule"`

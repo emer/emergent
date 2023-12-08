@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/emer/empi/v2/mpi"
-	"goki.dev/ki/v2/toml"
+	"goki.dev/grows/tomls"
 )
 
 // OpenWithIncludes reads config from given config file,
@@ -19,7 +19,7 @@ import (
 // Is equivalent to Open if there are no Includes.
 // Returns an error if any of the include files cannot be found on IncludePath.
 func OpenWithIncludes(cfg any, file string) error {
-	err := toml.OpenFromPaths(cfg, file, IncludePaths)
+	err := tomls.OpenFromPaths(cfg, file, IncludePaths)
 	if err != nil {
 		return err
 	}
@@ -40,13 +40,13 @@ func OpenWithIncludes(cfg any, file string) error {
 	}
 	for i := ni - 1; i >= 0; i-- {
 		inc := incs[i]
-		err = toml.OpenFromPaths(cfg, inc, IncludePaths)
+		err = tomls.OpenFromPaths(cfg, inc, IncludePaths)
 		if err != nil {
 			mpi.Println(err)
 		}
 	}
 	// reopen original
-	toml.OpenFromPaths(cfg, file, IncludePaths)
+	tomls.OpenFromPaths(cfg, file, IncludePaths)
 	if hasIncludes {
 		*incsObj.IncludesPtr() = incs
 	} else {
@@ -58,10 +58,10 @@ func OpenWithIncludes(cfg any, file string) error {
 // OpenFS reads config from given TOML file,
 // using the fs.FS filesystem -- e.g., for embed files.
 func OpenFS(cfg any, fsys fs.FS, file string) error {
-	return toml.OpenFS(cfg, fsys, file)
+	return tomls.OpenFS(cfg, fsys, file)
 }
 
 // Save writes TOML to given file.
 func Save(cfg any, file string) error {
-	return toml.Save(cfg, file)
+	return tomls.Save(cfg, file)
 }

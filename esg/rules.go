@@ -9,7 +9,7 @@ import (
 )
 
 // Rules is a collection of rules
-type Rules struct {
+type Rules struct { //git:add
 
 	// name of this rule collection
 	Name string `desc:"name of this rule collection"`

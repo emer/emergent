@@ -9,8 +9,8 @@ import (
 	"reflect"
 
 	"github.com/emer/empi/v2/mpi"
-	"goki.dev/ki/v2/dirs"
-	"goki.dev/ki/v2/kit"
+	"goki.dev/glop/dirs"
+	"goki.dev/grr"
 )
 
 var (
@@ -70,14 +70,14 @@ func Config(cfg any, defaultFile ...string) ([]string, error) {
 
 	var cfgFiles []string
 	if ConfigFile != "" {
-		_, err := dirs.FindFileOnPaths(IncludePaths, ConfigFile)
-		if err == nil {
+		files := dirs.FindFilesOnPaths(IncludePaths, ConfigFile)
+		if len(files) > 0 {
 			cfgFiles = append(cfgFiles, ConfigFile)
 		}
 	} else {
 		for _, fn := range defaultFile {
-			_, err := dirs.FindFileOnPaths(IncludePaths, fn)
-			if err == nil {
+			files := dirs.FindFilesOnPaths(IncludePaths, fn)
+			if len(files) > 0 {
 				cfgFiles = append(cfgFiles, fn)
 			}
 		}
@@ -92,5 +92,5 @@ func Config(cfg any, defaultFile ...string) ([]string, error) {
 	if err != nil {
 		errs = append(errs, err)
 	}
-	return args, kit.AllErrors(errs, 10)
+	return args, grr.AllErrors(errs, 10)
 }

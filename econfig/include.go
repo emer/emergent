@@ -10,8 +10,9 @@ package econfig
 import (
 	"reflect"
 
-	"goki.dev/ki/v2/kit"
-	"goki.dev/ki/v2/toml"
+	"goki.dev/grows/tomls"
+	"goki.dev/grr"
+	"goki.dev/laser"
 )
 
 // Includeser enables processing of Includes []string field with files to include in Config objects.
@@ -34,7 +35,7 @@ type Includer interface {
 // Returns an error if any of the include files cannot be found on IncludePath.
 // Does not alter cfg.
 func IncludesStack(cfg Includeser) ([]string, error) {
-	clone := reflect.New(kit.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includeser)
+	clone := reflect.New(laser.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includeser)
 	*clone.IncludesPtr() = *cfg.IncludesPtr()
 	return includesStackImpl(clone, nil)
 }
@@ -53,7 +54,7 @@ func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 	var errs []error
 	for _, inc := range incs {
 		*clone.IncludesPtr() = nil
-		err := toml.OpenFromPaths(clone, inc, IncludePaths)
+		err := tomls.OpenFromPaths(clone, inc, IncludePaths)
 		if err == nil {
 			includes, err = includesStackImpl(clone, includes)
 			if err != nil {
@@ -63,7 +64,7 @@ func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 			errs = append(errs, err)
 		}
 	}
-	return includes, kit.AllErrors(errs, 10)
+	return includes, grr.AllErrors(errs, 10)
 }
 
 // IncludeStack returns the stack of include files in the natural
@@ -72,7 +73,7 @@ func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 // Returns an error if any of the include files cannot be found on IncludePath.
 // Does not alter cfg.
 func IncludeStack(cfg Includer) ([]string, error) {
-	clone := reflect.New(kit.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includer)
+	clone := reflect.New(laser.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includer)
 	*clone.IncludePtr() = *cfg.IncludePtr()
 	return includeStackImpl(clone, nil)
 }
@@ -87,7 +88,7 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 	includes = append(includes, inc)
 	var errs []error
 	*clone.IncludePtr() = ""
-	err := toml.OpenFromPaths(clone, inc, IncludePaths)
+	err := tomls.OpenFromPaths(clone, inc, IncludePaths)
 	if err == nil {
 		includes, err = includeStackImpl(clone, includes)
 		if err != nil {
@@ -96,5 +97,5 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 	} else {
 		errs = append(errs, err)
 	}
-	return includes, kit.AllErrors(errs, 10)
+	return includes, grr.AllErrors(errs, 10)
 }

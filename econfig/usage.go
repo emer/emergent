@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"goki.dev/ki/v2/kit"
+	"goki.dev/laser"
 )
 
 // Usage returns the usage string for args based on given Config object
@@ -28,17 +28,17 @@ func Usage(cfg any) string {
 
 // usageStruct adds usage info to given strings.Builder
 func usageStruct(obj any, path string, b *strings.Builder) {
-	typ := kit.NonPtrType(reflect.TypeOf(obj))
-	val := kit.NonPtrValue(reflect.ValueOf(obj))
+	typ := laser.NonPtrType(reflect.TypeOf(obj))
+	val := laser.NonPtrValue(reflect.ValueOf(obj))
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
-		if kit.NonPtrType(f.Type).Kind() == reflect.Struct {
+		if laser.NonPtrType(f.Type).Kind() == reflect.Struct {
 			nwPath := f.Name
 			if path != "" {
 				nwPath = path + "." + nwPath
 			}
-			usageStruct(kit.PtrValue(fv).Interface(), nwPath, b)
+			usageStruct(laser.PtrValue(fv).Interface(), nwPath, b)
 			continue
 		}
 		nm := f.Name
