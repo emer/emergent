@@ -7,7 +7,6 @@ package netparams
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -68,7 +67,7 @@ func (pr *Sets) SaveTOML(filename gi.FileName) error {
 
 // WriteGoCode writes params to corresponding Go initializer code.
 func (pr *Sets) WriteGoCode(w io.Writer, depth int) {
-	w.Write([]byte(fmt.Sprintf("netparams.Sets{\n")))
+	w.Write([]byte("netparams.Sets{\n"))
 	depth++
 	for nm, st := range *pr {
 		w.Write(indent.TabBytes(depth))
