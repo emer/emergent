@@ -17,7 +17,7 @@ clean:
 	$(GOCLEAN)
 
 # NOTE: MUST update version number here prior to running 'make release'
-VERS=v1.4.31
+VERS=v2.0.0-dev0.0.1
 PACKAGE=emer
 GIT_COMMIT=`git rev-parse --short HEAD`
 VERS_DATE=`date -u +%Y-%m-%d\ %H:%M`
