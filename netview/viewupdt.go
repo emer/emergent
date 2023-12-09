@@ -65,7 +65,7 @@ func (vu *ViewUpdt) Update() {
 	vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	// note: essential to use Go version of update when called from another goroutine
 	if vu.View.IsVisible() {
-		vu.View.GoUpdate()
+		vu.View.GoUpdateView()
 	}
 }
 
@@ -85,7 +85,7 @@ func (vu *ViewUpdt) UpdateWhenStopped() {
 	}
 	// note: essential to use Go version of update when called from another goroutine
 	if vu.View.IsVisible() {
-		vu.View.GoUpdate()
+		vu.View.GoUpdateView()
 	}
 }
 
@@ -102,7 +102,7 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 			if vu.View.Params.Raster.On { // no extra rec here
 				vu.View.Data.RecordLastCtrs(vu.Text)
 				if vu.View.IsVisible() {
-					vu.View.GoUpdate()
+					vu.View.GoUpdateView()
 				}
 			} else {
 				vu.Update()
@@ -192,26 +192,26 @@ func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
 	vu.View.Record(vu.Text, cyc)
 	switch viewUpdt {
 	case etime.Cycle:
-		vu.View.GoUpdate()
+		vu.View.GoUpdateView()
 	case etime.FastSpike:
 		if cyc%10 == 0 {
-			vu.View.GoUpdate()
+			vu.View.GoUpdateView()
 		}
 	case etime.GammaCycle:
 		if cyc%25 == 0 {
-			vu.View.GoUpdate()
+			vu.View.GoUpdateView()
 		}
 	case etime.BetaCycle:
 		if cyc%50 == 0 {
-			vu.View.GoUpdate()
+			vu.View.GoUpdateView()
 		}
 	case etime.AlphaCycle:
 		if cyc%100 == 0 {
-			vu.View.GoUpdate()
+			vu.View.GoUpdateView()
 		}
 	case etime.ThetaCycle:
 		if cyc%200 == 0 {
-			vu.View.GoUpdate()
+			vu.View.GoUpdateView()
 		}
 	}
 }

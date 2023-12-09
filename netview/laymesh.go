@@ -30,8 +30,8 @@ type LayMesh struct {
 	View *NetView `desc:"netview that we're in"`
 }
 
-// AddNewLayMesh adds LayMesh mesh to given scene for given layer
-func AddNewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
+// NewLayMesh adds LayMesh mesh to given scene for given layer
+func NewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	lm := &LayMesh{}
 	lm.View = nv
 	lm.Lay = lay

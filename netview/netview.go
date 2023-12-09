@@ -18,14 +18,17 @@ import (
 	"sync"
 
 	"github.com/emer/emergent/v2/emer"
+	"goki.dev/colors"
 	"goki.dev/colors/colormap"
 	"goki.dev/etable/v2/minmax"
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
+	"goki.dev/gi/v2/texteditor"
 	"goki.dev/gi/v2/xyzv"
 	"goki.dev/girl/styles"
-	"goki.dev/girl/units"
+	"goki.dev/goosi/events"
 	"goki.dev/goosi/events/key"
+	"goki.dev/icons"
 	"goki.dev/ki/v2"
 	"goki.dev/mat32/v2"
 	"goki.dev/xyz"
@@ -37,10 +40,10 @@ type NetView struct {
 	gi.Layout
 
 	// the network that we're viewing
-	Net emer.Network `desc:"the network that we're viewing"`
+	Net emer.Network `set:"-"`
 
 	// current variable that we're viewing
-	Var string `desc:"current variable that we're viewing"`
+	Var string `set:"-"`
 
 	// current data parallel index di, for networks capable of processing input patterns in parallel.
 	Di int `desc:"current data parallel index di, for networks capable of processing input patterns in parallel."`
@@ -173,26 +176,32 @@ func (nv *NetView) RecordSyns() {
 	nv.Data.RecordSyns()
 }
 
-// todo: probaby don't need:
+// todo: probably don't need:
 
-// GoUpdate is the update call to make from another go routine
+// GoUpdateView is the update call to make from another go routine
 // it does the proper blocking to coordinate with GUI updates
 // generated on the main GUI thread.
-func (nv *NetView) GoUpdate() {
-	nv.Update()
+func (nv *NetView) GoUpdateView() {
+	nv.UpdateView()
 }
 
-// Update updates the display based on current state of network.
-// This version is for calling within main window eventloop goroutine --
-// use GoUpdate version for calling outside of main goroutine.
-func (nv *NetView) Update() {
+// UpdateView updates the display based on last recorded state of network.
+func (nv *NetView) UpdateView() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	vs := nv.Scene()
-	updt := vs.UpdateStart()
-	nv.UpdateImpl()
-	vs.UpdateEnd(updt)
+	vs := nv.Scene3D()
+	vs.SetNeedsRender(true)
+}
+
+// Current records the current state of the network, including synaptic values,
+// and updates the display.  Use this when switching to NetView tab after network
+// has been running while viewing another tab, because the network state
+// is typically not recored then.
+func (nv *NetView) Current() {
+	nv.Record("", -1)
+	nv.RecordSyns()
+	nv.Update()
 }
 
 // UpdateImpl does the guts of updating -- backend for Update or GoUpdate
@@ -291,6 +300,7 @@ func (nv *NetView) ConfigNetView() {
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
 	nv.ReconfigMeshes()
+	nv.UpdateView()
 }
 
 // ReconfigMeshes reconfigures the layer meshes
@@ -626,7 +636,7 @@ func (nv *NetView) ViewConfig() {
 		lay := nv.Net.Layer(li)
 		lmesh := vs.MeshByName(lay.Name())
 		if lmesh == nil {
-			AddNewLayMesh(vs, nv, lay)
+			NewLayMesh(vs, nv, lay)
 		} else {
 			lmesh.(*LayMesh).Lay = lay // make sure
 		}
@@ -660,7 +670,7 @@ func (nv *NetView) ViewConfig() {
 		lo.LayName = ly.Name()
 		lo.NetView = nv
 		lo.SetMeshName(ly.Name())
-		lo.Mat.Color.SetUInt8(255, 100, 255, 255)
+		lo.Mat.Color = colors.FromRGB(255, 100, 255)
 		lo.Mat.Reflective = 8
 		lo.Mat.Bright = 8
 		lo.Mat.Shiny = 30
@@ -695,9 +705,9 @@ func (nv *NetView) ViewDefaults() {
 	dir.Pos.Set(0, 1, 0)
 	dir = xyz.NewDirLight(vs, "dirBack", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, -2.5)
-	// point := xyz.AddNewPointLight(vs, "point", 1, xyz.DirectSun)
+	// point := xyz.NewPointLight(vs, "point", 1, xyz.DirectSun)
 	// point.Pos.Set(0, 2, 5)
-	// spot := xyz.AddNewSpotLight(vs, "spot", 1, xyz.DirectSun)
+	// spot := xyz.NewSpotLight(vs, "spot", 1, xyz.DirectSun)
 	// spot.Pose.Pos.Set(0, 2, 5)
 	// spot.LookAtOrigin()
 }
@@ -766,7 +776,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	if !hasval {
 		scaled = 0
 		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIdx {
-			clr.SetUInt8(0x20, 0x80, 0x20, 0x80)
+			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor
 		}
@@ -781,9 +791,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 			scaled = float32(norm)
 			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
 		}
-		clr = nv.ColorMap.Map(float64(norm))
-		r, g, b, a := clr.ToNPFloat32()
-		clr.SetNPFloat32(r, g, b, a*op)
+		clr = colors.WithAF32(nv.ColorMap.Map(float64(norm)), op)
 	}
 	return
 }
@@ -851,121 +859,60 @@ func (nv *NetView) LayerByName(lay string) *xyz.Group {
 }
 
 func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
-	tbar.AddButton(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "fully reconfigure and redraw the display -- does not record any new data from the network (see Current button) -- should not be needed in general"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Config()
-			nvv.Update()
-			nvv.VarsUpdate()
+	giv.NewFuncButton(tb, nv.Update).SetText("Init").SetIcon(icons.Update)
+	giv.NewFuncButton(tb, nv.Current).SetIcon(icons.Update)
+	gi.NewButton(tb).SetText("Config").SetIcon(icons.Settings).
+		SetTooltip("set parameters that control display (font size etc)").
+		OnClick(func(e events.Event) {
+			d := gi.NewBody().AddTitle(nv.Nm + " Params")
+			giv.NewStructView(d).SetStruct(&nv.Params)
+			d.NewFullDialog(nv).Run()
 		})
-	tbar.AddButton(gi.ActOpts{Label: "Current", Icon: "update", Tooltip: "grab the current state of the network, including synaptic values, and display it -- use this when switching to NetView tab after network has been running, because network state not recored then."}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Record("", -1)
-			nvv.RecordSyns()
-			nvv.Update()
-		})
-	tbar.AddButton(gi.ActOpts{Label: "Config", Icon: "gear", Tooltip: "set parameters that control display (font size etc)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.StructViewDialog(nvv.ViewportSafe(), &nvv.Params, giv.DlgOpts{Title: nvv.Nm + " Params"}, nil, nil)
-		})
-	tbar.AddSeparator("file")
-	wtsmen := tbar.AddButton(gi.ActOpts{Label: "Weights", Icon: "file-save"}, nil, nil)
-	wtsmen.Menu.AddButton(gi.ActOpts{Label: "Save Wts", Icon: "file-save"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.CallMethod(nvv, "SaveWeights", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
-		})
-	wtsmen.Menu.AddButton(gi.ActOpts{Label: "Open Wts", Icon: "file-open"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.CallMethod(nvv, "OpenWeights", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
-		})
-	parsmen := tbar.AddButton(gi.ActOpts{Label: "Params", Icon: "info"}, nil, nil)
-	parsmen.Menu.AddButton(gi.ActOpts{Label: "Non Def Params", Icon: "info", Tooltip: "shows all the parameters that are not at default values -- useful for setting params"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.ShowNonDefaultParams()
-		})
-	parsmen.Menu.AddButton(gi.ActOpts{Label: "All Params", Icon: "info", Tooltip: "shows all the parameters in the network"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.ShowAllParams()
-		})
-	parsmen.Menu.AddButton(gi.ActOpts{Label: "Key Layer Params", Icon: "info", Tooltip: "returns a listing for all layers in the network, of the most important layer-level params (specific to each algorithm)."}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.ShowKeyLayerParams()
-		})
-	parsmen.Menu.AddButton(gi.ActOpts{Label: "Key Prjn Params", Icon: "info", Tooltip: "returns a listing for all Recv projections in the network, of the most important projection-level params (specific to each algorithm)."}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.ShowKeyPrjnParams()
-		})
-	ndmen := tbar.AddButton(gi.ActOpts{Label: "Net Data", Icon: "file-save"}, nil, nil)
-	ndmen.Menu.AddButton(gi.ActOpts{Label: "Save Net Data", Icon: "file-save"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.CallMethod(&nvv.Data, "SaveJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
-		})
-	ndmen.Menu.AddButton(gi.ActOpts{Label: "Open Net Data", Icon: "file-open"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			giv.CallMethod(&nvv.Data, "OpenJSON", nvv.ViewportSafe()) // this auto prompts for filename using file chooser
-		})
-	ndmen.Menu.AddSeparator("plotneur")
-	ndmen.Menu.AddButton(gi.ActOpts{Label: "Plot Selected Unit", Icon: "image", Tooltip: "opens up a window with a plot of all saved data for currently-selected unit"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.PlotSelectedUnit()
-		})
-
-	tbar.AddSeparator("disep")
-	ditb := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
-	dilbl := gi.AddNewLabel(tbar, "dilab", "Di:")
-	dilbl.Tooltip = ditb
-	disb := gi.AddNewSpinner(tbar, "disb")
-	disb.Tooltip = ditb
-	disb.Defaults()
-	disb.SetProp("has-min", true)
-	disb.SetProp("min", 0)
-	disb.SetProp("step", 1)
-	disb.SetValue(float32(nv.Di))
-	disb.SpinnerSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		nvv := recv.Embed(KiT_NetView).(*NetView)
-		maxData := nvv.Net.MaxParallelData()
-		sbb := send.(*gi.Spinner)
-		md := int(sbb.Value)
+	gi.NewSeparator(tb)
+	gi.NewButton(tb).SetText("Weights").SetType(gi.ButtonAction).SetMenu(func(m *gi.Scene) {
+		giv.NewFuncButton(m, nv.SaveWeights).SetIcon(icons.Save)
+		giv.NewFuncButton(m, nv.OpenWeights).SetIcon(icons.Open)
+	})
+	gi.NewButton(tb).SetText("Params").SetIcon(icons.Info).SetMenu(func(m *gi.Scene) {
+		giv.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
+		giv.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
+		giv.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
+		giv.NewFuncButton(m, nv.ShowKeyPrjnParams).SetIcon(icons.Info)
+	})
+	gi.NewButton(tb).SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *gi.Scene) {
+		giv.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
+		giv.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
+		gi.NewSeparator(m)
+		// giv.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
+	})
+	gi.NewSeparator(tb)
+	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
+	gi.NewLabel(tb).SetText("Di:").SetTooltip(ditp)
+	dis := gi.NewSpinner(tb).SetTooltip(ditp).SetMin(0).SetStep(1).SetValue(float32(nv.Di))
+	dis.OnChange(func(e events.Event) {
+		maxData := nv.Net.MaxParallelData()
+		md := int(dis.Value)
 		if md < maxData && md >= 0 {
-			nvv.Di = md
+			nv.Di = md
 		}
-		sbb.Value = float32(nvv.Di)
-		nvv.Update()
+		dis.SetValue(float32(nv.Di))
+		nv.UpdateView()
 	})
-	tbar.AddSeparator("rastsep")
-	rchk := gi.AddNewSwitch(tbar, "raster")
-	rchk.SetChecked(nv.Params.Raster.On)
-	rchk.SetText("Raster")
-	rchk.Tooltip = "Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)"
-	rchk.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if sig == int64(gi.ButtonToggled) {
-			cb := send.(*gi.Switch)
-			nv.Params.Raster.On = cb.IsChecked()
-			nv.ReconfigMeshes()
-			nv.Update()
-		}
+	gi.NewSeparator(tb)
+	rchk := gi.NewSwitch(tb).SetText("Raster").
+		SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)").
+		SetChecked(nv.Params.Raster.On)
+	rchk.OnChange(func(e events.Event) {
+		nv.Params.Raster.On = rchk.IsChecked()
+		nv.ReconfigMeshes()
+		nv.UpdateView()
 	})
-	xchk := gi.AddNewSwitch(tbar, "raster-x")
-	xchk.SetChecked(nv.Params.Raster.XAxis)
-	xchk.SetText("X")
-	xchk.Tooltip = "If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension"
-	xchk.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if sig == int64(gi.ButtonToggled) {
-			cb := send.(*gi.Switch)
-			nv.Params.Raster.XAxis = cb.IsChecked()
-			nv.Update()
-		}
+	xchk := gi.NewSwitch(tb).SetText("X").
+		SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
+		SetChecked(nv.Params.Raster.XAxis)
+	xchk.OnChange(func(e events.Event) {
+		nv.Params.Raster.XAxis = xchk.IsChecked()
+		nv.Update()
 	})
 
 	vp, ok := nv.VarParams[nv.Var]
@@ -974,302 +921,189 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		vp.Defaults()
 	}
 
-	tbar.AddSeparator("cbar")
-	mncb := gi.AddNewSwitch(tbar, "mncb")
-	mncb.Text = "Min"
-	mncb.Tooltip = "Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors."
-	mncb.SetChecked(vp.Range.FixMin)
-	mncb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if sig == int64(gi.ButtonToggled) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			vpp, ok := nvv.VarParams[nvv.Var]
-			if ok {
-				cbb := send.(*gi.Switch)
-				vpp.Range.FixMin = cbb.IsChecked()
-				nvv.Update()
-				nvv.VarScaleUpdate(nvv.Var)
-			}
-		}
+	gi.NewSeparator(tb)
+	mncb := gi.NewSwitch(tb).SetText("Min").
+		SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
+		SetChecked(vp.Range.FixMin)
+	mncb.OnChange(func(e events.Event) {
+		vp.Range.FixMin = mncb.IsChecked()
+		nv.VarScaleUpdate(nv.Var) // todo: before update?
+		nv.UpdateView()
 	})
-	mnsb := gi.AddNewSpinner(tbar, "mnsb")
-	mnsb.SetValue(float32(vp.Range.Min))
-	mnsb.SpinnerSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		nvv := recv.Embed(KiT_NetView).(*NetView)
-		vpp, ok := nvv.VarParams[nvv.Var]
-		if ok {
-			sbb := send.(*gi.Spinner)
-			vpp.Range.SetMin(sbb.Value)
-			if vpp.ZeroCtr && vpp.Range.Min < 0 && vpp.Range.FixMax {
-				vpp.Range.SetMax(-vpp.Range.Min)
-			}
-			nvv.VarScaleUpdate(nvv.Var)
-			nvv.Update()
+	mnsb := gi.NewSpinner(tb).SetValue(float32(vp.Range.Min))
+	mnsb.OnChange(func(e events.Event) {
+		vp.Range.SetMin(mnsb.Value)
+		if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
+			vp.Range.SetMax(-vp.Range.Min)
+		}
+		nv.VarScaleUpdate(nv.Var)
+		nv.UpdateView()
+	})
+
+	cmap := giv.NewColorMapView(tb).SetColorMap(nv.ColorMap)
+	cmap.SetTooltip("Color map for translating values into colors -- click to select alternative.").
+		Style(func(s *styles.Style) {
+			s.Min.X.Em(4)
+			s.Grow.Set(1, 0)
+		})
+	cmap.OnClick(func(e events.Event) {
+		if cmap.Map != nil {
+			nv.Params.ColorMap = giv.ColorMapName(cmap.Map.Name)
+			nv.ColorMap = cmap.Map
+			nv.UpdateView()
 		}
 	})
 
-	cmap := giv.AddNewColorMapView(tbar, "cmap", nv.ColorMap)
-	cmap.SetProp("min-width", units.NewEm(4))
-	cmap.SetStretchMaxHeight()
-	cmap.SetStretchMaxWidth()
-	cmap.Tooltip = "Color map for translating values into colors -- click to select alternative."
-	cmap.ColorMapSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		nvv := recv.Embed(KiT_NetView).(*NetView)
-		cmm := send.(*giv.ColorMapView)
-		if cmm.Map != nil {
-			nvv.Params.ColorMap = giv.ColorMapName(cmm.Map.Name)
-			nvv.ColorMap = cmm.Map
-			nvv.Update()
-		}
+	mxcb := gi.NewSwitch(tb).SetText("Max").
+		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
+		SetChecked(vp.Range.FixMax)
+	mxcb.OnChange(func(e events.Event) {
+		vp.Range.FixMax = mxcb.IsChecked()
+		nv.VarScaleUpdate(nv.Var)
+		nv.UpdateView()
 	})
-
-	mxcb := gi.AddNewSwitch(tbar, "mxcb")
-	mxcb.SetChecked(vp.Range.FixMax)
-	mxcb.Text = "Max"
-	mxcb.Tooltip = "Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors."
-	mxcb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if sig == int64(gi.ButtonToggled) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			vpp, ok := nvv.VarParams[nvv.Var]
-			if ok {
-				cbb := send.(*gi.Switch)
-				vpp.Range.FixMax = cbb.IsChecked()
-				nvv.Update()
-				nvv.VarScaleUpdate(nvv.Var)
-			}
+	mxsb := gi.NewSpinner(tb).SetValue(float32(vp.Range.Max))
+	mxsb.OnChange(func(e events.Event) {
+		vp.Range.SetMax(mxsb.Value)
+		if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
+			vp.Range.SetMin(-vp.Range.Max)
 		}
+		nv.VarScaleUpdate(nv.Var)
+		nv.UpdateView()
 	})
-	mxsb := gi.AddNewSpinner(tbar, "mxsb")
-	mxsb.SetValue(float32(vp.Range.Max))
-	mxsb.SpinnerSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		nvv := recv.Embed(KiT_NetView).(*NetView)
-		vpp, ok := nvv.VarParams[nvv.Var]
-		if ok {
-			sbb := send.(*gi.Spinner)
-			vpp.Range.SetMax(sbb.Value)
-			if vpp.ZeroCtr && vpp.Range.Max > 0 && vpp.Range.FixMin {
-				vpp.Range.SetMin(-vpp.Range.Max)
-			}
-			nvv.Update()
-			nvv.VarScaleUpdate(nvv.Var)
-		}
-	})
-	zccb := gi.AddNewSwitch(tbar, "zccb")
-	zccb.SetChecked(vp.ZeroCtr)
-	zccb.Text = "ZeroCtr"
-	zccb.Tooltip = "keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)"
-	zccb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if sig == int64(gi.ButtonToggled) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			vpp, ok := nvv.VarParams[nvv.Var]
-			if ok {
-				cbb := send.(*gi.Switch)
-				vpp.ZeroCtr = cbb.IsChecked()
-				nvv.Update()
-				nvv.VarScaleUpdate(nvv.Var)
-			}
-		}
+	zccb := gi.NewSwitch(tb).SetText("ZeroCtr").
+		SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
+		SetChecked(vp.ZeroCtr)
+	zccb.OnChange(func(e events.Event) {
+		vp.ZeroCtr = zccb.IsChecked()
+		nv.VarScaleUpdate(nv.Var)
+		nv.Update()
 	})
 }
 
-func (nv *NetView) ViewbarConfig() {
-	tbar := nv.Viewbar()
-	if len(tbar.Kids) != 0 {
-		return
+func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
+	gi.NewButton(tb).SetIcon(icons.Update).SetTooltip("reset to default initial display").
+		OnClick(func(e events.Event) {
+			nv.Scene().SetCamera("default")
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.ZoomIn).SetTooltip("zoom in").
+		OnClick(func(e events.Event) {
+			nv.Scene().Camera.Zoom(-.05)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.ZoomOut).SetTooltip("zoom out").
+		OnClick(func(e events.Event) {
+			nv.Scene().Camera.Zoom(.05)
+			nv.UpdateView()
+		})
+	gi.NewSeparator(tb)
+	gi.NewLabel(tb).SetText("Rot:").SetTooltip("rotate display")
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Orbit(5, 0)
+		nv.UpdateView()
+	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Orbit(0, 5)
+		nv.UpdateView()
+	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Orbit(0, -5)
+		nv.UpdateView()
+	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Orbit(-5, 0)
+		nv.UpdateView()
+	})
+	gi.NewSeparator(tb)
+
+	gi.NewLabel(tb).SetText("Pan:").SetTooltip("pan display")
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Pan(-.2, 0)
+		nv.UpdateView()
+	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Pan(0, .2)
+		nv.UpdateView()
+	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Pan(0, -.2)
+		nv.UpdateView()
+	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).OnClick(func(e events.Event) {
+		nv.Scene().Camera.Pan(.2, 0)
+		nv.UpdateView()
+	})
+	gi.NewSeparator(tb)
+
+	gi.NewLabel(tb).SetText("Save:")
+	for i := 1; i <= 4; i++ {
+		i := i
+		nm := fmt.Sprintf("%d", i)
+		gi.NewButton(tb).SetText(nm).SetIcon(icons.Save).
+			SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
+			OnClick(func(e events.Event) {
+				sc := nv.Scene()
+				cam := nm
+				if e.HasAllModifiers(e.Modifiers(), key.Shift) {
+					sc.SaveCamera(cam)
+				} else {
+					err := sc.SetCamera(cam)
+					if err != nil {
+						sc.SaveCamera(cam)
+					}
+				}
+				fmt.Printf("Camera %s: %v\n", cam, sc.Camera.GenGoSet(""))
+				nv.UpdateView()
+			})
 	}
-	tbar.SetStretchMaxWidth()
-	tbar.AddButton(gi.ActOpts{Icon: "update", Tooltip: "reset to default initial display"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().SetCamera("default")
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "zoom-in", Tooltip: "zoom in"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Zoom(-.05)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "zoom-out", Tooltip: "zoom out"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Zoom(.05)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddSeparator("rot")
-	gi.AddNewLabel(tbar, "rot", "Rot:")
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-left"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Orbit(5, 0)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-up"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Orbit(0, 5)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-down"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Orbit(0, -5)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-right"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Orbit(-5, 0)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddSeparator("pan")
-	gi.AddNewLabel(tbar, "pan", "Pan:")
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-left"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Pan(-.2, 0)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-up"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Pan(0, .2)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-down"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Pan(0, -.2)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Icon: "wedge-right"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			nvv.Scene().Camera.Pan(.2, 0)
-			nvv.Scene().UpdateSig()
-		})
-	tbar.AddSeparator("save")
-	gi.AddNewLabel(tbar, "save", "Save:")
-	tbar.AddButton(gi.ActOpts{Label: "1", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			em := nvv.EventMgr2D()
-			scc := nvv.Scene()
-			cam := "1"
-			if key.HasAllModifierBits(em.LastModBits, key.Shift) {
-				scc.SaveCamera(cam)
-			} else {
-				err := scc.SetCamera(cam)
-				if err != nil {
-					scc.SaveCamera(cam)
-				}
-			}
-			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
-			scc.UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Label: "2", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			em := nvv.EventMgr2D()
-			scc := nvv.Scene()
-			cam := "2"
-			if key.HasAllModifierBits(em.LastModBits, key.Shift) {
-				scc.SaveCamera(cam)
-			} else {
-				err := scc.SetCamera(cam)
-				if err != nil {
-					scc.SaveCamera(cam)
-				}
-			}
-			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
-			scc.UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Label: "3", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			em := nvv.EventMgr2D()
-			scc := nvv.Scene()
-			cam := "3"
-			if key.HasAllModifierBits(em.LastModBits, key.Shift) {
-				scc.SaveCamera(cam)
-			} else {
-				err := scc.SetCamera(cam)
-				if err != nil {
-					scc.SaveCamera(cam)
-				}
-			}
-			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
-			scc.UpdateSig()
-		})
-	tbar.AddButton(gi.ActOpts{Label: "4", Icon: "save", Tooltip: "first click (or + Shift) saves current view, second click restores to saved state"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			em := nvv.EventMgr2D()
-			scc := nvv.Scene()
-			cam := "4"
-			if key.HasAllModifierBits(em.LastModBits, key.Shift) {
-				scc.SaveCamera(cam)
-			} else {
-				err := scc.SetCamera(cam)
-				if err != nil {
-					scc.SaveCamera(cam)
-				}
-			}
-			fmt.Printf("Camera %s: %v\n", cam, scc.Camera.GenGoSet(""))
-			scc.UpdateSig()
-		})
-	tbar.AddSeparator("time")
-	tlbl := gi.AddNewLabel(tbar, "time", "Time:")
-	tlbl.Tooltip = "states are recorded over time -- last N can be reviewed using these buttons"
-	rlbl := gi.AddNewLabel(tbar, "rec", fmt.Sprintf("%4d ", nv.RecNo))
-	rlbl.Redrawable = true
-	rlbl.Tooltip = "current view record: -1 means latest, 0 = earliest"
-	tbar.AddButton(gi.ActOpts{Icon: "fast-bkwd", Tooltip: "move to first record (start of history)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecFullBkwd() {
-				nvv.Update()
+	gi.NewSeparator(tb)
+
+	gi.NewLabel(tb).SetText("Time:").
+		SetTooltip("states are recorded over time -- last N can be reviewed using these buttons")
+
+	gi.NewLabel(tb, "rec").SetText(fmt.Sprintf("%4d ", nv.RecNo)).
+		SetTooltip("current view record: -1 means latest, 0 = earliest")
+	gi.NewButton(tb).SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
+		OnClick(func(e events.Event) {
+			if nv.RecFullBkwd() {
+				nv.UpdateView()
 			}
 		})
-	tbar.AddButton(gi.ActOpts{Icon: "backward", Tooltip: "move earlier by N records (default 10)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecFastBkwd() {
-				nvv.Update()
+	gi.NewButton(tb).SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
+		OnClick(func(e events.Event) {
+			if nv.RecFastBkwd() {
+				nv.Update()
 			}
 		})
-	tbar.AddButton(gi.ActOpts{Icon: "step-bkwd", Tooltip: "move earlier by 1"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecBkwd() {
-				nvv.Update()
+	gi.NewButton(tb).SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
+		OnClick(func(e events.Event) {
+			if nv.RecBkwd() {
+				nv.Update()
 			}
 		})
-	tbar.AddButton(gi.ActOpts{Icon: "play", Tooltip: "move to latest and always display latest (-1)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecTrackLatest() {
-				nvv.Update()
+	gi.NewButton(tb).SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
+		OnClick(func(e events.Event) {
+			if nv.RecTrackLatest() {
+				nv.Update()
 			}
 		})
-	tbar.AddButton(gi.ActOpts{Icon: "step-fwd", Tooltip: "move later by 1"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecFwd() {
-				nvv.Update()
+	gi.NewButton(tb).SetIcon(icons.SkipNext).SetTooltip("move later by 1").
+		OnClick(func(e events.Event) {
+			if nv.RecFwd() {
+				nv.Update()
 			}
 		})
-	tbar.AddButton(gi.ActOpts{Icon: "forward", Tooltip: "move later by N (default 10)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecFastFwd() {
-				nvv.Update()
+	gi.NewButton(tb).SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
+		OnClick(func(e events.Event) {
+			if nv.RecFastFwd() {
+				nv.Update()
 			}
 		})
-	tbar.AddButton(gi.ActOpts{Icon: "fast-fwd", Tooltip: "move to end (current time, tracking latest updates)"}, nv.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			nvv := recv.Embed(KiT_NetView).(*NetView)
-			if nvv.RecTrackLatest() {
-				nvv.Update()
+	gi.NewButton(tb).SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
+		OnClick(func(e events.Event) {
+			if nv.RecTrackLatest() {
+				nv.Update()
 			}
 		})
 }
@@ -1290,14 +1124,14 @@ func (nv *NetView) OpenWeights(filename gi.FileName) {
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string {
 	nds := nv.Net.NonDefaultParams()
-	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "Non Default Params"})
+	texteditor.TextDialog(nv, "Non Default Params: "+nv.Nm, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
 func (nv *NetView) ShowAllParams() string {
 	nds := nv.Net.AllParams()
-	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "All Params"})
+	texteditor.TextDialog(nv, "All Params: "+nv.Nm, nds)
 	return nds
 }
 
@@ -1305,7 +1139,7 @@ func (nv *NetView) ShowAllParams() string {
 // of the most important layer-level params (specific to each algorithm)
 func (nv *NetView) ShowKeyLayerParams() string {
 	nds := nv.Net.KeyLayerParams()
-	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "Key Layer Params"})
+	texteditor.TextDialog(nv, "Key Layer Params: "+nv.Nm, nds)
 	return nds
 }
 
@@ -1313,43 +1147,6 @@ func (nv *NetView) ShowKeyLayerParams() string {
 // of the most important projection-level params (specific to each algorithm)
 func (nv *NetView) ShowKeyPrjnParams() string {
 	nds := nv.Net.KeyPrjnParams()
-	giv.TextViewDialog(nv.ViewportSafe(), []byte(nds), giv.DlgOpts{Title: "Key Prjn Params"})
+	texteditor.TextDialog(nv, "Key Prjn Params: "+nv.Nm, nds)
 	return nds
-}
-
-func (nv *NetView) Render2D() {
-	if gist.RebuildDefaultStyles {
-		vs := nv.Scene()
-		if vs != nil {
-			vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
-		}
-	}
-	nv.Layout.Render2D()
-}
-
-var NetViewProps = ki.Props{
-	"max-width":  -1,
-	"max-height": -1,
-	// "width":      units.NewEm(5), // this gives the entire plot the scrollbars
-	// "height":     units.NewEm(5),
-	"CallMethods": ki.PropSlice{
-		{"SaveWeights", ki.Props{
-			"desc": "save network weights to file",
-			"icon": "file-save",
-			"Args": ki.PropSlice{
-				{"File Name", ki.Props{
-					"ext": ".wts,.wts.gz",
-				}},
-			},
-		}},
-		{"OpenWeights", ki.Props{
-			"desc": "open network weights from file",
-			"icon": "file-open",
-			"Args": ki.PropSlice{
-				{"File Name", ki.Props{
-					"ext": ".wts,.wts.gz",
-				}},
-			},
-		}},
-	},
 }
