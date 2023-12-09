@@ -16,8 +16,8 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
-	gui.AddToolbarItem(ToolbarItem{Label: "Stop",
+func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []etime.Modes) {
+	gui.AddToolbarItem(tb, ToolbarItem{Label: "Stop",
 		Icon:    "stop",
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
@@ -31,7 +31,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 
 	for _, m := range modes {
 		mode := m
-		gi.NewButton(gui.Toolbar).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
+		gi.NewButton(tb).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
 			SetTooltip("Run the " + mode.String() + " process").
 			Style(func(s *styles.Style) {
 				s.State.SetFlag(gui.IsRunning, states.Disabled)
@@ -39,7 +39,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					gui.Toolbar.Update()
+					tb.Update()
 					go func() {
 						loops.Run(mode)
 						gui.Stopped()
@@ -55,7 +55,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			stepN[st.String()] = 1
 			stringToEnumTime[st.String()] = st
 		}
-		gi.NewButton(gui.Toolbar).SetText("Step").SetIcon(icons.SkipNext).
+		gi.NewButton(tb).SetText("Step").SetIcon(icons.SkipNext).
 			SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
 			Style(func(s *styles.Style) {
 				s.State.SetFlag(gui.IsRunning, states.Disabled)
@@ -63,7 +63,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					gui.Toolbar.Update()
+					tb.Update()
 					go func() {
 						stack := loops.Stacks[mode]
 						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
@@ -72,7 +72,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 				}
 			})
 
-		scb := gi.NewChooser(gui.Toolbar, "step")
+		scb := gi.NewChooser(tb, "step")
 		stepStrs := []string{}
 		for _, s := range steps {
 			stepStrs = append(stepStrs, s.String())
@@ -81,7 +81,7 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 		stack := loops.Stacks[mode]
 		scb.SetCurVal(stack.StepLevel.String())
 
-		sb := gi.NewSpinner(gui.Toolbar, "step-n").SetTooltip("number of iterations per step").
+		sb := gi.NewSpinner(tb, "step-n").SetTooltip("number of iterations per step").
 			SetStep(1).SetMin(1).SetValue(1)
 		sb.OnChange(func(e events.Event) {
 			stepN[scb.CurVal.(string)] = int(sb.Value)

@@ -44,9 +44,6 @@ type GUI struct {
 	// net data for recording in nogui mode, if !nil
 	NetData *netview.NetData `view:"-"`
 
-	// the master toolbar
-	Toolbar *gi.Toolbar `view:"-"`
-
 	// displays Sim fields on left
 	StructView *giv.StructView `view:"-"`
 
@@ -78,7 +75,6 @@ func (gui *GUI) Stopped() {
 func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	gui.Body = gi.NewAppBody(appname)
 	gui.Body.App().About = about
-	gui.Toolbar = gi.NewToolbar(gui.Body, "tbar")
 	split := gi.NewSplits(gui.Body, "split")
 	gui.StructView = giv.NewStructView(split, "sv").SetStruct(sim)
 	gui.Tabs = gi.NewTabs(split, "tv")

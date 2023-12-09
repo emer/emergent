@@ -92,18 +92,6 @@ func (nv *NetView) OnInit() {
 		s.Grow.Set(1, 1)
 		// nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
 	})
-
-	// todo
-	// nlay := nv.NetLay() // "net"
-	// nlay.Lay = gi.LayoutHoriz
-	// nlay.SetProp("max-width", -1)
-	// nlay.SetProp("max-height", -1)
-	// nlay.SetProp("spacing", gi.StdDialogVSpaceUnits)
-
-	// vl.Lay = gi.LayoutGrid
-	// vl.SetProp("columns", nv.Params.NVarCols)
-	// vl.SetProp("spacing", 0)
-	// vl.SetProp("vertical-align", styles.Start)
 }
 
 // SetNet sets the network to view and updates view
@@ -191,7 +179,9 @@ func (nv *NetView) UpdateView() {
 		return
 	}
 	vs := nv.Scene3D()
-	vs.SetNeedsRender(true)
+	updt := vs.UpdateStart3D()
+	nv.UpdateImpl()
+	vs.UpdateEndRender3D(updt)
 }
 
 // Current records the current state of the network, including synaptic values,
@@ -280,10 +270,22 @@ func (nv *NetView) ConfigNetView() {
 	if !nv.HasChildren() {
 		tb := gi.NewToolbar(nv, "tbar")
 		nlay := gi.NewLayout(nv, "net")
+		nlay.Style(func(s *styles.Style) {
+			s.Direction = styles.Row
+			s.Grow.Set(1, 1)
+		})
 		gi.NewLabel(nv, "counters")
 		vb := gi.NewToolbar(nv, "vbar")
 
-		gi.NewFrame(nlay, "vars")
+		vlay := gi.NewFrame(nlay, "vars")
+		vlay.Style(func(s *styles.Style) {
+			s.Display = styles.Grid
+			s.Columns = nv.Params.NVarCols
+			s.Grow.Set(0, 1)
+			s.Overflow.Y = styles.OverflowAuto
+			s.BackgroundColor.SetSolid(colors.Scheme.SurfaceContainerLow)
+		})
+
 		xyzv.NewScene3D(nlay, "scene")
 
 		nv.ConfigToolbar(tb)
@@ -300,7 +302,6 @@ func (nv *NetView) ConfigNetView() {
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
 	nv.ReconfigMeshes()
-	nv.UpdateView()
 }
 
 // ReconfigMeshes reconfigures the layer meshes
@@ -506,9 +507,12 @@ func (nv *NetView) VarsUpdate() {
 		vb.SetSelected(vb.Text == nv.Var)
 	}
 	tbar := nv.Toolbar()
-	cmap := tbar.ChildByName("cmap", 5).(*giv.ColorMapView)
-	cmap.Map = nv.ColorMap
-	cmap.SetNeedsRender(updt)
+	cmapi := tbar.ChildByName("cmap", 5)
+	if cmapi != nil {
+		cmap := cmapi.(*giv.ColorMapView)
+		cmap.Map = nv.ColorMap
+		cmap.SetNeedsRender(updt)
+	}
 	vl.UpdateEndRender(updt)
 }
 
@@ -518,51 +522,51 @@ func (nv *NetView) VarsUpdate() {
 func (nv *NetView) VarScaleUpdate(varNm string) bool {
 	vp := nv.VarParams[varNm]
 
-	tbar := nv.Toolbar()
-	mncb := tbar.ChildByName("mncb", 4).(*gi.Switch)
-	mnsb := tbar.ChildByName("mnsb", 5).(*gi.Spinner)
-	mxcb := tbar.ChildByName("mxcb", 6).(*gi.Switch)
-	mxsb := tbar.ChildByName("mxsb", 7).(*gi.Spinner)
-	zccb := tbar.ChildByName("zccb", 8).(*gi.Switch)
-
+	tb := nv.Toolbar()
 	mod := false
-	updt := false
-	if mncb.IsChecked() != vp.Range.FixMin {
-		updt = tbar.UpdateStart()
-		mod = true
-		mncb.SetChecked(vp.Range.FixMin)
-	}
-	if mxcb.IsChecked() != vp.Range.FixMax {
-		if !mod {
-			updt = tbar.UpdateStart()
+
+	if ci := tb.ChildByName("mnsw", 4); ci != nil {
+		sw := ci.(*gi.Switch)
+		if sw.IsChecked() != vp.Range.FixMin {
 			mod = true
+			sw.SetChecked(vp.Range.FixMin)
+			sw.SetNeedsRender(true)
 		}
-		mxcb.SetChecked(vp.Range.FixMax)
 	}
-	mnv := float32(vp.Range.Min)
-	if mnsb.Value != mnv {
-		if !mod {
-			updt = tbar.UpdateStart()
+	if ci := tb.ChildByName("mxsw", 6); ci != nil {
+		sw := ci.(*gi.Switch)
+		if sw.IsChecked() != vp.Range.FixMax {
 			mod = true
+			sw.SetChecked(vp.Range.FixMax)
+			sw.SetNeedsRender(true)
 		}
-		mnsb.SetValue(mnv)
 	}
-	mxv := float32(vp.Range.Max)
-	if mxsb.Value != mxv {
-		if !mod {
-			updt = tbar.UpdateStart()
+	if ci := tb.ChildByName("mnsp", 5); ci != nil {
+		sp := ci.(*gi.Spinner)
+		mnv := float32(vp.Range.Min)
+		if sp.Value != mnv {
 			mod = true
+			sp.SetValue(mnv)
+			sp.SetNeedsRender(true)
 		}
-		mxsb.SetValue(mxv)
 	}
-	if zccb.IsChecked() != vp.ZeroCtr {
-		if !mod {
-			updt = tbar.UpdateStart()
+	if ci := tb.ChildByName("mxsp", 7); ci != nil {
+		sp := ci.(*gi.Spinner)
+		mxv := float32(vp.Range.Max)
+		if sp.Value != mxv {
 			mod = true
+			sp.SetValue(mxv)
+			sp.SetNeedsRender(true)
 		}
-		zccb.SetChecked(vp.ZeroCtr)
 	}
-	tbar.UpdateEnd(updt)
+	if ci := tb.ChildByName("zcsw", 8); ci != nil {
+		sw := ci.(*gi.Switch)
+		if sw.IsChecked() != vp.ZeroCtr {
+			mod = true
+			sw.SetChecked(vp.ZeroCtr)
+			sw.SetNeedsRender(true)
+		}
+	}
 	return mod
 }
 
@@ -574,23 +578,14 @@ func (nv *NetView) VarsConfig() {
 		vl.DeleteChildren(true)
 		return
 	}
-	// todo: switch to full rebuild or not mode
-	config := ki.Config{}
-	for _, vn := range nv.Vars {
-		config.Add(gi.ButtonType, vn)
-	}
-	mods, updt := vl.ConfigChildren(config)
-	if !mods {
-		updt = vl.UpdateStart()
+	if len(vl.Kids) == len(nv.Vars) {
+		return
 	}
 	unprops := nv.Net.UnitVarProps()
 	prjnprops := nv.Net.SynVarProps()
-	for i, vbi := range *vl.Children() {
-		vb := vbi.(*gi.Button)
-		vb.SetProp("margin", 0)
-		vb.SetProp("max-width", -1)
-		vn := nv.Vars[i]
-		vb.SetText(vn)
+	for _, vn := range nv.Vars {
+		vn := vn
+		vb := gi.NewButton(vl).SetText(vn).SetType(gi.ButtonAction)
 		pstr := ""
 		if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
 			pstr = prjnprops[vn[2:]]
@@ -604,13 +599,10 @@ func (nv *NetView) VarsConfig() {
 			}
 		}
 		vb.SetSelected(vn == nv.Var)
-		// vb.ButtonSig.Connect(nv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		// 	nvv := recv.Embed(KiT_NetView).(*NetView)
-		// 	vbv := send.(*gi.Button)
-		// 	nvv.SetVar(vbv.Text)
-		// })
+		vb.OnClick(func(e events.Event) {
+			nv.SetVar(vn)
+		})
 	}
-	vl.UpdateEnd(updt)
 }
 
 // ViewConfig configures the 3D view
@@ -922,17 +914,17 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 	}
 
 	gi.NewSeparator(tb)
-	mncb := gi.NewSwitch(tb).SetText("Min").
+	mnsw := gi.NewSwitch(tb, "mnsw").SetText("Min").
 		SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMin)
-	mncb.OnChange(func(e events.Event) {
-		vp.Range.FixMin = mncb.IsChecked()
+	mnsw.OnChange(func(e events.Event) {
+		vp.Range.FixMin = mnsw.IsChecked()
 		nv.VarScaleUpdate(nv.Var) // todo: before update?
 		nv.UpdateView()
 	})
-	mnsb := gi.NewSpinner(tb).SetValue(float32(vp.Range.Min))
-	mnsb.OnChange(func(e events.Event) {
-		vp.Range.SetMin(mnsb.Value)
+	mnsp := gi.NewSpinner(tb, "mnsp").SetValue(float32(vp.Range.Min))
+	mnsp.OnChange(func(e events.Event) {
+		vp.Range.SetMin(mnsp.Value)
 		if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
 			vp.Range.SetMax(-vp.Range.Min)
 		}
@@ -940,11 +932,12 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.UpdateView()
 	})
 
-	cmap := giv.NewColorMapView(tb).SetColorMap(nv.ColorMap)
+	cmap := giv.NewColorMapView(tb, "cmap").SetColorMap(nv.ColorMap)
 	cmap.SetTooltip("Color map for translating values into colors -- click to select alternative.").
 		Style(func(s *styles.Style) {
-			s.Min.X.Em(4)
-			s.Grow.Set(1, 0)
+			s.Min.X.Em(8)
+			s.Min.Y.Em(1.2)
+			s.Grow.Set(0, 0)
 		})
 	cmap.OnClick(func(e events.Event) {
 		if cmap.Map != nil {
@@ -954,28 +947,28 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		}
 	})
 
-	mxcb := gi.NewSwitch(tb).SetText("Max").
+	mxsw := gi.NewSwitch(tb, "mxsw").SetText("Max").
 		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMax)
-	mxcb.OnChange(func(e events.Event) {
-		vp.Range.FixMax = mxcb.IsChecked()
+	mxsw.OnChange(func(e events.Event) {
+		vp.Range.FixMax = mxsw.IsChecked()
 		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
-	mxsb := gi.NewSpinner(tb).SetValue(float32(vp.Range.Max))
-	mxsb.OnChange(func(e events.Event) {
-		vp.Range.SetMax(mxsb.Value)
+	mxsp := gi.NewSpinner(tb, "mxsp").SetValue(float32(vp.Range.Max))
+	mxsp.OnChange(func(e events.Event) {
+		vp.Range.SetMax(mxsp.Value)
 		if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
 			vp.Range.SetMin(-vp.Range.Max)
 		}
 		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
-	zccb := gi.NewSwitch(tb).SetText("ZeroCtr").
+	zcsw := gi.NewSwitch(tb, "zcsw").SetText("ZeroCtr").
 		SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
 		SetChecked(vp.ZeroCtr)
-	zccb.OnChange(func(e events.Event) {
-		vp.ZeroCtr = zccb.IsChecked()
+	zcsw.OnChange(func(e events.Event) {
+		vp.ZeroCtr = zcsw.IsChecked()
 		nv.VarScaleUpdate(nv.Var)
 		nv.Update()
 	})
