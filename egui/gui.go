@@ -12,7 +12,7 @@ import (
 	"goki.dev/etable/v2/etview"
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/ki/v2/ki"
+	"goki.dev/ki/v2"
 	"goki.dev/mat32/v2"
 )
 
@@ -47,7 +47,7 @@ type GUI struct {
 	NetData *netview.NetData `view:"-" desc:"net data for recording in nogui mode, if !nil"`
 
 	// [view: -] the master toolbar
-	ToolBar *gi.ToolBar `view:"-" desc:"the master toolbar"`
+	Toolbar *gi.Toolbar `view:"-" desc:"the master toolbar"`
 
 	// [view: -] displays Sim fields on left
 	StructView *giv.StructView `view:"-" desc:"displays Sim fields on left"`
@@ -76,8 +76,8 @@ func (gui *GUI) Stopped() {
 	if gui.ViewUpdt != nil {
 		gui.UpdateNetViewWhenStopped()
 	}
-	if gui.ToolBar != nil {
-		gui.ToolBar.UpdateActions()
+	if gui.Toolbar != nil {
+		gui.Toolbar.UpdateActions()
 	}
 	gui.UpdateWindow()
 }
@@ -97,24 +97,24 @@ func (gui *GUI) MakeWindow(sim any, appname, title, about string) {
 
 	mfr := gui.Win.SetMainFrame()
 
-	gui.ToolBar = gi.AddNewToolBar(mfr, "tbar")
-	gui.ToolBar.SetStretchMaxWidth()
+	gui.Toolbar = gi.NewToolbar(mfr, "tbar")
+	gui.Toolbar.SetStretchMaxWidth()
 
-	split := gi.AddNewSplitView(mfr, "split")
+	split := gi.NewSplitView(mfr, "split")
 	split.Dim = mat32.X
 	split.SetStretchMax()
 
-	gui.StructView = giv.AddNewStructView(split, "sv")
+	gui.StructView = giv.NewStructView(split, "sv")
 	gui.StructView.SetStruct(sim)
 
-	gui.TabView = gi.AddNewTabView(split, "tv")
+	gui.TabView = gi.NewTabView(split, "tv")
 
 	split.SetSplits(.2, .8)
 }
 
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
-	nv := gui.TabView.AddNewTab(netview.KiT_NetView, tabName).(*netview.NetView)
+	nv := gui.TabView.NewTab(netview.KiT_NetView, tabName).(*netview.NetView)
 	nv.Var = "Act"
 	return nv
 }

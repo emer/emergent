@@ -8,7 +8,7 @@ import (
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/ki/v2/ki"
+	"goki.dev/ki/v2"
 )
 
 // AddLooperCtrl adds toolbar control for looper.Stack

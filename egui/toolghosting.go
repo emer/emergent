@@ -4,17 +4,10 @@
 
 package egui
 
-import "goki.dev/ki/v2/kit"
+//go:generate goki generate
 
 // ToolGhosting the mode enum
-type ToolGhosting int32
-
-//go:generate stringer -type=ToolGhosting
-
-var KiT_ToolGhosting = kit.Enums.AddEnum(ToolGhostingN, kit.BitFlag, nil)
-
-func (ev ToolGhosting) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *ToolGhosting) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type ToolGhosting int32 //enums:enum
 
 // The evaluation modes for when a tool bar can be clicked
 const (
@@ -23,6 +16,4 @@ const (
 	ActiveRunning
 
 	ActiveAlways
-
-	ToolGhostingN
 )
