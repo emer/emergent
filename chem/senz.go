@@ -17,7 +17,7 @@ package chem
 type SimpleEnz struct {
 
 	// S->P forward rate constant, in μM-1 msec-1
-	Kf float64 `desc:"S->P forward rate constant, in μM-1 msec-1"`
+	Kf float64
 }
 
 // SetVol sets reaction forward / backward time constants in seconds,

@@ -46,40 +46,40 @@ type NetView struct {
 	Var string `set:"-"`
 
 	// current data parallel index di, for networks capable of processing input patterns in parallel.
-	Di int `desc:"current data parallel index di, for networks capable of processing input patterns in parallel."`
+	Di int
 
 	// the list of variables to view
-	Vars []string `desc:"the list of variables to view"`
+	Vars []string
 
 	// list of synaptic variables
-	SynVars []string `desc:"list of synaptic variables"`
+	SynVars []string
 
 	// map of synaptic variable names to index
-	SynVarsMap map[string]int `desc:"map of synaptic variable names to index"`
+	SynVarsMap map[string]int
 
 	// parameters for the list of variables to view
-	VarParams map[string]*VarParams `desc:"parameters for the list of variables to view"`
+	VarParams map[string]*VarParams
 
-	// [view: -] current var params -- only valid during Update of display
-	CurVarParams *VarParams `json:"-" xml:"-" view:"-" desc:"current var params -- only valid during Update of display"`
+	// current var params -- only valid during Update of display
+	CurVarParams *VarParams `json:"-" xml:"-" view:"-"`
 
 	// parameters controlling how the view is rendered
-	Params Params `desc:"parameters controlling how the view is rendered"`
+	Params Params
 
 	// color map for mapping values to colors -- set by name in Params
-	ColorMap *colormap.Map `desc:"color map for mapping values to colors -- set by name in Params"`
+	ColorMap *colormap.Map
 
-	// record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]
-	RecNo int `desc:"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]"`
+	// record number to display -- use -1 to always track latest, otherwise in range
+	RecNo int
 
 	// last non-empty counters string provided -- re-used if no new one
-	LastCtrs string `desc:"last non-empty counters string provided -- re-used if no new one"`
+	LastCtrs string
 
 	// contains all the network data with history
-	Data NetData `desc:"contains all the network data with history"`
+	Data NetData
 
-	// [view: -] mutex on data access
-	DataMu sync.RWMutex `view:"-" copy:"-" json:"-" xml:"-" desc:"mutex on data access"`
+	// mutex on data access
+	DataMu sync.RWMutex `view:"-" copy:"-" json:"-" xml:"-"`
 }
 
 func (nv *NetView) OnInit() {

@@ -17,13 +17,13 @@ import (
 type PoolOneToOne struct {
 
 	// number of recv pools to connect (0 for entire number of pools in recv layer)
-	NPools int `desc:"number of recv pools to connect (0 for entire number of pools in recv layer)"`
+	NPools int
 
 	// starting pool index for sending connections
-	SendStart int `desc:"starting pool index for sending connections"`
+	SendStart int
 
 	// starting pool index for recv connections
-	RecvStart int `desc:"starting pool index for recv connections"`
+	RecvStart int
 }
 
 func NewPoolOneToOne() *PoolOneToOne {

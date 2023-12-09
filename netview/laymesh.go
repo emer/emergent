@@ -21,13 +21,13 @@ type LayMesh struct {
 	xyz.MeshBase
 
 	// layer that we render
-	Lay emer.Layer `desc:"layer that we render"`
+	Lay emer.Layer
 
 	// current shape that has been constructed -- if same, just update
-	Shape etensor.Shape `desc:"current shape that has been constructed -- if same, just update"`
+	Shape etensor.Shape
 
 	// netview that we're in
-	View *NetView `desc:"netview that we're in"`
+	View *NetView
 }
 
 // NewLayMesh adds LayMesh mesh to given scene for given layer

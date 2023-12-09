@@ -13,13 +13,13 @@ import (
 type Event struct {
 
 	// Might be 'plus' or 'minus' for example.
-	Name string `desc:"Might be 'plus' or 'minus' for example."`
+	Name string
 
 	// The counter value upon which this Event occurs.
-	AtCtr int `desc:"The counter value upon which this Event occurs."`
+	AtCtr int
 
 	// Callback function for the Event.
-	OnEvent NamedFuncs `desc:"Callback function for the Event."`
+	OnEvent NamedFuncs
 }
 
 // String describes the Event in human readable text.

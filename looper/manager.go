@@ -30,16 +30,16 @@ var (
 type Manager struct {
 
 	// map of stacks by Mode
-	Stacks map[etime.Modes]*Stack `desc:"map of stacks by Mode"`
+	Stacks map[etime.Modes]*Stack
 
 	// The current evaluation mode.
-	Mode etime.Modes `desc:"The current evaluation mode."`
+	Mode etime.Modes
 
 	// Set to true while looping, false when done. Read only.
-	isRunning bool `desc:"Set to true while looping, false when done. Read only."`
+	isRunning bool
 
 	// The Cur value of the Ctr associated with the last started level, for each timescale.
-	lastStartedCtr map[etime.ScopeKey]int `desc:"The Cur value of the Ctr associated with the last started level, for each timescale."`
+	lastStartedCtr map[etime.ScopeKey]int
 	internalStop   bool
 }
 

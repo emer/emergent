@@ -16,10 +16,10 @@ import (
 type RFs struct {
 
 	// map of names to indexes of RFs
-	NameMap map[string]int `desc:"map of names to indexes of RFs"`
+	NameMap map[string]int
 
 	// the RFs
-	RFs []*RF `desc:"the RFs"`
+	RFs []*RF
 }
 
 // RFByName returns RF of given name, nil if not found

@@ -12,7 +12,7 @@ import (
 type Full struct {
 
 	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
-	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	SelfCon bool
 }
 
 func NewFull() *Full {

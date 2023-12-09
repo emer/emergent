@@ -20,31 +20,31 @@ import (
 type TwoD struct {
 
 	// how to encode the value
-	Code PopCodes `desc:"how to encode the value"`
+	Code PopCodes
 
 	// minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode
-	Min mat32.Vec2 `desc:"minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
+	Min mat32.Vec2
 
 	// maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode
-	Max mat32.Vec2 `desc:"maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode"`
+	Max mat32.Vec2
 
-	// [def: 0.2] [viewif: Code=GaussBump] sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
-	Sigma mat32.Vec2 `def:"0.2" viewif:"Code=GaussBump" desc:"sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range"`
+	// sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
+	Sigma mat32.Vec2 `def:"0.2" viewif:"Code=GaussBump"`
 
 	// ensure that encoded and decoded value remains within specified range -- generally not useful with wrap
-	Clip bool `desc:"ensure that encoded and decoded value remains within specified range -- generally not useful with wrap"`
+	Clip bool
 
 	// x axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values
-	WrapX bool `desc:"x axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
+	WrapX bool
 
 	// y axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values
-	WrapY bool `desc:"y axis wraps around (e.g., for periodic values such as angle) -- encodes and decodes relative to both the min and max values"`
+	WrapY bool
 
-	// [def: 0.1] threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)
-	Thr float32 `def:"0.1" desc:"threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)"`
+	// threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)
+	Thr float32 `def:"0.1"`
 
-	// [def: 0.2] minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by
-	MinSum float32 `def:"0.2" desc:"minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by"`
+	// minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by
+	MinSum float32 `def:"0.2"`
 }
 
 func (pc *TwoD) Defaults() {

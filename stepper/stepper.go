@@ -50,34 +50,34 @@ type PauseNotifyFn func()
 type Stepper struct {
 
 	// current run state
-	RunState RunState `desc:"current run state"`
+	RunState RunState
 
 	// granularity of one step. No enum type here so clients can define their own
-	StepGrain int `desc:"granularity of one step. No enum type here so clients can define their own"`
+	StepGrain int
 
 	// number of steps to execute before returning
-	StepsPer int `desc:"number of steps to execute before returning"`
+	StepsPer int
 
-	// [view: -] function to deal with any changes on client side when paused after stepping
-	PauseNotifyFn PauseNotifyFn `view:"-" desc:"function to deal with any changes on client side when paused after stepping"`
+	// function to deal with any changes on client side when paused after stepping
+	PauseNotifyFn PauseNotifyFn `view:"-"`
 
-	// [view: -] function to test for special stopping conditions
-	StopCheckFn StopCheckFn `view:"-" desc:"function to test for special stopping conditions"`
+	// function to test for special stopping conditions
+	StopCheckFn StopCheckFn `view:"-"`
 
-	// [view: -] mutex for RunState
-	stateMut sync.Mutex `view:"-" desc:"mutex for RunState"`
+	// mutex for RunState
+	stateMut sync.Mutex `view:"-"`
 
-	// [view: -] state change condition variable
-	stateChange *sync.Cond `view:"-" desc:"state change condition variable"`
+	// state change condition variable
+	stateChange *sync.Cond `view:"-"`
 
-	// [view: -] number of steps yet to execute before returning
-	stepsLeft int `view:"-" desc:"number of steps yet to execute before returning"`
+	// number of steps yet to execute before returning
+	stepsLeft int `view:"-"`
 
 	// watchdog timer channel
-	waitTimer chan RunState `desc:"watchdog timer channel"`
+	waitTimer chan RunState
 
-	// [view: -] this ensures that global initialization only happens once
-	initOnce sync.Once `view:"-" desc:"this ensures that global initialization only happens once"`
+	// this ensures that global initialization only happens once
+	initOnce sync.Once `view:"-"`
 }
 
 // New makes a new Stepper. Always call this to create a Stepper, so that initialization will be run correctly.

@@ -8,7 +8,10 @@ import (
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/ki/v2"
+	"goki.dev/girl/states"
+	"goki.dev/girl/styles"
+	"goki.dev/goosi/events"
+	"goki.dev/icons"
 )
 
 // AddLooperCtrl adds toolbar control for looper.Stack
@@ -28,19 +31,21 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 
 	for _, m := range modes {
 		mode := m
-
-		gui.ToolBar.AddAction(gi.ActOpts{Label: mode.String() + " Run", Icon: "play", Tooltip: "Run the " + mode.String() + " process", UpdateFunc: func(act *gi.Action) {
-			act.SetActiveStateUpdt(!gui.IsRunning)
-		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
-			if !gui.IsRunning {
-				gui.IsRunning = true
-				gui.ToolBar.UpdateActions()
-				go func() {
-					loops.Run(mode)
-					gui.Stopped()
-				}()
-			}
-		})
+		gi.NewButton(gui.Toolbar).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
+			SetTooltip("Run the " + mode.String() + " process").
+			Style(func(s *styles.Style) {
+				s.State.SetFlag(gui.IsRunning, states.Disabled)
+			}).
+			OnClick(func(e events.Event) {
+				if !gui.IsRunning {
+					gui.IsRunning = true
+					gui.Toolbar.Update()
+					go func() {
+						loops.Run(mode)
+						gui.Stopped()
+					}()
+				}
+			})
 
 		//stepLevel := evalLoops.Step.Default
 		stepN := make(map[string]int)
@@ -50,42 +55,39 @@ func (gui *GUI) AddLooperCtrl(loops *looper.Manager, modes []etime.Modes) {
 			stepN[st.String()] = 1
 			stringToEnumTime[st.String()] = st
 		}
+		gi.NewButton(gui.Toolbar).SetText("Step").SetIcon(icons.SkipNext).
+			SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
+			Style(func(s *styles.Style) {
+				s.State.SetFlag(gui.IsRunning, states.Disabled)
+			}).
+			OnClick(func(e events.Event) {
+				if !gui.IsRunning {
+					gui.IsRunning = true
+					gui.Toolbar.Update()
+					go func() {
+						stack := loops.Stacks[mode]
+						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
+						gui.Stopped()
+					}()
+				}
+			})
 
-		gui.ToolBar.AddAction(gi.ActOpts{Label: "Step", Icon: "step-fwd", Tooltip: "Step the " + mode.String() + " process according to the following step level and N", UpdateFunc: func(act *gi.Action) {
-			act.SetActiveStateUpdt(!gui.IsRunning)
-		}}, gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
-			if !gui.IsRunning {
-				gui.IsRunning = true
-				gui.ToolBar.UpdateActions()
-				go func() {
-					stack := loops.Stacks[mode]
-					loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
-					gui.Stopped()
-				}()
-			}
-		})
-
-		scb := gi.AddNewComboBox(gui.ToolBar, "step")
+		scb := gi.NewChooser(gui.Toolbar, "step")
 		stepStrs := []string{}
 		for _, s := range steps {
 			stepStrs = append(stepStrs, s.String())
 		}
-		scb.ItemsFromStringList(stepStrs, false, 30)
+		scb.SetStrings(stepStrs, false, 30)
 		stack := loops.Stacks[mode]
 		scb.SetCurVal(stack.StepLevel.String())
 
-		sb := gi.AddNewSpinBox(gui.ToolBar, "step-n")
-		sb.Defaults()
-		sb.Tooltip = "number of iterations per step"
-		sb.SetProp("step", 1)
-		sb.HasMin = true
-		sb.Min = 1
-		sb.Value = 1
-		sb.SpinBoxSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data any) {
-			stepN[scb.CurVal.(string)] = int(data.(float32))
+		sb := gi.NewSpinner(gui.Toolbar, "step-n").SetTooltip("number of iterations per step").
+			SetStep(1).SetMin(1).SetValue(1)
+		sb.OnChange(func(e events.Event) {
+			stepN[scb.CurVal.(string)] = int(sb.Value)
 		})
 
-		scb.ComboSig.Connect(gui.ToolBar.This(), func(recv, send ki.Ki, sig int64, data any) {
+		scb.OnChange(func(e events.Event) {
 			stack := loops.Stacks[mode]
 			stack.StepLevel = stringToEnumTime[scb.CurVal.(string)]
 			sb.Value = float32(stepN[stack.StepLevel.String()])

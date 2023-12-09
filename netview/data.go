@@ -13,19 +13,19 @@ import (
 type LayData struct {
 
 	// the layer name
-	LayName string `desc:"the layer name"`
+	LayName string
 
 	// cached number of units
-	NUnits int `desc:"cached number of units"`
+	NUnits int
 
-	// the full data, [Ring.Max][len(Vars)][MaxData][NUnits] in that order
-	Data []float32 `desc:"the full data, [Ring.Max][len(Vars)][MaxData][NUnits] in that order"`
+	// the full data, in that order
+	Data []float32
 
 	// receiving projection data -- shared with SendPrjns
-	RecvPrjns []*PrjnData `desc:"receiving projection data -- shared with SendPrjns"`
+	RecvPrjns []*PrjnData
 
 	// sending projection data -- shared with RecvPrjns
-	SendPrjns []*PrjnData `desc:"sending projection data -- shared with RecvPrjns"`
+	SendPrjns []*PrjnData
 }
 
 // AllocSendPrjns allocates Sending projections for given layer.
@@ -59,16 +59,16 @@ func (ld *LayData) FreePrjns() {
 type PrjnData struct {
 
 	// name of sending layer
-	Send string `desc:"name of sending layer"`
+	Send string
 
 	// name of recv layer
-	Recv string `desc:"name of recv layer"`
+	Recv string
 
 	// source projection
-	Prjn emer.Prjn `desc:"source projection"`
+	Prjn emer.Prjn
 
 	// synaptic data, by variable in SynVars and number of data points
-	SynData []float32 `desc:"synaptic data, by variable in SynVars and number of data points"`
+	SynData []float32
 }
 
 // Alloc allocates SynData to hold number of variables * nsyn synapses.

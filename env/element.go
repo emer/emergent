@@ -12,13 +12,13 @@ import (
 type Element struct {
 
 	// name of this element -- must be unique
-	Name string `desc:"name of this element -- must be unique"`
+	Name string
 
 	// shape of the tensor for this element -- each element should generally have a well-defined consistent shape to enable the model to process it consistently
-	Shape []int `desc:"shape of the tensor for this element -- each element should generally have a well-defined consistent shape to enable the model to process it consistently"`
+	Shape []int
 
 	// names of the dimensions within the Shape -- optional but useful for ensuring correct usage
-	DimNames []string `desc:"names of the dimensions within the Shape -- optional but useful for ensuring correct usage"`
+	DimNames []string
 }
 
 // Elements is a list of Element info

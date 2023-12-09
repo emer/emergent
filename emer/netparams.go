@@ -21,23 +21,23 @@ import (
 // that can have different parameters to try.
 type NetParams struct {
 
-	// [view: no-inline] full collection of param sets to use
-	Params netparams.Sets `view:"no-inline" desc:"full collection of param sets to use"`
+	// full collection of param sets to use
+	Params netparams.Sets `view:"no-inline"`
 
 	// optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)
-	ExtraSheets string `desc:"optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)"`
+	ExtraSheets string
 
 	// optional additional tag to add to file names, logs to identify params / run config
-	Tag string `desc:"optional additional tag to add to file names, logs to identify params / run config"`
+	Tag string
 
-	// [view: -] the network to apply parameters to
-	Network Network `view:"-" desc:"the network to apply parameters to"`
+	// the network to apply parameters to
+	Network Network `view:"-"`
 
-	// [view: -] list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used
-	NetHypers params.Flex `view:"-" desc:"list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used"`
+	// list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used
+	NetHypers params.Flex `view:"-"`
 
 	// print out messages for each parameter that is set
-	SetMsg bool `desc:"print out messages for each parameter that is set"`
+	SetMsg bool
 }
 
 // Config configures the ExtraSheets, Tag, and Network fields

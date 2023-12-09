@@ -17,7 +17,7 @@ type Args struct {
 	Floats  map[string]*Float
 
 	// true when all args have been set to flag package
-	Flagged bool `inactive:"+" desc:"true when all args have been set to flag package"`
+	Flagged bool `inactive:"+"`
 }
 
 // Init must be called before use to create all the maps

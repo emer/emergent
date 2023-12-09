@@ -22,28 +22,28 @@ import (
 type Rel struct { //git:add
 
 	// spatial relationship between this layer and the other layer
-	Rel Relations `desc:"spatial relationship between this layer and the other layer"`
+	Rel Relations
 
-	// [viewif: Rel=[FrontOf,Behind,Above,Below]] horizontal (x-axis) alignment relative to other
-	XAlign XAligns `viewif:"Rel=[FrontOf,Behind,Above,Below]" desc:"horizontal (x-axis) alignment relative to other"`
+	// ] horizontal (x-axis) alignment relative to other
+	XAlign XAligns `viewif:"Rel=[FrontOf,Behind,Above,Below]"`
 
-	// [viewif: Rel=[LeftOf,RightOf,Above,Below]] vertical (y-axis) alignment relative to other
-	YAlign YAligns `viewif:"Rel=[LeftOf,RightOf,Above,Below]" desc:"vertical (y-axis) alignment relative to other"`
+	// ] vertical (y-axis) alignment relative to other
+	YAlign YAligns `viewif:"Rel=[LeftOf,RightOf,Above,Below]"`
 
 	// name of the other layer we are in relationship to
-	Other string `desc:"name of the other layer we are in relationship to"`
+	Other string
 
 	// scaling factor applied to layer size for displaying
-	Scale float32 `desc:"scaling factor applied to layer size for displaying"`
+	Scale float32
 
 	// number of unit-spaces between us
-	Space float32 `desc:"number of unit-spaces between us"`
+	Space float32
 
 	// for vertical (y-axis) alignment, amount we are offset relative to perfect alignment
-	XOffset float32 `desc:"for vertical (y-axis) alignment, amount we are offset relative to perfect alignment"`
+	XOffset float32
 
 	// for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment
-	YOffset float32 `desc:"for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment"`
+	YOffset float32
 }
 
 // Defaults sets default scale, space, offset values -- rel, align must be set specifically

@@ -25,43 +25,43 @@ type Stats struct {
 	Ints    map[string]int
 
 	// float32 tensors used for grabbing values from layers
-	F32Tensors map[string]*etensor.Float32 `desc:"float32 tensors used for grabbing values from layers"`
+	F32Tensors map[string]*etensor.Float32
 
 	// float64 tensors as needed for other computations
-	F64Tensors map[string]*etensor.Float64 `desc:"float64 tensors as needed for other computations"`
+	F64Tensors map[string]*etensor.Float64
 
 	// int tensors as needed for other computations
-	IntTensors map[string]*etensor.Int `desc:"int tensors as needed for other computations"`
+	IntTensors map[string]*etensor.Int
 
-	// [view: no-inline] confusion matrix
-	Confusion confusion.Matrix `view:"no-inline" desc:"confusion matrix"`
+	// confusion matrix
+	Confusion confusion.Matrix `view:"no-inline"`
 
 	// similarity matrix for comparing pattern similarities
-	SimMats map[string]*simat.SimMat `desc:"similarity matrix for comparing pattern similarities"`
+	SimMats map[string]*simat.SimMat
 
 	// analysis plots -- created by analysis routines
-	Plots map[string]*eplot.Plot2D `desc:"analysis plots -- created by analysis routines"`
+	Plots map[string]*eplot.Plot2D
 
 	// one PCA object can be reused for all PCA computations
-	PCA pca.PCA `desc:"one PCA object can be reused for all PCA computations"`
+	PCA pca.PCA
 
 	// one SVD object can be reused for all SVD computations
-	SVD pca.SVD `desc:"one SVD object can be reused for all SVD computations"`
+	SVD pca.SVD
 
-	// [view: no-inline] activation-based receptive fields
-	ActRFs actrf.RFs `view:"no-inline" desc:"activation-based receptive fields"`
+	// activation-based receptive fields
+	ActRFs actrf.RFs `view:"no-inline"`
 
 	// list of layer names configured for recording raster plots
-	Rasters []string `desc:"list of layer names configured for recording raster plots"`
+	Rasters []string
 
 	// linear decoders
-	LinDecoders map[string]*decoder.Linear `desc:"linear decoders"`
+	LinDecoders map[string]*decoder.Linear
 
 	// softmax decoders
-	SoftMaxDecoders map[string]*decoder.SoftMax `desc:"softmax decoders"`
+	SoftMaxDecoders map[string]*decoder.SoftMax
 
 	// named timers available for timing how long different computations take (wall-clock time)
-	Timers map[string]*timer.Time `desc:"named timers available for timing how long different computations take (wall-clock time)"`
+	Timers map[string]*timer.Time
 }
 
 // Init must be called before use to create all the maps

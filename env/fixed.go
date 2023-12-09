@@ -23,40 +23,40 @@ import (
 type FixedTable struct {
 
 	// name of this environment
-	Nm string `desc:"name of this environment"`
+	Nm string
 
 	// description of this environment
-	Dsc string `desc:"description of this environment"`
+	Dsc string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *etable.IdxView `desc:"this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential"`
+	Table *etable.IdxView
 
 	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order
-	Sequential bool `desc:"present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order"`
+	Sequential bool
 
 	// permuted order of items to present if not sequential -- updated every time through the list
-	Order []int `desc:"permuted order of items to present if not sequential -- updated every time through the list"`
+	Order []int
 
-	// [view: inline] current run of model as provided during Init
-	Run Ctr `view:"inline" desc:"current run of model as provided during Init"`
+	// current run of model as provided during Init
+	Run Ctr `view:"inline"`
 
-	// [view: inline] number of times through entire set of patterns
-	Epoch Ctr `view:"inline" desc:"number of times through entire set of patterns"`
+	// number of times through entire set of patterns
+	Epoch Ctr `view:"inline"`
 
-	// [view: inline] current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
-	Trial Ctr `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
+	// current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
+	Trial Ctr `view:"inline"`
 
 	// if Table has a Name column, this is the contents of that
-	TrialName CurPrvString `desc:"if Table has a Name column, this is the contents of that"`
+	TrialName CurPrvString
 
 	// if Table has a Group column, this is contents of that
-	GroupName CurPrvString `desc:"if Table has a Group column, this is contents of that"`
+	GroupName CurPrvString
 
 	// name of the Name column -- defaults to 'Name'
-	NameCol string `desc:"name of the Name column -- defaults to 'Name'"`
+	NameCol string
 
 	// name of the Group column -- defaults to 'Group'
-	GroupCol string `desc:"name of the Group column -- defaults to 'Group'"`
+	GroupCol string
 }
 
 func (ft *FixedTable) Name() string { return ft.Nm }

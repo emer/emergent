@@ -11,16 +11,16 @@ package erand
 type RndParams struct { //git:add
 
 	// distribution to generate random numbers from
-	Dist RndDists `desc:"distribution to generate random numbers from"`
+	Dist RndDists
 
 	// mean of random distribution -- typically added to generated random variants
-	Mean float64 `desc:"mean of random distribution -- typically added to generated random variants"`
+	Mean float64
 
 	// variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)
-	Var float64 `desc:"variability parameter for the random numbers (gauss = standard deviation, not variance; uniform = half-range, others as noted in RndDists)"`
+	Var float64
 
-	// [view: if Dist=Gamma,Binomial,Beta] extra parameter for distribution (depends on each one)
-	Par float64 `view:"if Dist=Gamma,Binomial,Beta" desc:"extra parameter for distribution (depends on each one)"`
+	// extra parameter for distribution (depends on each one)
+	Par float64 `view:"if Dist=Gamma,Binomial,Beta"`
 }
 
 func (rp *RndParams) Defaults() {

@@ -20,10 +20,10 @@ package chem
 type React struct {
 
 	// forward rate constant for N / sec assuming 2 forward factors
-	Kf float64 `desc:"forward rate constant for N / sec assuming 2 forward factors"`
+	Kf float64
 
 	// backward rate constant for N / sec assuming 1 backward factor
-	Kb float64 `desc:"backward rate constant for N / sec assuming 1 backward factor"`
+	Kb float64
 }
 
 // SetVol sets reaction forward / backward time constants in seconds,

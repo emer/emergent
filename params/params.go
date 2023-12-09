@@ -54,22 +54,22 @@ func (pr *Params) SetByName(name, value string) {
 type Sel struct { //git:add
 
 	// selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'
-	Sel string `width:"30" desc:"selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'"`
+	Sel string `width:"30"`
 
 	// description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params.
-	Desc string `width:"60" desc:"description of these parameter values -- what effect do they have?  what range was explored?  it is valuable to record this information as you explore the params."`
+	Desc string `width:"60"`
 
-	// [view: no-inline] parameter values to apply to whatever matches the selector
-	Params Params `view:"no-inline" desc:"parameter values to apply to whatever matches the selector"`
+	// parameter values to apply to whatever matches the selector
+	Params Params `view:"no-inline"`
 
 	// Put your hyperparams here
-	Hypers Hypers `desc:"Put your hyperparams here"`
+	Hypers Hypers
 
-	// [tableview: -] number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
-	NMatch int `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods"`
+	// number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
+	NMatch int `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+"`
 
-	// [tableview: -] name of current Set being applied
-	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+" desc:"name of current Set being applied"`
+	// name of current Set being applied
+	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+"`
 }
 
 // SetFloat sets the value of given parameter
@@ -193,10 +193,10 @@ type Sheets map[string]*Sheet //git:add
 type Set struct { //git:add
 
 	// description of this param set -- when should it be used?  how is it different from the other sets?
-	Desc string `width:"60" desc:"description of this param set -- when should it be used?  how is it different from the other sets?"`
+	Desc string `width:"60"`
 
 	// Sheet's grouped according to their target and / or function, e.g.,
-	Sheets Sheets `desc:"Sheet's grouped according to their target and / or function, e.g., "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
+	Sheets Sheets `Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
 }
 
 // SheetByNameTry tries to find given sheet by name, and returns error

@@ -10,19 +10,19 @@ package env
 type Ctr struct {
 
 	// current counter value
-	Cur int `desc:"current counter value"`
+	Cur int
 
-	// [view: -] previous counter value, prior to last Incr() call (init to -1)
-	Prv int `view:"-" desc:"previous counter value, prior to last Incr() call (init to -1)"`
+	// previous counter value, prior to last Incr() call (init to -1)
+	Prv int `view:"-"`
 
-	// [view: -] did this change on the last Step() call or not?
-	Chg bool `view:"-" desc:"did this change on the last Step() call or not?"`
+	// did this change on the last Step() call or not?
+	Chg bool `view:"-"`
 
 	// where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0
-	Max int `desc:"where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0"`
+	Max int
 
-	// [view: -] the unit of time scale represented by this counter (just FYI)
-	Scale TimeScales `view:"-" desc:"the unit of time scale represented by this counter (just FYI)"`
+	// the unit of time scale represented by this counter (just FYI)
+	Scale TimeScales `view:"-"`
 }
 
 // Init initializes counter -- Cur = 0, Prv = -1

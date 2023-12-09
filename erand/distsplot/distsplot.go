@@ -41,31 +41,31 @@ const LogPrec = 4
 type Sim struct {
 
 	// random params
-	Dist erand.RndParams `desc:"random params"`
+	Dist erand.RndParams
 
 	// number of samples
-	NSamp int `desc:"number of samples"`
+	NSamp int
 
 	// number of bins in the histogram
-	NBins int `desc:"number of bins in the histogram"`
+	NBins int
 
 	// range for histogram
-	Range minmax.F64 `desc:"range for histogram"`
+	Range minmax.F64
 
-	// [view: no-inline] table for raw data
-	Table *etable.Table `view:"no-inline" desc:"table for raw data"`
+	// table for raw data
+	Table *etable.Table `view:"no-inline"`
 
-	// [view: no-inline] histogram of data
-	Hist *etable.Table `view:"no-inline" desc:"histogram of data"`
+	// histogram of data
+	Hist *etable.Table `view:"no-inline"`
 
-	// [view: -] the plot
-	Plot *eplot.Plot2D `view:"-" desc:"the plot"`
+	// the plot
+	Plot *eplot.Plot2D `view:"-"`
 
-	// [view: -] main GUI window
-	Win *gi.Window `view:"-" desc:"main GUI window"`
+	// main GUI window
+	Win *gi.Window `view:"-"`
 
-	// [view: -] the master toolbar
-	ToolBar *gi.ToolBar `view:"-" desc:"the master toolbar"`
+	// the master toolbar
+	ToolBar *gi.ToolBar `view:"-"`
 }
 
 // TheSim is the overall state for this simulation

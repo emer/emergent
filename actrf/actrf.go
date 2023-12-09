@@ -20,25 +20,25 @@ import (
 type RF struct {
 
 	// name of this RF -- used for management of multiple in RFs
-	Name string `desc:"name of this RF -- used for management of multiple in RFs"`
+	Name string
 
-	// [view: no-inline] computed receptive field, as SumProd / SumSrc -- only after Avg has been called
-	RF etensor.Float32 `view:"no-inline" desc:"computed receptive field, as SumProd / SumSrc -- only after Avg has been called"`
+	// computed receptive field, as SumProd / SumSrc -- only after Avg has been called
+	RF etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] unit normalized version of RF per source (inner 2D dimensions) -- good for display
-	NormRF etensor.Float32 `view:"no-inline" desc:"unit normalized version of RF per source (inner 2D dimensions) -- good for display"`
+	// unit normalized version of RF per source (inner 2D dimensions) -- good for display
+	NormRF etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] normalized version of SumSrc -- sum of each point in the source -- good for viewing the completeness and uniformity of the sampling of the source space
-	NormSrc etensor.Float32 `view:"no-inline" desc:"normalized version of SumSrc -- sum of each point in the source -- good for viewing the completeness and uniformity of the sampling of the source space"`
+	// normalized version of SumSrc -- sum of each point in the source -- good for viewing the completeness and uniformity of the sampling of the source space
+	NormSrc etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] sum of the products of act * src
-	SumProd etensor.Float32 `view:"no-inline" desc:"sum of the products of act * src"`
+	// sum of the products of act * src
+	SumProd etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] sum of the sources (denomenator)
-	SumSrc etensor.Float32 `view:"no-inline" desc:"sum of the sources (denomenator)"`
+	// sum of the sources (denomenator)
+	SumSrc etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] temporary destination sum for MPI -- only used when MPISum called
-	MPITmp etensor.Float32 `view:"no-inline" desc:"temporary destination sum for MPI -- only used when MPISum called"`
+	// temporary destination sum for MPI -- only used when MPISum called
+	MPITmp etensor.Float32 `view:"no-inline"`
 }
 
 // Init initializes this RF based on name and shapes of given

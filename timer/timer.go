@@ -12,13 +12,13 @@ import "time"
 type Time struct {
 
 	// the most recent starting time
-	St time.Time `desc:"the most recent starting time"`
+	St time.Time
 
 	// the total accumulated time
-	Total time.Duration `desc:"the total accumulated time"`
+	Total time.Duration
 
 	// the number of start/stops
-	N int `desc:"the number of start/stops"`
+	N int
 }
 
 // Reset resets the overall accumulated Total and N counters and start time to zero

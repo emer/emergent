@@ -8,10 +8,10 @@ package env
 type CurPrvF32 struct {
 
 	// current value
-	Cur float32 `desc:"current value"`
+	Cur float32
 
 	// previous value
-	Prv float32 `desc:"previous value"`
+	Prv float32
 }
 
 // Set sets the new current value, copying Cur to Prv
@@ -38,10 +38,10 @@ func (cv *CurPrvF32) Diff() float32 {
 type CurPrvInt struct {
 
 	// current value
-	Cur int `desc:"current value"`
+	Cur int
 
 	// previous value
-	Prv int `desc:"previous value"`
+	Prv int
 }
 
 // Set sets the new current value, copying Cur to Prv
@@ -68,10 +68,10 @@ func (cv *CurPrvInt) Diff() int {
 type CurPrvString struct {
 
 	// current value
-	Cur string `desc:"current value"`
+	Cur string
 
 	// previous value
-	Prv string `desc:"previous value"`
+	Prv string
 }
 
 // Set sets the new current value, copying Cur to Prv

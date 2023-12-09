@@ -12,13 +12,13 @@ import (
 type OneToOne struct {
 
 	// number of recv connections to make (0 for entire size of recv layer)
-	NCons int `desc:"number of recv connections to make (0 for entire size of recv layer)"`
+	NCons int
 
 	// starting unit index for sending connections
-	SendStart int `desc:"starting unit index for sending connections"`
+	SendStart int
 
 	// starting unit index for recv connections
-	RecvStart int `desc:"starting unit index for recv connections"`
+	RecvStart int
 }
 
 func NewOneToOne() *OneToOne {

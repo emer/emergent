@@ -28,16 +28,16 @@ package chem
 type EnzRate struct {
 
 	// S+E forward rate constant, in μM-1 msec-1
-	K1 float64 `desc:"S+E forward rate constant, in μM-1 msec-1"`
+	K1 float64
 
 	// SE backward rate constant, in μM-1 msec-1
-	K2 float64 `desc:"SE backward rate constant, in μM-1 msec-1"`
+	K2 float64
 
 	// SE -> P + E catalyzed rate constant, in μM-1 msec-1
-	K3 float64 `desc:"SE -> P + E catalyzed rate constant, in μM-1 msec-1"`
+	K3 float64
 
 	// Michaelis constant = (K2 + K3) / K1 -- goes into the rate
-	Km float64 `inactive:"+" desc:"Michaelis constant = (K2 + K3) / K1 -- goes into the rate"`
+	Km float64 `inactive:"+"`
 }
 
 func (rt *EnzRate) Update() {

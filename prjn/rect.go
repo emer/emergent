@@ -18,34 +18,34 @@ import (
 type Rect struct {
 
 	// size of rectangle in sending layer that each receiving unit receives from
-	Size evec.Vec2i `desc:"size of rectangle in sending layer that each receiving unit receives from"`
+	Size evec.Vec2i
 
 	// starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position
-	Start evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position"`
+	Start evec.Vec2i
 
 	// scaling to apply to receiving unit position to compute corresponding position in sending layer of the lower-left corner of rectangle
-	Scale mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute corresponding position in sending layer of the lower-left corner of rectangle"`
+	Scale mat32.Vec2
 
 	// auto-set the Scale as function of the relative sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)
-	AutoScale bool `desc:"auto-set the Scale as function of the relative sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)"`
+	AutoScale bool
 
 	// if true, use Round when applying scaling factor -- otherwise uses Floor which makes Scale work like a grouping factor -- e.g., .25 will effectively group 4 recv units with same send position
-	RoundScale bool `desc:"if true, use Round when applying scaling factor -- otherwise uses Floor which makes Scale work like a grouping factor -- e.g., .25 will effectively group 4 recv units with same send position"`
+	RoundScale bool
 
 	// if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped
-	Wrap bool `desc:"if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped"`
+	Wrap bool
 
 	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
-	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	SelfCon bool
 
 	// make the reciprocal of the specified connections -- i.e., symmetric for swapping recv and send
-	Recip bool `desc:"make the reciprocal of the specified connections -- i.e., symmetric for swapping recv and send"`
+	Recip bool
 
 	// starting position in receiving layer -- if > 0 then units below this starting point remain unconnected
-	RecvStart evec.Vec2i `desc:"starting position in receiving layer -- if > 0 then units below this starting point remain unconnected"`
+	RecvStart evec.Vec2i
 
 	// number of units in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected
-	RecvN evec.Vec2i `desc:"number of units in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected"`
+	RecvN evec.Vec2i
 }
 
 func NewRect() *Rect {

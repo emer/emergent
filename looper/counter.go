@@ -8,13 +8,13 @@ package looper
 type Ctr struct {
 
 	// current counter value
-	Cur int `desc:"current counter value"`
+	Cur int
 
 	// maximum counter value -- only used if > 0
-	Max int `desc:"maximum counter value -- only used if > 0"`
+	Max int
 
 	// increment per iteration
-	Inc int `desc:"increment per iteration"`
+	Inc int
 }
 
 // Incr increments the counter by 1. Does not interact with Max.

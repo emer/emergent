@@ -11,10 +11,10 @@ package chem
 type Diffuse struct {
 
 	// A -> B forward diffusion rate constant, sec-1
-	Kf float64 `desc:"A -> B forward diffusion rate constant, sec-1"`
+	Kf float64
 
 	// B -> A backward diffusion rate constant, sec-1
-	Kb float64 `desc:"B -> A backward diffusion rate constant, sec-1"`
+	Kb float64
 }
 
 // Set sets both diffusion rates

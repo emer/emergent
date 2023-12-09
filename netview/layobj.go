@@ -13,10 +13,10 @@ type LayObj struct { //git:add
 	xyz.Solid
 
 	// name of the layer we represent
-	LayName string `desc:"name of the layer we represent"`
+	LayName string
 
-	// [view: -] our netview
-	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview"`
+	// our netview
+	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`
 }
 
 func (lo *LayObj) HandleMouseEvents(sc *xyz.Scene) {

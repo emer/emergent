@@ -85,8 +85,8 @@ type Rand interface {
 // is nil, the global rand stream.
 type SysRand struct {
 
-	// [view: -] if non-nil, use this random number source instead of the global default one
-	Rand *rand.Rand `view:"-" desc:"if non-nil, use this random number source instead of the global default one"`
+	// if non-nil, use this random number source instead of the global default one
+	Rand *rand.Rand `view:"-"`
 }
 
 // NewGlobalRand returns a new SysRand that implements the

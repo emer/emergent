@@ -25,54 +25,54 @@ import (
 // using the widely-used SoftMax function: https://en.wikipedia.org/wiki/Softmax_function
 type SoftMax struct {
 
-	// [def: 0.1] learning rate
-	Lrate float32 `def:"0.1" desc:"learning rate"`
+	// learning rate
+	Lrate float32 `def:"0.1"`
 
 	// layers to decode
-	Layers []emer.Layer `desc:"layers to decode"`
+	Layers []emer.Layer
 
 	// number of different categories to decode
-	NCats int `desc:"number of different categories to decode"`
+	NCats int
 
 	// unit values
-	Units []SoftMaxUnit `desc:"unit values"`
+	Units []SoftMaxUnit
 
-	// sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act
-	Sorted []int `desc:"sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sorted[0] has the most likely categorization, and its activity is Units[Sorted[0]].Act"`
+	// sorted list of indexes into Units, in descending order from strongest to weakest -- i.e., Sortedhas the most likely categorization, and its activity is Units].Act
+	Sorted []int
 
 	// number of inputs -- total sizes of layer inputs
-	NInputs int `desc:"number of inputs -- total sizes of layer inputs"`
+	NInputs int
 
 	// input values, copied from layers
-	Inputs []float32 `desc:"input values, copied from layers"`
+	Inputs []float32
 
 	// current target index of correct category
-	Target int `desc:"current target index of correct category"`
+	Target int
 
-	// [view: -] for holding layer values
-	ValsTsrs map[string]*etensor.Float32 `view:"-" desc:"for holding layer values"`
+	// for holding layer values
+	ValsTsrs map[string]*etensor.Float32 `view:"-"`
 
 	// synaptic weights: outer loop is units, inner loop is inputs
-	Weights etensor.Float32 `desc:"synaptic weights: outer loop is units, inner loop is inputs"`
+	Weights etensor.Float32
 
-	// [view: -] mpi communicator -- MPI users must set this to their comm -- do direct assignment
-	Comm *mpi.Comm `view:"-" desc:"mpi communicator -- MPI users must set this to their comm -- do direct assignment"`
+	// mpi communicator -- MPI users must set this to their comm -- do direct assignment
+	Comm *mpi.Comm `view:"-"`
 
 	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
-	MPIDWts etensor.Float32 `desc:"delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs"`
+	MPIDWts etensor.Float32
 }
 
 // SoftMaxUnit has variables for softmax decoder unit
 type SoftMaxUnit struct {
 
 	// final activation = e^Ge / sum e^Ge
-	Act float32 `desc:"final activation = e^Ge / sum e^Ge"`
+	Act float32
 
 	// net input = sum x * w
-	Net float32 `desc:"net input = sum x * w"`
+	Net float32
 
 	// exp(Net)
-	Exp float32 `desc:"exp(Net)"`
+	Exp float32
 }
 
 // InitLayer initializes detector with number of categories and layers

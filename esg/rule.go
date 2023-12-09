@@ -36,31 +36,31 @@ const (
 type Rule struct { //git:add
 
 	// name of rule
-	Name string `desc:"name of rule"`
+	Name string
 
 	// description / notes on rule
-	Desc string `desc:"description / notes on rule"`
+	Desc string
 
 	// type of rule -- how to choose the items
-	Type RuleTypes `desc:"type of rule -- how to choose the items"`
+	Type RuleTypes
 
 	// items in rule
-	Items []*Item `desc:"items in rule"`
+	Items []*Item
 
 	// state update for rule
-	State State `desc:"state update for rule"`
+	State State
 
 	// previously selected item (from perspective of current rule)
-	PrevIdx int `desc:"previously selected item (from perspective of current rule)"`
+	PrevIdx int
 
 	// current index in Items (what will be used next)
-	CurIdx int `desc:"current index in Items (what will be used next)"`
+	CurIdx int
 
 	// probability of repeating same item -- signaled by =%p
-	RepeatP float32 `desc:"probability of repeating same item -- signaled by =%p"`
+	RepeatP float32
 
 	// permuted order if doing that
-	Order []int `desc:"permuted order if doing that"`
+	Order []int
 }
 
 // Init initializes the rules -- only relevant for ordered rules (restarts at start)

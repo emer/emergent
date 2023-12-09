@@ -16,22 +16,22 @@ package looper
 type Loop struct {
 
 	// Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first.
-	Counter Ctr `desc:"Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first."`
+	Counter Ctr
 
 	// OnStart is called at the beginning of each loop.
-	OnStart NamedFuncs `desc:"OnStart is called at the beginning of each loop."`
+	OnStart NamedFuncs
 
 	// OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here.
-	Main NamedFuncs `desc:"OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here."`
+	Main NamedFuncs
 
 	// OnStart is called at the end of each loop.
-	OnEnd NamedFuncs `desc:"OnStart is called at the end of each loop."`
+	OnEnd NamedFuncs
 
 	// If true, end loop. Maintained as an unordered map because they should not have side effects.
-	IsDone NamedFuncsBool `desc:"If true, end loop. Maintained as an unordered map because they should not have side effects."`
+	IsDone NamedFuncsBool
 
 	// Events occur when Ctr.Cur gets to their AtCtr.
-	Events []*Event `desc:"Events occur when Ctr.Cur gets to their AtCtr."`
+	Events []*Event
 }
 
 // AddEvents to the list of events.

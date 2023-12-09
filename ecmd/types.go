@@ -8,16 +8,16 @@ package ecmd
 type Int struct {
 
 	// name of arg -- must be unique
-	Name string `desc:"name of arg -- must be unique"`
+	Name string
 
 	// description of arg
-	Desc string `desc:"description of arg"`
+	Desc string
 
 	// value as parsed
-	Val int `desc:"value as parsed"`
+	Val int
 
 	// default initial value
-	Def int `desc:"default initial value"`
+	Def int
 }
 
 // NewInt returns a new Int arg
@@ -35,16 +35,16 @@ func (vl *Int) Set(val int) {
 type Bool struct {
 
 	// name of arg -- must be unique
-	Name string `desc:"name of arg -- must be unique"`
+	Name string
 
 	// description of arg
-	Desc string `desc:"description of arg"`
+	Desc string
 
 	// value as parsed
-	Val bool `desc:"value as parsed"`
+	Val bool
 
 	// default initial value
-	Def bool `desc:"default initial value"`
+	Def bool
 }
 
 // NewBool returns a new Bool arg
@@ -62,16 +62,16 @@ func (vl *Bool) Set(val bool) {
 type String struct {
 
 	// name of arg -- must be unique
-	Name string `desc:"name of arg -- must be unique"`
+	Name string
 
 	// description of arg
-	Desc string `desc:"description of arg"`
+	Desc string
 
 	// value as parsed
-	Val string `desc:"value as parsed"`
+	Val string
 
 	// default initial value
-	Def string `desc:"default initial value"`
+	Def string
 }
 
 // NewString returns a new String arg
@@ -89,16 +89,16 @@ func (vl *String) Set(val string) {
 type Float struct {
 
 	// name of arg -- must be unique
-	Name string `desc:"name of arg -- must be unique"`
+	Name string
 
 	// description of arg
-	Desc string `desc:"description of arg"`
+	Desc string
 
 	// value as parsed
-	Val float64 `desc:"value as parsed"`
+	Val float64
 
 	// default initial value
-	Def float64 `desc:"default initial value"`
+	Def float64
 }
 
 // NewFloat returns a new Float arg

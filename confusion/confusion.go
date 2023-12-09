@@ -18,26 +18,26 @@ import (
 // actual answer produced.  Correct answers are along the diagonal.
 type Matrix struct { //git:add
 
-	// [view: no-inline] normalized probability of confusion: Row = ground truth class, Col = actual response for that class.
-	Prob etensor.Float64 `view:"no-inline" desc:"normalized probability of confusion: Row = ground truth class, Col = actual response for that class."`
+	// normalized probability of confusion: Row = ground truth class, Col = actual response for that class.
+	Prob etensor.Float64 `view:"no-inline"`
 
-	// [view: no-inline] incremental sums
-	Sum etensor.Float64 `view:"no-inline" desc:"incremental sums"`
+	// incremental sums
+	Sum etensor.Float64 `view:"no-inline"`
 
-	// [view: no-inline] counts per ground truth (rows)
-	N etensor.Float64 `view:"no-inline" desc:"counts per ground truth (rows)"`
+	// counts per ground truth (rows)
+	N etensor.Float64 `view:"no-inline"`
 
-	// [view: no-inline] visualization using SimMat
-	Vis simat.SimMat `view:"no-inline" desc:"visualization using SimMat"`
+	// visualization using SimMat
+	Vis simat.SimMat `view:"no-inline"`
 
-	// [view: no-inline] true pos/neg, false pos/neg for each class, generated from the confusion matrix
-	TFPN etensor.Float64 `view:"no-inline" desc:"true pos/neg, false pos/neg for each class, generated from the confusion matrix"`
+	// true pos/neg, false pos/neg for each class, generated from the confusion matrix
+	TFPN etensor.Float64 `view:"no-inline"`
 
-	// [view: no-inline] precision, recall and F1 score by class
-	ClassScores etensor.Float64 `view:"no-inline" desc:"precision, recall and F1 score by class"`
+	// precision, recall and F1 score by class
+	ClassScores etensor.Float64 `view:"no-inline"`
 
-	// [view: no-inline] micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class
-	MatrixScores etensor.Float64 `view:"no-inline" desc:"micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class"`
+	// micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class
+	MatrixScores etensor.Float64 `view:"no-inline"`
 }
 
 // Init initializes the Matrix for given number of classes,

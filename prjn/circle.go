@@ -21,31 +21,31 @@ import (
 type Circle struct {
 
 	// radius of the circle, in units from center in sending layer
-	Radius int `desc:"radius of the circle, in units from center in sending layer"`
+	Radius int
 
 	// starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position
-	Start evec.Vec2i `desc:"starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position"`
+	Start evec.Vec2i
 
 	// scaling to apply to receiving unit position to compute sending center as function of recv unit position
-	Scale mat32.Vec2 `desc:"scaling to apply to receiving unit position to compute sending center as function of recv unit position"`
+	Scale mat32.Vec2
 
 	// auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size
-	AutoScale bool `desc:"auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size"`
+	AutoScale bool
 
 	// if true, connectivity wraps around edges
-	Wrap bool `desc:"if true, connectivity wraps around edges"`
+	Wrap bool
 
 	// if true, this prjn should set gaussian topographic weights, according to following parameters
-	TopoWts bool `desc:"if true, this prjn should set gaussian topographic weights, according to following parameters"`
+	TopoWts bool
 
 	// gaussian sigma (width) as a proportion of the radius of the circle
-	Sigma float32 `desc:"gaussian sigma (width) as a proportion of the radius of the circle"`
+	Sigma float32
 
 	// maximum weight value for GaussWts function -- multiplies values
-	MaxWt float32 `desc:"maximum weight value for GaussWts function -- multiplies values"`
+	MaxWt float32
 
 	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
-	SelfCon bool `desc:"if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself"`
+	SelfCon bool
 }
 
 func NewCircle() *Circle {

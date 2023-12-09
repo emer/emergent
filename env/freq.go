@@ -26,49 +26,49 @@ import (
 type FreqTable struct {
 
 	// name of this environment
-	Nm string `desc:"name of this environment"`
+	Nm string
 
 	// description of this environment
-	Dsc string `desc:"description of this environment"`
+	Dsc string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *etable.IdxView `desc:"this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential"`
+	Table *etable.IdxView
 
 	// number of samples to use in constructing the list of items to present according to frequency -- number per epoch ~ NSamples * Freq -- see RndSamp option
-	NSamples float64 `desc:"number of samples to use in constructing the list of items to present according to frequency -- number per epoch ~ NSamples * Freq -- see RndSamp option"`
+	NSamples float64
 
 	// if true, use random sampling of items NSamples times according to given Freq probability value -- otherwise just directly add NSamples * Freq items to the list
-	RndSamp bool `desc:"if true, use random sampling of items NSamples times according to given Freq probability value -- otherwise just directly add NSamples * Freq items to the list"`
+	RndSamp bool
 
 	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order.  All repetitions of given item will be sequential if Sequential
-	Sequential bool `desc:"present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order.  All repetitions of given item will be sequential if Sequential"`
+	Sequential bool
 
 	// list of items to present, with repetitions -- updated every time through the list
-	Order []int `desc:"list of items to present, with repetitions -- updated every time through the list"`
+	Order []int
 
-	// [view: inline] current run of model as provided during Init
-	Run Ctr `view:"inline" desc:"current run of model as provided during Init"`
+	// current run of model as provided during Init
+	Run Ctr `view:"inline"`
 
-	// [view: inline] number of times through entire set of patterns
-	Epoch Ctr `view:"inline" desc:"number of times through entire set of patterns"`
+	// number of times through entire set of patterns
+	Epoch Ctr `view:"inline"`
 
-	// [view: inline] current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
-	Trial Ctr `view:"inline" desc:"current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table"`
+	// current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
+	Trial Ctr `view:"inline"`
 
 	// if Table has a Name column, this is the contents of that
-	TrialName CurPrvString `desc:"if Table has a Name column, this is the contents of that"`
+	TrialName CurPrvString
 
 	// if Table has a Group column, this is contents of that
-	GroupName CurPrvString `desc:"if Table has a Group column, this is contents of that"`
+	GroupName CurPrvString
 
 	// name of the Name column -- defaults to 'Name'
-	NameCol string `desc:"name of the Name column -- defaults to 'Name'"`
+	NameCol string
 
 	// name of the Group column -- defaults to 'Group'
-	GroupCol string `desc:"name of the Group column -- defaults to 'Group'"`
+	GroupCol string
 
 	// name of the Freq column -- defaults to 'Freq'
-	FreqCol string `desc:"name of the Freq column -- defaults to 'Freq'"`
+	FreqCol string
 }
 
 func (ft *FreqTable) Name() string { return ft.Nm }

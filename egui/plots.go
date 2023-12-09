@@ -30,7 +30,8 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 			}
 		}
 
-		plt := gui.TabView.AddNewTab(eplot.KiT_Plot2D, mode+" "+time+" Plot").(*eplot.Plot2D)
+		pt := gui.Tabs.NewTab(mode + " " + time + " Plot")
+		plt := eplot.NewPlot2D(pt)
 		gui.Plots[key] = plt
 		plt.SetTable(lt.Table)
 		plt.Params.FmMetaMap(lt.Meta)
@@ -100,7 +101,7 @@ func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *eplot.Plot2D) {
 func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *eplot.Plot2D {
 	plot := gui.Plot(mode, time)
 	if plot != nil {
-		plot.GoUpdate()
+		plot.UpdatePlot()
 	}
 	return plot
 }
@@ -109,7 +110,7 @@ func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *eplot.Plot2D {
 func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *eplot.Plot2D {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
-		plot.GoUpdate()
+		plot.UpdatePlot()
 	}
 	return plot
 }
@@ -122,7 +123,7 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *eplot.Plot2D {
 		return plot
 	}
 	if (gui.CycleUpdateInterval > 0) && (cycle%gui.CycleUpdateInterval == 0) {
-		plot.GoUpdate()
+		plot.UpdatePlot()
 	}
 	return plot
 }
@@ -141,9 +142,10 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 		return
 	}
 
-	tv := gui.TabView.AddNewTab(etview.KiT_TableView, mode.String()+" "+time.String()+" ").(*etview.TableView)
+	tt := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
+	tv := etview.NewTableView(tt)
 	gui.TableViews[key] = tv
-	tv.SetTable(lt.Table, nil)
+	tv.SetTable(lt.Table)
 }
 
 // TableView returns TableView for mode, time scope
@@ -164,7 +166,7 @@ func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *etview.TableView 
 func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *etview.TableView {
 	tv := gui.TableView(mode, time)
 	if tv != nil {
-		tv.UpdateTable()
+		tv.SetNeedsRender(true)
 	}
 	return tv
 }

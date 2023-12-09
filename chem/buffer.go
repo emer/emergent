@@ -9,10 +9,10 @@ package chem
 type Buffer struct {
 
 	// rate of buffering (akin to permeability / conductance of a channel)
-	K float64 `desc:"rate of buffering (akin to permeability / conductance of a channel)"`
+	K float64
 
 	// buffer target concentration -- drives delta relative to this
-	Target float64 `desc:"buffer target concentration -- drives delta relative to this"`
+	Target float64
 }
 
 func (bf *Buffer) SetTargVol(targ, vol float64) {

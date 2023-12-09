@@ -12,8 +12,8 @@ import (
 type LayName struct {
 	xyz.Text2D
 
-	// [view: -] our netview
-	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview"`
+	// our netview
+	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`
 }
 
 func (ln *LayName) HandleMouseEvents(sc *xyz.Scene) {

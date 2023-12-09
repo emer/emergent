@@ -21,31 +21,31 @@ import (
 type Stack struct {
 
 	// evaluation mode for this stack
-	Mode etime.Modes `desc:"evaluation mode for this stack"`
+	Mode etime.Modes
 
 	// An ordered map of Loops, from the outer loop at the start to the inner loop at the end.
-	Loops map[etime.Times]*Loop `desc:"An ordered map of Loops, from the outer loop at the start to the inner loop at the end."`
+	Loops map[etime.Times]*Loop
 
 	// The list and order of time scales looped over by this stack of loops,  ordered from top to bottom, so longer timescales like Run should be at the beginning and shorter timescales like Trial should be and the end.
-	Order []etime.Times `desc:"The list and order of time scales looped over by this stack of loops,  ordered from top to bottom, so longer timescales like Run should be at the beginning and shorter timescales like Trial should be and the end."`
+	Order []etime.Times
 
 	// If true, stop model at the end of the current StopLevel.
-	StopNext bool `desc:"If true, stop model at the end of the current StopLevel."`
+	StopNext bool
 
 	// If true, stop model ASAP.
-	StopFlag bool `desc:"If true, stop model ASAP."`
+	StopFlag bool
 
 	// Time level to stop at the end of.
-	StopLevel etime.Times `desc:"Time level to stop at the end of."`
+	StopLevel etime.Times
 
 	// How many iterations at StopLevel before actually stopping.
-	StopIterations int `desc:"How many iterations at StopLevel before actually stopping."`
+	StopIterations int
 
 	// Saved Time level for stepping -- what was set for last step or by gui.
-	StepLevel etime.Times `desc:"Saved Time level for stepping -- what was set for last step or by gui."`
+	StepLevel etime.Times
 
 	// Saved number of steps for stepping -- what was set for last step or by gui.
-	StepIterations int `desc:"Saved number of steps for stepping -- what was set for last step or by gui."`
+	StepIterations int
 }
 
 // Init initializes new data structures for a newly created object

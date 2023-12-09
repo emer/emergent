@@ -20,19 +20,19 @@ var NVarCols = 2
 type RasterParams struct { //git:add
 
 	// if true, show a raster plot over time, otherwise units
-	On bool `desc:"if true, show a raster plot over time, otherwise units"`
+	On bool
 
 	// if true, the raster counter (time) is plotted across the X axis -- otherwise the Z depth axis
-	XAxis bool `desc:"if true, the raster counter (time) is plotted across the X axis -- otherwise the Z depth axis"`
+	XAxis bool
 
 	// maximum count for the counter defining the raster plot
-	Max int `desc:"maximum count for the counter defining the raster plot"`
+	Max int
 
-	// [def: 1] [min: 0.1] [max: 1] [step: 0.1] size of a single unit, where 1 = full width and no space.. 1 default
-	UnitSize float32 `min:"0.1" max:"1" step:"0.1" def:"1" desc:"size of a single unit, where 1 = full width and no space.. 1 default"`
+	// size of a single unit, where 1 = full width and no space.. 1 default
+	UnitSize float32 `min:"0.1" max:"1" step:"0.1" def:"1"`
 
-	// [def: 0.2] [min: 0.1] [max: 1] [step: 0.1] height multiplier for units, where 1 = full height.. 0.2 default
-	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" def:"0.2" desc:"height multiplier for units, where 1 = full height.. 0.2 default"`
+	// height multiplier for units, where 1 = full height.. 0.2 default
+	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" def:"0.2"`
 }
 
 func (nv *RasterParams) Defaults() {
@@ -50,38 +50,38 @@ func (nv *RasterParams) Defaults() {
 // Params holds parameters controlling how the view is rendered
 type Params struct {
 
-	// [view: inline] raster plot parameters
-	Raster RasterParams `view:"inline" desc:"raster plot parameters"`
+	// raster plot parameters
+	Raster RasterParams `view:"inline"`
 
 	// do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
-	NoSynData bool `desc:"do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"`
+	NoSynData bool
 
 	// if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc
-	PrjnType string `desc:"if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"`
+	PrjnType string
 
-	// [min: 1] maximum number of records to store to enable rewinding through prior states
-	MaxRecs int `min:"1" desc:"maximum number of records to store to enable rewinding through prior states"`
+	// maximum number of records to store to enable rewinding through prior states
+	MaxRecs int `min:"1"`
 
 	// number of variable columns
-	NVarCols int `desc:"number of variable columns"`
+	NVarCols int
 
-	// [def: 0.9] [min: 0.1] [max: 1] [step: 0.1] size of a single unit, where 1 = full width and no space.. .9 default
-	UnitSize float32 `min:"0.1" max:"1" step:"0.1" def:"0.9" desc:"size of a single unit, where 1 = full width and no space.. .9 default"`
+	// size of a single unit, where 1 = full width and no space.. .9 default
+	UnitSize float32 `min:"0.1" max:"1" step:"0.1" def:"0.9"`
 
-	// [def: 0.05] [min: 0.01] [max: .1] [step: 0.01] size of the layer name labels -- entire network view is unit sized
-	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" def:"0.05" desc:"size of the layer name labels -- entire network view is unit sized"`
+	// size of the layer name labels -- entire network view is unit sized
+	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" def:"0.05"`
 
 	// name of color map to use
-	ColorMap giv.ColorMapName `desc:"name of color map to use"`
+	ColorMap giv.ColorMapName
 
-	// [def: 0.5] [min: 0] [max: 1] [step: 0.1] opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
-	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" def:"0.5" desc:"opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum"`
+	// opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
+	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" def:"0.5"`
 
-	// [view: -] our netview, for update method
-	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-" desc:"our netview, for update method"`
+	// our netview, for update method
+	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`
 
 	// the number of records to jump for fast forward/backward
-	NFastSteps int `desc:"the number of records to jump for fast forward/backward"`
+	NFastSteps int
 }
 
 func (nv *Params) Defaults() {
@@ -121,16 +121,16 @@ func (nv *Params) Update() {
 type VarParams struct {
 
 	// name of the variable
-	Var string `desc:"name of the variable"`
+	Var string
 
 	// keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)
-	ZeroCtr bool `desc:"keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)"`
+	ZeroCtr bool
 
-	// [view: inline] range to display
-	Range minmax.Range32 `view:"inline" desc:"range to display"`
+	// range to display
+	Range minmax.Range32 `view:"inline"`
 
-	// [view: inline] if not using fixed range, this is the actual range of data
-	MinMax minmax.F32 `view:"inline" desc:"if not using fixed range, this is the actual range of data"`
+	// if not using fixed range, this is the actual range of data
+	MinMax minmax.F32 `view:"inline"`
 }
 
 // Defaults sets default values if otherwise not set

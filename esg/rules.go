@@ -12,34 +12,34 @@ import (
 type Rules struct { //git:add
 
 	// name of this rule collection
-	Name string `desc:"name of this rule collection"`
+	Name string
 
 	// description of this rule collection
-	Desc string `desc:"description of this rule collection"`
+	Desc string
 
 	// if true, will print out a trace during generation
-	Trace bool `desc:"if true, will print out a trace during generation"`
+	Trace bool
 
 	// top-level rule -- this is where to start generating
-	Top *Rule `desc:"top-level rule -- this is where to start generating"`
+	Top *Rule
 
 	// map of each rule
-	Map map[string]*Rule `desc:"map of each rule"`
+	Map map[string]*Rule
 
 	// map of names of all the rules that have fired
-	Fired map[string]bool `desc:"map of names of all the rules that have fired"`
+	Fired map[string]bool
 
 	// array of output strings -- appended as the rules generate output
-	Output []string `desc:"array of output strings -- appended as the rules generate output"`
+	Output []string
 
 	// user-defined state map optionally created during generation
-	States State `desc:"user-defined state map optionally created during generation"`
+	States State
 
 	// errors from parsing
-	ParseErrs []error `desc:"errors from parsing"`
+	ParseErrs []error
 
 	// current line number during parsing
-	ParseLn int `desc:"current line number during parsing"`
+	ParseLn int
 }
 
 // Gen generates one expression according to the rules.

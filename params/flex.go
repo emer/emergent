@@ -19,16 +19,16 @@ import (
 type FlexVal struct {
 
 	// name of this specific object -- matches #Name selections
-	Nm string `desc:"name of this specific object -- matches #Name selections"`
+	Nm string
 
 	// type name of this object -- matches plain TypeName selections
-	Type string `desc:"type name of this object -- matches plain TypeName selections"`
+	Type string
 
 	// space-separated list of class name(s) -- match the .Class selections
-	Cls string `desc:"space-separated list of class name(s) -- match the .Class selections"`
+	Cls string
 
 	// actual object with data that is set by the parameters
-	Obj any `desc:"actual object with data that is set by the parameters"`
+	Obj any
 }
 
 func (fv *FlexVal) TypeName() string {

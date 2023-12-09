@@ -37,10 +37,9 @@ func (gui *GUI) SetGrid(name string, tg *etview.TensorGrid) {
 func (gui *GUI) ConfigRasterGrid(lay *gi.Layout, laynm string, rast *etensor.Float32) *etview.TensorGrid {
 	tg := gui.Grid(laynm)
 	tg.SetName(laynm + "Raster")
-	gi.AddNewLabel(lay, laynm, laynm+":")
+	gi.NewLabel(lay, laynm, laynm+":")
 	lay.AddChild(tg)
-	gi.AddNewSpace(lay, laynm+"_spc")
-	tg.SetStretchMax()
+	gi.NewSpace(lay, laynm+"_spc")
 	rast.SetMetaData("grid-fill", "1")
 	tg.SetTensor(rast)
 	return tg
@@ -49,7 +48,6 @@ func (gui *GUI) ConfigRasterGrid(lay *gi.Layout, laynm string, rast *etensor.Flo
 // SaveActRFGrid stores the given TensorGrid in Grids under given name,
 // and configures the grid view for ActRF viewing.
 func (gui *GUI) SaveActRFGrid(tg *etview.TensorGrid, name string) {
-	tg.SetStretchMax()
 	gui.SetGrid(name, tg)
 }
 
@@ -57,7 +55,8 @@ func (gui *GUI) SaveActRFGrid(tg *etview.TensorGrid, name string) {
 func (gui *GUI) AddActRFGridTabs(arfs *actrf.RFs) {
 	for _, rf := range arfs.RFs {
 		nm := rf.Name
-		tg := gui.TabView.AddNewTab(etview.KiT_TensorGrid, nm).(*etview.TensorGrid)
+		tf := gui.Tabs.NewTab(nm)
+		tg := etview.NewTensorGrid(tf)
 		gui.SaveActRFGrid(tg, nm)
 	}
 }
@@ -71,7 +70,7 @@ func (gui *GUI) ViewActRFs(atf *actrf.RFs) {
 			rf := atf.RFByName(nm)
 			tg.SetTensor(&rf.NormRF)
 		} else {
-			tg.UpdateSig()
+			tg.SetNeedsRender(true)
 		}
 	}
 }

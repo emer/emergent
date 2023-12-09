@@ -13,19 +13,19 @@ import (
 type Item struct { //git:add
 
 	// probability for choosing this item -- 0 if uniform random
-	Prob float32 `desc:"probability for choosing this item -- 0 if uniform random"`
+	Prob float32
 
 	// elements of the rule -- for non-Cond rules
-	Elems []Elem `desc:"elements of the rule -- for non-Cond rules"`
+	Elems []Elem
 
 	// conditions for this item -- specified by ?
-	Cond Conds `desc:"conditions for this item -- specified by ?"`
+	Cond Conds
 
 	// for conditional, this is the sub-rule that is run with sub-items
-	SubRule *Rule `desc:"for conditional, this is the sub-rule that is run with sub-items"`
+	SubRule *Rule
 
 	// state update name=value to set for rule
-	State State `desc:"state update name=value to set for rule"`
+	State State
 }
 
 // String returns string rep
@@ -96,10 +96,10 @@ func (it *Item) Validate(rl *Rule, rls *Rules) []error {
 type Elem struct { //git:add
 
 	// type of element: Rule, Token, or SubItems
-	El Elements `desc:"type of element: Rule, Token, or SubItems"`
+	El Elements
 
 	// value of the token: name of Rule or Token
-	Value string `desc:"value of the token: name of Rule or Token"`
+	Value string
 }
 
 // String returns string rep

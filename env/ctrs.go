@@ -16,10 +16,10 @@ import (
 type Ctrs struct {
 
 	// ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)
-	Order []TimeScales `desc:"ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)"`
+	Order []TimeScales
 
 	// map of the counters by timescale
-	Ctrs map[TimeScales]*Ctr `desc:"map of the counters by timescale"`
+	Ctrs map[TimeScales]*Ctr
 }
 
 // SetTimes initializes Ctrs for given mode

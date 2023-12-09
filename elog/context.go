@@ -28,37 +28,37 @@ type WriteFunc func(ctx *Context)
 type Context struct {
 
 	// pointer to the Logs object with all log data
-	Logs *Logs `desc:"pointer to the Logs object with all log data"`
+	Logs *Logs
 
 	// pointer to stats
-	Stats *estats.Stats `desc:"pointer to stats"`
+	Stats *estats.Stats
 
 	// network
-	Net emer.Network `desc:"network"`
+	Net emer.Network
 
 	// data parallel index for accessing data from network
-	Di int `desc:"data parallel index for accessing data from network"`
+	Di int
 
 	// current log Item
-	Item *Item `desc:"current log Item"`
+	Item *Item
 
 	// current scope key
-	Scope etime.ScopeKey `desc:"current scope key"`
+	Scope etime.ScopeKey
 
 	// current scope eval mode (if standard)
-	Mode etime.Modes `desc:"current scope eval mode (if standard)"`
+	Mode etime.Modes
 
 	// current scope timescale (if standard)
-	Time etime.Times `desc:"current scope timescale (if standard)"`
+	Time etime.Times
 
 	// LogTable with extra data for the table
-	LogTable *LogTable `desc:"LogTable with extra data for the table"`
+	LogTable *LogTable
 
 	// current table to record value to
-	Table *etable.Table `desc:"current table to record value to"`
+	Table *etable.Table
 
 	// current row in table to write to
-	Row int `desc:"current row in table to write to"`
+	Row int
 }
 
 // SetTable sets the current table & scope -- called by WriteItems
