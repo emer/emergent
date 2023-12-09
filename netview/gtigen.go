@@ -22,7 +22,7 @@ var LayNameType = gti.AddType(&gti.Type{
 	Doc:        "LayName is the Layer name as a Text2D within the NetView",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "[view: -] our netview", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\" desc:\"our netview\""}},
+		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "our netview", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Text2D", &gti.Field{Name: "Text2D", Type: "goki.dev/xyz.Text2D", LocalType: "xyz.Text2D", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -50,7 +50,7 @@ func (t *LayName) New() ki.Ki {
 }
 
 // SetNetView sets the [LayName.NetView]:
-// [view: -] our netview
+// our netview
 func (t *LayName) SetNetView(v *NetView) *LayName {
 	t.NetView = v
 	return t
@@ -75,11 +75,11 @@ var LayObjType = gti.AddType(&gti.Type{
 	IDName:    "lay-obj",
 	Doc:       "LayObj is the Layer 3D object within the NetView",
 	Directives: gti.Directives{
-		&gti.Directive{Tool: "git", Directive: "add", Args: []string{}},
+		&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
 	},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"LayName", &gti.Field{Name: "LayName", Type: "string", LocalType: "string", Doc: "name of the layer we represent", Directives: gti.Directives{}, Tag: "desc:\"name of the layer we represent\""}},
-		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "[view: -] our netview", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\" desc:\"our netview\""}},
+		{"LayName", &gti.Field{Name: "LayName", Type: "string", LocalType: "string", Doc: "name of the layer we represent", Directives: gti.Directives{}, Tag: ""}},
+		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "our netview", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Solid", &gti.Field{Name: "Solid", Type: "goki.dev/xyz.Solid", LocalType: "xyz.Solid", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -114,7 +114,7 @@ func (t *LayObj) SetLayName(v string) *LayObj {
 }
 
 // SetNetView sets the [LayObj.NetView]:
-// [view: -] our netview
+// our netview
 func (t *LayObj) SetNetView(v *NetView) *LayObj {
 	t.NetView = v
 	return t
@@ -136,23 +136,27 @@ var NetViewType = gti.AddType(&gti.Type{
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Net", &gti.Field{Name: "Net", Type: "github.com/emer/emergent/v2/emer.Network", LocalType: "emer.Network", Doc: "the network that we're viewing", Directives: gti.Directives{}, Tag: "set:\"-\""}},
 		{"Var", &gti.Field{Name: "Var", Type: "string", LocalType: "string", Doc: "current variable that we're viewing", Directives: gti.Directives{}, Tag: "set:\"-\""}},
-		{"Di", &gti.Field{Name: "Di", Type: "int", LocalType: "int", Doc: "current data parallel index di, for networks capable of processing input patterns in parallel.", Directives: gti.Directives{}, Tag: "desc:\"current data parallel index di, for networks capable of processing input patterns in parallel.\""}},
-		{"Vars", &gti.Field{Name: "Vars", Type: "[]string", LocalType: "[]string", Doc: "the list of variables to view", Directives: gti.Directives{}, Tag: "desc:\"the list of variables to view\""}},
-		{"SynVars", &gti.Field{Name: "SynVars", Type: "[]string", LocalType: "[]string", Doc: "list of synaptic variables", Directives: gti.Directives{}, Tag: "desc:\"list of synaptic variables\""}},
-		{"SynVarsMap", &gti.Field{Name: "SynVarsMap", Type: "map[string]int", LocalType: "map[string]int", Doc: "map of synaptic variable names to index", Directives: gti.Directives{}, Tag: "desc:\"map of synaptic variable names to index\""}},
-		{"VarParams", &gti.Field{Name: "VarParams", Type: "map[string]*github.com/emer/emergent/v2/netview.VarParams", LocalType: "map[string]*VarParams", Doc: "parameters for the list of variables to view", Directives: gti.Directives{}, Tag: "desc:\"parameters for the list of variables to view\""}},
-		{"CurVarParams", &gti.Field{Name: "CurVarParams", Type: "*github.com/emer/emergent/v2/netview.VarParams", LocalType: "*VarParams", Doc: "[view: -] current var params -- only valid during Update of display", Directives: gti.Directives{}, Tag: "json:\"-\" xml:\"-\" view:\"-\" desc:\"current var params -- only valid during Update of display\""}},
-		{"Params", &gti.Field{Name: "Params", Type: "github.com/emer/emergent/v2/netview.Params", LocalType: "Params", Doc: "parameters controlling how the view is rendered", Directives: gti.Directives{}, Tag: "desc:\"parameters controlling how the view is rendered\""}},
-		{"ColorMap", &gti.Field{Name: "ColorMap", Type: "*goki.dev/colors/colormap.Map", LocalType: "*colormap.Map", Doc: "color map for mapping values to colors -- set by name in Params", Directives: gti.Directives{}, Tag: "desc:\"color map for mapping values to colors -- set by name in Params\""}},
-		{"RecNo", &gti.Field{Name: "RecNo", Type: "int", LocalType: "int", Doc: "record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]", Directives: gti.Directives{}, Tag: "desc:\"record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]\""}},
-		{"LastCtrs", &gti.Field{Name: "LastCtrs", Type: "string", LocalType: "string", Doc: "last non-empty counters string provided -- re-used if no new one", Directives: gti.Directives{}, Tag: "desc:\"last non-empty counters string provided -- re-used if no new one\""}},
-		{"Data", &gti.Field{Name: "Data", Type: "github.com/emer/emergent/v2/netview.NetData", LocalType: "NetData", Doc: "contains all the network data with history", Directives: gti.Directives{}, Tag: "desc:\"contains all the network data with history\""}},
-		{"DataMu", &gti.Field{Name: "DataMu", Type: "sync.RWMutex", LocalType: "sync.RWMutex", Doc: "[view: -] mutex on data access", Directives: gti.Directives{}, Tag: "view:\"-\" copy:\"-\" json:\"-\" xml:\"-\" desc:\"mutex on data access\""}},
+		{"Di", &gti.Field{Name: "Di", Type: "int", LocalType: "int", Doc: "current data parallel index di, for networks capable of processing input patterns in parallel.", Directives: gti.Directives{}, Tag: ""}},
+		{"Vars", &gti.Field{Name: "Vars", Type: "[]string", LocalType: "[]string", Doc: "the list of variables to view", Directives: gti.Directives{}, Tag: ""}},
+		{"SynVars", &gti.Field{Name: "SynVars", Type: "[]string", LocalType: "[]string", Doc: "list of synaptic variables", Directives: gti.Directives{}, Tag: ""}},
+		{"SynVarsMap", &gti.Field{Name: "SynVarsMap", Type: "map[string]int", LocalType: "map[string]int", Doc: "map of synaptic variable names to index", Directives: gti.Directives{}, Tag: ""}},
+		{"VarParams", &gti.Field{Name: "VarParams", Type: "map[string]*github.com/emer/emergent/v2/netview.VarParams", LocalType: "map[string]*VarParams", Doc: "parameters for the list of variables to view", Directives: gti.Directives{}, Tag: ""}},
+		{"CurVarParams", &gti.Field{Name: "CurVarParams", Type: "*github.com/emer/emergent/v2/netview.VarParams", LocalType: "*VarParams", Doc: "current var params -- only valid during Update of display", Directives: gti.Directives{}, Tag: "json:\"-\" xml:\"-\" view:\"-\""}},
+		{"Params", &gti.Field{Name: "Params", Type: "github.com/emer/emergent/v2/netview.Params", LocalType: "Params", Doc: "parameters controlling how the view is rendered", Directives: gti.Directives{}, Tag: ""}},
+		{"ColorMap", &gti.Field{Name: "ColorMap", Type: "*goki.dev/colors/colormap.Map", LocalType: "*colormap.Map", Doc: "color map for mapping values to colors -- set by name in Params", Directives: gti.Directives{}, Tag: ""}},
+		{"RecNo", &gti.Field{Name: "RecNo", Type: "int", LocalType: "int", Doc: "record number to display -- use -1 to always track latest, otherwise in range", Directives: gti.Directives{}, Tag: ""}},
+		{"LastCtrs", &gti.Field{Name: "LastCtrs", Type: "string", LocalType: "string", Doc: "last non-empty counters string provided -- re-used if no new one", Directives: gti.Directives{}, Tag: ""}},
+		{"Data", &gti.Field{Name: "Data", Type: "github.com/emer/emergent/v2/netview.NetData", LocalType: "NetData", Doc: "contains all the network data with history", Directives: gti.Directives{}, Tag: ""}},
+		{"DataMu", &gti.Field{Name: "DataMu", Type: "sync.RWMutex", LocalType: "sync.RWMutex", Doc: "mutex on data access", Directives: gti.Directives{}, Tag: "view:\"-\" copy:\"-\" json:\"-\" xml:\"-\""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Layout", &gti.Field{Name: "Layout", Type: "goki.dev/gi/v2/gi.Layout", LocalType: "gi.Layout", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
+	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{
+		{"Current", &gti.Method{Name: "Current", Doc: "Current records the current state of the network, including synaptic values,\nand updates the display.  Use this when switching to NetView tab after network\nhas been running while viewing another tab, because the network state\nis typically not recored then.", Directives: gti.Directives{
+			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
+		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
+	}),
 	Instance: &NetView{},
 })
 
@@ -210,7 +214,7 @@ func (t *NetView) SetVarParams(v map[string]*VarParams) *NetView {
 }
 
 // SetCurVarParams sets the [NetView.CurVarParams]:
-// [view: -] current var params -- only valid during Update of display
+// current var params -- only valid during Update of display
 func (t *NetView) SetCurVarParams(v *VarParams) *NetView {
 	t.CurVarParams = v
 	return t
@@ -231,7 +235,7 @@ func (t *NetView) SetColorMap(v *colormap.Map) *NetView {
 }
 
 // SetRecNo sets the [NetView.RecNo]:
-// record number to display -- use -1 to always track latest, otherwise in range [0..Data.Ring.Len-1]
+// record number to display -- use -1 to always track latest, otherwise in range
 func (t *NetView) SetRecNo(v int) *NetView {
 	t.RecNo = v
 	return t
@@ -252,7 +256,7 @@ func (t *NetView) SetData(v NetData) *NetView {
 }
 
 // SetDataMu sets the [NetView.DataMu]:
-// [view: -] mutex on data access
+// mutex on data access
 func (t *NetView) SetDataMu(v sync.RWMutex) *NetView {
 	t.DataMu = v
 	return t
@@ -287,3 +291,22 @@ func (t *NetView) SetStackTop(v int) *NetView {
 	t.StackTop = v
 	return t
 }
+
+var _ = gti.AddType(&gti.Type{
+	Name:      "github.com/emer/emergent/v2/netview.RasterParams",
+	ShortName: "netview.RasterParams",
+	IDName:    "raster-params",
+	Doc:       "RasterParams holds parameters controlling the raster plot view",
+	Directives: gti.Directives{
+		&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
+	},
+	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
+		{"On", &gti.Field{Name: "On", Type: "bool", LocalType: "bool", Doc: "if true, show a raster plot over time, otherwise units", Directives: gti.Directives{}, Tag: ""}},
+		{"XAxis", &gti.Field{Name: "XAxis", Type: "bool", LocalType: "bool", Doc: "if true, the raster counter (time) is plotted across the X axis -- otherwise the Z depth axis", Directives: gti.Directives{}, Tag: ""}},
+		{"Max", &gti.Field{Name: "Max", Type: "int", LocalType: "int", Doc: "maximum count for the counter defining the raster plot", Directives: gti.Directives{}, Tag: ""}},
+		{"UnitSize", &gti.Field{Name: "UnitSize", Type: "float32", LocalType: "float32", Doc: "size of a single unit, where 1 = full width and no space.. 1 default", Directives: gti.Directives{}, Tag: "min:\"0.1\" max:\"1\" step:\"0.1\" def:\"1\""}},
+		{"UnitHeight", &gti.Field{Name: "UnitHeight", Type: "float32", LocalType: "float32", Doc: "height multiplier for units, where 1 = full height.. 0.2 default", Directives: gti.Directives{}, Tag: "min:\"0.1\" max:\"1\" step:\"0.1\" def:\"0.2\""}},
+	}),
+	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
+	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
+})

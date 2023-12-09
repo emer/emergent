@@ -17,7 +17,7 @@ import (
 var NVarCols = 2
 
 // RasterParams holds parameters controlling the raster plot view
-type RasterParams struct { //git:add
+type RasterParams struct { //gti:add
 
 	// if true, show a raster plot over time, otherwise units
 	On bool

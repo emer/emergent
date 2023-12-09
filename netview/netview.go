@@ -198,7 +198,7 @@ func (nv *NetView) UpdateView() {
 // and updates the display.  Use this when switching to NetView tab after network
 // has been running while viewing another tab, because the network state
 // is typically not recored then.
-func (nv *NetView) Current() {
+func (nv *NetView) Current() { //gti:add
 	nv.Record("", -1)
 	nv.RecordSyns()
 	nv.Update()

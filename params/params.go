@@ -4,6 +4,8 @@
 
 package params
 
+//go:generate goki generate
+
 import (
 	"fmt"
 	"log"
@@ -20,7 +22,7 @@ import (
 // is used for checking the type of the target.  Also, they all fall within the same
 // Sel selector scope which is used to determine what specific objects to apply the
 // parameters to.
-type Params map[string]string //git:add
+type Params map[string]string //gti:add
 
 // ParamByNameTry returns given parameter, by name.
 // Returns error if not found.
@@ -51,7 +53,7 @@ func (pr *Params) SetByName(name, value string) {
 // params.Sel specifies a selector for the scope of application of a set of
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
-type Sel struct { //git:add
+type Sel struct { //gti:add
 
 	// selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'
 	Sel string `width:"30"`
@@ -100,7 +102,7 @@ func (sl *Sel) ParamVal(param string) (string, error) {
 //
 // This is the highest level of params that has an Apply method -- above this level
 // application must be done under explicit program control.
-type Sheet []*Sel //git:add
+type Sheet []*Sel //gti:add
 
 // NewSheet returns a new Sheet
 func NewSheet() *Sheet {
@@ -168,7 +170,7 @@ func (sh *Sheet) ParamVal(sel, param string) (string, error) {
 ///////////////////////////////////////////////////////////////////////
 
 // Sheets is a map of named sheets -- used in the Set
-type Sheets map[string]*Sheet //git:add
+type Sheets map[string]*Sheet //gti:add
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -190,7 +192,7 @@ type Sheets map[string]*Sheet //git:add
 // Note that there is NO deterministic ordering of the Sheets due to the use of
 // a Go map structure, which specifically randomizes order, so simply iterating over them
 // and applying may produce unexpected results -- it is better to lookup by name.
-type Set struct { //git:add
+type Set struct { //gti:add
 
 	// description of this param set -- when should it be used?  how is it different from the other sets?
 	Desc string `width:"60"`
@@ -278,7 +280,7 @@ func (ps *Set) ParamVal(sheet, sel, param string) (string, error) {
 // depending on different desired configurations etc.  Thus, each Set
 // represents a collection of different possible specific configurations,
 // and different such configurations can be chosen by name to apply as desired.
-type Sets map[string]*Set //git:add
+type Sets map[string]*Set //gti:add
 
 // SetByNameTry tries to find given set by name, and returns error
 // if not found (also logs the error)

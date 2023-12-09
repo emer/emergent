@@ -9,7 +9,7 @@ import (
 )
 
 // LayObj is the Layer 3D object within the NetView
-type LayObj struct { //git:add
+type LayObj struct { //gti:add
 	xyz.Solid
 
 	// name of the layer we represent
