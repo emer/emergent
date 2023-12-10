@@ -100,7 +100,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
-	nv.ConfigNetView()
+	nv.Update()
 }
 
 // SetVar sets the variable to view and updates the display
@@ -110,7 +110,7 @@ func (nv *NetView) SetVar(vr string) {
 	nv.VarsUpdate()
 	nv.VarScaleUpdate(nv.Var)
 	nv.DataMu.Unlock()
-	nv.Update()
+	nv.GoUpdateView() // safe version just in case
 }
 
 // SetMaxRecs sets the maximum number of records that are maintained (default 210)
@@ -164,13 +164,27 @@ func (nv *NetView) RecordSyns() {
 	nv.Data.RecordSyns()
 }
 
-// todo: probably don't need:
-
 // GoUpdateView is the update call to make from another go routine
 // it does the proper blocking to coordinate with GUI updates
 // generated on the main GUI thread.
 func (nv *NetView) GoUpdateView() {
-	nv.UpdateView()
+	if !nv.IsVisible() || !nv.HasLayers() {
+		return
+	}
+	se := nv.Scene3D()
+	updt := se.Sc.UpdateStartAsync()
+	if !updt {
+		se.Sc.UpdateEndAsyncRender(updt)
+		return
+	}
+	up3 := se.Scene.UpdateStart()
+	if !up3 {
+		se.Sc.UpdateEndAsyncRender(updt)
+		return
+	}
+	nv.UpdateImpl()
+	se.Scene.UpdateEndRender(up3)
+	se.Sc.UpdateEndAsyncRender(updt)
 }
 
 // UpdateView updates the display based on last recorded state of network.
@@ -178,10 +192,13 @@ func (nv *NetView) UpdateView() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	vs := nv.Scene3D()
-	updt := vs.UpdateStart3D()
+	se := nv.Scene3D()
+	updt := se.UpdateStart3D()
+	if !updt {
+		return
+	}
 	nv.UpdateImpl()
-	vs.UpdateEndRender3D(updt)
+	se.UpdateEndRender3D(updt)
 }
 
 // Current records the current state of the network, including synaptic values,
@@ -191,7 +208,7 @@ func (nv *NetView) UpdateView() {
 func (nv *NetView) Current() { //gti:add
 	nv.Record("", -1)
 	nv.RecordSyns()
-	nv.Update()
+	nv.UpdateView()
 }
 
 // UpdateImpl does the guts of updating -- backend for Update or GoUpdate
@@ -607,7 +624,11 @@ func (nv *NetView) VarsConfig() {
 
 // ViewConfig configures the 3D view
 func (nv *NetView) ViewConfig() {
-	vs := nv.Scene()
+	se := nv.Scene3D()
+	updt := se.UpdateStart3D()
+	defer se.UpdateEndConfig3D(updt)
+
+	vs := &se.Scene
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		vs.DeleteChildren(true)
 		vs.Meshes.Reset()
@@ -638,7 +659,7 @@ func (nv *NetView) ViewConfig() {
 	gpConfig.Add(LayObjType, "layer")
 	gpConfig.Add(LayNameType, "name")
 
-	_, updt := laysGp.ConfigChildren(layConfig)
+	laysGp.ConfigChildren(layConfig)
 
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
@@ -679,7 +700,6 @@ func (nv *NetView) ViewConfig() {
 		// txt.SetProp("text-align", styles.Start)
 		// txt.SetProp("text-vertical-align", styles.Start)
 	}
-	laysGp.UpdateEnd(updt)
 }
 
 // ViewDefaults are the default 3D view params
@@ -899,12 +919,12 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.ReconfigMeshes()
 		nv.UpdateView()
 	})
-	xchk := gi.NewSwitch(tb).SetText("X").
+	xchk := gi.NewSwitch(tb).SetText("X").SetType(gi.SwitchCheckbox).
 		SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
 		SetChecked(nv.Params.Raster.XAxis)
 	xchk.OnChange(func(e events.Event) {
 		nv.Params.Raster.XAxis = xchk.IsChecked()
-		nv.Update()
+		nv.UpdateView()
 	})
 
 	vp, ok := nv.VarParams[nv.Var]
@@ -914,12 +934,12 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 	}
 
 	gi.NewSeparator(tb)
-	mnsw := gi.NewSwitch(tb, "mnsw").SetText("Min").
+	mnsw := gi.NewSwitch(tb, "mnsw").SetText("Min").SetType(gi.SwitchCheckbox).
 		SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMin)
 	mnsw.OnChange(func(e events.Event) {
 		vp.Range.FixMin = mnsw.IsChecked()
-		nv.VarScaleUpdate(nv.Var) // todo: before update?
+		// nv.VarScaleUpdate(nv.Var) // todo: before update?
 		nv.UpdateView()
 	})
 	mnsp := gi.NewSpinner(tb, "mnsp").SetValue(float32(vp.Range.Min))
@@ -928,18 +948,18 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
 			vp.Range.SetMax(-vp.Range.Min)
 		}
-		nv.VarScaleUpdate(nv.Var)
-		nv.UpdateView()
+		// nv.VarScaleUpdate(nv.Var)
+		// nv.UpdateView()
 	})
 
 	cmap := giv.NewColorMapView(tb, "cmap").SetColorMap(nv.ColorMap)
 	cmap.SetTooltip("Color map for translating values into colors -- click to select alternative.").
 		Style(func(s *styles.Style) {
-			s.Min.X.Em(8)
+			s.Min.X.Em(20)
 			s.Min.Y.Em(1.2)
-			s.Grow.Set(0, 0)
+			s.Grow.Set(0, 1)
 		})
-	cmap.OnClick(func(e events.Event) {
+	cmap.OnChange(func(e events.Event) {
 		if cmap.Map != nil {
 			nv.Params.ColorMap = giv.ColorMapName(cmap.Map.Name)
 			nv.ColorMap = cmap.Map
@@ -947,12 +967,12 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		}
 	})
 
-	mxsw := gi.NewSwitch(tb, "mxsw").SetText("Max").
+	mxsw := gi.NewSwitch(tb, "mxsw").SetText("Max").SetType(gi.SwitchCheckbox).
 		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMax)
 	mxsw.OnChange(func(e events.Event) {
 		vp.Range.FixMax = mxsw.IsChecked()
-		nv.VarScaleUpdate(nv.Var)
+		// nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
 	mxsp := gi.NewSpinner(tb, "mxsp").SetValue(float32(vp.Range.Max))
@@ -961,7 +981,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
 			vp.Range.SetMin(-vp.Range.Max)
 		}
-		nv.VarScaleUpdate(nv.Var)
+		// nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
 	zcsw := gi.NewSwitch(tb, "zcsw").SetText("ZeroCtr").
@@ -969,8 +989,8 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetChecked(vp.ZeroCtr)
 	zcsw.OnChange(func(e events.Event) {
 		vp.ZeroCtr = zcsw.IsChecked()
-		nv.VarScaleUpdate(nv.Var)
-		nv.Update()
+		// nv.VarScaleUpdate(nv.Var)
+		nv.UpdateView()
 	})
 }
 
@@ -1066,63 +1086,63 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 	gi.NewButton(tb).SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
 		OnClick(func(e events.Event) {
 			if nv.RecFastBkwd() {
-				nv.Update()
+				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
 		OnClick(func(e events.Event) {
 			if nv.RecBkwd() {
-				nv.Update()
+				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
 		OnClick(func(e events.Event) {
 			if nv.RecTrackLatest() {
-				nv.Update()
+				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.SkipNext).SetTooltip("move later by 1").
 		OnClick(func(e events.Event) {
 			if nv.RecFwd() {
-				nv.Update()
+				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
 		OnClick(func(e events.Event) {
 			if nv.RecFastFwd() {
-				nv.Update()
+				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
 		OnClick(func(e events.Event) {
 			if nv.RecTrackLatest() {
-				nv.Update()
+				nv.UpdateView()
 			}
 		})
 }
 
 // SaveWeights saves the network weights -- when called with giv.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) SaveWeights(filename gi.FileName) {
+func (nv *NetView) SaveWeights(filename gi.FileName) { //gti:add
 	nv.Net.SaveWtsJSON(filename)
 }
 
 // OpenWeights opens the network weights -- when called with giv.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) OpenWeights(filename gi.FileName) {
+func (nv *NetView) OpenWeights(filename gi.FileName) { //gti:add
 	nv.Net.OpenWtsJSON(filename)
 }
 
 // ShowNonDefaultParams shows a dialog of all the parameters that
 // are not at their default values in the network.  Useful for setting params.
-func (nv *NetView) ShowNonDefaultParams() string {
+func (nv *NetView) ShowNonDefaultParams() string { //gti:add
 	nds := nv.Net.NonDefaultParams()
 	texteditor.TextDialog(nv, "Non Default Params: "+nv.Nm, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
-func (nv *NetView) ShowAllParams() string {
+func (nv *NetView) ShowAllParams() string { //gti:add
 	nds := nv.Net.AllParams()
 	texteditor.TextDialog(nv, "All Params: "+nv.Nm, nds)
 	return nds
@@ -1130,7 +1150,7 @@ func (nv *NetView) ShowAllParams() string {
 
 // ShowKeyLayerParams shows a dialog with a listing for all layers in the network,
 // of the most important layer-level params (specific to each algorithm)
-func (nv *NetView) ShowKeyLayerParams() string {
+func (nv *NetView) ShowKeyLayerParams() string { //gti:add
 	nds := nv.Net.KeyLayerParams()
 	texteditor.TextDialog(nv, "Key Layer Params: "+nv.Nm, nds)
 	return nds
@@ -1138,7 +1158,7 @@ func (nv *NetView) ShowKeyLayerParams() string {
 
 // ShowKeyPrjnParams shows a dialog with a listing for all Recv projections in the network,
 // of the most important projection-level params (specific to each algorithm)
-func (nv *NetView) ShowKeyPrjnParams() string {
+func (nv *NetView) ShowKeyPrjnParams() string { //gti:add
 	nds := nv.Net.KeyPrjnParams()
 	texteditor.TextDialog(nv, "Key Prjn Params: "+nv.Nm, nds)
 	return nds

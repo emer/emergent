@@ -28,7 +28,7 @@ import (
 // NetData maintains a record of all the network data that has been displayed
 // up to a given maximum number of records (updates), using efficient ring index logic
 // with no copying to store in fixed-sized buffers.
-type NetData struct {
+type NetData struct { //gti:add
 
 	// the network that we're viewing
 	Net emer.Network `json:"-"`

@@ -10,9 +10,10 @@ import (
 
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
+	"goki.dev/colors"
 	"goki.dev/etable/v2/eplot"
 	"goki.dev/etable/v2/etview"
-	"goki.dev/gi/v2/gi"
+	"goki.dev/grr"
 )
 
 // AddPlots adds plots based on the unique tables we have, currently assumes they should always be plotted
@@ -53,7 +54,7 @@ func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime
 		cp := plt.SetColParams(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
 
 		if item.Color != "" {
-			cp.ColorName = gi.ColorName(item.Color)
+			cp.Color = grr.Log1(colors.FromString(item.Color, nil))
 		}
 		cp.TensorIdx = item.TensorIdx
 		cp.ErrCol = item.ErrCol
@@ -69,6 +70,7 @@ func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime
 	}
 	plt.ColsFmMetaMap(lt.Table.MetaData)
 	plt.ColsFmMetaMap(lt.Meta)
+	plt.Update()
 }
 
 // Plot returns plot for mode, time scope
@@ -101,7 +103,7 @@ func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *eplot.Plot2D) {
 func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *eplot.Plot2D {
 	plot := gui.Plot(mode, time)
 	if plot != nil {
-		plot.UpdatePlot()
+		plot.GoUpdatePlot()
 	}
 	return plot
 }
@@ -110,7 +112,7 @@ func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *eplot.Plot2D {
 func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *eplot.Plot2D {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
-		plot.UpdatePlot()
+		plot.GoUpdatePlot()
 	}
 	return plot
 }
@@ -123,7 +125,7 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *eplot.Plot2D {
 		return plot
 	}
 	if (gui.CycleUpdateInterval > 0) && (cycle%gui.CycleUpdateInterval == 0) {
-		plot.UpdatePlot()
+		plot.GoUpdatePlot()
 	}
 	return plot
 }

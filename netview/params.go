@@ -48,7 +48,7 @@ func (nv *RasterParams) Defaults() {
 }
 
 // Params holds parameters controlling how the view is rendered
-type Params struct {
+type Params struct { //gti:add
 
 	// raster plot parameters
 	Raster RasterParams `view:"inline"`
@@ -118,7 +118,7 @@ func (nv *Params) Update() {
 }
 
 // VarParams holds parameters for display of each variable
-type VarParams struct {
+type VarParams struct { //gti:add
 
 	// name of the variable
 	Var string

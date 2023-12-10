@@ -50,17 +50,35 @@ type GUI struct {
 	// tabs for different view elements: plots, rasters
 	Tabs *gi.Tabs `view:"-"`
 
-	//
+	// Body is the content of the sim window
 	Body *gi.Body `view:"-"`
 }
 
 // UpdateWindow triggers an update on window body
 func (gui *GUI) UpdateWindow() {
-	gui.Body.Update() // todo: could be less impactful
+	tb := gui.Body.GetTopAppBar()
+	if tb != nil {
+		// todo: need this as a method:
+		updt := tb.UpdateStart()
+		tb.ApplyStyleTree()
+		tb.UpdateEndRender(updt)
+	}
 }
 
 // Stopped is called when a run method stops running -- updates the IsRunning flag and toolbar
 func (gui *GUI) Stopped() {
+	gui.IsRunning = false
+	if gui.Body == nil {
+		return
+	}
+	if gui.ViewUpdt != nil {
+		gui.UpdateNetViewWhenStopped()
+	}
+	gui.UpdateWindow()
+}
+
+// StepDone is called when a Step method stops running
+func (gui *GUI) StepDone() {
 	gui.IsRunning = false
 	if gui.Body == nil {
 		return

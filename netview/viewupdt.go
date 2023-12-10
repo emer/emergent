@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/emer/emergent/v2/etime"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/ki/v2"
 )
 
 // ViewUpdt manages time scales for updating the NetView
@@ -83,10 +85,10 @@ func (vu *ViewUpdt) UpdateWhenStopped() {
 	if !vu.View.Params.Raster.On { // always record when not in raster mode
 		vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	}
-	// note: essential to use Go version of update when called from another goroutine
-	if vu.View.IsVisible() {
-		vu.View.GoUpdateView()
+	if vu.View.Sc.Is(gi.ScUpdating) || vu.View.Is(ki.Updating) {
+		return
 	}
+	vu.View.GoUpdateView()
 }
 
 // UpdateTime triggers an update at given timescale.

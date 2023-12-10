@@ -39,10 +39,11 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					tb.Update()
+					tb.ApplyStyleTree()
+					tb.SetNeedsRender(true)
 					go func() {
 						loops.Run(mode)
-						gui.Stopped()
+						gui.StepDone()
 					}()
 				}
 			})
