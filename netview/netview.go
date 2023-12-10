@@ -69,6 +69,9 @@ type NetView struct {
 	// color map for mapping values to colors -- set by name in Params
 	ColorMap *colormap.Map
 
+	// color map value representing ColorMap
+	ColorMapVal *giv.ColorMapValue
+
 	// record number to display -- use -1 to always track latest, otherwise in range
 	RecNo int
 
@@ -523,13 +526,7 @@ func (nv *NetView) VarsUpdate() {
 		vb := vbi.(*gi.Button)
 		vb.SetSelected(vb.Text == nv.Var)
 	}
-	tbar := nv.Toolbar()
-	cmapi := tbar.ChildByName("cmap", 5)
-	if cmapi != nil {
-		cmap := cmapi.(*giv.ColorMapView)
-		cmap.Map = nv.ColorMap
-		cmap.SetNeedsRender(updt)
-	}
+	nv.ColorMapVal.UpdateWidget()
 	vl.UpdateEndRender(updt)
 }
 
@@ -803,7 +800,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 			scaled = float32(norm)
 			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
 		}
-		clr = colors.WithAF32(nv.ColorMap.Map(float64(norm)), op)
+		clr = colors.WithAF32(nv.ColorMap.Map(norm), op)
 	}
 	return
 }
@@ -952,20 +949,21 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		// nv.UpdateView()
 	})
 
-	cmap := giv.NewColorMapView(tb, "cmap").SetColorMap(nv.ColorMap)
-	cmap.SetTooltip("Color map for translating values into colors -- click to select alternative.").
+	nv.ColorMapVal = giv.NewValue(tb, &nv.Params.ColorMap, "cmap").(*giv.ColorMapValue)
+	cmap := nv.ColorMapVal.AsWidget()
+	cmap.AsWidget().SetTooltip("Color map for translating values into colors -- click to select alternative.").
 		Style(func(s *styles.Style) {
 			s.Min.X.Em(20)
 			s.Min.Y.Em(1.2)
 			s.Grow.Set(0, 1)
 		})
-	cmap.OnChange(func(e events.Event) {
-		if cmap.Map != nil {
-			nv.Params.ColorMap = giv.ColorMapName(cmap.Map.Name)
-			nv.ColorMap = cmap.Map
-			nv.UpdateView()
-		}
-	})
+	// cmap.OnChange(func(e events.Event) {
+	// 	if cmap.Map != nil {
+	// 		nv.Params.ColorMap = giv.ColorMapName(cmap.Map.Name)
+	// 		nv.ColorMap = cmap.Map
+	// 		nv.UpdateView()
+	// 	}
+	// })
 
 	mxsw := gi.NewSwitch(tb, "mxsw").SetText("Max").SetType(gi.SwitchCheckbox).
 		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
