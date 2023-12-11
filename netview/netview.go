@@ -693,9 +693,9 @@ func (nv *NetView) ViewConfig() {
 		txt.NetView = nv
 		txt.SetText(ly.Name())
 		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
-		// todo:
-		// txt.SetProp("text-align", styles.Start)
-		// txt.SetProp("text-vertical-align", styles.Start)
+		txt.Styles.BackgroundColor.SetSolid(colors.Transparent)
+		txt.Styles.Text.Align = styles.Start
+		txt.Styles.Text.AlignV = styles.Start
 	}
 }
 
@@ -825,7 +825,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 	if mods {
 		for i, ls := range labs {
 			lb := lgp.ChildByName(ls, i).(*xyz.Text2D)
-			lb.Defaults()
+			// lb.Defaults()
 			lb.SetText(ls)
 			// todo:
 			// lb.SetProp("text-align", styles.Start)

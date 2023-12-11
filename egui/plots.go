@@ -32,7 +32,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 		}
 
 		pt := gui.Tabs.NewTab(mode + " " + time + " Plot")
-		plt := eplot.NewPlot2D(pt)
+		plt := eplot.NewSubPlot(pt)
 		gui.Plots[key] = plt
 		plt.SetTable(lt.Table)
 		plt.Params.FmMetaMap(lt.Meta)
