@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	"goki.dev/ki/v2/ints"
+	"goki.dev/glop/num"
 )
 
 func TestPoisson(t *testing.T) {
@@ -61,10 +61,10 @@ func TestPoisson(t *testing.T) {
 	// fmt.Printf("max idx: %d\n", im)
 	// fmt.Printf("ed: %v\n", ed)
 	// fmt.Printf("max idx: %d\n", em)
-	if ints.AbsInt(im-int(vr)) > 1 {
+	if num.Abs(im-int(vr)) > 1 {
 		t.Errorf("mode != lambda: %d != %d (tol 1)\n", im, int(vr))
 	}
-	if ints.AbsInt(em-int(vr)) > 1 {
+	if num.Abs(em-int(vr)) > 1 {
 		t.Errorf("empirical mode != lambda: %d != %d (tol 1)\n", em, int(vr))
 	}
 }

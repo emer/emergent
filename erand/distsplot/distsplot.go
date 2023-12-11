@@ -18,20 +18,17 @@ import (
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/gimain"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/ki/v2/ki"
-	"goki.dev/mat32/v2"
+	"goki.dev/goosi/events"
+	"goki.dev/icons"
 )
 
 func main() {
 	TheSim.Config()
-	gimain.Main(func() { // this starts gui -- requires valid OpenGL display connection (e.g., X11)
-		guirun()
-	})
+	gimain.Run(guirun)
 }
 
 func guirun() {
-	win := TheSim.ConfigGui()
-	win.StartEventLoop()
+	TheSim.ConfigGui()
 }
 
 // LogPrec is precision for saving float values in logs
@@ -60,12 +57,6 @@ type Sim struct {
 
 	// the plot
 	Plot *eplot.Plot2D `view:"-"`
-
-	// main GUI window
-	Win *gi.Window `view:"-"`
-
-	// the master toolbar
-	ToolBar *gi.ToolBar `view:"-"`
 }
 
 // TheSim is the overall state for this simulation
@@ -132,64 +123,35 @@ func (ss *Sim) ConfigPlot(plt *eplot.Plot2D, dt *etable.Table) *eplot.Plot2D {
 }
 
 // ConfigGui configures the GoGi gui interface for this simulation,
-func (ss *Sim) ConfigGui() *gi.Window {
-	width := 1600
-	height := 1200
+func (ss *Sim) ConfigGui() *gi.Body {
+	b := gi.NewAppBody("distplot")
+	b.App().About = `This plots histograms of random distributions. See <a href="https://github.com/emer/emergent/v2">emergent on GitHub</a>.</p>`
 
-	// gi.WinEventTrace = true
+	split := gi.NewSplits(b, "split")
 
-	gi.SetAppName("distplot")
-	gi.SetAppAbout(`This plots histograms of random distributions. See <a href="https://github.com/emer/emergent/v2">emergent on GitHub</a>.</p>`)
-
-	win := gi.NewMainWindow("distplot", "Plotting Random Distributions", width, height)
-	ss.Win = win
-
-	vp := win.WinViewport2D()
-	updt := vp.UpdateStart()
-
-	mfr := win.SetMainFrame()
-
-	tbar := gi.AddNewToolBar(mfr, "tbar")
-	tbar.SetStretchMaxWidth()
-	ss.ToolBar = tbar
-
-	split := gi.AddNewSplitView(mfr, "split")
-	split.Dim = mat32.X
-	split.SetStretchMax()
-
-	sv := giv.AddNewStructView(split, "sv")
+	sv := giv.NewStructView(split, "sv")
 	sv.SetStruct(ss)
 
-	tv := gi.AddNewTabView(split, "tv")
+	tv := gi.NewTabs(split, "tv")
 
-	plt := tv.AddNewTab(eplot.KiT_Plot2D, "Histogram").(*eplot.Plot2D)
+	pt := tv.NewTab("Histogram")
+	plt := eplot.NewPlot2D(pt)
 	ss.Plot = ss.ConfigPlot(plt, ss.Hist)
 
 	split.SetSplits(.3, .7)
 
-	tbar.AddAction(gi.ActOpts{Label: "Run", Icon: "update", Tooltip: "Generate data and plot histogram."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ss.Run()
-		vp.SetNeedsFullRender()
+	b.AddAppBar(func(tb *gi.Toolbar) {
+		gi.NewButton(tb).SetText("Run").SetIcon(icons.Update).
+			SetTooltip("Generate data and plot histogram.").
+			OnClick(func(e events.Event) {
+				ss.Run()
+			})
+		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
+			SetTooltip("Opens your browser on the README file that contains instructions for how to run this model.").
+			OnClick(func(e events.Event) {
+				gi.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
+			})
 	})
-
-	tbar.AddAction(gi.ActOpts{Label: "README", Icon: "file-markdown", Tooltip: "Opens your browser on the README file that contains instructions for how to run this model."}, win.This(),
-		func(recv, send ki.Ki, sig int64, data interface{}) {
-			gi.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
-		})
-
-	vp.UpdateEndNoSig(updt)
-
-	// main menu
-	appnm := gi.AppName()
-	mmen := win.MainMenu
-	mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
-
-	amen := win.MainMenu.ChildByName(appnm, 0).(*gi.Action)
-	amen.Menu.AddAppMenu(win)
-
-	emen := win.MainMenu.ChildByName("Edit", 1).(*gi.Action)
-	emen.Menu.AddCopyCutPaste(win)
-
-	win.MainMenuUpdated()
-	return win
+	b.NewWindow().Run().Wait()
+	return b
 }
