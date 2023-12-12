@@ -39,11 +39,10 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					tb.ApplyStyleTree()
-					tb.SetNeedsRender(true)
+					tb.ApplyStyleUpdate()
 					go func() {
 						loops.Run(mode)
-						gui.StepDone()
+						gui.Stopped()
 					}()
 				}
 			})
@@ -64,7 +63,7 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					tb.Update()
+					tb.ApplyStyleUpdate()
 					go func() {
 						stack := loops.Stacks[mode]
 						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)

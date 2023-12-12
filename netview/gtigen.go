@@ -7,12 +7,78 @@ import (
 
 	"goki.dev/colors/colormap"
 	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/giv"
 	"goki.dev/goosi/events"
 	"goki.dev/gti"
 	"goki.dev/ki/v2"
 	"goki.dev/ordmap"
 	"goki.dev/xyz"
 )
+
+// Scene3DType is the [gti.Type] for [Scene3D]
+var Scene3DType = gti.AddType(&gti.Type{
+	Name:       "github.com/emer/emergent/v2/netview.Scene3D",
+	ShortName:  "netview.Scene3D",
+	IDName:     "scene-3-d",
+	Doc:        "Scene3D is a Widget for managing the 3D Scene",
+	Directives: gti.Directives{},
+	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
+		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+	}),
+	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
+		{"Scene3D", &gti.Field{Name: "Scene3D", Type: "goki.dev/gi/v2/xyzv.Scene3D", LocalType: "xyzv.Scene3D", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+	}),
+	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
+	Instance: &Scene3D{},
+})
+
+// NewScene3D adds a new [Scene3D] with the given name
+// to the given parent. If the name is unspecified, it defaults
+// to the ID (kebab-case) name of the type, plus the
+// [ki.Ki.NumLifetimeChildren] of the given parent.
+func NewScene3D(par ki.Ki, name ...string) *Scene3D {
+	return par.NewChild(Scene3DType, name...).(*Scene3D)
+}
+
+// KiType returns the [*gti.Type] of [Scene3D]
+func (t *Scene3D) KiType() *gti.Type {
+	return Scene3DType
+}
+
+// New returns a new [*Scene3D] value
+func (t *Scene3D) New() ki.Ki {
+	return &Scene3D{}
+}
+
+// SetNetView sets the [Scene3D.NetView]
+func (t *Scene3D) SetNetView(v *NetView) *Scene3D {
+	t.NetView = v
+	return t
+}
+
+// SetTooltip sets the [Scene3D.Tooltip]
+func (t *Scene3D) SetTooltip(v string) *Scene3D {
+	t.Tooltip = v
+	return t
+}
+
+// SetClass sets the [Scene3D.Class]
+func (t *Scene3D) SetClass(v string) *Scene3D {
+	t.Class = v
+	return t
+}
+
+// SetPriorityEvents sets the [Scene3D.PriorityEvents]
+func (t *Scene3D) SetPriorityEvents(v []events.Types) *Scene3D {
+	t.PriorityEvents = v
+	return t
+}
+
+// SetCustomContextMenu sets the [Scene3D.CustomContextMenu]
+func (t *Scene3D) SetCustomContextMenu(v func(m *gi.Scene)) *Scene3D {
+	t.CustomContextMenu = v
+	return t
+}
 
 // LayNameType is the [gti.Type] for [LayName]
 var LayNameType = gti.AddType(&gti.Type{
@@ -195,6 +261,7 @@ var NetViewType = gti.AddType(&gti.Type{
 		{"CurVarParams", &gti.Field{Name: "CurVarParams", Type: "*github.com/emer/emergent/v2/netview.VarParams", LocalType: "*VarParams", Doc: "current var params -- only valid during Update of display", Directives: gti.Directives{}, Tag: "json:\"-\" xml:\"-\" view:\"-\""}},
 		{"Params", &gti.Field{Name: "Params", Type: "github.com/emer/emergent/v2/netview.Params", LocalType: "Params", Doc: "parameters controlling how the view is rendered", Directives: gti.Directives{}, Tag: ""}},
 		{"ColorMap", &gti.Field{Name: "ColorMap", Type: "*goki.dev/colors/colormap.Map", LocalType: "*colormap.Map", Doc: "color map for mapping values to colors -- set by name in Params", Directives: gti.Directives{}, Tag: ""}},
+		{"ColorMapVal", &gti.Field{Name: "ColorMapVal", Type: "*goki.dev/gi/v2/giv.ColorMapValue", LocalType: "*giv.ColorMapValue", Doc: "color map value representing ColorMap", Directives: gti.Directives{}, Tag: ""}},
 		{"RecNo", &gti.Field{Name: "RecNo", Type: "int", LocalType: "int", Doc: "record number to display -- use -1 to always track latest, otherwise in range", Directives: gti.Directives{}, Tag: ""}},
 		{"LastCtrs", &gti.Field{Name: "LastCtrs", Type: "string", LocalType: "string", Doc: "last non-empty counters string provided -- re-used if no new one", Directives: gti.Directives{}, Tag: ""}},
 		{"Data", &gti.Field{Name: "Data", Type: "github.com/emer/emergent/v2/netview.NetData", LocalType: "NetData", Doc: "contains all the network data with history", Directives: gti.Directives{}, Tag: ""}},
@@ -315,6 +382,13 @@ func (t *NetView) SetColorMap(v *colormap.Map) *NetView {
 	return t
 }
 
+// SetColorMapVal sets the [NetView.ColorMapVal]:
+// color map value representing ColorMap
+func (t *NetView) SetColorMapVal(v *giv.ColorMapValue) *NetView {
+	t.ColorMapVal = v
+	return t
+}
+
 // SetRecNo sets the [NetView.RecNo]:
 // record number to display -- use -1 to always track latest, otherwise in range
 func (t *NetView) SetRecNo(v int) *NetView {
@@ -391,6 +465,7 @@ var _ = gti.AddType(&gti.Type{
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
 })
+
 var _ = gti.AddType(&gti.Type{
 	Name:      "github.com/emer/emergent/v2/netview.Params",
 	ShortName: "netview.Params",

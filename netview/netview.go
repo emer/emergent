@@ -24,7 +24,6 @@ import (
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
 	"goki.dev/gi/v2/texteditor"
-	"goki.dev/gi/v2/xyzv"
 	"goki.dev/girl/styles"
 	"goki.dev/goosi/events"
 	"goki.dev/goosi/events/key"
@@ -306,7 +305,8 @@ func (nv *NetView) ConfigNetView() {
 			s.BackgroundColor.SetSolid(colors.Scheme.SurfaceContainerLow)
 		})
 
-		xyzv.NewScene3D(nlay, "scene")
+		se := NewScene3D(nlay, "scene")
+		se.NetView = nv
 
 		nv.ConfigToolbar(tb)
 		nv.ConfigViewbar(vb)
@@ -348,12 +348,12 @@ func (nv *NetView) Viewbar() *gi.Toolbar {
 	return nv.ChildByName("vbar", 3).(*gi.Toolbar)
 }
 
-func (nv *NetView) Scene3D() *xyzv.Scene3D {
-	return nv.NetLay().ChildByName("scene", 1).(*xyzv.Scene3D)
+func (nv *NetView) Scene3D() *Scene3D {
+	return nv.NetLay().ChildByName("scene", 1).(*Scene3D)
 }
 
 func (nv *NetView) Scene() *xyz.Scene {
-	return &(nv.Scene3D().Scene)
+	return nv.Scene3D().Scene
 }
 
 func (nv *NetView) VarsLay() *gi.Frame {
@@ -364,7 +364,7 @@ func (nv *NetView) VarsLay() *gi.Frame {
 func (nv *NetView) SetCounters(ctrs string) {
 	ct := nv.Counters()
 	if ct.Text != ctrs {
-		ct.SetText(ctrs)
+		ct.SetTextUpdate(ctrs)
 	}
 }
 
@@ -372,7 +372,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
 	rlbl := vbar.ChildByName("rec", 10).(*gi.Label)
-	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo))
+	rlbl.SetTextUpdate(fmt.Sprintf("%4d ", nv.RecNo))
 }
 
 // RecFullBkwd move view record to start of history.
@@ -625,7 +625,7 @@ func (nv *NetView) ViewConfig() {
 	updt := se.UpdateStart3D()
 	defer se.UpdateEndConfig3D(updt)
 
-	vs := &se.Scene
+	vs := se.Scene
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		vs.DeleteChildren(true)
 		vs.Meshes.Reset()
@@ -1051,7 +1051,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 	for i := 1; i <= 4; i++ {
 		i := i
 		nm := fmt.Sprintf("%d", i)
-		gi.NewButton(tb).SetText(nm).SetIcon(icons.Save).
+		gi.NewButton(tb).SetText(nm).
 			SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
 			OnClick(func(e events.Event) {
 				sc := nv.Scene()

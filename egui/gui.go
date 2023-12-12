@@ -58,27 +58,14 @@ type GUI struct {
 func (gui *GUI) UpdateWindow() {
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
-		// todo: need this as a method:
-		updt := tb.UpdateStart()
-		tb.ApplyStyleTree()
-		tb.UpdateEndRender(updt)
+		tb.ApplyStyleUpdate()
 	}
+	// todo: could update other stuff but not really neccesary
 }
 
-// Stopped is called when a run method stops running -- updates the IsRunning flag and toolbar
+// Stopped is called when a run method stops running.
+// Updates the IsRunning flag and toolbar.
 func (gui *GUI) Stopped() {
-	gui.IsRunning = false
-	if gui.Body == nil {
-		return
-	}
-	if gui.ViewUpdt != nil {
-		gui.UpdateNetViewWhenStopped()
-	}
-	gui.UpdateWindow()
-}
-
-// StepDone is called when a Step method stops running
-func (gui *GUI) StepDone() {
 	gui.IsRunning = false
 	if gui.Body == nil {
 		return
