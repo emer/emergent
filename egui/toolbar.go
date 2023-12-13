@@ -6,7 +6,6 @@ package egui
 
 import (
 	"goki.dev/gi/v2/gi"
-	"goki.dev/girl/states"
 	"goki.dev/girl/styles"
 	"goki.dev/goosi/events"
 	"goki.dev/icons"
@@ -29,12 +28,8 @@ func (gui *GUI) AddToolbarItem(tb *gi.Toolbar, item ToolbarItem) {
 	})
 	switch item.Active {
 	case ActiveStopped:
-		itm.Style(func(s *styles.Style) {
-			s.State.SetFlag(gui.IsRunning, states.Disabled)
-		})
+		itm.StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
 	case ActiveRunning:
-		itm.Style(func(s *styles.Style) {
-			s.State.SetFlag(!gui.IsRunning, states.Disabled)
-		})
+		itm.StyleFirst(func(s *styles.Style) { s.SetEnabled(gui.IsRunning) })
 	}
 }

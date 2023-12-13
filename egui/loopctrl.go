@@ -8,7 +8,6 @@ import (
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/girl/states"
 	"goki.dev/girl/styles"
 	"goki.dev/goosi/events"
 	"goki.dev/icons"
@@ -33,13 +32,11 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 		mode := m
 		gi.NewButton(tb).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
 			SetTooltip("Run the " + mode.String() + " process").
-			Style(func(s *styles.Style) {
-				s.State.SetFlag(gui.IsRunning, states.Disabled)
-			}).
+			StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					tb.ApplyStyleUpdate()
+					tb.UpdateBar()
 					go func() {
 						loops.Run(mode)
 						gui.Stopped()
@@ -57,13 +54,11 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 		}
 		gi.NewButton(tb).SetText("Step").SetIcon(icons.SkipNext).
 			SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
-			Style(func(s *styles.Style) {
-				s.State.SetFlag(gui.IsRunning, states.Disabled)
-			}).
+			StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
-					tb.ApplyStyleUpdate()
+					tb.UpdateBar()
 					go func() {
 						stack := loops.Stacks[mode]
 						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)

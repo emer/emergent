@@ -85,6 +85,7 @@ type NetView struct {
 }
 
 func (nv *NetView) OnInit() {
+	nv.Layout.OnInit()
 	nv.Params.NetView = nv
 	nv.Params.Defaults()
 	nv.ColorMap = colormap.AvailMaps[string(nv.Params.ColorMap)]
@@ -92,7 +93,6 @@ func (nv *NetView) OnInit() {
 	nv.Style(func(s *styles.Style) {
 		s.Direction = styles.Column
 		s.Grow.Set(1, 1)
-		// nv.SetProp("spacing", gi.StdDialogVSpaceUnits)
 	})
 }
 
@@ -957,13 +957,13 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 			s.Min.Y.Em(1.2)
 			s.Grow.Set(0, 1)
 		})
-	// cmap.OnChange(func(e events.Event) {
-	// 	if cmap.Map != nil {
-	// 		nv.Params.ColorMap = giv.ColorMapName(cmap.Map.Name)
-	// 		nv.ColorMap = cmap.Map
-	// 		nv.UpdateView()
-	// 	}
-	// })
+	nv.ColorMapVal.OnChange(func(e events.Event) {
+		cmap, ok := colormap.AvailMaps[string(nv.Params.ColorMap)]
+		if ok {
+			nv.ColorMap = cmap
+		}
+		nv.UpdateView()
+	})
 
 	mxsw := gi.NewSwitch(tb, "mxsw").SetText("Max").SetType(gi.SwitchCheckbox).
 		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").

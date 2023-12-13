@@ -10,9 +10,6 @@ import (
 	"github.com/emer/emergent/v2/emer"
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/xyzv"
-	"goki.dev/girl/abilities"
-	"goki.dev/girl/styles"
-	"goki.dev/girl/units"
 	"goki.dev/goosi/events"
 	"goki.dev/mat32/v2"
 	"goki.dev/xyz"
@@ -26,21 +23,11 @@ type Scene3D struct {
 }
 
 func (se *Scene3D) OnInit() {
-	se.Scene = xyz.NewScene("Scene")
-	se.Scene.Defaults()
-	se.HandleScene3DEvents()
-	se.Scene3DStyles()
+	se.Scene3D.OnInit()
+	se.HandleEvents()
 }
 
-func (se *Scene3D) Scene3DStyles() {
-	se.Style(func(s *styles.Style) {
-		s.SetAbilities(true, abilities.Focusable, abilities.Activatable, abilities.Slideable, abilities.LongHoverable)
-		s.Grow.Set(1, 1)
-		s.Min.Set(units.Em(20))
-	})
-}
-
-func (se *Scene3D) HandleScene3DEvents() {
+func (se *Scene3D) HandleEvents() {
 	se.On(events.MouseDown, func(e events.Event) {
 		pos := se.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
@@ -68,7 +55,6 @@ func (se *Scene3D) HandleScene3DEvents() {
 		se.Scene.KeyChordEvent(e)
 		se.SetNeedsRender(true)
 	})
-	se.HandleWidgetEvents()
 }
 
 func (se *Scene3D) MouseDownEvent(e events.Event) {
@@ -113,7 +99,6 @@ func (se *Scene3D) LongHoverEvent(e events.Event) {
 	} else {
 		return // not supported
 	}
-	fmt.Println(sval)
 	epos := e.Pos()
 	se.Tooltip = sval
 	gi.NewTooltip(se, epos).Run()

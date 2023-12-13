@@ -56,9 +56,12 @@ type GUI struct {
 
 // UpdateWindow triggers an update on window body
 func (gui *GUI) UpdateWindow() {
+	updt := gui.Body.Sc.UpdateStartAsync()
+	defer gui.Body.Sc.UpdateEndAsyncRender(updt)
+
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
-		tb.ApplyStyleUpdate()
+		tb.UpdateBar()
 	}
 	// todo: could update other stuff but not really neccesary
 }
