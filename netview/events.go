@@ -99,9 +99,8 @@ func (se *Scene3D) LongHoverEvent(e events.Event) {
 	} else {
 		return // not supported
 	}
-	epos := e.Pos()
-	se.Tooltip = sval
-	gi.NewTooltip(se, epos).Run()
+	// TODO: it would be better to use the 2D layer position here
+	gi.NewTooltipTextAt(se, sval, e.Pos(), lay.Size().ToPoint()).Run()
 	e.SetHandled()
 }
 

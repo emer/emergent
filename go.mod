@@ -2,29 +2,31 @@ module github.com/emer/emergent/v2
 
 go 1.21.0
 
+toolchain go1.21.4
+
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi/v2 v2.0.0-dev0.0.1
 	github.com/goki/gosl v1.0.17
 	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.8.4
-	goki.dev/colors v0.8.35
-	goki.dev/enums v0.9.46
-	goki.dev/etable/v2 v2.0.0-dev0.0.3
-	goki.dev/gi/v2 v2.0.0-dev0.0.20
-	goki.dev/girl v0.0.27
-	goki.dev/glop v0.1.7
-	goki.dev/goosi v0.0.17
-	goki.dev/grows v0.3.22
-	goki.dev/grr v0.0.8
-	goki.dev/gti v0.1.23
-	goki.dev/icons v0.0.12
-	goki.dev/ki/v2 v2.0.0-dev0.0.25
-	goki.dev/laser v0.1.25
-	goki.dev/mat32/v2 v2.0.0-dev0.0.20
-	goki.dev/ordmap v0.5.7
-	goki.dev/vgpu/v2 v2.0.0-dev0.0.21
-	goki.dev/xyz v0.5.12
+	goki.dev/colors v0.8.41
+	goki.dev/enums v0.9.52
+	goki.dev/etable/v2 v2.0.0-dev0.0.9
+	goki.dev/gi/v2 v2.0.0-dev0.0.25
+	goki.dev/girl v0.0.32
+	goki.dev/glop v0.1.8
+	goki.dev/goosi v0.0.22
+	goki.dev/grows v0.3.27
+	goki.dev/grr v0.0.9
+	goki.dev/gti v0.1.28
+	goki.dev/icons v0.0.14
+	goki.dev/ki/v2 v2.0.0-dev0.0.30
+	goki.dev/laser v0.1.30
+	goki.dev/mat32/v2 v2.0.0-dev0.0.24
+	goki.dev/ordmap v0.5.8
+	goki.dev/vgpu/v2 v2.0.0-dev0.0.26
+	goki.dev/xyz v0.5.17
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 )
 
@@ -40,7 +42,7 @@ require (
 	github.com/akutz/sortfold v0.2.1 // indirect
 	github.com/alecthomas/chroma/v2 v2.12.0 // indirect
 	github.com/anthonynsimon/bild v0.13.0 // indirect
-	github.com/antonmedv/expr v1.12.5 // indirect
+	github.com/antonmedv/expr v1.15.5 // indirect
 	github.com/apache/arrow/go/arrow v0.0.0-20211112161151-bc219186db40 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
@@ -49,30 +51,30 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/emer/empi v1.0.22 // indirect
-	github.com/expr-lang/expr v1.15.6 // indirect
+	github.com/expr-lang/expr v1.15.7 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-fonts/liberation v0.3.2 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231124074035-2de0cf0c80af // indirect
-	github.com/go-gl/mathgl v1.0.0 // indirect
+	github.com/go-gl/mathgl v1.1.0 // indirect
 	github.com/go-latex/latex v0.0.0-20231108140139-5c1ce85aa4ea // indirect
 	github.com/go-pdf/fpdf v0.9.0 // indirect
 	github.com/goki/freetype v1.0.1 // indirect
-	github.com/goki/gi v1.3.17 // indirect
+	github.com/goki/gi v1.3.25 // indirect
 	github.com/goki/go-difflib v1.2.1 // indirect
 	github.com/goki/ki v1.1.17 // indirect
 	github.com/goki/kigen v1.0.2 // indirect
-	github.com/goki/mat32 v1.0.15 // indirect
-	github.com/goki/pi v1.0.27 // indirect
-	github.com/goki/prof v1.0.0 // indirect
-	github.com/goki/vci v1.0.1 // indirect
-	github.com/goki/vgpu v1.0.22 // indirect
+	github.com/goki/mat32 v1.0.18 // indirect
+	github.com/goki/pi v1.0.28 // indirect
+	github.com/goki/prof v1.0.1 // indirect
+	github.com/goki/vci v1.0.2 // indirect
+	github.com/goki/vgpu v1.0.34 // indirect
 	github.com/goki/vulkan v1.0.7 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
-	github.com/jinzhu/copier v0.3.5 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
@@ -83,21 +85,21 @@ require (
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/srwiley/scanx v0.0.0-20190309010443-e94503791388 // indirect
-	goki.dev/cam v0.9.41 // indirect
-	goki.dev/cursors v0.0.23 // indirect
-	goki.dev/fi v0.1.9 // indirect
-	goki.dev/grog v0.0.19 // indirect
-	goki.dev/pi/v2 v2.0.0-dev0.0.18 // indirect
+	goki.dev/cam v0.9.46 // indirect
+	goki.dev/cursors v0.0.29 // indirect
+	goki.dev/fi v0.1.16 // indirect
+	goki.dev/grog v0.0.24 // indirect
+	goki.dev/pi/v2 v2.0.0-dev0.0.23 // indirect
 	goki.dev/prof/v2 v2.0.0-dev0.0.4 // indirect
-	goki.dev/spell v0.1.7 // indirect
-	goki.dev/svg v0.1.20 // indirect
-	goki.dev/vci/v2 v2.0.0-dev0.0.23 // indirect
+	goki.dev/spell v0.1.12 // indirect
+	goki.dev/svg v0.1.25 // indirect
+	goki.dev/vci/v2 v2.0.0-dev0.0.28 // indirect
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.16.0 // indirect
+	golang.org/x/tools v0.16.1 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gonum.org/v1/gonum v0.14.0 // indirect
 	gonum.org/v1/plot v0.14.0 // indirect
