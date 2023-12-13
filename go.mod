@@ -1,12 +1,10 @@
 module github.com/emer/emergent/v2
 
-go 1.21.0
-
-toolchain go1.21.4
+go 1.21
 
 require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/emer/empi/v2 v2.0.0-dev0.0.1
+	github.com/emer/empi/v2 v2.0.0-dev0.0.2
 	github.com/goki/gosl v1.0.17
 	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.8.4
@@ -50,7 +48,6 @@ require (
 	github.com/campoy/embedmd v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
-	github.com/emer/empi v1.0.22 // indirect
 	github.com/expr-lang/expr v1.15.7 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
