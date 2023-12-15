@@ -4,6 +4,8 @@
 
 package patgen
 
+//go:generate goki generate -add-types
+
 import (
 	"fmt"
 	"log"

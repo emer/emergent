@@ -7,7 +7,7 @@ Package netview provides the NetView interactive 3D network viewer, implemented 
 */
 package netview
 
-//go:generate goki generate
+//go:generate goki generate -add-types
 
 import (
 	"fmt"

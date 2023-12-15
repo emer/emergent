@@ -4,6 +4,8 @@
 
 package erand
 
+//go:generate goki generate -add-types
+
 import "math/rand"
 
 // Rand provides an interface with most of the standard

@@ -4,6 +4,8 @@
 
 package env
 
+//go:generate goki generate -add-types
+
 import "goki.dev/etable/v2/etensor"
 
 // Env defines an interface for environments, which determine the nature and

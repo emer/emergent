@@ -6,6 +6,8 @@
 // time.  Accumulates total and average over multiple Start / Stop intervals.
 package timer
 
+//go:generate goki generate -add-types
+
 import "time"
 
 // Time manages the timer accumulated time and count

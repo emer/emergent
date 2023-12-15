@@ -4,6 +4,8 @@
 
 package estats
 
+//go:generate goki generate -add-types
+
 import (
 	"fmt"
 

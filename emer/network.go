@@ -4,6 +4,8 @@
 
 package emer
 
+//go:generate goki generate -add-types
+
 import (
 	"io"
 

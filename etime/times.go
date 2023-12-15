@@ -4,6 +4,8 @@
 
 package etime
 
+//go:generate goki generate -add-types
+
 // Times the enum
 type Times int32 //enums:enum
 

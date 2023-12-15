@@ -4,6 +4,8 @@
 
 package netparams
 
+//go:generate goki generate -add-types
+
 import (
 	"fmt"
 	"log"

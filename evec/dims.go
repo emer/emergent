@@ -4,7 +4,7 @@
 
 package evec
 
-//go:generate goki generate
+//go:generate goki generate -add-types
 
 // Dims is a list of vector dimension (component) names
 type Dims int32 //enums:enum

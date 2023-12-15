@@ -4,6 +4,8 @@
 
 package weights
 
+//go:generate goki generate -add-types
+
 // Network is temp structure for holding decoded weights
 type Network struct {
 	Network  string

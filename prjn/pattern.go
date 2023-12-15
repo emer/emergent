@@ -4,6 +4,8 @@
 
 package prjn
 
+//go:generate goki generate -add-types
+
 import (
 	"goki.dev/etable/v2/etensor"
 )

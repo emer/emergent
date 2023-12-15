@@ -4,6 +4,8 @@
 
 package looper
 
+//go:generate goki generate -add-types
+
 import (
 	"fmt"
 	"strconv"

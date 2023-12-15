@@ -10,7 +10,7 @@ and Z vertical stacking of layers above and below each other.
 */
 package relpos
 
-//go:generate goki generate
+//go:generate goki generate -add-types
 
 import (
 	"goki.dev/mat32/v2"

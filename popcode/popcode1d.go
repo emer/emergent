@@ -4,6 +4,8 @@
 
 package popcode
 
+//go:generate goki generate -add-types
+
 import (
 	"sort"
 

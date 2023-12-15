@@ -4,14 +4,16 @@
 
 package egui
 
+//go:generate goki generate -add-types
+
 import (
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
-	_ "github.com/goki/gosl/slboolview" // include to get gui views
 	"goki.dev/etable/v2/eplot"
 	"goki.dev/etable/v2/etview"
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
+	_ "goki.dev/gosl/v2/slboolview" // include to get gui views
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface

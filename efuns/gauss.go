@@ -6,6 +6,8 @@
 // that are used in neural models, and do not have a home elsewhere.
 package efuns
 
+//go:generate goki generate -add-types
+
 import (
 	"goki.dev/mat32/v2"
 )
