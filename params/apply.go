@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"goki.dev/gi/v2/gi"
@@ -318,46 +318,9 @@ func SetParam(obj any, path string, val string) error {
 	if err != nil {
 		return err
 	}
-	npf := laser.NonPtrValue(fld)
-	switch npf.Kind() {
-	case reflect.String:
-		npf.SetString(val)
-	case reflect.Float64, reflect.Float32:
-		r, err := strconv.ParseFloat(val, 64)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		npf.SetFloat(r)
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		r, err := strconv.ParseInt(val, 0, 64)
-		if err != nil {
-			// todo: enum fix
-			// enerr := laser.SetEnumValueFromString(fld, val)
-			// if enerr != nil {
-			// 	log.Println(err)
-			// 	return err
-			// }
-		} else {
-			npf.SetInt(r)
-		}
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		r, err := strconv.ParseInt(val, 0, 64)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		npf.SetUint(uint64(r))
-	case reflect.Bool:
-		r, err := strconv.ParseBool(val)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		npf.SetBool(r)
-	default:
-		err := fmt.Errorf("params.SetParam: field is not of a numeric type -- only numeric types supported. value: %v, kind: %v, path: %v\n", npf.String(), npf.Kind(), path)
-		log.Println(err)
+	err = laser.SetRobust(fld.Interface(), val)
+	if err != nil {
+		slog.Error("params.SetParam: field could not be set", "path", path, "value", val, "err", err)
 		return err
 	}
 	return nil
