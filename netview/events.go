@@ -9,72 +9,83 @@ import (
 
 	"github.com/emer/emergent/v2/emer"
 	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/giv"
 	"goki.dev/gi/v2/xyzv"
 	"goki.dev/goosi/events"
 	"goki.dev/mat32/v2"
 	"goki.dev/xyz"
 )
 
-// Scene3D is a Widget for managing the 3D Scene
-type Scene3D struct {
-	xyzv.Scene3D
+// Scene is a Widget for managing the 3D Scene of the NetView
+type Scene struct {
+	xyzv.Scene
 
 	NetView *NetView
 }
 
-func (se *Scene3D) OnInit() {
-	se.Scene3D.OnInit()
-	se.HandleEvents()
+func (sw *Scene) OnInit() {
+	sw.Scene.OnInit()
+	sw.HandleEvents()
 }
 
-func (se *Scene3D) HandleEvents() {
-	se.On(events.MouseDown, func(e events.Event) {
-		pos := se.Geom.ContentBBox.Min
+func (sw *Scene) HandleEvents() {
+	sw.On(events.MouseDown, func(e events.Event) {
+		pos := sw.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
-		se.MouseDownEvent(e)
-		se.SetNeedsRender(true)
+		sw.MouseDownEvent(e)
+		sw.SetNeedsRender(true)
 	})
-	se.On(events.LongHoverStart, func(e events.Event) {
-		pos := se.Geom.ContentBBox.Min
+	sw.On(events.LongHoverStart, func(e events.Event) {
+		pos := sw.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
-		se.LongHoverEvent(e)
+		sw.LongHoverEvent(e)
 	})
-	se.On(events.SlideMove, func(e events.Event) {
-		pos := se.Geom.ContentBBox.Min
+	sw.On(events.Scroll, func(e events.Event) {
+		pos := sw.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
-		se.Scene.SlideMoveEvent(e)
-		se.SetNeedsRender(true)
+		sw.Scene.Scene.MouseScrollEvent(e.(*events.MouseScroll))
+		sw.SetNeedsRender(true)
 	})
-	se.On(events.Scroll, func(e events.Event) {
-		pos := se.Geom.ContentBBox.Min
-		e.SetLocalOff(e.LocalOff().Add(pos))
-		se.Scene.MouseScrollEvent(e.(*events.MouseScroll))
-		se.SetNeedsRender(true)
+	sw.On(events.KeyChord, func(e events.Event) {
+		sw.Scene.Scene.KeyChordEvent(e)
+		sw.SetNeedsRender(true)
 	})
-	se.On(events.KeyChord, func(e events.Event) {
-		se.Scene.KeyChordEvent(e)
-		se.SetNeedsRender(true)
-	})
+	sw.HandleSlideEvents()
 }
 
-func (se *Scene3D) MouseDownEvent(e events.Event) {
-	lay, _, _, unIdx := se.LayerUnitAtPoint(e)
+func (sw *Scene) MouseDownEvent(e events.Event) {
+	ns := xyz.NodesUnderPoint(sw.Scene.Scene, e.LocalPos())
+	for _, n := range ns {
+		ln, ok := n.(*LayName)
+		if ok {
+			lay := ln.NetView.Net.LayerByName(ln.Text)
+			if lay != nil {
+				d := gi.NewBody().AddTitle("Layer: " + lay.Name())
+				giv.NewStructView(d).SetStruct(lay)
+				d.NewFullDialog(sw).SetNewWindow(true).Run()
+			}
+			e.SetHandled()
+			return
+		}
+	}
+
+	lay, _, _, unIdx := sw.LayerUnitAtPoint(e)
 	if lay == nil {
 		return
 	}
-	nv := se.NetView
+	nv := sw.NetView
 	nv.Data.PrjnUnIdx = unIdx
 	nv.Data.PrjnLay = lay.Name()
 	nv.UpdateView()
 	e.SetHandled()
 }
 
-func (se *Scene3D) LongHoverEvent(e events.Event) {
-	lay, lx, ly, _ := se.LayerUnitAtPoint(e)
+func (sw *Scene) LongHoverEvent(e events.Event) {
+	lay, lx, ly, _ := sw.LayerUnitAtPoint(e)
 	if lay == nil {
 		return
 	}
-	nv := se.NetView
+	nv := sw.NetView
 
 	sval := ""
 	if lay.Is2D() {
@@ -100,23 +111,23 @@ func (se *Scene3D) LongHoverEvent(e events.Event) {
 		return // not supported
 	}
 	// TODO: it would be better to use the 2D layer position here
-	gi.NewTooltipTextAt(se, sval, e.Pos(), lay.Size().ToPoint()).Run()
+	gi.NewTooltipTextAt(sw, sval, e.Pos(), lay.Size().ToPoint()).Run()
 	e.SetHandled()
 }
 
-func (se *Scene3D) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx int) {
+func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx int) {
 	pos := e.LocalPos()
-	sc := se.Scene
+	sc := sw.Scene.Scene
 	laysGp, err := sc.ChildByNameTry("Layers", 0)
 	if err != nil {
 		return
 	}
-	nv := se.NetView
+	nv := sw.NetView
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
 	nsc := mat32.Vec3{1.0 / nsz.X, 1.0 / nsz.Y, 1.0 / nsz.Z}
 	szc := mat32.Max(nsc.X, nsc.Y)
-	poff := mat32.NewVec3Scalar(0.5)
+	poff := mat32.V3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		lay = nv.Net.Layer(li)

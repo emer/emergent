@@ -16,7 +16,8 @@ import (
 	"goki.dev/grr"
 )
 
-// AddPlots adds plots based on the unique tables we have, currently assumes they should always be plotted
+// AddPlots adds plots based on the unique tables we have,
+// currently assumes they should always be plotted
 func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 	gui.Plots = make(map[etime.ScopeKey]*eplot.Plot2D)
 	// for key, table := range Log.Tables {
@@ -31,9 +32,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 			}
 		}
 
-		pt := gui.Tabs.NewTab(mode + " " + time + " Plot")
-		plt := eplot.NewSubPlot(pt)
-		gui.Plots[key] = plt
+		plt := gui.NewPlotTab(key, mode+" "+time+" Plot")
 		plt.SetTable(lt.Table)
 		plt.Params.FmMetaMap(lt.Meta)
 
@@ -128,6 +127,15 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *eplot.Plot2D {
 		plot.GoUpdatePlot()
 	}
 	return plot
+}
+
+// NewPlotTab adds a new plot with given key for Plots lookup
+// and using given tab label.  For ad-hoc plots, you can
+// construct a ScopeKey from any two strings using etime.ScopeStr.
+func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *eplot.Plot2D {
+	plt := eplot.NewSubPlot(gui.Tabs.NewTab(tabLabel))
+	gui.Plots[key] = plt
+	return plt
 }
 
 // AddTableView adds a table view of given log,

@@ -173,20 +173,20 @@ func (nv *NetView) GoUpdateView() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	se := nv.Scene3D()
-	updt := se.Sc.UpdateStartAsync()
+	sw := nv.SceneWidget()
+	updt := sw.Sc.UpdateStartAsync()
 	if !updt {
-		se.Sc.UpdateEndAsyncRender(updt)
+		sw.Sc.UpdateEndAsyncRender(updt)
 		return
 	}
-	up3 := se.Scene.UpdateStart()
+	up3 := sw.Scene.Scene.UpdateStart()
 	if !up3 {
-		se.Sc.UpdateEndAsyncRender(updt)
+		sw.Sc.UpdateEndAsyncRender(updt)
 		return
 	}
 	nv.UpdateImpl()
-	se.Scene.UpdateEndRender(up3)
-	se.Sc.UpdateEndAsyncRender(updt)
+	sw.Scene.Scene.UpdateEndRender(up3)
+	sw.Sc.UpdateEndAsyncRender(updt)
 }
 
 // UpdateView updates the display based on last recorded state of network.
@@ -194,13 +194,13 @@ func (nv *NetView) UpdateView() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	se := nv.Scene3D()
-	updt := se.UpdateStart3D()
+	sw := nv.SceneWidget()
+	updt := sw.UpdateStart3D()
 	if !updt {
 		return
 	}
 	nv.UpdateImpl()
-	se.UpdateEndRender3D(updt)
+	sw.UpdateEndRender3D(updt)
 }
 
 // Current records the current state of the network, including synaptic values,
@@ -260,15 +260,15 @@ func (nv *NetView) UpdateImpl() {
 		}
 	}
 
-	vs := nv.Scene()
-	laysGp, err := vs.ChildByNameTry("Layers", 0)
+	se := nv.SceneXYZ()
+	laysGp, err := se.ChildByNameTry("Layers", 0)
 	if err != nil || laysGp.NumChildren() != nv.Net.NLayers() {
 		nv.ConfigNetView()
 	}
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
 	nv.UpdateRecNo()
 	nv.DataMu.Unlock()
-	vs.UpdateMeshes()
+	se.UpdateMeshes()
 }
 
 func (nv *NetView) ConfigWidget() {
@@ -302,11 +302,11 @@ func (nv *NetView) ConfigNetView() {
 			s.Columns = nv.Params.NVarCols
 			s.Grow.Set(0, 1)
 			s.Overflow.Y = styles.OverflowAuto
-			s.BackgroundColor.SetSolid(colors.Scheme.SurfaceContainerLow)
+			s.Background = colors.C(colors.Scheme.SurfaceContainerLow)
 		})
 
-		se := NewScene3D(nlay, "scene")
-		se.NetView = nv
+		sw := NewScene(nlay, "scene")
+		sw.NetView = nv
 
 		nv.ConfigToolbar(tb)
 		nv.ConfigViewbar(vb)
@@ -326,9 +326,9 @@ func (nv *NetView) ConfigNetView() {
 
 // ReconfigMeshes reconfigures the layer meshes
 func (nv *NetView) ReconfigMeshes() {
-	vs := nv.Scene()
-	if vs.IsConfiged() {
-		vs.ReconfigMeshes()
+	se := nv.SceneXYZ()
+	if se.IsConfiged() {
+		se.ReconfigMeshes()
 	}
 }
 
@@ -348,12 +348,13 @@ func (nv *NetView) Viewbar() *gi.Toolbar {
 	return nv.ChildByName("vbar", 3).(*gi.Toolbar)
 }
 
-func (nv *NetView) Scene3D() *Scene3D {
-	return nv.NetLay().ChildByName("scene", 1).(*Scene3D)
+func (nv *NetView) SceneWidget() *Scene {
+	return nv.NetLay().ChildByName("scene", 1).(*Scene)
 }
 
-func (nv *NetView) Scene() *xyz.Scene {
-	return nv.Scene3D().Scene
+func (nv *NetView) SceneXYZ() *xyz.Scene {
+	return nv.SceneWidget().Scene.Scene
+
 }
 
 func (nv *NetView) VarsLay() *gi.Frame {
@@ -621,32 +622,32 @@ func (nv *NetView) VarsConfig() {
 
 // ViewConfig configures the 3D view
 func (nv *NetView) ViewConfig() {
-	se := nv.Scene3D()
-	updt := se.UpdateStart3D()
-	defer se.UpdateEndConfig3D(updt)
+	sw := nv.SceneWidget()
+	updt := sw.UpdateStart3D()
+	defer sw.UpdateEndConfig3D(updt)
 
-	vs := se.Scene
+	se := sw.Scene.Scene
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
-		vs.DeleteChildren(true)
-		vs.Meshes.Reset()
+		se.DeleteChildren(true)
+		se.Meshes.Reset()
 		return
 	}
-	if vs.Lights.Len() == 0 {
+	if se.Lights.Len() == 0 {
 		nv.ViewDefaults()
 	}
 	// todo:
 	// vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
 	nlay := nv.Net.NLayers()
-	laysGp, err := vs.ChildByNameTry("Layers", 0)
+	laysGp, err := se.ChildByNameTry("Layers", 0)
 	if err != nil {
-		laysGp = xyz.NewGroup(vs, "Layers")
+		laysGp = xyz.NewGroup(se, "Layers")
 	}
 	layConfig := ki.Config{}
 	for li := 0; li < nlay; li++ {
 		lay := nv.Net.Layer(li)
-		lmesh := vs.MeshByName(lay.Name())
+		lmesh := se.MeshByName(lay.Name())
 		if lmesh == nil {
-			NewLayMesh(vs, nv, lay)
+			NewLayMesh(se, nv, lay)
 		} else {
 			lmesh.(*LayMesh).Lay = lay // make sure
 		}
@@ -662,7 +663,7 @@ func (nv *NetView) ViewConfig() {
 	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
 	nsc := mat32.Vec3{1.0 / nsz.X, 1.0 / nsz.Y, 1.0 / nsz.Z}
 	szc := mat32.Max(nsc.X, nsc.Y)
-	poff := mat32.NewVec3Scalar(0.5)
+	poff := mat32.V3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
@@ -692,8 +693,8 @@ func (nv *NetView) ViewConfig() {
 		txt.Defaults()
 		txt.NetView = nv
 		txt.SetText(ly.Name())
-		txt.Pose.Scale = mat32.NewVec3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
-		txt.Styles.BackgroundColor.SetSolid(colors.Transparent)
+		txt.Pose.Scale = mat32.V3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
+		txt.Styles.Background = colors.C(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
@@ -701,18 +702,18 @@ func (nv *NetView) ViewConfig() {
 
 // ViewDefaults are the default 3D view params
 func (nv *NetView) ViewDefaults() {
-	vs := nv.Scene()
-	vs.Defaults()
-	vs.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
+	se := nv.SceneXYZ()
+	se.Defaults()
+	se.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
-	vs.Camera.Near = 0.1
-	vs.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
+	se.Camera.Near = 0.1
+	se.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
 	// todo:
 	// vs.BgColor = gi.Prefs.Colors.Background
-	xyz.NewAmbientLight(vs, "ambient", 0.1, xyz.DirectSun)
-	dir := xyz.NewDirLight(vs, "dirUp", 0.3, xyz.DirectSun)
+	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
+	dir := xyz.NewDirLight(se, "dirUp", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, 0)
-	dir = xyz.NewDirLight(vs, "dirBack", 0.3, xyz.DirectSun)
+	dir = xyz.NewDirLight(se, "dirBack", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, -2.5)
 	// point := xyz.NewPointLight(vs, "point", 1, xyz.DirectSun)
 	// point.Pos.Set(0, 2, 5)
@@ -811,10 +812,10 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 // position relative to a layer.  Default alignment is Left, Top.
 // Returns true set of labels was changed (mods).
 func (nv *NetView) ConfigLabels(labs []string) bool {
-	vs := nv.Scene()
-	lgp, err := vs.ChildByNameTry("Labels", 1)
+	se := nv.SceneXYZ()
+	lgp, err := se.ChildByNameTry("Labels", 1)
 	if err != nil {
-		lgp = xyz.NewGroup(vs, "Labels")
+		lgp = xyz.NewGroup(se, "Labels")
 	}
 
 	lbConfig := ki.Config{}
@@ -840,8 +841,8 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 // LabelByName returns given Text2D label (see ConfigLabels).
 // nil if not found.
 func (nv *NetView) LabelByName(lab string) *xyz.Text2D {
-	vs := nv.Scene()
-	lgp, err := vs.ChildByNameTry("Labels", 1)
+	se := nv.SceneXYZ()
+	lgp, err := se.ChildByNameTry("Labels", 1)
 	if err != nil {
 		return nil
 	}
@@ -855,8 +856,8 @@ func (nv *NetView) LabelByName(lab string) *xyz.Text2D {
 // LayerByName returns the xyz.Group that represents layer of given name.
 // nil if not found.
 func (nv *NetView) LayerByName(lay string) *xyz.Group {
-	vs := nv.Scene()
-	lgp, err := vs.ChildByNameTry("Layers", 0)
+	se := nv.SceneXYZ()
+	lgp, err := se.ChildByNameTry("Layers", 0)
 	if err != nil {
 		return nil
 	}
@@ -995,54 +996,54 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 	gi.NewButton(tb).SetIcon(icons.Update).SetTooltip("reset to default initial display").
 		OnClick(func(e events.Event) {
-			nv.Scene().SetCamera("default")
+			nv.SceneXYZ().SetCamera("default")
 			nv.UpdateView()
 		})
 	gi.NewButton(tb).SetIcon(icons.ZoomIn).SetTooltip("zoom in").
 		OnClick(func(e events.Event) {
-			nv.Scene().Camera.Zoom(-.05)
+			nv.SceneXYZ().Camera.Zoom(-.05)
 			nv.UpdateView()
 		})
 	gi.NewButton(tb).SetIcon(icons.ZoomOut).SetTooltip("zoom out").
 		OnClick(func(e events.Event) {
-			nv.Scene().Camera.Zoom(.05)
+			nv.SceneXYZ().Camera.Zoom(.05)
 			nv.UpdateView()
 		})
 	gi.NewSeparator(tb)
 	gi.NewLabel(tb).SetText("Rot:").SetTooltip("rotate display")
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Orbit(5, 0)
+		nv.SceneXYZ().Camera.Orbit(5, 0)
 		nv.UpdateView()
 	})
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Orbit(0, 5)
+		nv.SceneXYZ().Camera.Orbit(0, 5)
 		nv.UpdateView()
 	})
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Orbit(0, -5)
+		nv.SceneXYZ().Camera.Orbit(0, -5)
 		nv.UpdateView()
 	})
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Orbit(-5, 0)
+		nv.SceneXYZ().Camera.Orbit(-5, 0)
 		nv.UpdateView()
 	})
 	gi.NewSeparator(tb)
 
 	gi.NewLabel(tb).SetText("Pan:").SetTooltip("pan display")
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Pan(-.2, 0)
+		nv.SceneXYZ().Camera.Pan(-.2, 0)
 		nv.UpdateView()
 	})
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Pan(0, .2)
+		nv.SceneXYZ().Camera.Pan(0, .2)
 		nv.UpdateView()
 	})
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Pan(0, -.2)
+		nv.SceneXYZ().Camera.Pan(0, -.2)
 		nv.UpdateView()
 	})
 	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).OnClick(func(e events.Event) {
-		nv.Scene().Camera.Pan(.2, 0)
+		nv.SceneXYZ().Camera.Pan(.2, 0)
 		nv.UpdateView()
 	})
 	gi.NewSeparator(tb)
@@ -1054,7 +1055,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 		gi.NewButton(tb).SetText(nm).
 			SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
 			OnClick(func(e events.Event) {
-				sc := nv.Scene()
+				sc := nv.SceneXYZ()
 				cam := nm
 				if e.HasAllModifiers(e.Modifiers(), key.Shift) {
 					sc.SaveCamera(cam)
