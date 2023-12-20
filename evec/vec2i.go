@@ -49,7 +49,7 @@ func NewVec2iFmVec2Ceil(v mat32.Vec2) Vec2i {
 
 // ToVec2 returns floating point mat32.Vec2 from int
 func (v Vec2i) ToVec2() mat32.Vec2 {
-	return mat32.Vec2{X: float32(v.X), Y: float32(v.Y)}
+	return mat32.V2(float32(v.X), float32(v.Y))
 }
 
 // IsNil returns true if all values are 0 (uninitialized).

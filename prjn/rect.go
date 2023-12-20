@@ -102,8 +102,8 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
-		rsz := mat32.Vec2{float32(rNxEff), float32(rNyEff)}
+		ssz := mat32.V2(float32(sNx), float32(sNy))
+		rsz := mat32.V2(float32(rNxEff), float32(rNyEff))
 		sc = ssz.Div(rsz)
 	}
 
@@ -170,8 +170,8 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
-		rsz := mat32.Vec2{float32(rNxEff), float32(rNyEff)}
+		ssz := mat32.V2(float32(sNx), float32(sNy))
+		rsz := mat32.V2(float32(rNxEff), float32(rNyEff))
 		sc = ssz.Div(rsz)
 	}
 

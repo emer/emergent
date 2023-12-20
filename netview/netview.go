@@ -174,18 +174,19 @@ func (nv *NetView) GoUpdateView() {
 		return
 	}
 	sw := nv.SceneWidget()
+	sc := sw.SceneXYZ()
 	updt := sw.Sc.UpdateStartAsync()
 	if !updt {
 		sw.Sc.UpdateEndAsyncRender(updt)
 		return
 	}
-	up3 := sw.Scene.Scene.UpdateStart()
+	up3 := sc.UpdateStart()
 	if !up3 {
 		sw.Sc.UpdateEndAsyncRender(updt)
 		return
 	}
 	nv.UpdateImpl()
-	sw.Scene.Scene.UpdateEndRender(up3)
+	sc.UpdateEndRender(up3)
 	sw.Sc.UpdateEndAsyncRender(updt)
 }
 
@@ -660,8 +661,8 @@ func (nv *NetView) ViewConfig() {
 	laysGp.ConfigChildren(layConfig)
 
 	nmin, nmax := nv.Net.Bounds()
-	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
-	nsc := mat32.Vec3{1.0 / nsz.X, 1.0 / nsz.Y, 1.0 / nsz.Z}
+	nsz := nmax.Sub(nmin).Sub(mat32.V3(1, 1, 0)).Max(mat32.V3(1, 1, 1))
+	nsc := mat32.V3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
 	szc := mat32.Max(nsc.X, nsc.Y)
 	poff := mat32.V3Scalar(0.5)
 	poff.Y = -0.5
@@ -707,7 +708,7 @@ func (nv *NetView) ViewDefaults() {
 	se.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1
-	se.Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0})
+	se.Camera.LookAt(mat32.V3(0, 0, 0), mat32.V3(0, 1, 0))
 	// todo:
 	// vs.BgColor = gi.Prefs.Colors.Background
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
@@ -937,7 +938,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetChecked(vp.Range.FixMin)
 	mnsw.OnChange(func(e events.Event) {
 		vp.Range.FixMin = mnsw.IsChecked()
-		// nv.VarScaleUpdate(nv.Var) // todo: before update?
+		nv.VarScaleUpdate(nv.Var) // todo: before update?
 		nv.UpdateView()
 	})
 	mnsp := gi.NewSpinner(tb, "mnsp").SetValue(float32(vp.Range.Min))
@@ -946,8 +947,8 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
 			vp.Range.SetMax(-vp.Range.Min)
 		}
-		// nv.VarScaleUpdate(nv.Var)
-		// nv.UpdateView()
+		nv.VarScaleUpdate(nv.Var)
+		nv.UpdateView()
 	})
 
 	nv.ColorMapVal = giv.NewValue(tb, &nv.Params.ColorMap, "cmap").(*giv.ColorMapValue)
@@ -971,7 +972,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetChecked(vp.Range.FixMax)
 	mxsw.OnChange(func(e events.Event) {
 		vp.Range.FixMax = mxsw.IsChecked()
-		// nv.VarScaleUpdate(nv.Var)
+		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
 	mxsp := gi.NewSpinner(tb, "mxsp").SetValue(float32(vp.Range.Max))
@@ -980,7 +981,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
 			vp.Range.SetMin(-vp.Range.Max)
 		}
-		// nv.VarScaleUpdate(nv.Var)
+		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
 	zcsw := gi.NewSwitch(tb, "zcsw").SetText("ZeroCtr").
@@ -988,7 +989,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetChecked(vp.ZeroCtr)
 	zcsw.OnChange(func(e events.Event) {
 		vp.ZeroCtr = zcsw.IsChecked()
-		// nv.VarScaleUpdate(nv.Var)
+		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
 }

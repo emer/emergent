@@ -18,7 +18,7 @@ func (ss *Sim) ConfigGui() *gi.Window {
 
     // optionally reconfigure the netview:
 	ss.GUI.NetView.Scene().Camera.Pose.Pos.Set(0, 1, 2.75) 
-	ss.GUI.NetView.Scene().Camera.LookAt(mat32.Vec3{0, 0, 0}, mat32.Vec3{0, 1, 0}) 
+	ss.GUI.NetView.Scene().Camera.LookAt(mat32.V3(0, 0, 0), mat32.V3(0, 1, 0)) 
 	ss.GUI.AddPlots(title, &ss.Logs) // automatically adds all configured plots
 ```
 

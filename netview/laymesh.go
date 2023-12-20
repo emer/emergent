@@ -203,7 +203,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnz}, mat32.Vec3{fnx, 0.5, 0})
+	lm.BBox.SetBounds(mat32.V3(0, -0.5, -fnz), mat32.V3(fnx, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -274,6 +274,6 @@ func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpz * fnuz}, mat32.Vec3{fnpx * fnux, 0.5, 0})
+	lm.BBox.SetBounds(mat32.V3(0, -0.5, -fnpz*fnuz), mat32.V3(fnpx*fnux, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }

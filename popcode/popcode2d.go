@@ -113,14 +113,14 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 	rng := pc.Max.Sub(pc.Min)
 
-	gnrm := mat32.NewVec2Scalar(1).Div(rng.Mul(pc.Sigma))
+	gnrm := mat32.V2Scalar(1).Div(rng.Mul(pc.Sigma))
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
-	nf := mat32.Vec2{float32(nx - 1), float32(ny - 1)}
+	nf := mat32.V2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 	for yi := 0; yi < ny; yi++ {
 		for xi := 0; xi < nx; xi++ {
-			fi := mat32.Vec2{float32(xi), float32(yi)}
+			fi := mat32.V2(float32(xi), float32(yi))
 			trg := pc.Min.Add(incr.Mul(fi))
 			act := float32(0)
 			switch pc.Code {
@@ -249,7 +249,7 @@ func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (mat32.Vec2, error) {
 	rng := pc.Max.Sub(pc.Min)
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
-	nf := mat32.Vec2{float32(nx - 1), float32(ny - 1)}
+	nf := mat32.V2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 	sum := float32(0)
 	for yi := 0; yi < ny; yi++ {
@@ -259,7 +259,7 @@ func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (mat32.Vec2, error) {
 			if act < pc.Thr {
 				act = 0
 			}
-			fi := mat32.Vec2{float32(xi), float32(yi)}
+			fi := mat32.V2(float32(xi), float32(yi))
 			trg := pc.Min.Add(incr.Mul(fi))
 			avg = avg.Add(trg.MulScalar(act))
 			sum += act
@@ -275,7 +275,7 @@ func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (mat32.Vec2, error) {
 // vals slice will be constructed if len != n
 func (pc *TwoD) Values(valsX, valsY *[]float32, nx, ny int) {
 	rng := pc.Max.Sub(pc.Min)
-	nf := mat32.Vec2{float32(nx - 1), float32(ny - 1)}
+	nf := mat32.V2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 
 	// X
@@ -312,7 +312,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]mat32.Vec2
 	rng := pc.Max.Sub(pc.Min)
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
-	nf := mat32.Vec2{float32(nx - 1), float32(ny - 1)}
+	nf := mat32.V2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 
 	type navg struct {
@@ -375,7 +375,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]mat32.Vec2
 				if act < pc.Thr {
 					act = 0
 				}
-				fi := mat32.Vec2{float32(x), float32(y)}
+				fi := mat32.V2(float32(x), float32(y))
 				trg := pc.Min.Add(incr.Mul(fi))
 				avg = avg.Add(trg.MulScalar(act))
 				sum += act

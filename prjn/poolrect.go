@@ -92,8 +92,8 @@ func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
-		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
+		ssz := mat32.V2(float32(sNx), float32(sNy))
+		rsz := mat32.V2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
 

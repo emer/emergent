@@ -77,21 +77,21 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
+		ssz := mat32.V2(float32(sNx), float32(sNy))
 		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
 			ssz.X -= float32(2 * cr.Start.X)
 			ssz.Y -= float32(2 * cr.Start.Y)
 		}
-		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
+		rsz := mat32.V2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
 
 	for ry := 0; ry < rNy; ry++ {
 		for rx := 0; rx < rNx; rx++ {
-			sctr := mat32.Vec2{float32(rx)*sc.X + float32(cr.Start.X), float32(ry)*sc.Y + float32(cr.Start.Y)}
+			sctr := mat32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
 			for sy := 0; sy < sNy; sy++ {
 				for sx := 0; sx < sNx; sx++ {
-					sp := mat32.Vec2{float32(sx), float32(sy)}
+					sp := mat32.V2(float32(sx), float32(sy))
 					if cr.Wrap {
 						sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 						sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)
@@ -131,16 +131,16 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.Vec2{float32(sNx), float32(sNy)}
+		ssz := mat32.V2(float32(sNx), float32(sNy))
 		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
 			ssz.X -= float32(2 * cr.Start.X)
 			ssz.Y -= float32(2 * cr.Start.Y)
 		}
-		rsz := mat32.Vec2{float32(rNx), float32(rNy)}
+		rsz := mat32.V2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
-	sctr := mat32.Vec2{float32(rx)*sc.X + float32(cr.Start.X), float32(ry)*sc.Y + float32(cr.Start.Y)}
-	sp := mat32.Vec2{float32(sx), float32(sy)}
+	sctr := mat32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
+	sp := mat32.V2(float32(sx), float32(sy))
 	if cr.Wrap {
 		sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 		sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)

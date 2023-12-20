@@ -121,7 +121,7 @@ func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnz}, mat32.Vec3{fnx, 0.5, 0})
+	lm.BBox.SetBounds(mat32.V3(0, -0.5, -fnz), mat32.V3(fnx, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -204,7 +204,7 @@ func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnz}, mat32.Vec3{fnx, 0.5, 0})
+	lm.BBox.SetBounds(mat32.V3(0, -0.5, -fnz), mat32.V3(fnx, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -308,7 +308,7 @@ func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpoz * fnuz}, mat32.Vec3{fnpox * fnux, 0.5, 0})
+	lm.BBox.SetBounds(mat32.V3(0, -0.5, -fnpoz*fnuz), mat32.V3(fnpox*fnux, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -412,6 +412,6 @@ func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(mat32.Vec3{0, -0.5, -fnpoz * fnuz}, mat32.Vec3{fnpox * fnux, 0.5, 0})
+	lm.BBox.SetBounds(mat32.V3(0, -0.5, -fnpoz*fnuz), mat32.V3(fnpox*fnux, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }

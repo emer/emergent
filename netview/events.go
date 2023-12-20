@@ -43,18 +43,18 @@ func (sw *Scene) HandleEvents() {
 	sw.On(events.Scroll, func(e events.Event) {
 		pos := sw.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
-		sw.Scene.Scene.MouseScrollEvent(e.(*events.MouseScroll))
+		sw.SceneXYZ().MouseScrollEvent(e.(*events.MouseScroll))
 		sw.SetNeedsRender(true)
 	})
 	sw.On(events.KeyChord, func(e events.Event) {
-		sw.Scene.Scene.KeyChordEvent(e)
+		sw.SceneXYZ().KeyChordEvent(e)
 		sw.SetNeedsRender(true)
 	})
 	sw.HandleSlideEvents()
 }
 
 func (sw *Scene) MouseDownEvent(e events.Event) {
-	ns := xyz.NodesUnderPoint(sw.Scene.Scene, e.LocalPos())
+	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), e.LocalPos())
 	for _, n := range ns {
 		ln, ok := n.(*LayName)
 		if ok {
@@ -117,15 +117,15 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 
 func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx int) {
 	pos := e.LocalPos()
-	sc := sw.Scene.Scene
+	sc := sw.SceneXYZ()
 	laysGp, err := sc.ChildByNameTry("Layers", 0)
 	if err != nil {
 		return
 	}
 	nv := sw.NetView
 	nmin, nmax := nv.Net.Bounds()
-	nsz := nmax.Sub(nmin).Sub(mat32.Vec3{1, 1, 0}).Max(mat32.Vec3{1, 1, 1})
-	nsc := mat32.Vec3{1.0 / nsz.X, 1.0 / nsz.Y, 1.0 / nsz.Z}
+	nsz := nmax.Sub(nmin).Sub(mat32.V3(1, 1, 0)).Max(mat32.V3(1, 1, 1))
+	nsc := mat32.V3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
 	szc := mat32.Max(nsc.X, nsc.Y)
 	poff := mat32.V3Scalar(0.5)
 	poff.Y = -0.5
@@ -142,7 +142,7 @@ func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx
 		ray := lo.RayPick(pos)
 		// layer is in XZ plane with norm pointing up in Y axis
 		// offset is 0 in local coordinates
-		plane := mat32.Plane{Norm: mat32.Vec3{0, 1, 0}, Off: 0}
+		plane := mat32.Plane{Norm: mat32.V3(0, 1, 0), Off: 0}
 		pt, ok := ray.IntersectPlane(plane)
 		if !ok || pt.Z > 0 { // Z > 0 means clicked "in front" of plane -- where labels are
 			continue
