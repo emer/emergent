@@ -559,7 +559,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 	}
 	if ci := tb.ChildByName("mnsp", 5); ci != nil {
 		sp := ci.(*gi.Spinner)
-		mnv := float32(vp.Range.Min)
+		mnv := vp.Range.Min
 		if sp.Value != mnv {
 			mod = true
 			sp.SetValue(mnv)
@@ -568,7 +568,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 	}
 	if ci := tb.ChildByName("mxsp", 7); ci != nil {
 		sp := ci.(*gi.Spinner)
-		mxv := float32(vp.Range.Max)
+		mxv := vp.Range.Max
 		if sp.Value != mxv {
 			mod = true
 			sp.SetValue(mxv)
@@ -937,12 +937,14 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMin)
 	mnsw.OnChange(func(e events.Event) {
+		vp := nv.VarParams[nv.Var]
 		vp.Range.FixMin = mnsw.IsChecked()
 		nv.VarScaleUpdate(nv.Var) // todo: before update?
 		nv.UpdateView()
 	})
-	mnsp := gi.NewSpinner(tb, "mnsp").SetValue(float32(vp.Range.Min))
+	mnsp := gi.NewSpinner(tb, "mnsp").SetValue(vp.Range.Min)
 	mnsp.OnChange(func(e events.Event) {
+		vp := nv.VarParams[nv.Var]
 		vp.Range.SetMin(mnsp.Value)
 		if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
 			vp.Range.SetMax(-vp.Range.Min)
@@ -971,12 +973,14 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMax)
 	mxsw.OnChange(func(e events.Event) {
+		vp := nv.VarParams[nv.Var]
 		vp.Range.FixMax = mxsw.IsChecked()
 		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
-	mxsp := gi.NewSpinner(tb, "mxsp").SetValue(float32(vp.Range.Max))
+	mxsp := gi.NewSpinner(tb, "mxsp").SetValue(vp.Range.Max)
 	mxsp.OnChange(func(e events.Event) {
+		vp := nv.VarParams[nv.Var]
 		vp.Range.SetMax(mxsp.Value)
 		if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
 			vp.Range.SetMin(-vp.Range.Max)
@@ -988,6 +992,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
 		SetChecked(vp.ZeroCtr)
 	zcsw.OnChange(func(e events.Event) {
+		vp := nv.VarParams[nv.Var]
 		vp.ZeroCtr = zcsw.IsChecked()
 		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
