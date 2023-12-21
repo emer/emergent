@@ -1,6 +1,6 @@
 Name = "emergent"
 Desc = ""
-Version = "v2.0.0-dev0.0.3"
+Version = "v2.0.0-dev0.0.4"
 Type = "Library"
 
 [Build]
@@ -46,7 +46,7 @@ Type = "Library"
 
 [Release]
   VersionFile = "emer/version.go"
-  Package = "emergent"
+  Package = "emer"
 
 [Generate]
   Dir = "."
