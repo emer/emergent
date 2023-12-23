@@ -176,7 +176,7 @@ func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *etview.TableView 
 func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *etview.TableView {
 	tv := gui.TableView(mode, time)
 	if tv != nil {
-		tv.SetNeedsRender(true)
+		tv.GoUpdateView()
 	}
 	return tv
 }
