@@ -10,7 +10,7 @@ import (
 	"github.com/emer/emergent/v2/emer"
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/gi/v2/xyzv"
+	"goki.dev/gix/xyzv"
 	"goki.dev/goosi/events"
 	"goki.dev/mat32/v2"
 	"goki.dev/xyz"
@@ -118,8 +118,8 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx int) {
 	pos := e.LocalPos()
 	sc := sw.SceneXYZ()
-	laysGp, err := sc.ChildByNameTry("Layers", 0)
-	if err != nil {
+	laysGp := sc.ChildByName("Layers", 0)
+	if laysGp == nil {
 		return
 	}
 	nv := sw.NetView

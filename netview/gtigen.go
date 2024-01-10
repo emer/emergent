@@ -6,9 +6,8 @@ import (
 	"sync"
 
 	"goki.dev/colors/colormap"
-	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/gi/v2/xyzv"
+	"goki.dev/gix/xyzv"
 	"goki.dev/gti"
 	"goki.dev/ki/v2"
 	"goki.dev/ordmap"
@@ -59,7 +58,7 @@ var SceneType = gti.AddType(&gti.Type{
 		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Scene", &gti.Field{Name: "Scene", Type: "goki.dev/gi/v2/xyzv.Scene", LocalType: "xyzv.Scene", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+		{"Scene", &gti.Field{Name: "Scene", Type: "goki.dev/gix/xyzv.Scene", LocalType: "xyzv.Scene", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
 	Instance: &Scene{},
@@ -92,18 +91,6 @@ func (t *Scene) SetNetView(v *NetView) *Scene {
 // SetTooltip sets the [Scene.Tooltip]
 func (t *Scene) SetTooltip(v string) *Scene {
 	t.Tooltip = v
-	return t
-}
-
-// SetClass sets the [Scene.Class]
-func (t *Scene) SetClass(v string) *Scene {
-	t.Class = v
-	return t
-}
-
-// SetCustomContextMenu sets the [Scene.CustomContextMenu]
-func (t *Scene) SetCustomContextMenu(v func(m *gi.Scene)) *Scene {
-	t.CustomContextMenu = v
 	return t
 }
 
@@ -147,60 +134,6 @@ var _ = gti.AddType(&gti.Type{
 	}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
 })
-
-// LayNameType is the [gti.Type] for [LayName]
-var LayNameType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/emergent/v2/netview.LayName",
-	ShortName:  "netview.LayName",
-	IDName:     "lay-name",
-	Doc:        "LayName is the Layer name as a Text2D within the NetView",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "our netview", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Text2D", &gti.Field{Name: "Text2D", Type: "goki.dev/xyz.Text2D", LocalType: "xyz.Text2D", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &LayName{},
-})
-
-// NewLayName adds a new [LayName] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
-func NewLayName(par ki.Ki, name ...string) *LayName {
-	return par.NewChild(LayNameType, name...).(*LayName)
-}
-
-// KiType returns the [*gti.Type] of [LayName]
-func (t *LayName) KiType() *gti.Type {
-	return LayNameType
-}
-
-// New returns a new [*LayName] value
-func (t *LayName) New() ki.Ki {
-	return &LayName{}
-}
-
-// SetNetView sets the [LayName.NetView]:
-// our netview
-func (t *LayName) SetNetView(v *NetView) *LayName {
-	t.NetView = v
-	return t
-}
-
-// SetMat sets the [LayName.Mat]
-func (t *LayName) SetMat(v xyz.Material) *LayName {
-	t.Mat = v
-	return t
-}
-
-// SetText sets the [LayName.Text]
-func (t *LayName) SetText(v string) *LayName {
-	t.Text = v
-	return t
-}
 
 // LayObjType is the [gti.Type] for [LayObj]
 var LayObjType = gti.AddType(&gti.Type{
@@ -257,6 +190,60 @@ func (t *LayObj) SetNetView(v *NetView) *LayObj {
 // SetMat sets the [LayObj.Mat]
 func (t *LayObj) SetMat(v xyz.Material) *LayObj {
 	t.Mat = v
+	return t
+}
+
+// LayNameType is the [gti.Type] for [LayName]
+var LayNameType = gti.AddType(&gti.Type{
+	Name:       "github.com/emer/emergent/v2/netview.LayName",
+	ShortName:  "netview.LayName",
+	IDName:     "lay-name",
+	Doc:        "LayName is the Layer name as a Text2D within the NetView",
+	Directives: gti.Directives{},
+	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
+		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "our netview", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\""}},
+	}),
+	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
+		{"Text2D", &gti.Field{Name: "Text2D", Type: "goki.dev/xyz.Text2D", LocalType: "xyz.Text2D", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+	}),
+	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
+	Instance: &LayName{},
+})
+
+// NewLayName adds a new [LayName] with the given name
+// to the given parent. If the name is unspecified, it defaults
+// to the ID (kebab-case) name of the type, plus the
+// [ki.Ki.NumLifetimeChildren] of the given parent.
+func NewLayName(par ki.Ki, name ...string) *LayName {
+	return par.NewChild(LayNameType, name...).(*LayName)
+}
+
+// KiType returns the [*gti.Type] of [LayName]
+func (t *LayName) KiType() *gti.Type {
+	return LayNameType
+}
+
+// New returns a new [*LayName] value
+func (t *LayName) New() ki.Ki {
+	return &LayName{}
+}
+
+// SetNetView sets the [LayName.NetView]:
+// our netview
+func (t *LayName) SetNetView(v *NetView) *LayName {
+	t.NetView = v
+	return t
+}
+
+// SetMat sets the [LayName.Mat]
+func (t *LayName) SetMat(v xyz.Material) *LayName {
+	t.Mat = v
+	return t
+}
+
+// SetText sets the [LayName.Text]
+func (t *LayName) SetText(v string) *LayName {
+	t.Text = v
 	return t
 }
 
@@ -488,18 +475,6 @@ func (t *NetView) SetDataMu(v sync.RWMutex) *NetView {
 // SetTooltip sets the [NetView.Tooltip]
 func (t *NetView) SetTooltip(v string) *NetView {
 	t.Tooltip = v
-	return t
-}
-
-// SetClass sets the [NetView.Class]
-func (t *NetView) SetClass(v string) *NetView {
-	t.Class = v
-	return t
-}
-
-// SetCustomContextMenu sets the [NetView.CustomContextMenu]
-func (t *NetView) SetCustomContextMenu(v func(m *gi.Scene)) *NetView {
-	t.CustomContextMenu = v
 	return t
 }
 

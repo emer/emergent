@@ -23,8 +23,8 @@ import (
 	"goki.dev/etable/v2/minmax"
 	"goki.dev/gi/v2/gi"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/gi/v2/texteditor"
 	"goki.dev/girl/styles"
+	"goki.dev/gix/texteditor"
 	"goki.dev/goosi/events"
 	"goki.dev/goosi/events/key"
 	"goki.dev/icons"
@@ -262,8 +262,8 @@ func (nv *NetView) UpdateImpl() {
 	}
 
 	se := nv.SceneXYZ()
-	laysGp, err := se.ChildByNameTry("Layers", 0)
-	if err != nil || laysGp.NumChildren() != nv.Net.NLayers() {
+	laysGp := se.ChildByName("Layers", 0)
+	if laysGp == nil || laysGp.NumChildren() != nv.Net.NLayers() {
 		nv.ConfigNetView()
 	}
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
@@ -639,8 +639,8 @@ func (nv *NetView) ViewConfig() {
 	// todo:
 	// vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
 	nlay := nv.Net.NLayers()
-	laysGp, err := se.ChildByNameTry("Layers", 0)
-	if err != nil {
+	laysGp := se.ChildByName("Layers", 0)
+	if laysGp == nil {
 		laysGp = xyz.NewGroup(se, "Layers")
 	}
 	layConfig := ki.Config{}
@@ -814,8 +814,8 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 // Returns true set of labels was changed (mods).
 func (nv *NetView) ConfigLabels(labs []string) bool {
 	se := nv.SceneXYZ()
-	lgp, err := se.ChildByNameTry("Labels", 1)
-	if err != nil {
+	lgp := se.ChildByName("Labels", 1)
+	if lgp == nil {
 		lgp = xyz.NewGroup(se, "Labels")
 	}
 
@@ -843,12 +843,12 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 // nil if not found.
 func (nv *NetView) LabelByName(lab string) *xyz.Text2D {
 	se := nv.SceneXYZ()
-	lgp, err := se.ChildByNameTry("Labels", 1)
-	if err != nil {
+	lgp := se.ChildByName("Labels", 1)
+	if lgp == nil {
 		return nil
 	}
-	txt, err := lgp.ChildByNameTry(lab, 0)
-	if err != nil {
+	txt := lgp.ChildByName(lab, 0)
+	if txt == nil {
 		return nil
 	}
 	return txt.(*xyz.Text2D)
@@ -858,12 +858,12 @@ func (nv *NetView) LabelByName(lab string) *xyz.Text2D {
 // nil if not found.
 func (nv *NetView) LayerByName(lay string) *xyz.Group {
 	se := nv.SceneXYZ()
-	lgp, err := se.ChildByNameTry("Layers", 0)
-	if err != nil {
+	lgp := se.ChildByName("Layers", 0)
+	if lgp == nil {
 		return nil
 	}
-	ly, err := lgp.ChildByNameTry(lay, 0)
-	if err != nil {
+	ly := lgp.ChildByName(lay, 0)
+	if ly == nil {
 		return nil
 	}
 	return ly.(*xyz.Group)
