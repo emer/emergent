@@ -6,7 +6,7 @@ package patgen
 
 import (
 	"github.com/emer/emergent/v2/erand"
-	"goki.dev/etable/v2/etable"
+	"github.com/emer/etable/v2/etable"
 )
 
 // Shuffle shuffles rows in specified columns in the table independently

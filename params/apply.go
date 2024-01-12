@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"strings"
 
-	"goki.dev/gi/v2/gi"
+	"goki.dev/gi"
 	"goki.dev/laser"
 )
 

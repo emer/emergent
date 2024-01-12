@@ -7,8 +7,8 @@ package prjn
 import (
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/evec"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/mat32"
 )
 
 // PoolRect implements a rectangular pattern of connectivity between

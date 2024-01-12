@@ -4,7 +4,7 @@
 
 package edge
 
-import "goki.dev/mat32/v2"
+import "goki.dev/mat32"
 
 // WrapMinDist returns the wrapped coordinate value that is closest to ctr
 // i.e., if going out beyond max is closer, then returns that coordinate

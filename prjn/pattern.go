@@ -7,7 +7,7 @@ package prjn
 //go:generate goki generate -add-types
 
 import (
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etensor"
 )
 
 // Pattern defines a pattern of connectivity between two layers.

@@ -9,25 +9,20 @@ import (
 	"strconv"
 
 	"github.com/emer/emergent/v2/erand"
-	"goki.dev/etable/v2/eplot"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	_ "goki.dev/etable/v2/etview" // include to get gui views
-	"goki.dev/etable/v2/histogram"
-	"goki.dev/etable/v2/minmax"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/gimain"
-	"goki.dev/gi/v2/giv"
-	"goki.dev/goosi/events"
+	"github.com/emer/etable/v2/eplot"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	_ "github.com/emer/etable/v2/etview" // include to get gui views
+	"github.com/emer/etable/v2/histogram"
+	"github.com/emer/etable/v2/minmax"
+	"goki.dev/events"
+	"goki.dev/gi"
+	"goki.dev/giv"
 	"goki.dev/icons"
 )
 
 func main() {
 	TheSim.Config()
-	gimain.Run(guirun)
-}
-
-func guirun() {
 	TheSim.ConfigGui()
 }
 

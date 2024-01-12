@@ -8,9 +8,9 @@ import (
 	"math"
 	"testing"
 
-	"goki.dev/etable/v2/agg"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/agg"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
 )
 
 func TestGaussianGen(t *testing.T) {

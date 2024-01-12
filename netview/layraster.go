@@ -5,8 +5,8 @@
 package netview
 
 import (
-	"goki.dev/mat32/v2"
-	"goki.dev/vgpu/v2/vshape"
+	"goki.dev/mat32"
+	"goki.dev/vgpu/vshape"
 	"goki.dev/xyz"
 )
 

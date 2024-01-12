@@ -11,8 +11,8 @@ import (
 
 	"github.com/emer/emergent/v2/erand"
 	"github.com/emer/empi/v2/empi"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
 )
 
 // MPIFixedTable is an MPI-enabled version of the FixedTable, which is

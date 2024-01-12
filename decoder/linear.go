@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/emer/empi/v2/mpi"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/mat32"
 )
 
 type ActivationFunc func(float32) float32

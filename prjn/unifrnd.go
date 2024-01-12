@@ -10,7 +10,7 @@ import (
 	"sort"
 
 	"github.com/emer/emergent/v2/erand"
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etensor"
 )
 
 // UnifRnd implements uniform random pattern of connectivity between two layers

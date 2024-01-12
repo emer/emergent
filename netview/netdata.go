@@ -19,10 +19,10 @@ import (
 
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/gi"
+	"goki.dev/mat32"
 )
 
 // NetData maintains a record of all the network data that has been displayed

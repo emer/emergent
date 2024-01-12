@@ -11,9 +11,9 @@ import (
 	"math"
 
 	"github.com/emer/emergent/v2/erand"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/etable/v2/metric"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etensor"
+	"github.com/emer/etable/v2/metric"
+	"goki.dev/mat32"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the

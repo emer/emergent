@@ -18,7 +18,7 @@ import (
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/empi/v2/empi"
 	"github.com/emer/empi/v2/mpi"
-	"goki.dev/etable/v2/etable"
+	"github.com/emer/etable/v2/etable"
 )
 
 // LogPrec is precision for saving float values in logs

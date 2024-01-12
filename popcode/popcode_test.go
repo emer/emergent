@@ -7,8 +7,8 @@ package popcode
 import (
 	"testing"
 
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/mat32"
 )
 
 // difTol is the numerical difference tolerance for comparing vs. target values

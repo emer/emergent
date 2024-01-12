@@ -6,7 +6,7 @@ package netview
 
 import (
 	"github.com/emer/emergent/v2/emer"
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // LayData maintains a record of all the data for a given layer

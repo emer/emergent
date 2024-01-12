@@ -9,11 +9,11 @@ package egui
 import (
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
-	"goki.dev/etable/v2/eplot"
-	"goki.dev/etable/v2/etview"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/giv"
-	_ "goki.dev/gosl/v2/slboolview" // include to get gui views
+	"github.com/emer/etable/v2/eplot"
+	"github.com/emer/etable/v2/etview"
+	"goki.dev/gi"
+	"goki.dev/giv"
+	// _ "goki.dev/gosl/v2/slboolview" // include to get gui views
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface

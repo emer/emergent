@@ -6,9 +6,9 @@ package netview
 
 import (
 	"github.com/emer/emergent/v2/emer"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
-	"goki.dev/vgpu/v2/vshape"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/mat32"
+	"goki.dev/vgpu/vshape"
 	"goki.dev/xyz"
 )
 

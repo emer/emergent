@@ -5,7 +5,7 @@
 package env
 
 import (
-	"goki.dev/etable/v2/etable"
+	"github.com/emer/etable/v2/etable"
 )
 
 // Element specifies one element of State or Action in an environment

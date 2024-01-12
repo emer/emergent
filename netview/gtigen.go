@@ -6,12 +6,12 @@ import (
 	"sync"
 
 	"goki.dev/colors/colormap"
-	"goki.dev/gi/v2/giv"
-	"goki.dev/gix/xyzv"
+	"goki.dev/giv"
 	"goki.dev/gti"
-	"goki.dev/ki/v2"
+	"goki.dev/ki"
 	"goki.dev/ordmap"
 	"goki.dev/xyz"
+	"goki.dev/xyzv"
 )
 
 var _ = gti.AddType(&gti.Type{
@@ -126,7 +126,7 @@ var _ = gti.AddType(&gti.Type{
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Lay", &gti.Field{Name: "Lay", Type: "github.com/emer/emergent/v2/emer.Layer", LocalType: "emer.Layer", Doc: "layer that we render", Directives: gti.Directives{}, Tag: ""}},
-		{"Shape", &gti.Field{Name: "Shape", Type: "goki.dev/etable/v2/etensor.Shape", LocalType: "etensor.Shape", Doc: "current shape that has been constructed -- if same, just update", Directives: gti.Directives{}, Tag: ""}},
+		{"Shape", &gti.Field{Name: "Shape", Type: "github.com/emer/etable/v2/etensor.Shape", LocalType: "etensor.Shape", Doc: "current shape that has been constructed -- if same, just update", Directives: gti.Directives{}, Tag: ""}},
 		{"View", &gti.Field{Name: "View", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "netview that we're in", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
@@ -284,14 +284,14 @@ var _ = gti.AddType(&gti.Type{
 		{"OpenJSON", &gti.Method{Name: "OpenJSON", Doc: "OpenJSON opens colors from a JSON-formatted file.", Directives: gti.Directives{
 			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
 		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi/v2/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 		}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 			{"error", &gti.Field{Name: "error", Type: "error", LocalType: "error", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 		})}},
 		{"SaveJSON", &gti.Method{Name: "SaveJSON", Doc: "SaveJSON saves colors to a JSON-formatted file.", Directives: gti.Directives{
 			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
 		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi/v2/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 		}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 			{"error", &gti.Field{Name: "error", Type: "error", LocalType: "error", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 		})}},
@@ -316,14 +316,14 @@ var NetViewType = gti.AddType(&gti.Type{
 		{"CurVarParams", &gti.Field{Name: "CurVarParams", Type: "*github.com/emer/emergent/v2/netview.VarParams", LocalType: "*VarParams", Doc: "current var params -- only valid during Update of display", Directives: gti.Directives{}, Tag: "json:\"-\" xml:\"-\" view:\"-\""}},
 		{"Params", &gti.Field{Name: "Params", Type: "github.com/emer/emergent/v2/netview.Params", LocalType: "Params", Doc: "parameters controlling how the view is rendered", Directives: gti.Directives{}, Tag: ""}},
 		{"ColorMap", &gti.Field{Name: "ColorMap", Type: "*goki.dev/colors/colormap.Map", LocalType: "*colormap.Map", Doc: "color map for mapping values to colors -- set by name in Params", Directives: gti.Directives{}, Tag: ""}},
-		{"ColorMapVal", &gti.Field{Name: "ColorMapVal", Type: "*goki.dev/gi/v2/giv.ColorMapValue", LocalType: "*giv.ColorMapValue", Doc: "color map value representing ColorMap", Directives: gti.Directives{}, Tag: ""}},
+		{"ColorMapVal", &gti.Field{Name: "ColorMapVal", Type: "*goki.dev/giv.ColorMapValue", LocalType: "*giv.ColorMapValue", Doc: "color map value representing ColorMap", Directives: gti.Directives{}, Tag: ""}},
 		{"RecNo", &gti.Field{Name: "RecNo", Type: "int", LocalType: "int", Doc: "record number to display -- use -1 to always track latest, otherwise in range", Directives: gti.Directives{}, Tag: ""}},
 		{"LastCtrs", &gti.Field{Name: "LastCtrs", Type: "string", LocalType: "string", Doc: "last non-empty counters string provided -- re-used if no new one", Directives: gti.Directives{}, Tag: ""}},
 		{"Data", &gti.Field{Name: "Data", Type: "github.com/emer/emergent/v2/netview.NetData", LocalType: "NetData", Doc: "contains all the network data with history", Directives: gti.Directives{}, Tag: ""}},
 		{"DataMu", &gti.Field{Name: "DataMu", Type: "sync.RWMutex", LocalType: "sync.RWMutex", Doc: "mutex on data access", Directives: gti.Directives{}, Tag: "view:\"-\" copy:\"-\" json:\"-\" xml:\"-\""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Layout", &gti.Field{Name: "Layout", Type: "goki.dev/gi/v2/gi.Layout", LocalType: "gi.Layout", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+		{"Layout", &gti.Field{Name: "Layout", Type: "goki.dev/gi.Layout", LocalType: "gi.Layout", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{
 		{"Current", &gti.Method{Name: "Current", Doc: "Current records the current state of the network, including synaptic values,\nand updates the display.  Use this when switching to NetView tab after network\nhas been running while viewing another tab, because the network state\nis typically not recored then.", Directives: gti.Directives{
@@ -332,12 +332,12 @@ var NetViewType = gti.AddType(&gti.Type{
 		{"SaveWeights", &gti.Method{Name: "SaveWeights", Doc: "SaveWeights saves the network weights -- when called with giv.CallMethod\nit will auto-prompt for filename", Directives: gti.Directives{
 			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
 		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi/v2/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 		}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
 		{"OpenWeights", &gti.Method{Name: "OpenWeights", Doc: "OpenWeights opens the network weights -- when called with giv.CallMethod\nit will auto-prompt for filename", Directives: gti.Directives{
 			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
 		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi/v2/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+			{"filename", &gti.Field{Name: "filename", Type: "goki.dev/gi.FileName", LocalType: "gi.FileName", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 		}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
 		{"ShowNonDefaultParams", &gti.Method{Name: "ShowNonDefaultParams", Doc: "ShowNonDefaultParams shows a dialog of all the parameters that\nare not at their default values in the network.  Useful for setting params.", Directives: gti.Directives{
 			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
@@ -519,7 +519,7 @@ var _ = gti.AddType(&gti.Type{
 		{"NVarCols", &gti.Field{Name: "NVarCols", Type: "int", LocalType: "int", Doc: "number of variable columns", Directives: gti.Directives{}, Tag: ""}},
 		{"UnitSize", &gti.Field{Name: "UnitSize", Type: "float32", LocalType: "float32", Doc: "size of a single unit, where 1 = full width and no space.. .9 default", Directives: gti.Directives{}, Tag: "min:\"0.1\" max:\"1\" step:\"0.1\" def:\"0.9\""}},
 		{"LayNmSize", &gti.Field{Name: "LayNmSize", Type: "float32", LocalType: "float32", Doc: "size of the layer name labels -- entire network view is unit sized", Directives: gti.Directives{}, Tag: "min:\"0.01\" max:\".1\" step:\"0.01\" def:\"0.05\""}},
-		{"ColorMap", &gti.Field{Name: "ColorMap", Type: "goki.dev/gi/v2/giv.ColorMapName", LocalType: "giv.ColorMapName", Doc: "name of color map to use", Directives: gti.Directives{}, Tag: ""}},
+		{"ColorMap", &gti.Field{Name: "ColorMap", Type: "goki.dev/giv.ColorMapName", LocalType: "giv.ColorMapName", Doc: "name of color map to use", Directives: gti.Directives{}, Tag: ""}},
 		{"ZeroAlpha", &gti.Field{Name: "ZeroAlpha", Type: "float32", LocalType: "float32", Doc: "opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum", Directives: gti.Directives{}, Tag: "min:\"0\" max:\"1\" step:\"0.1\" def:\"0.5\""}},
 		{"NetView", &gti.Field{Name: "NetView", Type: "*github.com/emer/emergent/v2/netview.NetView", LocalType: "*NetView", Doc: "our netview, for update method", Directives: gti.Directives{}, Tag: "copy:\"-\" json:\"-\" xml:\"-\" view:\"-\""}},
 		{"NFastSteps", &gti.Field{Name: "NFastSteps", Type: "int", LocalType: "int", Doc: "the number of records to jump for fast forward/backward", Directives: gti.Directives{}, Tag: ""}},
@@ -539,8 +539,8 @@ var _ = gti.AddType(&gti.Type{
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Var", &gti.Field{Name: "Var", Type: "string", LocalType: "string", Doc: "name of the variable", Directives: gti.Directives{}, Tag: ""}},
 		{"ZeroCtr", &gti.Field{Name: "ZeroCtr", Type: "bool", LocalType: "bool", Doc: "keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)", Directives: gti.Directives{}, Tag: ""}},
-		{"Range", &gti.Field{Name: "Range", Type: "goki.dev/etable/v2/minmax.Range32", LocalType: "minmax.Range32", Doc: "range to display", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
-		{"MinMax", &gti.Field{Name: "MinMax", Type: "goki.dev/etable/v2/minmax.F32", LocalType: "minmax.F32", Doc: "if not using fixed range, this is the actual range of data", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
+		{"Range", &gti.Field{Name: "Range", Type: "github.com/emer/etable/v2/minmax.Range32", LocalType: "minmax.Range32", Doc: "range to display", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
+		{"MinMax", &gti.Field{Name: "MinMax", Type: "github.com/emer/etable/v2/minmax.F32", LocalType: "minmax.F32", Doc: "if not using fixed range, this is the actual range of data", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),

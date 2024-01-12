@@ -11,9 +11,9 @@ import (
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/etable/v2/minmax"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etensor"
+	"github.com/emer/etable/v2/minmax"
+	"goki.dev/mat32"
 )
 
 // PoolTileSub implements tiled 2D connectivity between pools within layers, where

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/emer/emergent/v2/etime"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/ki/v2"
+	"goki.dev/gi"
+	"goki.dev/ki"
 )
 
 // ViewUpdt manages time scales for updating the NetView

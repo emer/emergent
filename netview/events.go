@@ -8,12 +8,12 @@ import (
 	"fmt"
 
 	"github.com/emer/emergent/v2/emer"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/giv"
-	"goki.dev/gix/xyzv"
-	"goki.dev/goosi/events"
-	"goki.dev/mat32/v2"
+	"goki.dev/events"
+	"goki.dev/gi"
+	"goki.dev/giv"
+	"goki.dev/mat32"
 	"goki.dev/xyz"
+	"goki.dev/xyzv"
 )
 
 // Scene is a Widget for managing the 3D Scene of the NetView
@@ -54,7 +54,7 @@ func (sw *Scene) HandleEvents() {
 }
 
 func (sw *Scene) MouseDownEvent(e events.Event) {
-	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), e.LocalPos())
+	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), e.Pos())
 	for _, n := range ns {
 		ln, ok := n.(*LayName)
 		if ok {
@@ -116,7 +116,7 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 }
 
 func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx int) {
-	pos := e.LocalPos()
+	pos := e.Pos()
 	sc := sw.SceneXYZ()
 	laysGp := sc.ChildByName("Layers", 0)
 	if laysGp == nil {

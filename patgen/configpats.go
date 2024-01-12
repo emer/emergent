@@ -9,8 +9,8 @@ import (
 	"log"
 	"reflect"
 
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
 )
 
 // InitPats initiates patterns to be used in MixPats

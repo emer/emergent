@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"math"
 
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/etable/v2/simat"
-	"goki.dev/gi/v2/gi"
+	"github.com/emer/etable/v2/etensor"
+	"github.com/emer/etable/v2/simat"
+	"goki.dev/gi"
 )
 
 // Matrix computes the confusion matrix, with rows representing

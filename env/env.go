@@ -6,7 +6,7 @@ package env
 
 //go:generate goki generate -add-types
 
-import "goki.dev/etable/v2/etensor"
+import "github.com/emer/etable/v2/etensor"
 
 // Env defines an interface for environments, which determine the nature and
 // sequence of States that can be used as inputs to a model, and the Env

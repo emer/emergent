@@ -10,8 +10,8 @@ import (
 	"math"
 
 	"github.com/emer/emergent/v2/erand"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
 )
 
 // FreqTable is an Env that manages patterns from an etable.Table with frequency

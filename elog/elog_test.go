@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/emer/emergent/v2/etime"
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etensor"
 )
 
 func TestScopeKeyStringing(t *testing.T) {

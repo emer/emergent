@@ -5,10 +5,10 @@
 package egui
 
 import (
-	"goki.dev/gi/v2/gi"
-	"goki.dev/girl/styles"
-	"goki.dev/goosi/events"
+	"goki.dev/events"
+	"goki.dev/gi"
 	"goki.dev/icons"
+	"goki.dev/styles"
 )
 
 // ToolbarItem holds the configuration values for a toolbar item

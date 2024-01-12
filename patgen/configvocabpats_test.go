@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"goki.dev/etable/v2/etable"
+	"github.com/emer/etable/v2/etable"
 )
 
 func TestVocab(t *testing.T) {

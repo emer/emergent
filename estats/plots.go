@@ -5,11 +5,11 @@
 package estats
 
 import (
-	"goki.dev/etable/v2/clust"
-	"goki.dev/etable/v2/eplot"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/metric"
-	"goki.dev/etable/v2/simat"
+	"github.com/emer/etable/v2/clust"
+	"github.com/emer/etable/v2/eplot"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/metric"
+	"github.com/emer/etable/v2/simat"
 )
 
 func ConfigPCAPlot(plt *eplot.Plot2D, dt *etable.Table, nm string) {

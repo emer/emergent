@@ -11,10 +11,10 @@ import (
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
-	"goki.dev/etable/v2/agg"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/etable/v2/metric"
+	"github.com/emer/etable/v2/agg"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	"github.com/emer/etable/v2/metric"
 )
 
 // WriteFunc function that computes and sets log values

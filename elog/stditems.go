@@ -9,11 +9,11 @@ import (
 
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/etime"
-	"goki.dev/etable/v2/agg"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/etable/v2/minmax"
-	"goki.dev/etable/v2/split"
+	"github.com/emer/etable/v2/agg"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	"github.com/emer/etable/v2/minmax"
+	"github.com/emer/etable/v2/split"
 )
 
 // AddCounterItems adds given Int counters from Stats,

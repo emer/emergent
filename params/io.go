@@ -14,7 +14,7 @@ import (
 	"os"
 	"sort"
 
-	"goki.dev/gi/v2/gi"
+	"goki.dev/gi"
 	"goki.dev/glop/indent"
 	"goki.dev/grows/jsons"
 	"goki.dev/grows/tomls"

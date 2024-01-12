@@ -13,10 +13,10 @@ import (
 	"github.com/emer/emergent/v2/confusion"
 	"github.com/emer/emergent/v2/decoder"
 	"github.com/emer/emergent/v2/timer"
-	"goki.dev/etable/v2/eplot"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/etable/v2/pca"
-	"goki.dev/etable/v2/simat"
+	"github.com/emer/etable/v2/eplot"
+	"github.com/emer/etable/v2/etensor"
+	"github.com/emer/etable/v2/pca"
+	"github.com/emer/etable/v2/simat"
 )
 
 // Stats provides maps for storing statistics as named scalar and tensor values.

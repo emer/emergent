@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etensor"
 )
 
 // Full implements full all-to-all pattern of connectivity between two layers

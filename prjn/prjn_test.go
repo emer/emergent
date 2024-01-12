@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"goki.dev/etable/v2/etensor"
+	"github.com/emer/etable/v2/etensor"
 )
 
 func CheckAllN(ns *etensor.Int32, trg int, t *testing.T) {

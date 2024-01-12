@@ -7,7 +7,7 @@ package elog
 import (
 	"os"
 
-	"goki.dev/etable/v2/etable"
+	"github.com/emer/etable/v2/etable"
 )
 
 // LogTable contains all the data for one log table

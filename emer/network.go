@@ -11,8 +11,8 @@ import (
 
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/weights"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/mat32/v2"
+	"goki.dev/gi"
+	"goki.dev/mat32"
 )
 
 // Network defines the basic interface for a neural network, used for managing the structural

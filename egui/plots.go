@@ -10,9 +10,9 @@ import (
 
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/etable/v2/eplot"
+	"github.com/emer/etable/v2/etview"
 	"goki.dev/colors"
-	"goki.dev/etable/v2/eplot"
-	"goki.dev/etable/v2/etview"
 	"goki.dev/grr"
 )
 

@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	goki.dev/colors v0.8.43
 	goki.dev/enums v0.9.55
-	goki.dev/etable/v2 v2.0.0-dev0.0.11
+	github.com/emer/etable/v2 v2.0.0-dev0.0.11
 	goki.dev/gi/v2 v2.0.0-dev0.0.27
 	goki.dev/girl v0.0.35
 	goki.dev/glop v0.1.9
@@ -21,9 +21,9 @@ require (
 	goki.dev/icons v0.0.16
 	goki.dev/ki/v2 v2.0.0-dev0.0.32
 	goki.dev/laser v0.1.33
-	goki.dev/mat32/v2 v2.0.0-dev0.0.27
+	goki.dev/mat32 v2.0.0-dev0.0.27
 	goki.dev/ordmap v0.5.9
-	goki.dev/vgpu/v2 v2.0.0-dev0.0.29
+	goki.dev/vgpu v2.0.0-dev0.0.29
 	goki.dev/xyz v0.5.19
 	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848
 )

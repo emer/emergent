@@ -13,7 +13,7 @@ package relpos
 //go:generate goki generate -add-types
 
 import (
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // Rel defines a position relationship among layers, in terms of X,Y width and height of layer

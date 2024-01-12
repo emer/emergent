@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/emer/etable/v2/etensor"
 	"github.com/stretchr/testify/assert"
-	"goki.dev/etable/v2/etensor"
 )
 
 // TestLayer implements a Layer
