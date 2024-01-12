@@ -1,7 +1,7 @@
 Name = "emergent"
 ID = "com.emergent.v2"
 Desc = ""
-Version = "v2.0.0-dev0.0.5"
+Version = "v2.0.0-dev0.0.6"
 Type = "Library"
 
 [Build]
