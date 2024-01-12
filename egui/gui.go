@@ -11,9 +11,9 @@ import (
 	"github.com/emer/emergent/v2/netview"
 	"github.com/emer/etable/v2/eplot"
 	"github.com/emer/etable/v2/etview"
+	_ "github.com/emer/gosl/v2/slboolview" // include to get gui views
 	"goki.dev/gi"
 	"goki.dev/giv"
-	// _ "goki.dev/gosl/v2/slboolview" // include to get gui views
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface
