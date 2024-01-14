@@ -1,5 +1,5 @@
 Name = "emergent"
-ID = "com.emergent.v2"
+ID = "com.emer.emergent"
 Desc = ""
 Version = "v2.0.0-dev0.0.6"
 Type = "Library"
@@ -35,7 +35,6 @@ Type = "Library"
   Lang = "en"
   Author = ""
   Image = ""
-  AutoUpdateInterval = "10s"
   WasmContentLengthHeader = ""
 
 [Setup]
