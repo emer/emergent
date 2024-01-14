@@ -4,6 +4,8 @@
 
 package econfig
 
+//go:generate goki generate -add-types
+
 import (
 	"errors"
 	"os"

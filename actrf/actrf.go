@@ -4,6 +4,8 @@
 
 package actrf
 
+//go:generate goki generate -add-types
+
 import (
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/norm"

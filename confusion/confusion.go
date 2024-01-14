@@ -4,6 +4,8 @@
 
 package confusion
 
+//go:generate goki generate -add-types
+
 import (
 	"fmt"
 	"math"

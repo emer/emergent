@@ -4,6 +4,8 @@
 
 package ecmd
 
+//go:generate goki generate -add-types
+
 import (
 	"os"
 
