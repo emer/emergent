@@ -136,7 +136,7 @@ func (fl *Flex) JSONString() string {
 }
 
 // SaveJSON saves hypers to a JSON-formatted file.
-func (fl *Flex) SaveJSON(filename gi.FileName) error {
+func (fl *Flex) SaveJSON(filename gi.Filename) error {
 	b, err := json.MarshalIndent(fl, "", "  ")
 	if err != nil {
 		log.Println(err) // unlikely

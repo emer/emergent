@@ -124,11 +124,11 @@ type Network interface {
 
 	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
 	// to a JSON-formatted file.  If filename has .gz extension, then file is gzip compressed.
-	SaveWtsJSON(filename gi.FileName) error
+	SaveWtsJSON(filename gi.Filename) error
 
 	// OpenWtsJSON opens network weights (and any other state that adapts with learning)
 	// from a JSON-formatted file.  If filename has .gz extension, then file is gzip uncompressed.
-	OpenWtsJSON(filename gi.FileName) error
+	OpenWtsJSON(filename gi.Filename) error
 
 	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
 	Bounds() (min, max mat32.Vec3)

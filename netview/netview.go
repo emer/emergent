@@ -1128,13 +1128,13 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 
 // SaveWeights saves the network weights -- when called with giv.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) SaveWeights(filename gi.FileName) { //gti:add
+func (nv *NetView) SaveWeights(filename gi.Filename) { //gti:add
 	nv.Net.SaveWtsJSON(filename)
 }
 
 // OpenWeights opens the network weights -- when called with giv.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) OpenWeights(filename gi.FileName) { //gti:add
+func (nv *NetView) OpenWeights(filename gi.Filename) { //gti:add
 	nv.Net.OpenWtsJSON(filename)
 }
 

@@ -35,11 +35,11 @@ func ReshapeCpp(dt *etable.Table) {
 // ReshapeCppFile fixes C++ emergent table shape which is reversed from Go.
 // It loads file from fname and saves to fixnm
 func ReshapeCppFile(dt *etable.Table, fname, fixnm string) {
-	err := dt.OpenCSV(gi.FileName(fname), etable.Tab)
+	err := dt.OpenCSV(gi.Filename(fname), etable.Tab)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	ReshapeCpp(dt)
-	dt.SaveCSV(gi.FileName(fixnm), etable.Tab, true)
+	dt.SaveCSV(gi.Filename(fixnm), etable.Tab, true)
 }

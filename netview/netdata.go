@@ -535,7 +535,7 @@ func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 //   IO
 
 // OpenJSON opens colors from a JSON-formatted file.
-func (nd *NetData) OpenJSON(filename gi.FileName) error { //gti:add
+func (nd *NetData) OpenJSON(filename gi.Filename) error { //gti:add
 	fp, err := os.Open(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -557,7 +557,7 @@ func (nd *NetData) OpenJSON(filename gi.FileName) error { //gti:add
 }
 
 // SaveJSON saves colors to a JSON-formatted file.
-func (nd *NetData) SaveJSON(filename gi.FileName) error { //gti:add
+func (nd *NetData) SaveJSON(filename gi.Filename) error { //gti:add
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {

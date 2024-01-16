@@ -30,7 +30,7 @@ func WriteGoPrelude(w io.Writer, varNm string) {
 }
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Sets) OpenJSON(filename gi.FileName) error {
+func (pr *Sets) OpenJSON(filename gi.Filename) error {
 	*pr = make(Sets) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
@@ -41,18 +41,18 @@ func (pr *Sets) OpenJSON(filename gi.FileName) error {
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Sets) SaveJSON(filename gi.FileName) error {
+func (pr *Sets) SaveJSON(filename gi.Filename) error {
 	return jsons.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Sets) OpenTOML(filename gi.FileName) error {
+func (pr *Sets) OpenTOML(filename gi.Filename) error {
 	*pr = make(Sets) // reset
 	return tomls.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Sets) SaveTOML(filename gi.FileName) error {
+func (pr *Sets) SaveTOML(filename gi.Filename) error {
 	return tomls.Save(pr, string(filename))
 }
 
@@ -78,7 +78,7 @@ func (pr *Sets) StringGoCode() []byte {
 }
 
 // SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Sets) SaveGoCode(filename gi.FileName) error {
+func (pr *Sets) SaveGoCode(filename gi.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {

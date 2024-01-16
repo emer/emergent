@@ -49,5 +49,5 @@ func (gui *GUI) SaveNetData(extra string) {
 		return
 	}
 	ndfn := gui.NetData.Net.Name() + "_" + extra + ".netdata.gz"
-	gui.NetData.SaveJSON(gi.FileName(ndfn))
+	gui.NetData.SaveJSON(gi.Filename(ndfn))
 }

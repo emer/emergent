@@ -398,8 +398,8 @@ func (lg *Logs) SetFixMinItems(min float64, itemNames ...string) {
 
 // log filenames
 
-// LogFileName returns a standard log file name as netName_runName_logName.tsv
-func LogFileName(logName, netName, runName string) string {
+// LogFilename returns a standard log file name as netName_runName_logName.tsv
+func LogFilename(logName, netName, runName string) string {
 	return netName + "_" + runName + "_" + logName + ".tsv"
 }
 
@@ -410,6 +410,6 @@ func SetLogFile(logs *Logs, configOn bool, mode etime.Modes, time etime.Times, l
 	if !configOn {
 		return
 	}
-	fnm := LogFileName(logName, netName, runName)
+	fnm := LogFilename(logName, netName, runName)
 	logs.SetLogFile(mode, time, fnm)
 }

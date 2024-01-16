@@ -39,8 +39,8 @@ func (ar *Args) AddStd() {
 	ar.AddBool("gpu", false, "Use the GPU to run the model -- typically faster for larger models.")
 }
 
-// LogFileName returns a standard log file name as netName_runName_logName.tsv
-func LogFileName(logName, netName, runName string) string {
+// LogFilename returns a standard log file name as netName_runName_logName.tsv
+func LogFilename(logName, netName, runName string) string {
 	return netName + "_" + runName + "_" + logName + ".tsv"
 }
 
@@ -74,23 +74,23 @@ func (ar *Args) ProcStd(params *emer.Params) {
 func (ar *Args) ProcStdLogs(logs *elog.Logs, params *emer.Params, netName string) {
 	runName := params.RunName(ar.Int("run")) // used for naming logs, stats, etc
 	if ar.Bool("epclog") {
-		fnm := LogFileName("epc", netName, runName)
+		fnm := LogFilename("epc", netName, runName)
 		logs.SetLogFile(etime.Train, etime.Epoch, fnm)
 	}
 	if ar.Bool("triallog") {
-		fnm := LogFileName("trl", netName, runName)
+		fnm := LogFilename("trl", netName, runName)
 		logs.SetLogFile(etime.Train, etime.Trial, fnm)
 	}
 	if ar.Bool("runlog") {
-		fnm := LogFileName("run", netName, runName)
+		fnm := LogFilename("run", netName, runName)
 		logs.SetLogFile(etime.Train, etime.Run, fnm)
 	}
 	if ar.Bool("tstepclog") {
-		fnm := LogFileName("tst_epc", netName, runName)
+		fnm := LogFilename("tst_epc", netName, runName)
 		logs.SetLogFile(etime.Test, etime.Epoch, fnm)
 	}
 	if ar.Bool("tsttriallog") {
-		fnm := LogFileName("tst_trl", netName, runName)
+		fnm := LogFilename("tst_trl", netName, runName)
 		logs.SetLogFile(etime.Test, etime.Trial, fnm)
 	}
 }

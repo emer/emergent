@@ -200,12 +200,12 @@ func (cm *Matrix) ScoreMatrix() {
 }
 
 // SaveCSV saves Prob result to a CSV file, comma separated
-func (cm *Matrix) SaveCSV(fname gi.FileName) {
+func (cm *Matrix) SaveCSV(fname gi.Filename) {
 	etensor.SaveCSV(&cm.Prob, fname, ',')
 }
 
 // OpenCSV opens Prob result from a CSV file, comma separated
-func (cm *Matrix) OpenCSV(fname gi.FileName) {
+func (cm *Matrix) OpenCSV(fname gi.Filename) {
 	etensor.OpenCSV(&cm.Prob, fname, ',')
 }
 
