@@ -7,7 +7,7 @@ require (
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi/v2 v2.0.0-dev0.0.3
 	github.com/emer/etable/v2 v2.0.0-dev0.0.14
-	github.com/emer/gosl/v2 v2.0.0-dev0.0.7
+	github.com/emer/gosl/v2 v2.0.0-dev0.0.9
 	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848
@@ -15,7 +15,6 @@ require (
 
 require (
 	git.sr.ht/~sbinet/gg v0.5.0 // indirect
-	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Masterminds/vcs v1.13.3 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/akutz/sortfold v0.2.1 // indirect
@@ -54,7 +53,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
-	goki.dev v0.0.1 // indirect
 	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
