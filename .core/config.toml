@@ -1,7 +1,7 @@
 ID = 'com.emer.emergent'
 Name = 'emergent'
 Type = 'Library'
-Version = 'v2.0.0-dev0.0.7'
+Version = 'v2.0.0-dev0.0.8'
 
 [Generate]
   [Generate.Enumgen]
