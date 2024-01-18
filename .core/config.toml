@@ -1,0 +1,20 @@
+ID = 'com.emer.emergent'
+Name = 'emergent'
+Type = 'Library'
+Version = 'v2.0.0-dev0.0.7'
+
+[Generate]
+  [Generate.Enumgen]
+    AcceptLower = true
+    LineComment = true
+
+  [Generate.Gtigen]
+    AddTypes = true
+
+[Release]
+  Package = 'emer'
+  VersionFile = 'emer/version.go'
+
+[Web]
+  LoadingLabel = ''
+  RandomVersion = false

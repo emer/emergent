@@ -14,8 +14,8 @@ require (
 )
 
 require (
-	git.sr.ht/~sbinet/gg v0.5.0 // indirect 
-	github.com/BurntSushi/toml v1.3.2 // indirect 
+	git.sr.ht/~sbinet/gg v0.5.0 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Masterminds/vcs v1.13.3 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/akutz/sortfold v0.2.1 // indirect
