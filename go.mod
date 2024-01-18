@@ -5,7 +5,7 @@ go 1.21
 require (
 	cogentcore.org/core v0.0.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/emer/empi/v2 v2.0.0-dev0.0.3
+	github.com/emer/empi/v2 v2.0.0-dev0.0.4
 	github.com/emer/etable/v2 v2.0.0-dev0.0.14
 	github.com/emer/gosl/v2 v2.0.0-dev0.0.9
 	github.com/iancoleman/strcase v0.3.0
