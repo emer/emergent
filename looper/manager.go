@@ -4,15 +4,15 @@
 
 package looper
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
 
+	"cogentcore.org/core/glop/indent"
 	"github.com/emer/emergent/v2/etime"
-	"goki.dev/glop/indent"
 )
 
 var (

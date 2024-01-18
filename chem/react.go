@@ -4,7 +4,7 @@
 
 package chem
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 // React models a basic chemical reaction:
 //

@@ -11,8 +11,8 @@ import (
 	"errors"
 	"reflect"
 
-	"goki.dev/grows/tomls"
-	"goki.dev/laser"
+	"cogentcore.org/core/grows/tomls"
+	"cogentcore.org/core/laser"
 )
 
 // Includeser enables processing of Includes []string field with files to include in Config objects.

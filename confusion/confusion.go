@@ -4,15 +4,15 @@
 
 package confusion
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"fmt"
 	"math"
 
+	"cogentcore.org/core/gi"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/simat"
-	"goki.dev/gi"
 )
 
 // Matrix computes the confusion matrix, with rows representing

@@ -5,7 +5,7 @@
 package netview
 
 import (
-	"goki.dev/xyz"
+	"cogentcore.org/core/xyz"
 )
 
 // LayObj is the Layer 3D object within the NetView

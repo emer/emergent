@@ -9,8 +9,8 @@ import (
 	"log"
 	"sort"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 // popcode.TwoD provides encoding and decoding of population

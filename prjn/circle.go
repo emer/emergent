@@ -5,11 +5,11 @@
 package prjn
 
 import (
+	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 // Circle implements a circular pattern of connectivity between two layers

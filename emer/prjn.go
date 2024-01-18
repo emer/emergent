@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"io"
 
+	"cogentcore.org/core/laser"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/prjn"
 	"github.com/emer/emergent/v2/weights"
-	"goki.dev/laser"
 )
 
 // Prjn defines the basic interface for a projection which connects two layers.

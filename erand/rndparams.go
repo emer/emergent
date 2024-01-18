@@ -4,7 +4,7 @@
 
 package erand
 
-//go:generate goki generate
+//go:generate core generate
 
 // RndParams provides parameterized random number generation according to different distributions
 // and variance, mean params

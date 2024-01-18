@@ -4,7 +4,7 @@
 
 package econfig
 
-//go:generate goki generate
+//go:generate core generate
 
 // TestEnum is an enum type for testing
 type TestEnum int32 //enums:enum

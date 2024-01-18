@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"log"
 
+	"cogentcore.org/core/colors"
+	"cogentcore.org/core/grr"
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/etable/v2/eplot"
 	"github.com/emer/etable/v2/etview"
-	"goki.dev/colors"
-	"goki.dev/grr"
 )
 
 // AddPlots adds plots based on the unique tables we have,

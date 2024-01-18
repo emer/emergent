@@ -4,12 +4,12 @@
 
 package popcode
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"sort"
 
-	"goki.dev/mat32"
+	"cogentcore.org/core/mat32"
 )
 
 type PopCodes int

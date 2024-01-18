@@ -5,9 +5,9 @@
 package netview
 
 import (
-	"goki.dev/mat32"
-	"goki.dev/vgpu/vshape"
-	"goki.dev/xyz"
+	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/vgpu/vshape"
+	"cogentcore.org/core/xyz"
 )
 
 func (lm *LayMesh) RasterSize2D() (nVtx, nIdx int) {

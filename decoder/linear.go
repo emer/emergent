@@ -4,14 +4,14 @@
 
 package decoder
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"fmt"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/empi/v2/mpi"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 type ActivationFunc func(float32) float32

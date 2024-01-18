@@ -4,15 +4,15 @@
 
 package econfig
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"errors"
 	"os"
 	"reflect"
 
+	"cogentcore.org/core/glop/dirs"
 	"github.com/emer/empi/v2/mpi"
-	"goki.dev/glop/dirs"
 )
 
 var (

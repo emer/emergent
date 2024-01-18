@@ -10,7 +10,7 @@ it is highly efficient
 */
 package ringidx
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 // Idx is the ring index structure, maintaining starting index and length
 // into a ring-buffer with maximum length Max.  Max must be > 0 and Len <= Max.

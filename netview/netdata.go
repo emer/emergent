@@ -17,12 +17,12 @@ import (
 	"strconv"
 	"strings"
 
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/gi"
-	"goki.dev/mat32"
 )
 
 // NetData maintains a record of all the network data that has been displayed

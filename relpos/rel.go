@@ -10,10 +10,10 @@ and Z vertical stacking of layers above and below each other.
 */
 package relpos
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
-	"goki.dev/mat32"
+	"cogentcore.org/core/mat32"
 )
 
 // Rel defines a position relationship among layers, in terms of X,Y width and height of layer

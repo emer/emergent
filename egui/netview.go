@@ -5,9 +5,9 @@
 package egui
 
 import (
+	"cogentcore.org/core/gi"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/netview"
-	"goki.dev/gi"
 )
 
 // UpdateNetView updates the gui visualization of the network.

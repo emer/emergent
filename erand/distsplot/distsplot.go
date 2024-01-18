@@ -10,6 +10,10 @@ package main
 import (
 	"strconv"
 
+	"cogentcore.org/core/events"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/giv"
+	"cogentcore.org/core/icons"
 	"github.com/emer/emergent/v2/erand"
 	"github.com/emer/etable/v2/eplot"
 	"github.com/emer/etable/v2/etable"
@@ -17,10 +21,6 @@ import (
 	_ "github.com/emer/etable/v2/etview" // include to get gui views
 	"github.com/emer/etable/v2/histogram"
 	"github.com/emer/etable/v2/minmax"
-	"goki.dev/events"
-	"goki.dev/gi"
-	"goki.dev/giv"
-	"goki.dev/icons"
 )
 
 func main() {

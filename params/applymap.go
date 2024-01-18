@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"strings"
 
-	"goki.dev/laser"
+	"cogentcore.org/core/laser"
 )
 
 // ApplyMap applies given map[string]any values, where the map keys

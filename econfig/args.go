@@ -13,10 +13,10 @@ import (
 	"reflect"
 	"strings"
 
+	"cogentcore.org/core/grows/tomls"
+	"cogentcore.org/core/laser"
 	"github.com/emer/empi/v2/mpi"
 	"github.com/iancoleman/strcase"
-	"goki.dev/grows/tomls"
-	"goki.dev/laser"
 )
 
 // SetFromArgs sets Config values from command-line args,

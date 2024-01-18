@@ -5,11 +5,11 @@
 package netview
 
 import (
+	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/vgpu/vshape"
+	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
-	"goki.dev/vgpu/vshape"
-	"goki.dev/xyz"
 )
 
 // LayMesh is a xyz.Mesh that represents a layer -- it is dynamically updated using the

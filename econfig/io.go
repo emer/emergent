@@ -8,8 +8,8 @@ import (
 	"io/fs"
 	"strings"
 
+	"cogentcore.org/core/grows/tomls"
 	"github.com/emer/empi/v2/mpi"
-	"goki.dev/grows/tomls"
 )
 
 // OpenWithIncludes reads config from given config file,

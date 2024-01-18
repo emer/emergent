@@ -12,11 +12,11 @@ import (
 	"log"
 	"os"
 
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/glop/indent"
+	"cogentcore.org/core/grows/jsons"
+	"cogentcore.org/core/grows/tomls"
 	"github.com/emer/emergent/v2/params"
-	"goki.dev/gi"
-	"goki.dev/glop/indent"
-	"goki.dev/grows/jsons"
-	"goki.dev/grows/tomls"
 )
 
 // WriteGoPrelude writes the start of a go file in package main that starts a

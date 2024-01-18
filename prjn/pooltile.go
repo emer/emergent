@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"log"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/minmax"
-	"goki.dev/mat32"
 )
 
 // PoolTile implements tiled 2D connectivity between pools within layers, where

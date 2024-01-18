@@ -6,10 +6,10 @@
 // that are used in neural models, and do not have a home elsewhere.
 package efuns
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
-	"goki.dev/mat32"
+	"cogentcore.org/core/mat32"
 )
 
 // GaussVecDistNoNorm returns the gaussian of the distance between two 2D vectors

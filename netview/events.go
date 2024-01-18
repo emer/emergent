@@ -7,13 +7,13 @@ package netview
 import (
 	"fmt"
 
+	"cogentcore.org/core/events"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/giv"
+	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/xyz"
+	"cogentcore.org/core/xyzv"
 	"github.com/emer/emergent/v2/emer"
-	"goki.dev/events"
-	"goki.dev/gi"
-	"goki.dev/giv"
-	"goki.dev/mat32"
-	"goki.dev/xyz"
-	"goki.dev/xyzv"
 )
 
 // Scene is a Widget for managing the 3D Scene of the NetView

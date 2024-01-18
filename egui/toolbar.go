@@ -5,10 +5,10 @@
 package egui
 
 import (
-	"goki.dev/events"
-	"goki.dev/gi"
-	"goki.dev/icons"
-	"goki.dev/styles"
+	"cogentcore.org/core/events"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/icons"
+	"cogentcore.org/core/styles"
 )
 
 // ToolbarItem holds the configuration values for a toolbar item

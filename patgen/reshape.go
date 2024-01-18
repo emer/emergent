@@ -7,9 +7,9 @@ package patgen
 import (
 	"log"
 
+	"cogentcore.org/core/gi"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/gi"
 )
 
 // ReshapeCpp fixes C++ emergent table shape which is reversed from Go.

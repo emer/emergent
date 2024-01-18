@@ -4,7 +4,7 @@
 
 package etime
 
-//go:generate goki generate
+//go:generate core generate
 
 //gosl: start etime
 

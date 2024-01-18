@@ -7,7 +7,7 @@ Package netview provides the NetView interactive 3D network viewer, implemented 
 */
 package netview
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"fmt"
@@ -17,20 +17,20 @@ import (
 	"strings"
 	"sync"
 
+	"cogentcore.org/core/colors"
+	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/events"
+	"cogentcore.org/core/events/key"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/giv"
+	"cogentcore.org/core/icons"
+	"cogentcore.org/core/ki"
+	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/styles"
+	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/etable/v2/minmax"
-	"goki.dev/colors"
-	"goki.dev/colors/colormap"
-	"goki.dev/events"
-	"goki.dev/events/key"
-	"goki.dev/gi"
-	"goki.dev/giv"
-	"goki.dev/icons"
-	"goki.dev/ki"
-	"goki.dev/mat32"
-	"goki.dev/styles"
-	"goki.dev/texteditor"
-	"goki.dev/xyz"
 )
 
 // NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d

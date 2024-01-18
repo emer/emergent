@@ -5,10 +5,10 @@
 package prjn
 
 import (
+	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/evec"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 // PoolRect implements a rectangular pattern of connectivity between

@@ -10,10 +10,10 @@ import (
 	"log"
 	"math"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/erand"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/metric"
-	"goki.dev/mat32"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the

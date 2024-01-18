@@ -12,8 +12,8 @@ import (
 	"reflect"
 	"strings"
 
-	"goki.dev/gi"
-	"goki.dev/laser"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/laser"
 )
 
 // TargetType returns the first part of the path, indicating what type of

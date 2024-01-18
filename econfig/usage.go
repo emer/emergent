@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"goki.dev/laser"
+	"cogentcore.org/core/laser"
 )
 
 // Usage returns the usage string for args based on given Config object

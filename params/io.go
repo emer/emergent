@@ -14,10 +14,10 @@ import (
 	"os"
 	"sort"
 
-	"goki.dev/gi"
-	"goki.dev/glop/indent"
-	"goki.dev/grows/jsons"
-	"goki.dev/grows/tomls"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/glop/indent"
+	"cogentcore.org/core/grows/jsons"
+	"cogentcore.org/core/grows/tomls"
 	"golang.org/x/exp/maps"
 )
 

@@ -4,7 +4,7 @@
 
 package econfig
 
-import "goki.dev/laser"
+import "cogentcore.org/core/laser"
 
 // SetFromDefaults sets Config values from field tag `def:` values.
 // Parsing errors are automatically logged.

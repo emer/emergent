@@ -7,9 +7,9 @@ package netview
 import (
 	"strings"
 
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/ki"
 	"github.com/emer/emergent/v2/etime"
-	"goki.dev/gi"
-	"goki.dev/ki"
 )
 
 // ViewUpdt manages time scales for updating the NetView

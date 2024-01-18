@@ -18,7 +18,7 @@ program (i.e., the user interface) should make sure that everything is properly 
 */
 package stepper
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"sync"

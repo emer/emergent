@@ -14,7 +14,7 @@
 // the int is significantly easier to deal with for layer sizing params etc.
 package evec
 
-import "goki.dev/mat32"
+import "cogentcore.org/core/mat32"
 
 // Vec2i is a 2D vector/point with X and Y int components.
 type Vec2i struct {

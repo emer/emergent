@@ -4,15 +4,15 @@
 
 package emer
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"io"
 
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/weights"
-	"goki.dev/gi"
-	"goki.dev/mat32"
 )
 
 // Network defines the basic interface for a neural network, used for managing the structural

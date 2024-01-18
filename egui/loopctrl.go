@@ -5,12 +5,12 @@
 package egui
 
 import (
+	"cogentcore.org/core/events"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/icons"
+	"cogentcore.org/core/styles"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
-	"goki.dev/events"
-	"goki.dev/gi"
-	"goki.dev/icons"
-	"goki.dev/styles"
 )
 
 // AddLooperCtrl adds toolbar control for looper.Stack

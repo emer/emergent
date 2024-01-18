@@ -4,7 +4,7 @@
 
 package env
 
-//go:generate goki generate
+//go:generate core generate
 
 import (
 	"github.com/emer/emergent/v2/etime"
