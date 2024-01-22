@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package netview provides the NetView interactive 3D network viewer, implemented in the GoGi 3D framework.
+Package netview provides the NetView interactive 3D network viewer, implemented in the Cogent Core 3D framework.
 */
 package netview
 
@@ -33,7 +33,7 @@ import (
 	"github.com/emer/etable/v2/minmax"
 )
 
-// NetView is a GoGi Widget that provides a 3D network view using the GoGi gi3d
+// NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
 // 3D framework.
 type NetView struct {
 	gi.Layout
@@ -175,19 +175,19 @@ func (nv *NetView) GoUpdateView() {
 	}
 	sw := nv.SceneWidget()
 	sc := sw.SceneXYZ()
-	updt := sw.Sc.UpdateStartAsync()
+	updt := sw.Scene.UpdateStartAsync()
 	if !updt {
-		sw.Sc.UpdateEndAsyncRender(updt)
+		sw.Scene.UpdateEndAsyncRender(updt)
 		return
 	}
 	up3 := sc.UpdateStart()
 	if !up3 {
-		sw.Sc.UpdateEndAsyncRender(updt)
+		sw.Scene.UpdateEndAsyncRender(updt)
 		return
 	}
 	nv.UpdateImpl()
 	sc.UpdateEndRender(up3)
-	sw.Sc.UpdateEndAsyncRender(updt)
+	sw.Scene.UpdateEndAsyncRender(updt)
 }
 
 // UpdateView updates the display based on last recorded state of network.

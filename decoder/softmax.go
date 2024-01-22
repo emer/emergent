@@ -26,7 +26,7 @@ import (
 type SoftMax struct {
 
 	// learning rate
-	Lrate float32 `def:"0.1"`
+	Lrate float32 `default:"0.1"`
 
 	// layers to decode
 	Layers []emer.Layer

@@ -6,7 +6,7 @@
 // Copyright 2016 The G3N Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-// with modifications needed to suit GoGi functionality.
+// with modifications needed to suit Cogent Core functionality.
 
 // Package evec has vector types for emergent, including Vec2i which is a 2D
 // vector with int values, using the API based on mat32.Vec2i.

@@ -22,7 +22,7 @@ type ActivationFunc func(float32) float32
 type Linear struct {
 
 	// learning rate
-	LRate float32 `def:"0.1"`
+	LRate float32 `default:"0.1"`
 
 	// layers to decode
 	Layers []Layer

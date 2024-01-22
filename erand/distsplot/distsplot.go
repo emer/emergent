@@ -25,7 +25,7 @@ import (
 
 func main() {
 	TheSim.Config()
-	TheSim.ConfigGui()
+	TheSim.ConfigGUI()
 }
 
 // LogPrec is precision for saving float values in logs
@@ -119,8 +119,8 @@ func (ss *Sim) ConfigPlot(plt *eplot.Plot2D, dt *etable.Table) *eplot.Plot2D {
 	return plt
 }
 
-// ConfigGui configures the GoGi gui interface for this simulation,
-func (ss *Sim) ConfigGui() *gi.Body {
+// ConfigGUI configures the Cogent Core gui interface for this simulation,
+func (ss *Sim) ConfigGUI() *gi.Body {
 	b := gi.NewAppBody("distplot")
 	b.App().About = `This plots histograms of random distributions. See <a href="https://github.com/emer/emergent/v2">emergent on GitHub</a>.</p>`
 

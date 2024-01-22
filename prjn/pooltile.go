@@ -260,13 +260,13 @@ type GaussTopo struct {
 	On bool
 
 	// gaussian sigma (width) in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from .3 to 1.5, with .6 default
-	Sigma float32 `viewif:"On" def:"0.6"`
+	Sigma float32 `viewif:"On" default:"0.6"`
 
 	// wrap the gaussian around on other sides of the receptive field, with the closest distance being used -- this removes strict topography but ensures a more uniform distribution of weight values so edge units don't have weaker overall weights
 	Wrap bool `viewif:"On"`
 
 	// proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
-	CtrMove float32 `viewif:"On" def:"0.8,1"`
+	CtrMove float32 `viewif:"On" default:"0.8,1"`
 }
 
 func (gt *GaussTopo) Defaults() {
@@ -486,7 +486,7 @@ type SigmoidTopo struct {
 	Gain float32 `viewif:"On"`
 
 	// proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
-	CtrMove float32 `viewif:"On" def:"0.5,1"`
+	CtrMove float32 `viewif:"On" default:"0.5,1"`
 }
 
 func (gt *SigmoidTopo) Defaults() {

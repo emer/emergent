@@ -21,7 +21,7 @@ emer.ParamSets).
 erand.RndParams for parameterizing the type of random noise to add to a model,
 and easier support for making permuted random lists, etc.
 
-* netview provides the NetView interactive 3D network viewer, implemented in the GoGi 3D framework.
+* netview provides the NetView interactive 3D network viewer, implemented in the Cogent Core 3D framework.
 
 * prjn is a separate package for defining patterns of connectivity between layers
 (i.e., the ProjectionSpecs from C++ emergent).  This is done using a fully independent

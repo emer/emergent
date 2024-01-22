@@ -68,6 +68,6 @@ and can be set as such).
 
 Finally, there are methods to show where params.Set's set the same parameter
 differently, and to compare with the default settings on a given object type
-using go struct field tags of the form def:"val1[,val2...]".
+using go struct field tags of the form default:"val1[,val2...]".
 */
 package netparams

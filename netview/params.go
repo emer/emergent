@@ -29,10 +29,10 @@ type RasterParams struct { //gti:add
 	Max int
 
 	// size of a single unit, where 1 = full width and no space.. 1 default
-	UnitSize float32 `min:"0.1" max:"1" step:"0.1" def:"1"`
+	UnitSize float32 `min:"0.1" max:"1" step:"0.1" default:"1"`
 
 	// height multiplier for units, where 1 = full height.. 0.2 default
-	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" def:"0.2"`
+	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" default:"0.2"`
 }
 
 func (nv *RasterParams) Defaults() {
@@ -66,16 +66,16 @@ type Params struct { //gti:add
 	NVarCols int
 
 	// size of a single unit, where 1 = full width and no space.. .9 default
-	UnitSize float32 `min:"0.1" max:"1" step:"0.1" def:"0.9"`
+	UnitSize float32 `min:"0.1" max:"1" step:"0.1" default:"0.9"`
 
 	// size of the layer name labels -- entire network view is unit sized
-	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" def:"0.05"`
+	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" default:"0.05"`
 
 	// name of color map to use
 	ColorMap giv.ColorMapName
 
 	// opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
-	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" def:"0.5"`
+	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`
 
 	// our netview, for update method
 	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`

@@ -29,7 +29,7 @@ type TwoD struct {
 	Max mat32.Vec2
 
 	// sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
-	Sigma mat32.Vec2 `def:"0.2" viewif:"Code=GaussBump"`
+	Sigma mat32.Vec2 `default:"0.2" viewif:"Code=GaussBump"`
 
 	// ensure that encoded and decoded value remains within specified range -- generally not useful with wrap
 	Clip bool
@@ -41,10 +41,10 @@ type TwoD struct {
 	WrapY bool
 
 	// threshold to cut off small activation contributions to overall average value (i.e., if unit's activation is below this threshold, it doesn't contribute to weighted average computation)
-	Thr float32 `def:"0.1"`
+	Thr float32 `default:"0.1"`
 
 	// minimum total activity of all the units representing a value: when computing weighted average value, this is used as a minimum for the sum that you divide by
-	MinSum float32 `def:"0.2"`
+	MinSum float32 `default:"0.2"`
 }
 
 func (pc *TwoD) Defaults() {
