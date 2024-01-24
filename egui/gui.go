@@ -87,6 +87,9 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	gui.Body.App().About = about
 	split := gi.NewSplits(gui.Body, "split")
 	gui.StructView = giv.NewStructView(split, "sv").SetStruct(sim)
+	if tb, ok := sim.(gi.Toolbarer); ok {
+		gui.Body.AddAppBar(tb.ConfigToolbar)
+	}
 	gui.Tabs = gi.NewTabs(split, "tv")
 	split.SetSplits(.2, .8)
 }

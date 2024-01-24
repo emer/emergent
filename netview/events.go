@@ -60,9 +60,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		if ok {
 			lay := ln.NetView.Net.LayerByName(ln.Text)
 			if lay != nil {
-				d := gi.NewBody().AddTitle("Layer: " + lay.Name())
-				giv.NewStructView(d).SetStruct(lay)
-				d.NewFullDialog(sw).SetNewWindow(true).Run()
+				giv.StructViewDialog(sw, lay, "Layer: "+lay.Name(), true)
 			}
 			e.SetHandled()
 			return

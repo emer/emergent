@@ -875,9 +875,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 	gi.NewButton(tb).SetText("Config").SetIcon(icons.Settings).
 		SetTooltip("set parameters that control display (font size etc)").
 		OnClick(func(e events.Event) {
-			d := gi.NewBody().AddTitle(nv.Nm + " Params")
-			giv.NewStructView(d).SetStruct(&nv.Params)
-			d.NewFullDialog(nv).Run()
+			giv.StructViewDialog(nv, &nv.Params, nv.Nm+" Params", true)
 		})
 	gi.NewSeparator(tb)
 	gi.NewButton(tb).SetText("Weights").SetType(gi.ButtonAction).SetMenu(func(m *gi.Scene) {
