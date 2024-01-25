@@ -1,7 +1,7 @@
 ID = 'com.emer.emergent'
 Name = 'emergent'
 Type = 'Library'
-Version = 'v2.0.0-dev0.0.8'
+Version = 'v2.0.0-dev0.0.9'
 
 [Generate]
   [Generate.Gtigen]
@@ -10,4 +10,3 @@ Version = 'v2.0.0-dev0.0.8'
 [Release]
   Package = 'emer'
   VersionFile = 'emer/version.go'
-

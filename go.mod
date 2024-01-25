@@ -3,10 +3,10 @@ module github.com/emer/emergent/v2
 go 1.21
 
 require (
-	cogentcore.org/core v0.0.2
+	cogentcore.org/core v0.0.3
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi/v2 v2.0.0-dev0.0.4
-	github.com/emer/etable/v2 v2.0.0-dev0.0.14
+	github.com/emer/etable/v2 v2.0.0-dev0.0.15
 	github.com/emer/gosl/v2 v2.0.0-dev0.0.9
 	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.8.4
@@ -43,13 +43,13 @@ require (
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
 	github.com/hack-pad/hackpadfs v0.2.1 // indirect
 	github.com/hack-pad/safejs v0.1.1 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
