@@ -83,8 +83,8 @@ func (gui *GUI) Stopped() {
 
 // MakeBody returns default window Body content
 func (gui *GUI) MakeBody(sim any, appname, title, about string) {
-	gui.Body = gi.NewAppBody(appname).SetTitle(title)
-	gui.Body.App().About = about
+	gui.Body = gi.NewBody(appname).SetTitle(title)
+	// gui.Body.App().About = about
 	split := gi.NewSplits(gui.Body, "split")
 	gui.StructView = giv.NewStructView(split, "sv").SetStruct(sim)
 	if tb, ok := sim.(gi.Toolbarer); ok {

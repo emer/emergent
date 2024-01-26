@@ -294,7 +294,7 @@ func (nv *NetView) ConfigNetView() {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
 		})
-		gi.NewLabel(nv, "counters")
+		gi.NewLabel(nv, "counters").SetText(strings.Repeat(" ", 200))
 		vb := gi.NewToolbar(nv, "vbar")
 
 		vlay := gi.NewFrame(nlay, "vars")
@@ -317,7 +317,7 @@ func (nv *NetView) ConfigNetView() {
 	nv.ViewConfig()
 
 	ctrs := nv.Counters()
-	ctrs.SetText("Counters: " + strings.Repeat(" ", 100))
+	ctrs.SetText("Counters: " + strings.Repeat("-", 200))
 
 	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
@@ -892,7 +892,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		giv.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
 		giv.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
 		gi.NewSeparator(m)
-		// giv.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
+		giv.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
 	})
 	gi.NewSeparator(tb)
 	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"

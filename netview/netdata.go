@@ -21,6 +21,7 @@ import (
 	"cogentcore.org/core/mat32"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
+	"github.com/emer/etable/v2/eplot"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
 )
@@ -624,29 +625,21 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // PlotSelectedUnit opens a window with a plot of all the data for the
 // currently-selected unit.
 // Useful for replaying detailed trace for units of interest.
-/*
-func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D) {
-	width := 1600
-	height := 1200
-
+func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //gti:add
 	nd := &nv.Data
-
 	if nd.PrjnLay == "" || nd.PrjnUnIdx < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
-		return nil, nil, nil
+		return nil, nil
 	}
 
 	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIdx)
 
-	win := gi.NewMainWindow("netview-selectedunit", "NetView SelectedUnit Plot: "+selnm, width, height)
-	vp := win.WinViewport2D()
-	updt := vp.UpdateStart()
-	mfr := win.SetMainFrame()
-
-	plt := mfr.AddNewChild(eplot.KiT_Plot2D, "plot").(*eplot.Plot2D)
+	b := gi.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
+	plt := eplot.NewPlot2D(b)
 	plt.Params.Title = "NetView " + selnm
 	plt.Params.XAxisCol = "Rec"
 
+	b.AddAppBar(plt.ConfigToolbar)
 	dt := nd.SelectedUnitTable(nv.Di)
 
 	plt.SetTable(dt)
@@ -664,11 +657,9 @@ func (nv *NetView) PlotSelectedUnit() (*gi.Window, *etable.Table, *eplot.Plot2D)
 		plt.SetColParams(vnm, disp, vp.Range.FixMin, float64(min), vp.Range.FixMax, float64(vp.Range.Max))
 	}
 
-	vp.UpdateEndNoSig(updt)
-	win.GoStartEventLoop() // in a separate goroutine
-	return win, dt, plt
+	b.NewWindow().SetNewWindow(true).Run()
+	return dt, plt
 }
-*/
 
 // SelectedUnitTable returns a table with all of the data for the
 // currently-selected unit, and data parallel index.
