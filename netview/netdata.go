@@ -43,7 +43,7 @@ type NetData struct { //gti:add
 	PrjnUnIdx int
 
 	// copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc
-	PrjnType string `inactive:"+"`
+	PrjnType string `edit:"-"`
 
 	// the list of unit variables saved
 	UnVars []string

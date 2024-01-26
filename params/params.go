@@ -68,10 +68,10 @@ type Sel struct { //gti:add
 	Hypers Hypers
 
 	// number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
-	NMatch int `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+"`
+	NMatch int `tableview:"-" toml:"-" json:"-" xml:"-" edit:"-"`
 
 	// name of current Set being applied
-	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" inactive:"+"`
+	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" edit:"-"`
 }
 
 // SetFloat sets the value of given parameter

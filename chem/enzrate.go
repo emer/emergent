@@ -37,7 +37,7 @@ type EnzRate struct {
 	K3 float64
 
 	// Michaelis constant = (K2 + K3) / K1 -- goes into the rate
-	Km float64 `inactive:"+"`
+	Km float64 `edit:"-"`
 }
 
 func (rt *EnzRate) Update() {

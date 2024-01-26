@@ -30,7 +30,7 @@ type Enz struct {
 	K3 float64
 
 	// Michaelis constant = (K2 + K3) / K1
-	Km float64 `inactive:"+"`
+	Km float64 `edit:"-"`
 }
 
 func (rt *Enz) Update() {
