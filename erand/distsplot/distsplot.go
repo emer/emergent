@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// distsplot plots histograms of random distributions
+// Command distsplot plots histograms of random distributions
 package main
 
 //go:generate goki generate -add-types
@@ -121,8 +121,7 @@ func (ss *Sim) ConfigPlot(plt *eplot.Plot2D, dt *etable.Table) *eplot.Plot2D {
 
 // ConfigGUI configures the Cogent Core gui interface for this simulation,
 func (ss *Sim) ConfigGUI() *gi.Body {
-	b := gi.NewAppBody("distplot")
-	b.App().About = `This plots histograms of random distributions. See <a href="https://github.com/emer/emergent/v2">emergent on GitHub</a>.</p>`
+	b := gi.NewBody("distplot")
 
 	split := gi.NewSplits(b, "split")
 
@@ -146,7 +145,7 @@ func (ss *Sim) ConfigGUI() *gi.Body {
 		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
 			SetTooltip("Opens your browser on the README file that contains instructions for how to run this model.").
 			OnClick(func(e events.Event) {
-				gi.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
+				gi.TheApp.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
 			})
 	})
 	b.NewWindow().Run().Wait()

@@ -72,19 +72,19 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 		for _, s := range steps {
 			stepStrs = append(stepStrs, s.String())
 		}
-		scb.SetStrings(stepStrs, false)
+		scb.SetStrings(stepStrs)
 		stack := loops.Stacks[mode]
-		scb.SetCurVal(stack.StepLevel.String())
+		scb.SetCurrentValue(stack.StepLevel.String())
 
 		sb := gi.NewSpinner(tb, "step-n").SetTooltip("number of iterations per step").
 			SetStep(1).SetMin(1).SetValue(1)
 		sb.OnChange(func(e events.Event) {
-			stepN[scb.CurVal.(string)] = int(sb.Value)
+			stepN[scb.CurrentItem.Value.(string)] = int(sb.Value)
 		})
 
 		scb.OnChange(func(e events.Event) {
 			stack := loops.Stacks[mode]
-			stack.StepLevel = stringToEnumTime[scb.CurVal.(string)]
+			stack.StepLevel = stringToEnumTime[scb.CurrentItem.Value.(string)]
 			sb.Value = float32(stepN[stack.StepLevel.String()])
 		})
 	}
