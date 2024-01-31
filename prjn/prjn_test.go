@@ -213,7 +213,7 @@ func TestUnifRnd(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = max(r)
+		nrMax = max(nr)
 		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
@@ -249,7 +249,7 @@ func TestUnifRndLg(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = max(r)
+		nrMax = max(nr)
 		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
@@ -276,7 +276,7 @@ func TestUnifRndSelf(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = max(r)
+		nrMax = max(nr)
 		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
@@ -303,7 +303,7 @@ func TestPoolUnifRnd(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = max(r)
+		nrMax = max(nr)
 		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
@@ -339,7 +339,7 @@ func TestPoolUnifRndLg(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = max(r)
+		nrMax = max(nr)
 		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
@@ -366,7 +366,7 @@ func TestPoolUnifRndSelf(t *testing.T) {
 	nrMean := 0
 	for si := 0; si < sNtot; si++ {
 		nr := int(sendn.Values[si])
-		nrMax = max(r)
+		nrMax = max(nr)
 		nrMin = min(nrMin, nr)
 		nrMean += nr
 	}
