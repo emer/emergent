@@ -108,8 +108,7 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 	} else {
 		return // not supported
 	}
-	// TODO: it would be better to use the 2D layer position here
-	gi.NewTooltipTextAt(sw, sval, e.Pos(), lay.Size().ToPoint()).Run()
+	gi.NewTooltipTextAt(sw, sval, e.WindowPos(), lay.Size().ToPoint()).Run()
 	e.SetHandled()
 }
 
