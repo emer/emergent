@@ -306,16 +306,5 @@ func (ctx *Context) LastNRows(mode etime.Modes, time etime.Times, n int) *etable
 // This index view is available later with the "LastNRows" name via
 // NamedIdxView functions.
 func (ctx *Context) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IdxView {
-	ix, isnew := ctx.Logs.NamedIdxViewScope(sk, "LastNRows")
-	if !isnew {
-		return ix
-	}
-	if n > ix.Len()-1 {
-		n = ix.Len() - 1
-	}
-	if ix.Idxs == nil {
-		ix.Idxs = make([]int, ix.Table.Rows)
-	}
-	ix.Idxs = ix.Idxs[ix.Len()-n:]
-	return ix
+	return ctx.Logs.LastNRowsScope(sk, n)
 }

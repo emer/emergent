@@ -39,10 +39,13 @@ type Network interface {
 	// Layer names must be unique and a map is used so this is a fast operation
 	LayerByName(name string) Layer
 
-	// LayerByNameTry returns layer of given name,
-	// returns error if not found.
+	// LayerByNameTry returns layer of given name, returns error if not found.
 	// Layer names must be unique and a map is used so this is a fast operation
 	LayerByNameTry(name string) (Layer, error)
+
+	// PrjnByNameTry returns prjn of given name, returns error if not found.
+	// Prjn names are SendToRecv, and are looked up by parsing the name
+	PrjnByNameTry(name string) (Prjn, error)
 
 	// Defaults sets default parameter values for everything in the Network
 	Defaults()

@@ -7,6 +7,7 @@ package emer
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/emer/emergent/v2/params"
@@ -316,4 +317,78 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 		}
 	}
 	return hypers
+}
+
+// ParamTweakFunc runs through given hyper parameters and calls given function,
+// for Tweak values relative to the current default value, as specified
+// by the hyper
+func ParamTweakFunc(hypers params.Flex, net Network, fun func(name, ppath string, val float32)) {
+	for _, fv := range hypers {
+		hyp := fv.Obj.(params.Hypers)
+		for ppath, vals := range hyp {
+			test, ok := vals["Test"]
+			test = strings.ToLower(test)
+			if !ok || test == "false" {
+				continue
+			}
+			log := false
+			incr := false
+			if strings.Contains(test, "log") {
+				log = true
+			}
+			if strings.Contains(test, "incr") {
+				incr = true
+			}
+			val, ok := vals["Val"]
+			if !ok {
+				continue
+			}
+			f64, err := strconv.ParseFloat(val, 32)
+			if err != nil {
+				fmt.Printf("Obj: %s  Param: %s  val: %s  parse error: %v\n", fv.Nm, ppath, val, err)
+				continue
+			}
+			start := float32(f64)
+			pars := params.Tweak(start, log, incr)
+			var ly Layer
+			var pj Prjn
+			switch fv.Type {
+			case "Layer":
+				ly, err = net.LayerByNameTry(fv.Nm)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+			case "Prjn":
+				pj, err = net.PrjnByNameTry(fv.Nm)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+			}
+			path := params.PathAfterType(ppath)
+			for _, par := range pars {
+				prs := fmt.Sprintf("%g", par)
+				if ly != nil {
+					err = ly.SetParam(path, prs)
+				} else {
+					err = pj.SetParam(path, prs)
+				}
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+				fun(fv.Nm, ppath, par)
+			}
+			prs := fmt.Sprintf("%g", start)
+			if ly != nil {
+				err = ly.SetParam(path, prs)
+			} else {
+				err = pj.SetParam(path, prs)
+			}
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
 }

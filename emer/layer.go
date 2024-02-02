@@ -257,6 +257,10 @@ type Layer interface {
 	// returns true if any params were set, and error if there were any errors.
 	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
 
+	// SetParam sets parameter at given path to given value.
+	// returns error if path not found or value cannot be set.
+	SetParam(path, val string) error
+
 	// NonDefaultParams returns a listing of all parameters in the Layer that
 	// are not at their default values -- useful for setting param styles etc.
 	NonDefaultParams() string

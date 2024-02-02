@@ -16,6 +16,12 @@ import (
 	"cogentcore.org/core/laser"
 )
 
+// PathAfterType returns the portion of a path string after the initial
+// type, e.g., Layer.Acts.Kir.Gbar -> Acts.Kir.Gbar
+func PathAfterType(path string) string {
+	return strings.Join(strings.Split(path, ".")[1:], ".")
+}
+
 // TargetType returns the first part of the path, indicating what type of
 // object the params apply to.  Uses the first item in the map (which is random)
 // everything in the map must have the same target.
@@ -29,7 +35,7 @@ func (pr *Params) TargetType() string {
 // Path returns the second part of the path after the target type,
 // indicating the path to the specific parameter being set.
 func (pr *Params) Path(path string) string {
-	return strings.Join(strings.Split(path, ".")[1:], ".")
+	return PathAfterType(path)
 }
 
 // Apply applies all parameter values to given object.

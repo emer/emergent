@@ -396,6 +396,33 @@ func (lg *Logs) SetFixMinItems(min float64, itemNames ...string) {
 	}
 }
 
+// LastNRows returns an IdxView onto table for given scope with the last
+// n rows of the table (only valid rows, if less than n).
+// This index view is available later with the "LastNRows" name via
+// NamedIdxView functions.
+func (lg *Logs) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IdxView {
+	return lg.LastNRowsScope(etime.Scope(mode, time), n)
+}
+
+// LastNRowsScope returns an IdxView onto table for given scope with the last
+// n rows of the table (only valid rows, if less than n).
+// This index view is available later with the "LastNRows" name via
+// NamedIdxView functions.
+func (lg *Logs) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IdxView {
+	ix, isnew := lg.NamedIdxViewScope(sk, "LastNRows")
+	if !isnew {
+		return ix
+	}
+	if n > ix.Len()-1 {
+		n = ix.Len() - 1
+	}
+	if ix.Idxs == nil { // should not happen
+		ix.Idxs = make([]int, ix.Table.Rows)
+	}
+	ix.Idxs = ix.Idxs[ix.Len()-n:]
+	return ix
+}
+
 // log filenames
 
 // LogFilename returns a standard log file name as netName_runName_logName.tsv
