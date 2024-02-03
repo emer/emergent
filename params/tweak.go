@@ -27,9 +27,7 @@ func Tweak(v float32, log, incr bool) []float32 {
 		}
 		if incr {
 			vals = append(vals, tweakVal(9, ex-1))
-			if !log {
-				vals = append(vals, tweakVal(2, ex))
-			}
+			vals = append(vals, tweakVal(1.1, ex))
 		}
 	case 2:
 		if log {

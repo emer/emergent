@@ -879,8 +879,10 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		})
 	gi.NewSeparator(tb)
 	gi.NewButton(tb).SetText("Weights").SetType(gi.ButtonAction).SetMenu(func(m *gi.Scene) {
-		giv.NewFuncButton(m, nv.SaveWeights).SetIcon(icons.Save)
-		giv.NewFuncButton(m, nv.OpenWeights).SetIcon(icons.Open)
+		fb := giv.NewFuncButton(m, nv.SaveWeights).SetIcon(icons.Save)
+		fb.Args[0].SetTag("ext", ".wts,.wts.gz")
+		fb = giv.NewFuncButton(m, nv.OpenWeights).SetIcon(icons.Open)
+		fb.Args[0].SetTag("ext", ".wts,.wts.gz")
 	})
 	gi.NewButton(tb).SetText("Params").SetIcon(icons.Info).SetMenu(func(m *gi.Scene) {
 		giv.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
