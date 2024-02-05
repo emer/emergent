@@ -78,7 +78,7 @@ type Params struct { //gti:add
 	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`
 
 	// our netview, for update method
-	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`
+	NetView *NetView `copier:"-" json:"-" xml:"-" view:"-"`
 
 	// the number of records to jump for fast forward/backward
 	NFastSteps int

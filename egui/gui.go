@@ -83,6 +83,8 @@ func (gui *GUI) Stopped() {
 
 // MakeBody returns default window Body content
 func (gui *GUI) MakeBody(sim any, appname, title, about string) {
+	giv.NoSentenceCaseFor = append(giv.NoSentenceCaseFor, "github.com/emer")
+
 	gui.Body = gi.NewBody(appname).SetTitle(title)
 	// gui.Body.App().About = about
 	split := gi.NewSplits(gui.Body, "split")

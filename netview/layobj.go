@@ -16,7 +16,7 @@ type LayObj struct { //gti:add
 	LayName string
 
 	// our netview
-	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`
+	NetView *NetView `copier:"-" json:"-" xml:"-" view:"-"`
 }
 
 // LayName is the Layer name as a Text2D within the NetView
@@ -24,5 +24,5 @@ type LayName struct {
 	xyz.Text2D
 
 	// our netview
-	NetView *NetView `copy:"-" json:"-" xml:"-" view:"-"`
+	NetView *NetView `copier:"-" json:"-" xml:"-" view:"-"`
 }

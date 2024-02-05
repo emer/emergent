@@ -81,7 +81,7 @@ type NetView struct {
 	Data NetData
 
 	// mutex on data access
-	DataMu sync.RWMutex `view:"-" copy:"-" json:"-" xml:"-"`
+	DataMu sync.RWMutex `view:"-" copier:"-" json:"-" xml:"-"`
 }
 
 func (nv *NetView) OnInit() {
