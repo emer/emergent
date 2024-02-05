@@ -37,7 +37,7 @@ type OneD struct {
 	Max float32
 
 	// sigma parameter of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
-	Sigma float32 `default:"0.2" viewif:"Code=GaussBump"`
+	Sigma float32 `default:"0.2"`
 
 	// ensure that encoded and decoded value remains within specified range
 	Clip bool
@@ -57,6 +57,15 @@ func (pc *OneD) Defaults() {
 	pc.Clip = true
 	pc.Thr = 0.1
 	pc.MinSum = 0.2
+}
+
+func (pc *OneD) ShouldShow(field string) bool {
+	switch field {
+	case "Sigma":
+		return pc.Code == GaussBump
+	default:
+		return true
+	}
 }
 
 // SetRange sets the min, max and sigma values

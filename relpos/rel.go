@@ -25,10 +25,10 @@ type Rel struct { //git:add
 	Rel Relations
 
 	// ] horizontal (x-axis) alignment relative to other
-	XAlign XAligns `viewif:"Rel=[FrontOf,Behind,Above,Below]"`
+	XAlign XAligns
 
 	// ] vertical (y-axis) alignment relative to other
-	YAlign YAligns `viewif:"Rel=[LeftOf,RightOf,Above,Below]"`
+	YAlign YAligns
 
 	// name of the other layer we are in relationship to
 	Other string
@@ -54,6 +54,17 @@ func (rp *Rel) Defaults() {
 	}
 	if rp.Space == 0 {
 		rp.Space = 5
+	}
+}
+
+func (rp *Rel) ShouldShow(field string) bool {
+	switch field {
+	case "XAlign":
+		return rp.Rel == FrontOf || rp.Rel == Behind || rp.Rel == Above || rp.Rel == Below
+	case "YAlign":
+		return rp.Rel == LeftOf || rp.Rel == RightOf || rp.Rel == Above || rp.Rel == Below
+	default:
+		return true
 	}
 }
 

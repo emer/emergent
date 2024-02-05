@@ -29,7 +29,7 @@ type TwoD struct {
 	Max mat32.Vec2
 
 	// sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
-	Sigma mat32.Vec2 `default:"0.2" viewif:"Code=GaussBump"`
+	Sigma mat32.Vec2 `default:"0.2"`
 
 	// ensure that encoded and decoded value remains within specified range -- generally not useful with wrap
 	Clip bool
@@ -55,6 +55,15 @@ func (pc *TwoD) Defaults() {
 	pc.Clip = true
 	pc.Thr = 0.1
 	pc.MinSum = 0.2
+}
+
+func (pc *TwoD) ShouldShow(field string) bool {
+	switch field {
+	case "Sigma":
+		return pc.Code == GaussBump
+	default:
+		return true
+	}
 }
 
 // SetRange sets the min, max and sigma values to the same scalar values

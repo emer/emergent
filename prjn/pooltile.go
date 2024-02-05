@@ -260,19 +260,28 @@ type GaussTopo struct {
 	On bool
 
 	// gaussian sigma (width) in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from .3 to 1.5, with .6 default
-	Sigma float32 `viewif:"On" default:"0.6"`
+	Sigma float32 `default:"0.6"`
 
 	// wrap the gaussian around on other sides of the receptive field, with the closest distance being used -- this removes strict topography but ensures a more uniform distribution of weight values so edge units don't have weaker overall weights
-	Wrap bool `viewif:"On"`
+	Wrap bool
 
 	// proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
-	CtrMove float32 `viewif:"On" default:"0.8,1"`
+	CtrMove float32 `default:"0.8,1"`
 }
 
 func (gt *GaussTopo) Defaults() {
 	gt.Sigma = 0.6
 	gt.Wrap = true
 	gt.CtrMove = 1
+}
+
+func (gt *GaussTopo) ShouldShow(field string) bool {
+	switch field {
+	case "On":
+		return true
+	default:
+		return gt.On
+	}
 }
 
 // DefWrap sets default wrap parameters (which are overall defaults): CtrMove = 1
@@ -483,15 +492,24 @@ type SigmoidTopo struct {
 	On bool
 
 	// gain of sigmoid that determines steepness of curve, in normalized units where entire distance across relevant dimension is 1.0 -- typical useful values range from 0.01 to 0.1
-	Gain float32 `viewif:"On"`
+	Gain float32
 
 	// proportion to move gaussian center relative to the position of the receiving unit within its pool: 1.0 = centers span the entire range of the receptive field.  Typically want to use 1.0 for Wrap = true, and 0.8 for false
-	CtrMove float32 `viewif:"On" default:"0.5,1"`
+	CtrMove float32 `default:"0.5,1"`
 }
 
 func (gt *SigmoidTopo) Defaults() {
 	gt.Gain = 0.05
 	gt.CtrMove = 0.5
+}
+
+func (gt *SigmoidTopo) ShouldShow(field string) bool {
+	switch field {
+	case "On":
+		return true
+	default:
+		return gt.On
+	}
 }
 
 // TopoWtsSigmoid2D sets values in given 4D tensor according to Topo settings.
