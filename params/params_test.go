@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/andreyvit/diff"
-	// "github.com/andreyvit/diff"
 )
 
 var paramSets = Sets{
