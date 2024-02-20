@@ -112,7 +112,7 @@ func (nv *NetView) SetVar(vr string) {
 	nv.VarsUpdate()
 	nv.VarScaleUpdate(nv.Var)
 	nv.DataMu.Unlock()
-	nv.GoUpdateView() // safe version just in case
+	nv.UpdateView()
 }
 
 // SetMaxRecs sets the maximum number of records that are maintained (default 210)
