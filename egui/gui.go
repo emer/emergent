@@ -56,8 +56,23 @@ type GUI struct {
 	Body *gi.Body `view:"-"`
 }
 
-// UpdateWindow triggers an update on window body
+// UpdateWindow triggers an update on window body,
+// to be called from within the normal event processing loop.
+// See GoUpdateWindow for version to call from separate goroutine.
 func (gui *GUI) UpdateWindow() {
+	updt := gui.Body.Scene.UpdateStart()
+	defer gui.Body.Scene.UpdateEndRender(updt)
+
+	tb := gui.Body.GetTopAppBar()
+	if tb != nil {
+		tb.UpdateBar()
+	}
+	// todo: could update other stuff but not really neccesary
+}
+
+// GoUpdateWindow triggers an update on window body,
+// for calling from a separate goroutine.
+func (gui *GUI) GoUpdateWindow() {
 	updt := gui.Body.Scene.UpdateStartAsync()
 	defer gui.Body.Scene.UpdateEndAsyncRender(updt)
 
@@ -68,7 +83,8 @@ func (gui *GUI) UpdateWindow() {
 	// todo: could update other stuff but not really neccesary
 }
 
-// Stopped is called when a run method stops running.
+// Stopped is called when a run method stops running,
+// from a separate goroutine (do not call from main event loop).
 // Updates the IsRunning flag and toolbar.
 func (gui *GUI) Stopped() {
 	gui.IsRunning = false
@@ -78,7 +94,7 @@ func (gui *GUI) Stopped() {
 	if gui.ViewUpdt != nil {
 		gui.UpdateNetViewWhenStopped()
 	}
-	gui.UpdateWindow()
+	gui.GoUpdateWindow()
 }
 
 // MakeBody returns default window Body content

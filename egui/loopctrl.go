@@ -24,7 +24,6 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 			loops.Stop(etime.Cycle)
 			// fmt.Println("Stop time!")
 			gui.StopNow = true
-			gui.Stopped()
 		},
 	})
 

@@ -54,9 +54,11 @@ func (vu *ViewUpdt) UpdtTime(testing bool) etime.Times {
 	return vu.Train
 }
 
-// Update does an update if view is On, visible and active,
-// including recording new data and driving update of display
-func (vu *ViewUpdt) Update() {
+// GoUpdate does an update if view is On, visible and active,
+// including recording new data and driving update of display.
+// This version is only for calling from a separate goroutine,
+// not the main event loop (see also Update).
+func (vu *ViewUpdt) GoUpdate() {
 	if !vu.On || vu.View == nil {
 		return
 	}
@@ -71,9 +73,30 @@ func (vu *ViewUpdt) Update() {
 	}
 }
 
+// Update does an update if view is On, visible and active,
+// including recording new data and driving update of display.
+// This version is only for calling from the main event loop
+// (see also GoUpdate).
+func (vu *ViewUpdt) Update() {
+	if !vu.On || vu.View == nil {
+		return
+	}
+	if !vu.View.IsVisible() && vu.SkipInvis {
+		vu.View.RecordCounters(vu.Text)
+		return
+	}
+	vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
+	// note: essential to use Go version of update when called from another goroutine
+	if vu.View.IsVisible() {
+		vu.View.UpdateView()
+	}
+}
+
 // UpdateWhenStopped does an update when the network updating was stopped
-// either via stepping or hitting the stop button -- this has different
-// logic for the raster view vs. regular.
+// either via stepping or hitting the stop button.
+// This has different logic for the raster view vs. regular.
+// This is only for calling from a separate goroutine,
+// not the main event loop.
 func (vu *ViewUpdt) UpdateWhenStopped() {
 	if !vu.On || vu.View == nil {
 		return
@@ -98,7 +121,7 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 	}
 	viewUpdt := vu.UpdtTime(vu.Testing)
 	if viewUpdt == time {
-		vu.Update()
+		vu.GoUpdate()
 	} else {
 		if viewUpdt < etime.Trial && time == etime.Trial {
 			if vu.View.Params.Raster.On { // no extra rec here
@@ -107,7 +130,7 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 					vu.View.GoUpdateView()
 				}
 			} else {
-				vu.Update()
+				vu.GoUpdate()
 			}
 		}
 	}
@@ -160,26 +183,26 @@ func (vu *ViewUpdt) UpdateCycle(cyc int) {
 	}
 	switch viewUpdt {
 	case etime.Cycle:
-		vu.Update()
+		vu.GoUpdate()
 	case etime.FastSpike:
 		if cyc%10 == 0 {
-			vu.Update()
+			vu.GoUpdate()
 		}
 	case etime.GammaCycle:
 		if cyc%25 == 0 {
-			vu.Update()
+			vu.GoUpdate()
 		}
 	case etime.BetaCycle:
 		if cyc%50 == 0 {
-			vu.Update()
+			vu.GoUpdate()
 		}
 	case etime.AlphaCycle:
 		if cyc%100 == 0 {
-			vu.Update()
+			vu.GoUpdate()
 		}
 	case etime.ThetaCycle:
 		if cyc%200 == 0 {
-			vu.Update()
+			vu.GoUpdate()
 		}
 	}
 }
