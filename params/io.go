@@ -16,8 +16,10 @@ import (
 
 	"cogentcore.org/core/gi"
 	"cogentcore.org/core/glop/indent"
+	"cogentcore.org/core/grows"
 	"cogentcore.org/core/grows/jsons"
 	"cogentcore.org/core/grows/tomls"
+	"github.com/BurntSushi/toml"
 	"golang.org/x/exp/maps"
 )
 
@@ -49,7 +51,10 @@ func (pr *Params) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Params) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename)) // pelletier/go-toml produces bad output on maps
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
@@ -120,7 +125,10 @@ func (pr *Hypers) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Hypers) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename))
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes hypers to corresponding Go initializer code.
@@ -191,7 +199,10 @@ func (pr *Sel) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sel) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename))
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
@@ -254,7 +265,10 @@ func (pr *Sheet) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sheet) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename))
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
@@ -319,7 +333,10 @@ func (pr *Sheets) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sheets) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename))
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
@@ -389,7 +406,10 @@ func (pr *Set) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Set) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename))
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
@@ -425,7 +445,10 @@ func (pr *Sets) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sets) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename))
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.

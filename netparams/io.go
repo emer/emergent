@@ -14,8 +14,10 @@ import (
 
 	"cogentcore.org/core/gi"
 	"cogentcore.org/core/glop/indent"
+	"cogentcore.org/core/grows"
 	"cogentcore.org/core/grows/jsons"
 	"cogentcore.org/core/grows/tomls"
+	"github.com/BurntSushi/toml"
 	"github.com/emer/emergent/v2/params"
 )
 
@@ -53,7 +55,10 @@ func (pr *Sets) OpenTOML(filename gi.Filename) error {
 
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sets) SaveTOML(filename gi.Filename) error {
-	return tomls.Save(pr, string(filename))
+	// return tomls.Save(pr, string(filename)) // pelletier/go-toml produces bad output on maps
+	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+		return toml.NewEncoder(w)
+	})
 }
 
 // WriteGoCode writes params to corresponding Go initializer code.
