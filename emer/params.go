@@ -7,6 +7,7 @@ package emer
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/emer/emergent/v2/params"
@@ -316,4 +317,38 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 		}
 	}
 	return hypers
+}
+
+// SetFloatParam sets given float32 param value to layer or projection
+// (typ = Layer or Prjn) of given name, at given path (which can start
+// with the typ name).
+// Returns an error (and logs it automatically) for any failure.
+func SetFloatParam(net Network, name, typ, path string, val float32) error {
+	rpath := params.PathAfterType(path)
+	prs := fmt.Sprintf("%g", val)
+	switch typ {
+	case "Layer":
+		ly, err := net.LayerByNameTry(name)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		err = ly.SetParam(rpath, prs)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+	case "Prjn":
+		pj, err := net.PrjnByNameTry(name)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		err = pj.SetParam(rpath, prs)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+	}
+	return nil
 }

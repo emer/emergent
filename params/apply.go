@@ -54,7 +54,7 @@ func (pr *Params) Apply(obj any, setMsg bool) error {
 	} else if lblr, has := obj.(gi.Labeler); has {
 		objNm = lblr.Label()
 	}
-	var rerr error
+	var errs []error
 	for pt, v := range *pr {
 		path := pr.Path(pt)
 		if hv, ok := obj.(Hypers); ok {
@@ -71,10 +71,10 @@ func (pr *Params) Apply(obj any, setMsg bool) error {
 				log.Printf("%v Set param path: %v to value: %v\n", objNm, pt, v)
 			}
 		} else {
-			rerr = err // could accumulate but..
+			errs = append(errs, err)
 		}
 	}
-	return rerr
+	return errors.Join(errs...)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@ func (pr *Hypers) Apply(obj any, setMsg bool) error {
 		hv.CopyFrom(*pr)
 		return nil
 	}
-	var rerr error
+	var errs []error
 	for pt, v := range *pr {
 		path := pr.Path(pt)
 		val, ok := v["Val"]
@@ -129,10 +129,10 @@ func (pr *Hypers) Apply(obj any, setMsg bool) error {
 				log.Printf("%v Set hypers path: %v to value: %v\n", objNm, pt, v)
 			}
 		} else {
-			rerr = err // could accumulate but..
+			errs = append(errs, err)
 		}
 	}
-	return rerr
+	return errors.Join(errs...)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ func ClassMatch(sel, cls string) bool {
 // It always prints a message if a parameter fails to be set, and returns an error.
 func (ps *Sheet) Apply(obj any, setMsg bool) (bool, error) {
 	applied := false
-	var rerr error
+	var errs []error
 	for _, sl := range *ps {
 		app, err := sl.Apply(obj, setMsg)
 		if app {
@@ -239,10 +239,10 @@ func (ps *Sheet) Apply(obj any, setMsg bool) (bool, error) {
 			}
 		}
 		if err != nil {
-			rerr = err
+			errs = append(errs, err)
 		}
 	}
-	return applied, rerr
+	return applied, errors.Join(errs...)
 }
 
 // SelMatchReset resets the Sel.NMatch counter used to find cases where no Sel
@@ -270,7 +270,7 @@ func (ps *Sheet) SelNoMatchWarn(setName, objName string) error {
 	}
 	if msg != "" {
 		msg = fmt.Sprintf("param.Sheet from Set: %s for object: %s had the following non-matching Selectors:\n%s", setName, objName, msg)
-		log.Println(msg)
+		log.Println(msg) // todo: slog?
 		return errors.New(msg)
 	}
 	return nil
@@ -289,11 +289,11 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 	if npv.Kind() != reflect.Struct {
 		if !npv.IsValid() {
 			err := fmt.Errorf("params.FindParam: object is nil -- must Build *before* applying params!  path: %v\n", path)
-			log.Println(err)
+			slog.Error(err.Error())
 			return npv, err
 		}
 		err := fmt.Errorf("params.FindParam: object is not a struct: %v kind: %v -- params must be on structs, path: %v\n", npv.String(), npv.Kind(), path)
-		log.Println(err)
+		slog.Error(err.Error())
 		return npv, err
 	}
 	paths := strings.Split(path, ".")
@@ -301,7 +301,7 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 	fld := npv.FieldByName(fnm)
 	if !fld.IsValid() {
 		err := fmt.Errorf("params.FindParam: could not find Field named: %v in struct: %v kind: %v, path: %v\n", fnm, npv.String(), npv.Kind(), path)
-		log.Println(err)
+		slog.Error(err.Error())
 		return fld, err
 	}
 	if len(paths) == 1 {
@@ -356,7 +356,7 @@ func GetParam(obj any, path string) (float64, error) {
 		}
 	default:
 		err := fmt.Errorf("params.GetParam: field is not of a numeric type -- only numeric types supported. value: %v, kind: %v, path: %v\n", npf.String(), npf.Kind(), path)
-		log.Println(err)
+		slog.Error(err.Error())
 		return 0, err
 	}
 }

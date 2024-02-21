@@ -15,16 +15,16 @@ import (
 )
 
 // FlexVal is a specific flexible value for the Flex parameter map
-// that implements the StylerObj interface for CSS-style selection logic
+// that implements the StylerObj interface for CSS-style selection logic.
+// The field names are abbreviated because full names are used in StylerObj.
 type FlexVal struct {
-
-	// name of this specific object -- matches #Name selections
+	// name of this specific object, matches #Name selections
 	Nm string
 
-	// type name of this object -- matches plain TypeName selections
+	// type name of this object, matches plain TypeName selections
 	Type string
 
-	// space-separated list of class name(s) -- match the .Class selections
+	// space-separated list of class name(s), match the .Class selections
 	Cls string
 
 	// actual object with data that is set by the parameters

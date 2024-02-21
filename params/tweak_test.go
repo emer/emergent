@@ -76,73 +76,73 @@ func TestTweak(t *testing.T) {
 var trgSearch = `[
   {
     "Name": "Hidden",
+    "Type": "Layer",
     "Path": "Layer.Inhib.Layer.Gi",
-    "Value": 1.3
-  },
-  {
-    "Name": "Hidden",
-    "Path": "Layer.Inhib.Layer.Gi",
-    "Value": 1.5
+    "Start": 1.4,
+    "Values": [
+      1.3,
+      1.5
+    ]
   },
   {
     "Name": "HiddenToInput",
+    "Type": "Prjn",
     "Path": "Prjn.Learn.LRate",
-    "Value": 0.01
+    "Start": 0.02,
+    "Values": [
+      0.01,
+      0.05
+    ]
   },
   {
     "Name": "HiddenToInput",
-    "Path": "Prjn.Learn.LRate",
-    "Value": 0.05
-  },
-  {
-    "Name": "HiddenToInput",
+    "Type": "Prjn",
     "Path": "Prjn.Learn.Momentum",
-    "Value": 0.8
+    "Start": 0.9,
+    "Values": [
+      0.8,
+      1
+    ]
   },
   {
     "Name": "HiddenToInput",
-    "Path": "Prjn.Learn.Momentum",
-    "Value": 1
-  },
-  {
-    "Name": "HiddenToInput",
+    "Type": "Prjn",
     "Path": "Prjn.WtScale.Rel",
-    "Value": 0.1
-  },
-  {
-    "Name": "HiddenToInput",
-    "Path": "Prjn.WtScale.Rel",
-    "Value": 0.5
+    "Start": 0.2,
+    "Values": [
+      0.1,
+      0.5
+    ]
   },
   {
     "Name": "Input",
+    "Type": "Layer",
     "Path": "Layer.Inhib.Layer.Gi",
-    "Value": 1.75
-  },
-  {
-    "Name": "Input",
-    "Path": "Layer.Inhib.Layer.Gi",
-    "Value": 1.85
+    "Start": 1.8,
+    "Values": [
+      1.75,
+      1.85
+    ]
   },
   {
     "Name": "InputToHidden",
+    "Type": "Prjn",
     "Path": "Prjn.Learn.LRate",
-    "Value": 0.01
+    "Start": 0.02,
+    "Values": [
+      0.01,
+      0.05
+    ]
   },
   {
     "Name": "InputToHidden",
-    "Path": "Prjn.Learn.LRate",
-    "Value": 0.05
-  },
-  {
-    "Name": "InputToHidden",
+    "Type": "Prjn",
     "Path": "Prjn.Learn.Momentum",
-    "Value": 0.8
-  },
-  {
-    "Name": "InputToHidden",
-    "Path": "Prjn.Learn.Momentum",
-    "Value": 1
+    "Start": 0.9,
+    "Values": [
+      0.8,
+      1
+    ]
   }
 ]`
 

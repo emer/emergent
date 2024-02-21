@@ -1,4 +1,4 @@
-// Copyright (c) 2019, The Emergent Authors. All rights reserved.
+// Copyright (c) 2024, The Emergent Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -80,26 +80,14 @@ func Tweak(v float32, log, incr bool) []float32 {
 	return vals
 }
 
-// Search is one parameter value to search, for float-valued params
-type Search struct {
-	// name of object with the parameter, from FlexVal name
-	Name string
-
-	// path to the parameter within the object
-	Path string
-
-	// value of the parameter
-	Value float32
-}
-
 // TweakFromHypers uses given hyper parameters to generate a list of
 // parameter values to search, based on simple Tweak values relative to the current
-// default value, as specified by the .Hypers params. "Tweak" options:
+// param starting value, as specified by the .Hypers params. "Tweak" options:
 // * log = logarithmic 1, 2, 5, 10 intervals
 // * incr = increment by +/- ".1" (e.g., if .5, then .4, .6)
 // * list of comma-delimited set of values in square brackets, e.g.: "[1.5, 1.2, 1.8]"
-func TweakFromHypers(hypers Flex) []Search {
-	var srch []Search
+func TweakFromHypers(hypers Flex) []SearchValues {
+	var srch []SearchValues
 	fkeys := maps.Keys(hypers)
 	slices.Sort(fkeys)
 	for _, fk := range fkeys {
@@ -126,6 +114,8 @@ func TweakFromHypers(hypers Flex) []Search {
 			}
 			start := float32(f64)
 
+			sval := SearchValues{Name: fv.Nm, Type: fv.Type, Path: ppath, Start: start}
+
 			var pars []float32 // param vals to search
 			if tweak[0] == '[' {
 				err := laser.SetRobust(&pars, tweak)
@@ -148,9 +138,9 @@ func TweakFromHypers(hypers Flex) []Search {
 				}
 				pars = Tweak(start, log, incr)
 			}
-
-			for _, par := range pars {
-				srch = append(srch, Search{Name: fv.Nm, Path: ppath, Value: par})
+			if len(pars) > 0 {
+				sval.Values = pars
+				srch = append(srch, sval)
 			}
 		}
 	}
