@@ -28,20 +28,17 @@ func Build(c *Config) error { //gti:add
 
 var DockerfileTmpl = template.Must(template.New("Dockerfile").Parse(
 	`FROM golang:1.21-bookworm as builder
-WORKDIR /app
+WORKDIR /bin
 
 COPY go.* ./
 RUN go mod download
 COPY . ./
 
-RUN go build -tags offscreen -o app ./{{.Dir}}
+RUN apt-get update && apt-get install -y libgl1-mesa-dev xorg-dev
 
-FROM debian:bookworm-slim
-RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-	ca-certificates && \
-	rm -rf /var/lib/apt/lists/*
+RUN go build -o app ./{{.Dir}}
 
-COPY --from=builder /app/app /app/app
-
-CMD ["/app/app"]
+FROM scratch
+COPY --from=builder /bin/app /bin/app
+CMD ["/bin/app"]
 `))
