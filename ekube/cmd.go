@@ -36,10 +36,9 @@ COPY . ./
 
 RUN apt-get update && apt-get install -y libgl1-mesa-dev xorg-dev
 
-RUN go build -o ./app ./{{.Dir}}
+RUN go build -tags offscreen -o ./app ./{{.Dir}}
 
-FROM scratch
-WORKDIR /app
-COPY --from=builder /build/app ./app
-ENTRYPOINT ["./app"]
+FROM debian:bookworm-slim
+COPY --from=builder /build/app /build/app
+CMD ["/build/app"]
 `))
