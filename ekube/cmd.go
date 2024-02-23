@@ -36,7 +36,8 @@ COPY . ./
 
 RUN apt-get update && apt-get install -y libgl1-mesa-dev xorg-dev
 
-RUN go build -tags offscreen -o ./app ./{{.Dir}}
+WORKDIR /build/{{.Dir}}
+RUN go build -tags offscreen -o ./app
 
-CMD ["/build/app", "-nogui"]
+CMD ["./app", "-nogui"]
 `))
