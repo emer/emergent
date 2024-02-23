@@ -3,7 +3,7 @@ module github.com/emer/emergent/v2
 go 1.21
 
 require (
-	cogentcore.org/core v0.0.4
+	cogentcore.org/core v0.0.6
 	github.com/BurntSushi/toml v0.3.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi/v2 v2.0.0-dev0.0.4
@@ -16,6 +16,7 @@ require (
 
 require (
 	git.sr.ht/~sbinet/gg v0.5.0 // indirect
+	github.com/Bios-Marcel/wastebasket v0.0.4-0.20240213135800-f26f1ae0a7c4 // indirect
 	github.com/Masterminds/vcs v1.13.3 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/alecthomas/chroma/v2 v2.12.0 // indirect
@@ -27,7 +28,6 @@ require (
 	github.com/chewxy/math32 v1.10.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
-	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-fonts/liberation v0.3.2 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240118000515-a250818d05e3 // indirect

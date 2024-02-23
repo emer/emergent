@@ -8,6 +8,7 @@ import (
 	"os"
 	"text/template"
 
+	"cogentcore.org/core/strcase"
 	"cogentcore.org/core/xe"
 )
 
@@ -22,7 +23,7 @@ func Build(c *Config) error { //gti:add
 	if err != nil {
 		return err
 	}
-	return xe.Verbose().SetBuffer(false).Run("docker", "build", ".")
+	return xe.Verbose().SetBuffer(false).Run("docker", "build", "-t", strcase.ToKebab(c.Dir)+":latest", ".")
 }
 
 var DockerfileTmpl = template.Must(template.New("Dockerfile").Parse(
