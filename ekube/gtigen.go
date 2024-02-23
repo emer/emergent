@@ -6,4 +6,6 @@ import (
 	"cogentcore.org/core/gti"
 )
 
+var _ = gti.AddType(&gti.Type{Name: "main.Config", IDName: "config", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Fields: []gti.Field{{Name: "Dir", Doc: "Dir is the directory of the model to build."}}})
+
 var _ = gti.AddFunc(&gti.Func{Name: "main.Build", Doc: "Build builds a Docker image for the emergent model in the current directory.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"c"}, Returns: []string{"error"}})

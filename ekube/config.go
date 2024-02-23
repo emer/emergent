@@ -4,4 +4,8 @@
 
 package main
 
-type Config struct{}
+type Config struct { //gti:add
+
+	// Dir is the directory of the model to build.
+	Dir string `posarg:"0"`
+}
