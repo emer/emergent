@@ -6,9 +6,9 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"text/template"
 
-	"cogentcore.org/core/strcase"
 	"cogentcore.org/core/xe"
 )
 
@@ -23,12 +23,12 @@ func Build(c *Config) error { //gti:add
 	if err != nil {
 		return err
 	}
-	return xe.Verbose().SetBuffer(false).Run("docker", "build", "-t", strcase.ToKebab(c.Dir)+":latest", ".")
+	return xe.Verbose().SetBuffer(false).Run("docker", "build", "-t", filepath.Base(c.Dir)+":latest", ".")
 }
 
 var DockerfileTmpl = template.Must(template.New("Dockerfile").Parse(
 	`FROM golang:1.21-bookworm as builder
-WORKDIR /bin
+WORKDIR /build
 
 COPY go.* ./
 RUN go mod download
@@ -36,9 +36,10 @@ COPY . ./
 
 RUN apt-get update && apt-get install -y libgl1-mesa-dev xorg-dev
 
-RUN go build -o app ./{{.Dir}}
+RUN go build -o ./app ./{{.Dir}}
 
 FROM scratch
-COPY --from=builder /bin/app /bin/app
-CMD ["/bin/app"]
+WORKDIR /app
+COPY --from=builder /build/app ./app
+ENTRYPOINT ["./app"]
 `))
