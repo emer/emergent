@@ -42,6 +42,10 @@ func Build(c *Config) error { //gti:add
 var DockerfileTmpl = template.Must(template.New("Dockerfile").Parse(
 	`FROM golang:1.21-bookworm as builder
 WORKDIR /build
+
+# By copying the go.mod and go.sum and downloading the deps first, it can cache all of the dependencies
+COPY go.* ./
+RUN go mod download
 COPY . ./
 
 WORKDIR /build/{{.Dir}}
