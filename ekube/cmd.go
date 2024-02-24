@@ -46,6 +46,7 @@ WORKDIR /build
 # By copying the go.mod and go.sum and downloading the deps first, it can cache all of the dependencies
 COPY go.* ./
 RUN go mod download
+
 COPY . ./
 
 WORKDIR /build/{{.Dir}}
