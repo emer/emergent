@@ -30,17 +30,14 @@ func Build(c *Config) error { //gti:add
 var DockerfileTmpl = template.Must(template.New("Dockerfile").Parse(
 	`FROM golang:1.21-bookworm as builder
 WORKDIR /build
-
-COPY go.* ./
-RUN go mod download
 COPY . ./
 
 WORKDIR /build/{{.Dir}}
 RUN go build -tags offscreen -o ./app
 
-FROM ubuntu:latest
+FROM ubuntu:latest as runner
 
-COPY --from=builder /build/{{.Dir}} /app
+COPY --from=builder /build/{{.Dir}} /build
 
 # Needed to share GPU
 ENV NVIDIA_DRIVER_CAPABILITIES=all
@@ -48,7 +45,8 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 
 RUN apt-get update && \
 	export DEBIAN_FRONTEND=noninteractive && \
-	apt-get install -y libgl1-mesa-dev xorg-dev pciutils vulkan-tools mesa-utils
+	apt-get install -y pciutils vulkan-tools mesa-utils
 
-CMD ["/app", "-nogui"]
+WORKDIR /build
+CMD ["./app", "-nogui"]
 `))
