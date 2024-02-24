@@ -23,7 +23,19 @@ func Build(c *Config) error { //gti:add
 	if err != nil {
 		return err
 	}
-	return xe.Verbose().SetBuffer(false).Run("docker", "build", "-t", filepath.Base(c.Dir)+":latest", ".")
+	err = xe.Verbose().SetBuffer(false).Run("docker", "build", "-t", filepath.Base(c.Dir)+":latest", ".")
+	if err != nil {
+		return err
+	}
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+	err = os.RemoveAll("Dockerfile")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Partially based on https://github.com/rickyjames35/vulkan_docker_test/blob/main/Dockerfile
@@ -37,8 +49,6 @@ RUN go build -tags offscreen -o ./app
 
 FROM ubuntu:latest as runner
 
-COPY --from=builder /build/{{.Dir}} /build
-
 # Needed to share GPU
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 ENV NVIDIA_VISIBLE_DEVICES=all
@@ -46,6 +56,8 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 RUN apt-get update && \
 	export DEBIAN_FRONTEND=noninteractive && \
 	apt-get install -y pciutils vulkan-tools mesa-utils
+
+COPY --from=builder /build/{{.Dir}} /build
 
 WORKDIR /build
 CMD ["./app", "-nogui"]
