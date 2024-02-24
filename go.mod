@@ -3,7 +3,7 @@ module github.com/emer/emergent/v2
 go 1.21
 
 require (
-	cogentcore.org/core v0.0.6
+	cogentcore.org/core v0.0.7-0.20240224002924-02e90b285442
 	github.com/BurntSushi/toml v0.3.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/emer/empi/v2 v2.0.0-dev0.0.4
@@ -42,6 +42,7 @@ require (
 	github.com/hack-pad/hackpadfs v0.2.1 // indirect
 	github.com/hack-pad/safejs v0.1.1 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect

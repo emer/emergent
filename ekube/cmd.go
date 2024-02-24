@@ -28,12 +28,19 @@ func Build(c *Config) error { //gti:add
 
 // Partially based on https://github.com/rickyjames35/vulkan_docker_test/blob/main/Dockerfile
 var DockerfileTmpl = template.Must(template.New("Dockerfile").Parse(
-	`FROM golang:1.21-bookworm
+	`FROM golang:1.21-bookworm as builder
 WORKDIR /build
 
 COPY go.* ./
 RUN go mod download
 COPY . ./
+
+WORKDIR /build/{{.Dir}}
+RUN go build -tags offscreen -o ./app
+
+FROM ubuntu:latest
+
+COPY --from=builder /build/{{.Dir}} /app
 
 # Needed to share GPU
 ENV NVIDIA_DRIVER_CAPABILITIES=all
@@ -43,8 +50,5 @@ RUN apt-get update && \
 	export DEBIAN_FRONTEND=noninteractive && \
 	apt-get install -y libgl1-mesa-dev xorg-dev pciutils vulkan-tools mesa-utils
 
-WORKDIR /build/{{.Dir}}
-RUN go build -tags offscreen -o ./app
-
-CMD ["./app", "-nogui"]
+CMD ["/app", "-nogui"]
 `))
