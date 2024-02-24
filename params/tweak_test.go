@@ -75,73 +75,166 @@ func TestTweak(t *testing.T) {
 
 var trgSearch = `[
   {
-    "Name": "Hidden",
-    "Type": "Layer",
-    "Path": "Layer.Inhib.Layer.Gi",
-    "Start": 1.4,
-    "Values": [
-      1.3,
-      1.5
+    "Param": "Layer.Inhib.Layer.Gi",
+    "Sel": {
+      "Sel": "#Hidden",
+      "Desc": "output definitely needs lower inhib -- true for smaller layers in general",
+      "Params": {
+        "Layer.Inhib.Layer.Gi": "1.4"
+      },
+      "Hypers": {
+        "Layer.Inhib.Layer.Gi": {
+          "Tweak": "incr"
+        }
+      }
+    },
+    "Search": [
+      {
+        "Name": "Hidden",
+        "Type": "Layer",
+        "Path": "Layer.Inhib.Layer.Gi",
+        "Start": 1.4,
+        "Values": [
+          1.3,
+          1.5
+        ]
+      }
     ]
   },
   {
-    "Name": "HiddenToInput",
-    "Type": "Prjn",
-    "Path": "Prjn.Learn.LRate",
-    "Start": 0.02,
-    "Values": [
-      0.01,
-      0.05
+    "Param": "Prjn.WtScale.Rel",
+    "Sel": {
+      "Sel": ".Back",
+      "Desc": "top-down back-projections MUST have lower relative weight scale, otherwise network hallucinates",
+      "Params": {
+        "Prjn.WtScale.Rel": "0.2"
+      },
+      "Hypers": {
+        "Prjn.WtScale.Rel": {
+          "Tweak": "log"
+        }
+      }
+    },
+    "Search": [
+      {
+        "Name": "HiddenToInput",
+        "Type": "Prjn",
+        "Path": "Prjn.WtScale.Rel",
+        "Start": 0.2,
+        "Values": [
+          0.1,
+          0.5
+        ]
+      }
     ]
   },
   {
-    "Name": "HiddenToInput",
-    "Type": "Prjn",
-    "Path": "Prjn.Learn.Momentum",
-    "Start": 0.9,
-    "Values": [
-      0.8,
-      1
+    "Param": "Layer.Inhib.Layer.Gi",
+    "Sel": {
+      "Sel": "Layer",
+      "Desc": "using default 1.8 inhib for all of network -- can explore",
+      "Params": {
+        "Layer.Inhib.Layer.Gi": "1.8"
+      },
+      "Hypers": {
+        "Layer.Inhib.Layer.Gi": {
+          "Tweak": "[1.75, 1.85]"
+        }
+      }
+    },
+    "Search": [
+      {
+        "Name": "Input",
+        "Type": "Layer",
+        "Path": "Layer.Inhib.Layer.Gi",
+        "Start": 1.8,
+        "Values": [
+          1.75,
+          1.85
+        ]
+      }
     ]
   },
   {
-    "Name": "HiddenToInput",
-    "Type": "Prjn",
-    "Path": "Prjn.WtScale.Rel",
-    "Start": 0.2,
-    "Values": [
-      0.1,
-      0.5
+    "Param": "Prjn.Learn.LRate",
+    "Sel": {
+      "Sel": "Prjn",
+      "Desc": "norm and momentum on works better, but wt bal is not better for smaller nets",
+      "Params": {
+        "Prjn.Learn.LRate": "0.02",
+        "Prjn.Learn.Momentum": "0.9"
+      },
+      "Hypers": {
+        "Prjn.Learn.LRate": {
+          "Tweak": "log"
+        },
+        "Prjn.Learn.Momentum": {
+          "Tweak": "incr"
+        }
+      }
+    },
+    "Search": [
+      {
+        "Name": "HiddenToInput",
+        "Type": "Prjn",
+        "Path": "Prjn.Learn.LRate",
+        "Start": 0.02,
+        "Values": [
+          0.01,
+          0.05
+        ]
+      },
+      {
+        "Name": "InputToHidden",
+        "Type": "Prjn",
+        "Path": "Prjn.Learn.LRate",
+        "Start": 0.02,
+        "Values": [
+          0.01,
+          0.05
+        ]
+      }
     ]
   },
   {
-    "Name": "Input",
-    "Type": "Layer",
-    "Path": "Layer.Inhib.Layer.Gi",
-    "Start": 1.8,
-    "Values": [
-      1.75,
-      1.85
-    ]
-  },
-  {
-    "Name": "InputToHidden",
-    "Type": "Prjn",
-    "Path": "Prjn.Learn.LRate",
-    "Start": 0.02,
-    "Values": [
-      0.01,
-      0.05
-    ]
-  },
-  {
-    "Name": "InputToHidden",
-    "Type": "Prjn",
-    "Path": "Prjn.Learn.Momentum",
-    "Start": 0.9,
-    "Values": [
-      0.8,
-      1
+    "Param": "Prjn.Learn.Momentum",
+    "Sel": {
+      "Sel": "Prjn",
+      "Desc": "norm and momentum on works better, but wt bal is not better for smaller nets",
+      "Params": {
+        "Prjn.Learn.LRate": "0.02",
+        "Prjn.Learn.Momentum": "0.9"
+      },
+      "Hypers": {
+        "Prjn.Learn.LRate": {
+          "Tweak": "log"
+        },
+        "Prjn.Learn.Momentum": {
+          "Tweak": "incr"
+        }
+      }
+    },
+    "Search": [
+      {
+        "Name": "HiddenToInput",
+        "Type": "Prjn",
+        "Path": "Prjn.Learn.Momentum",
+        "Start": 0.9,
+        "Values": [
+          0.8,
+          1
+        ]
+      },
+      {
+        "Name": "InputToHidden",
+        "Type": "Prjn",
+        "Path": "Prjn.Learn.Momentum",
+        "Start": 0.9,
+        "Values": [
+          0.8,
+          1
+        ]
+      }
     ]
   }
 ]`
@@ -157,9 +250,11 @@ func TestTweakHypers(t *testing.T) {
 	basenet := tweakSets.SetByName("Base").Sheets["Network"]
 	hypers.ApplySheet(basenet, false)
 
-	srch := TweakFromHypers(hypers)
+	// fmt.Println("hypers:", laser.StringJSON(hypers))
+
+	srch := TweaksFromHypers(hypers)
 	ss := laser.StringJSON(srch)
-	// fmt.Printf("%s", ss)
+	// fmt.Println("\n\n##########\n", ss)
 	if ss != trgSearch {
 		t.Errorf("Test Tweak Search output incorrect at: %v!\n", diff.LineDiff(ss, trgSearch))
 	}

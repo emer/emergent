@@ -29,6 +29,9 @@ type FlexVal struct {
 
 	// actual object with data that is set by the parameters
 	Obj any
+
+	// History of params applied
+	History HistoryImpl `tableview:"-"`
 }
 
 func (fv *FlexVal) TypeName() string {
@@ -56,6 +59,16 @@ func (fv *FlexVal) CopyFrom(cp *FlexVal) {
 			hyp.CopyFrom(cph)
 		}
 	}
+}
+
+// ParamsHistoryReset resets parameter application history
+func (fv *FlexVal) ParamsHistoryReset() {
+	fv.History.ParamsHistoryReset()
+}
+
+// ParamsApplied is just to satisfy History interface so reset can be applied
+func (fv *FlexVal) ParamsApplied(sel *Sel) {
+	fv.History.ParamsApplied(sel)
 }
 
 // Flex supports arbitrary named parameter values that can be set

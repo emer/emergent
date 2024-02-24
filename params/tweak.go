@@ -80,69 +80,154 @@ func Tweak(v float32, log, incr bool) []float32 {
 	return vals
 }
 
-// TweakFromHypers uses given hyper parameters to generate a list of
+// Tweaks holds parameter tweak values associated with one parameter selector.
+// Has all the object values affected for a given parameter within one
+// selector, that has a tweak hyperparameter set.
+type Tweaks struct {
+	// the parameter path for this param
+	Param string
+
+	// the param selector that set the specific value upon which tweak is based
+	Sel *Sel
+
+	// the search values for all objects covered by this selector
+	Search []SearchValues
+}
+
+// TweaksFromHypers uses given hyper parameters to generate a list of
 // parameter values to search, based on simple Tweak values relative to the current
 // param starting value, as specified by the .Hypers params. "Tweak" options:
 // * log = logarithmic 1, 2, 5, 10 intervals
 // * incr = increment by +/- ".1" (e.g., if .5, then .4, .6)
 // * list of comma-delimited set of values in square brackets, e.g.: "[1.5, 1.2, 1.8]"
-func TweakFromHypers(hypers Flex) []SearchValues {
-	var srch []SearchValues
+// The resulting search values are organized by the most specific selector that generated
+// the final parameter value, upon which the param tweak was based.
+func TweaksFromHypers(hypers Flex) []*Tweaks {
+	var tweaks []*Tweaks
+	sels := make(map[*Sel]Flex)
+
 	fkeys := maps.Keys(hypers)
 	slices.Sort(fkeys)
-	for _, fk := range fkeys {
-		fv := hypers[fk]
-		hyp := fv.Obj.(Hypers)
-		hkeys := maps.Keys(hyp)
+	for _, fnm := range fkeys {
+		flx := hypers[fnm]
+		hyps := flx.Obj.(Hypers)
+		hkeys := maps.Keys(hyps)
 		slices.Sort(hkeys)
 		for _, ppath := range hkeys {
-			vals := hyp[ppath]
-			tweak, ok := vals["Tweak"]
-			tweak = strings.ToLower(strings.TrimSpace(tweak))
-			if !ok || tweak == "" || tweak == "false" || tweak == "-" {
-				continue
-			}
-
-			val, ok := vals["Val"]
-			if !ok {
-				continue
-			}
-			f64, err := strconv.ParseFloat(val, 32)
-			if err != nil {
-				fmt.Printf("TweakFromHypers float parse error: only works for float type params. Obj: %s  Param: %s  val: %s  parse error: %v\n", fv.Nm, ppath, val, err)
-				continue
-			}
-			start := float32(f64)
-
-			sval := SearchValues{Name: fv.Nm, Type: fv.Type, Path: ppath, Start: start}
-
-			var pars []float32 // param vals to search
-			if tweak[0] == '[' {
-				err := laser.SetRobust(&pars, tweak)
-				if err != nil {
-					fmt.Println("Error processing tweak value list:", tweak, "error:", err)
+			hv := hyps[ppath]
+			vl := hv["Val"]
+			for _, sel := range flx.History {
+				pv, has := sel.Params[ppath]
+				if !has {
 					continue
 				}
-			} else {
-				log := false
-				incr := false
-				if strings.Contains(tweak, "log") {
-					log = true
-				}
-				if strings.Contains(tweak, "incr") {
-					incr = true
-				}
-				if !log && !incr {
-					fmt.Printf("Tweak value not recognized: %q\n", tweak)
+				if vl != pv {
 					continue
 				}
-				pars = Tweak(start, log, incr)
-			}
-			if len(pars) > 0 {
-				sval.Values = pars
-				srch = append(srch, sval)
+				fm, ok := sels[sel]
+				if !ok {
+					fm = make(Flex)
+				}
+				sflex, ok := fm[fnm]
+				if !ok {
+					sflex = &FlexVal{}
+					sflex.CopyFrom(flx)
+					sflex.Obj = make(Hypers)
+					fm[fnm] = sflex
+				}
+				shyps := sflex.Obj.(Hypers)
+				_, ok = shyps[ppath]
+				if !ok {
+					shyps[ppath] = hv
+				}
+				sflex.Obj = shyps
+				sels[sel] = fm
 			}
 		}
 	}
-	return srch
+
+	slnms := make(map[string]*Sel)
+	for sel := range sels {
+		slnms[sel.Sel] = sel
+	}
+	slsort := maps.Keys(slnms)
+	slices.Sort(slsort)
+
+	for _, slnm := range slsort {
+		sel := slnms[slnm]
+		flx := sels[sel]
+		// fmt.Println(laser.StringJSON(sel), "\n", laser.StringJSON(flx))
+		var f0 *FlexVal
+		for _, fv := range flx {
+			if f0 == nil {
+				f0 = fv
+				break
+			}
+		}
+		hyps := f0.Obj.(Hypers)
+		hkeys := maps.Keys(hyps)
+		slices.Sort(hkeys)
+		for _, ppath := range hkeys {
+			twk := &Tweaks{Param: ppath, Sel: sel}
+			var svals []SearchValues
+
+			fkeys := maps.Keys(flx)
+			slices.Sort(fkeys)
+			for _, fk := range fkeys {
+				fv := flx[fk]
+				hyp := fv.Obj.(Hypers)
+				vals := hyp[ppath]
+				tweak, ok := vals["Tweak"]
+				tweak = strings.ToLower(strings.TrimSpace(tweak))
+				if !ok || tweak == "" || tweak == "false" || tweak == "-" {
+					continue
+				}
+
+				val, ok := vals["Val"]
+				if !ok {
+					continue
+				}
+				f64, err := strconv.ParseFloat(val, 32)
+				if err != nil {
+					fmt.Printf("TweakFromHypers float parse error: only works for float type params. Obj: %s  Param: %s  val: %s  parse error: %v\n", fv.Nm, ppath, val, err)
+					continue
+				}
+				start := float32(f64)
+
+				sval := SearchValues{Name: fv.Nm, Type: fv.Type, Path: ppath, Start: start}
+
+				var pars []float32 // param vals to search
+				if tweak[0] == '[' {
+					err := laser.SetRobust(&pars, tweak)
+					if err != nil {
+						fmt.Println("Error processing tweak value list:", tweak, "error:", err)
+						continue
+					}
+				} else {
+					log := false
+					incr := false
+					if strings.Contains(tweak, "log") {
+						log = true
+					}
+					if strings.Contains(tweak, "incr") {
+						incr = true
+					}
+					if !log && !incr {
+						fmt.Printf("Tweak value not recognized: %q\n", tweak)
+						continue
+					}
+					pars = Tweak(start, log, incr)
+				}
+				if len(pars) > 0 {
+					sval.Values = pars
+					svals = append(svals, sval)
+				}
+			}
+			if len(svals) > 0 {
+				twk.Search = svals
+				tweaks = append(tweaks, twk)
+			}
+		}
+	}
+	return tweaks
 }
