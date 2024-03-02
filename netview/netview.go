@@ -354,7 +354,7 @@ func (nv *NetView) SceneWidget() *Scene {
 }
 
 func (nv *NetView) SceneXYZ() *xyz.Scene {
-	return nv.SceneWidget().Scene.Scene
+	return nv.SceneWidget().Scene.XYZ
 
 }
 
@@ -627,7 +627,7 @@ func (nv *NetView) ViewConfig() {
 	updt := sw.UpdateStart3D()
 	defer sw.UpdateEndConfig3D(updt)
 
-	se := sw.Scene.Scene
+	se := sw.Scene.XYZ
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		se.DeleteChildren(true)
 		se.Meshes.Reset()
