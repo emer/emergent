@@ -197,8 +197,9 @@ type Set struct { //gti:add
 	// description of this param set -- when should it be used?  how is it different from the other sets?
 	Desc string `width:"60"`
 
-	// Sheet's grouped according to their target and / or function, e.g.,
-	Sheets Sheets `Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate"`
+	// Sheet's grouped according to their target and / or function. For example,
+	// "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate.
+	Sheets Sheets
 }
 
 // SheetByNameTry tries to find given sheet by name, and returns error
