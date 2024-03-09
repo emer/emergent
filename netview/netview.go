@@ -175,19 +175,10 @@ func (nv *NetView) GoUpdateView() {
 	}
 	sw := nv.SceneWidget()
 	sc := sw.SceneXYZ()
-	updt := sw.Scene.UpdateStartAsync()
-	if !updt {
-		sw.Scene.UpdateEndAsyncRender(updt)
-		return
-	}
-	up3 := sc.UpdateStart()
-	if !up3 {
-		sw.Scene.UpdateEndAsyncRender(updt)
-		return
-	}
+	sw.Scene.AsyncLock()
 	nv.UpdateImpl()
-	sc.UpdateEndRender(up3)
-	sw.Scene.UpdateEndAsyncRender(updt)
+	sc.NeedsRender()
+	sw.Scene.AsyncUnlock()
 }
 
 // UpdateView updates the display based on last recorded state of network.
@@ -196,12 +187,9 @@ func (nv *NetView) UpdateView() {
 		return
 	}
 	sw := nv.SceneWidget()
-	updt := sw.UpdateStart3D()
-	if !updt {
-		return
-	}
 	nv.UpdateImpl()
-	sw.UpdateEndRender3D(updt)
+	sw.XYZ.NeedsRender()
+	sw.NeedsRender()
 }
 
 // Current records the current state of the network, including synaptic values,
@@ -278,9 +266,6 @@ func (nv *NetView) ConfigWidget() {
 
 // ConfigNetView configures the overall view widget
 func (nv *NetView) ConfigNetView() {
-	updt := nv.UpdateStart()
-	defer nv.UpdateEndLayout(updt)
-
 	cmap, ok := colormap.AvailMaps[string(nv.Params.ColorMap)]
 	if ok {
 		nv.ColorMap = cmap
@@ -323,6 +308,7 @@ func (nv *NetView) ConfigNetView() {
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
 	nv.ReconfigMeshes()
+	nv.NeedsLayout()
 }
 
 // ReconfigMeshes reconfigures the layer meshes
@@ -366,7 +352,7 @@ func (nv *NetView) VarsLay() *gi.Frame {
 func (nv *NetView) SetCounters(ctrs string) {
 	ct := nv.Counters()
 	if ct.Text != ctrs {
-		ct.SetTextUpdate(ctrs)
+		ct.SetText(ctrs).Update()
 	}
 }
 
@@ -374,7 +360,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
 	rlbl := vbar.ChildByName("rec", 10).(*gi.Label)
-	rlbl.SetTextUpdate(fmt.Sprintf("%4d ", nv.RecNo))
+	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo)).Update()
 }
 
 // RecFullBkwd move view record to start of history.
@@ -523,13 +509,12 @@ func (nv *NetView) VarsListUpdate() {
 // and the view range state too
 func (nv *NetView) VarsUpdate() {
 	vl := nv.VarsLay()
-	updt := vl.UpdateStart()
 	for _, vbi := range *vl.Children() {
 		vb := vbi.(*gi.Button)
 		vb.SetSelected(vb.Text == nv.Var)
 	}
 	nv.ColorMapVal.UpdateWidget()
-	vl.UpdateEndRender(updt)
+	vl.NeedsRender()
 }
 
 // VarScaleUpdate updates display of the scaling params
@@ -546,7 +531,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		if sw.IsChecked() != vp.Range.FixMin {
 			mod = true
 			sw.SetChecked(vp.Range.FixMin)
-			sw.SetNeedsRender(true)
+			sw.NeedsRender()
 		}
 	}
 	if ci := tb.ChildByName("mxsw", 6); ci != nil {
@@ -554,7 +539,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		if sw.IsChecked() != vp.Range.FixMax {
 			mod = true
 			sw.SetChecked(vp.Range.FixMax)
-			sw.SetNeedsRender(true)
+			sw.NeedsRender()
 		}
 	}
 	if ci := tb.ChildByName("mnsp", 5); ci != nil {
@@ -563,7 +548,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		if sp.Value != mnv {
 			mod = true
 			sp.SetValue(mnv)
-			sp.SetNeedsRender(true)
+			sp.NeedsRender()
 		}
 	}
 	if ci := tb.ChildByName("mxsp", 7); ci != nil {
@@ -572,7 +557,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		if sp.Value != mxv {
 			mod = true
 			sp.SetValue(mxv)
-			sp.SetNeedsRender(true)
+			sp.NeedsRender()
 		}
 	}
 	if ci := tb.ChildByName("zcsw", 8); ci != nil {
@@ -580,7 +565,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		if sw.IsChecked() != vp.ZeroCtr {
 			mod = true
 			sw.SetChecked(vp.ZeroCtr)
-			sw.SetNeedsRender(true)
+			sw.NeedsRender()
 		}
 	}
 	return mod
@@ -591,7 +576,7 @@ func (nv *NetView) VarsConfig() {
 	vl := nv.VarsLay()
 	nv.VarsListUpdate()
 	if len(nv.Vars) == 0 {
-		vl.DeleteChildren(true)
+		vl.DeleteChildren()
 		return
 	}
 	if len(vl.Kids) == len(nv.Vars) {
@@ -624,12 +609,10 @@ func (nv *NetView) VarsConfig() {
 // ViewConfig configures the 3D view
 func (nv *NetView) ViewConfig() {
 	sw := nv.SceneWidget()
-	updt := sw.UpdateStart3D()
-	defer sw.UpdateEndConfig3D(updt)
 
 	se := sw.Scene.XYZ
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
-		se.DeleteChildren(true)
+		se.DeleteChildren()
 		se.Meshes.Reset()
 		return
 	}
@@ -699,6 +682,8 @@ func (nv *NetView) ViewConfig() {
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
+	sw.XYZ.NeedsConfig()
+	sw.NeedsRender()
 }
 
 // ViewDefaults are the default 3D view params
@@ -823,8 +808,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 	for _, ls := range labs {
 		lbConfig.Add(xyz.Text2DType, ls)
 	}
-	mods, updt := lgp.ConfigChildren(lbConfig)
-	if mods {
+	if lgp.ConfigChildren(lbConfig) {
 		for i, ls := range labs {
 			lb := lgp.ChildByName(ls, i).(*xyz.Text2D)
 			// lb.Defaults()
@@ -834,9 +818,9 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 			// lb.SetProp("vertical-align", styles.Start)
 			// lb.SetProp("white-space", styles.WhiteSpacePre)
 		}
+		return true
 	}
-	lgp.UpdateEnd(updt)
-	return mods
+	return false
 }
 
 // LabelByName returns given Text2D label (see ConfigLabels).

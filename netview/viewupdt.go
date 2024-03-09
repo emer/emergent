@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"cogentcore.org/core/gi"
-	"cogentcore.org/core/ki"
 	"github.com/emer/emergent/v2/etime"
 )
 
@@ -108,7 +107,7 @@ func (vu *ViewUpdt) UpdateWhenStopped() {
 	if !vu.View.Params.Raster.On { // always record when not in raster mode
 		vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	}
-	if vu.View.Scene.Is(gi.ScUpdating) || vu.View.Is(ki.Updating) {
+	if vu.View.Scene.Is(gi.ScUpdating) {
 		return
 	}
 	vu.View.GoUpdateView()

@@ -60,26 +60,25 @@ type GUI struct {
 // to be called from within the normal event processing loop.
 // See GoUpdateWindow for version to call from separate goroutine.
 func (gui *GUI) UpdateWindow() {
-	updt := gui.Body.Scene.UpdateStart()
-	defer gui.Body.Scene.UpdateEndRender(updt)
-
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
 		tb.UpdateBar()
 	}
+	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really neccesary
 }
 
 // GoUpdateWindow triggers an update on window body,
 // for calling from a separate goroutine.
 func (gui *GUI) GoUpdateWindow() {
-	updt := gui.Body.Scene.UpdateStartAsync()
-	defer gui.Body.Scene.UpdateEndAsyncRender(updt)
+	gui.Body.Scene.AsyncLock()
+	defer gui.Body.Scene.AsyncUnlock()
 
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
 		tb.UpdateBar()
 	}
+	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really neccesary
 }
 

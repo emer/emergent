@@ -70,7 +70,7 @@ func (gui *GUI) ViewActRFs(atf *actrf.RFs) {
 			rf := atf.RFByName(nm)
 			tg.SetTensor(&rf.NormRF)
 		} else {
-			tg.SetNeedsRender(true)
+			tg.NeedsRender()
 		}
 	}
 }

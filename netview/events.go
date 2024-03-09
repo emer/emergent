@@ -33,7 +33,7 @@ func (sw *Scene) HandleEvents() {
 		pos := sw.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
 		sw.MouseDownEvent(e)
-		sw.SetNeedsRender(true)
+		sw.NeedsRender()
 	})
 	sw.On(events.LongHoverStart, func(e events.Event) {
 		pos := sw.Geom.ContentBBox.Min
@@ -44,11 +44,11 @@ func (sw *Scene) HandleEvents() {
 		pos := sw.Geom.ContentBBox.Min
 		e.SetLocalOff(e.LocalOff().Add(pos))
 		sw.SceneXYZ().MouseScrollEvent(e.(*events.MouseScroll))
-		sw.SetNeedsRender(true)
+		sw.NeedsRender()
 	})
 	sw.On(events.KeyChord, func(e events.Event) {
 		sw.SceneXYZ().KeyChordEvent(e)
-		sw.SetNeedsRender(true)
+		sw.NeedsRender()
 	})
 	sw.HandleSlideEvents()
 }
