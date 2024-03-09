@@ -148,6 +148,6 @@ func (ss *Sim) ConfigGUI() *gi.Body {
 				gi.TheApp.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
 			})
 	})
-	b.NewWindow().Run().Wait()
+	b.RunMainWindow()
 	return b
 }
