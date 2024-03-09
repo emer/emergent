@@ -401,7 +401,7 @@ First, initialize the ActRFs in the `ConfigLogs` function, using strings that sp
     ss.Stats.InitActRFs(ss.Net, []string{"V4:Image", "V4:Output", "IT:Image", "IT:Output"}, "ActM")
 ```
 
-To add tabs in the gui to visualize the resulting RFs, add this in your `ConfigGui` (note also adding a tab to visualize the input Image that is being presented to the network):
+To add tabs in the gui to visualize the resulting RFs, add this in your `ConfigGUI` (note also adding a tab to visualize the input Image that is being presented to the network):
 
 ```Go
     tg := ss.GUI.TabView.AddNewTab(etview.KiT_TensorGrid, "Image").(*etview.TensorGrid)

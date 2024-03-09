@@ -6,11 +6,11 @@ The [ra25](https://github.com/emer/axon/tree/master/examples/ra25) example has a
 
 # Examples
 
-Here's the start of the main ConfigGui method:
+Here's the start of the main ConfigGUI method:
 
 ```Go
-// ConfigGui configures the GoGi gui interface for this simulation,
-func (ss *Sim) ConfigGui() *gi.Window {
+// ConfigGUI configures the Cogent Core GUI interface for this simulation.
+func (ss *Sim) ConfigGUI() *gi.Window {
 	title := "Leabra Random Associator"
 	ss.GUI.MakeWindow(ss, "ra25", title, `This demonstrates a basic Leabra model. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
 	ss.GUI.CycleUpdateInterval = 10

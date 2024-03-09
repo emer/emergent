@@ -115,7 +115,7 @@ and (optionally) `stepper.StopCheckFn` functions:
 8. Add code to the user interface to start, pause, and stop the simulation:
 
    ```go
-   func (ss *Sim) ConfigGui() *gi.Window {
+   func (ss *Sim) ConfigGUI() *gi.Window {
       ...
       tbar.AddAction(gi.ActOpts{Label: "Stop", Icon: "stop",
          Tooltip: "Stop the current program at its next natural stopping point (i.e., cleanly stopping when appropriate chunks of computation have completed).",
