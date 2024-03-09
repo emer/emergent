@@ -2,16 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
     name: Build
     strategy:
       matrix:
-        go-version: [1.21.x]
+        go-version: [1.22.x]
         platform: [ubuntu-latest] # not macos-latest
 
     runs-on: ${{ matrix.platform }}

@@ -260,7 +260,7 @@ func (nv *NetView) UpdateImpl() {
 	se.UpdateMeshes()
 }
 
-func (nv *NetView) ConfigWidget() {
+func (nv *NetView) Config() {
 	nv.ConfigNetView()
 }
 
