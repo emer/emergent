@@ -17,7 +17,7 @@ import (
 // with Run, Step controls.
 func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []etime.Modes) {
 	gui.AddToolbarItem(tb, ToolbarItem{Label: "Stop",
-		Icon:    "stop",
+		Icon:    icons.Stop,
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
