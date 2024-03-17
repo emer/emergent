@@ -3,248 +3,89 @@
 package emer
 
 import (
-	"errors"
-	"log"
-	"strconv"
-	"strings"
-
 	"cogentcore.org/core/enums"
 )
 
 var _LayerTypeValues = []LayerType{0, 1, 2, 3}
 
-// LayerTypeN is the highest valid value
-// for type LayerType, plus one.
+// LayerTypeN is the highest valid value for type LayerType, plus one.
 const LayerTypeN LayerType = 4
 
-// An "invalid array index" compiler error signifies that the constant values have changed.
-// Re-run the enumgen command to generate them again.
-func _LayerTypeNoOp() {
-	var x [1]struct{}
-	_ = x[Hidden-(0)]
-	_ = x[Input-(1)]
-	_ = x[Target-(2)]
-	_ = x[Compare-(3)]
-}
+var _LayerTypeValueMap = map[string]LayerType{`Hidden`: 0, `Input`: 1, `Target`: 2, `Compare`: 3}
 
-var _LayerTypeNameToValueMap = map[string]LayerType{
-	`Hidden`:  0,
-	`hidden`:  0,
-	`Input`:   1,
-	`input`:   1,
-	`Target`:  2,
-	`target`:  2,
-	`Compare`: 3,
-	`compare`: 3,
-}
+var _LayerTypeDescMap = map[LayerType]string{0: `Hidden is an internal representational layer that does not receive direct input / targets`, 1: `Input is a layer that receives direct external input in its Ext inputs`, 2: `Target is a layer that receives direct external target inputs used for driving plus-phase learning`, 3: `Compare is a layer that receives external comparison inputs, which drive statistics but do NOT drive activation or learning directly`}
 
-var _LayerTypeDescMap = map[LayerType]string{
-	0: `Hidden is an internal representational layer that does not receive direct input / targets`,
-	1: `Input is a layer that receives direct external input in its Ext inputs`,
-	2: `Target is a layer that receives direct external target inputs used for driving plus-phase learning`,
-	3: `Compare is a layer that receives external comparison inputs, which drive statistics but do NOT drive activation or learning directly`,
-}
+var _LayerTypeMap = map[LayerType]string{0: `Hidden`, 1: `Input`, 2: `Target`, 3: `Compare`}
 
-var _LayerTypeMap = map[LayerType]string{
-	0: `Hidden`,
-	1: `Input`,
-	2: `Target`,
-	3: `Compare`,
-}
+// String returns the string representation of this LayerType value.
+func (i LayerType) String() string { return enums.String(i, _LayerTypeMap) }
 
-// String returns the string representation
-// of this LayerType value.
-func (i LayerType) String() string {
-	if str, ok := _LayerTypeMap[i]; ok {
-		return str
-	}
-	return strconv.FormatInt(int64(i), 10)
-}
-
-// SetString sets the LayerType value from its
-// string representation, and returns an
-// error if the string is invalid.
+// SetString sets the LayerType value from its string representation,
+// and returns an error if the string is invalid.
 func (i *LayerType) SetString(s string) error {
-	if val, ok := _LayerTypeNameToValueMap[s]; ok {
-		*i = val
-		return nil
-	}
-	if val, ok := _LayerTypeNameToValueMap[strings.ToLower(s)]; ok {
-		*i = val
-		return nil
-	}
-	return errors.New(s + " is not a valid value for type LayerType")
+	return enums.SetString(i, s, _LayerTypeValueMap, "LayerType")
 }
 
 // Int64 returns the LayerType value as an int64.
-func (i LayerType) Int64() int64 {
-	return int64(i)
-}
+func (i LayerType) Int64() int64 { return int64(i) }
 
 // SetInt64 sets the LayerType value from an int64.
-func (i *LayerType) SetInt64(in int64) {
-	*i = LayerType(in)
-}
+func (i *LayerType) SetInt64(in int64) { *i = LayerType(in) }
 
 // Desc returns the description of the LayerType value.
-func (i LayerType) Desc() string {
-	if str, ok := _LayerTypeDescMap[i]; ok {
-		return str
-	}
-	return i.String()
-}
+func (i LayerType) Desc() string { return enums.Desc(i, _LayerTypeDescMap) }
 
-// LayerTypeValues returns all possible values
-// for the type LayerType.
-func LayerTypeValues() []LayerType {
-	return _LayerTypeValues
-}
+// LayerTypeValues returns all possible values for the type LayerType.
+func LayerTypeValues() []LayerType { return _LayerTypeValues }
 
-// Values returns all possible values
-// for the type LayerType.
-func (i LayerType) Values() []enums.Enum {
-	res := make([]enums.Enum, len(_LayerTypeValues))
-	for i, d := range _LayerTypeValues {
-		res[i] = d
-	}
-	return res
-}
-
-// IsValid returns whether the value is a
-// valid option for type LayerType.
-func (i LayerType) IsValid() bool {
-	_, ok := _LayerTypeMap[i]
-	return ok
-}
+// Values returns all possible values for the type LayerType.
+func (i LayerType) Values() []enums.Enum { return enums.Values(_LayerTypeValues) }
 
 // MarshalText implements the [encoding.TextMarshaler] interface.
-func (i LayerType) MarshalText() ([]byte, error) {
-	return []byte(i.String()), nil
-}
+func (i LayerType) MarshalText() ([]byte, error) { return []byte(i.String()), nil }
 
 // UnmarshalText implements the [encoding.TextUnmarshaler] interface.
 func (i *LayerType) UnmarshalText(text []byte) error {
-	if err := i.SetString(string(text)); err != nil {
-		log.Println("LayerType.UnmarshalText:", err)
-	}
-	return nil
+	return enums.UnmarshalText(i, text, "LayerType")
 }
 
 var _PrjnTypeValues = []PrjnType{0, 1, 2, 3}
 
-// PrjnTypeN is the highest valid value
-// for type PrjnType, plus one.
+// PrjnTypeN is the highest valid value for type PrjnType, plus one.
 const PrjnTypeN PrjnType = 4
 
-// An "invalid array index" compiler error signifies that the constant values have changed.
-// Re-run the enumgen command to generate them again.
-func _PrjnTypeNoOp() {
-	var x [1]struct{}
-	_ = x[Forward-(0)]
-	_ = x[Back-(1)]
-	_ = x[Lateral-(2)]
-	_ = x[Inhib-(3)]
-}
+var _PrjnTypeValueMap = map[string]PrjnType{`Forward`: 0, `Back`: 1, `Lateral`: 2, `Inhib`: 3}
 
-var _PrjnTypeNameToValueMap = map[string]PrjnType{
-	`Forward`: 0,
-	`forward`: 0,
-	`Back`:    1,
-	`back`:    1,
-	`Lateral`: 2,
-	`lateral`: 2,
-	`Inhib`:   3,
-	`inhib`:   3,
-}
+var _PrjnTypeDescMap = map[PrjnType]string{0: `Forward is a feedforward, bottom-up projection from sensory inputs to higher layers`, 1: `Back is a feedback, top-down projection from higher layers back to lower layers`, 2: `Lateral is a lateral projection within the same layer / area`, 3: `Inhib is an inhibitory projection that drives inhibitory synaptic inputs instead of excitatory`}
 
-var _PrjnTypeDescMap = map[PrjnType]string{
-	0: `Forward is a feedforward, bottom-up projection from sensory inputs to higher layers`,
-	1: `Back is a feedback, top-down projection from higher layers back to lower layers`,
-	2: `Lateral is a lateral projection within the same layer / area`,
-	3: `Inhib is an inhibitory projection that drives inhibitory synaptic inputs instead of excitatory`,
-}
+var _PrjnTypeMap = map[PrjnType]string{0: `Forward`, 1: `Back`, 2: `Lateral`, 3: `Inhib`}
 
-var _PrjnTypeMap = map[PrjnType]string{
-	0: `Forward`,
-	1: `Back`,
-	2: `Lateral`,
-	3: `Inhib`,
-}
+// String returns the string representation of this PrjnType value.
+func (i PrjnType) String() string { return enums.String(i, _PrjnTypeMap) }
 
-// String returns the string representation
-// of this PrjnType value.
-func (i PrjnType) String() string {
-	if str, ok := _PrjnTypeMap[i]; ok {
-		return str
-	}
-	return strconv.FormatInt(int64(i), 10)
-}
-
-// SetString sets the PrjnType value from its
-// string representation, and returns an
-// error if the string is invalid.
+// SetString sets the PrjnType value from its string representation,
+// and returns an error if the string is invalid.
 func (i *PrjnType) SetString(s string) error {
-	if val, ok := _PrjnTypeNameToValueMap[s]; ok {
-		*i = val
-		return nil
-	}
-	if val, ok := _PrjnTypeNameToValueMap[strings.ToLower(s)]; ok {
-		*i = val
-		return nil
-	}
-	return errors.New(s + " is not a valid value for type PrjnType")
+	return enums.SetString(i, s, _PrjnTypeValueMap, "PrjnType")
 }
 
 // Int64 returns the PrjnType value as an int64.
-func (i PrjnType) Int64() int64 {
-	return int64(i)
-}
+func (i PrjnType) Int64() int64 { return int64(i) }
 
 // SetInt64 sets the PrjnType value from an int64.
-func (i *PrjnType) SetInt64(in int64) {
-	*i = PrjnType(in)
-}
+func (i *PrjnType) SetInt64(in int64) { *i = PrjnType(in) }
 
 // Desc returns the description of the PrjnType value.
-func (i PrjnType) Desc() string {
-	if str, ok := _PrjnTypeDescMap[i]; ok {
-		return str
-	}
-	return i.String()
-}
+func (i PrjnType) Desc() string { return enums.Desc(i, _PrjnTypeDescMap) }
 
-// PrjnTypeValues returns all possible values
-// for the type PrjnType.
-func PrjnTypeValues() []PrjnType {
-	return _PrjnTypeValues
-}
+// PrjnTypeValues returns all possible values for the type PrjnType.
+func PrjnTypeValues() []PrjnType { return _PrjnTypeValues }
 
-// Values returns all possible values
-// for the type PrjnType.
-func (i PrjnType) Values() []enums.Enum {
-	res := make([]enums.Enum, len(_PrjnTypeValues))
-	for i, d := range _PrjnTypeValues {
-		res[i] = d
-	}
-	return res
-}
-
-// IsValid returns whether the value is a
-// valid option for type PrjnType.
-func (i PrjnType) IsValid() bool {
-	_, ok := _PrjnTypeMap[i]
-	return ok
-}
+// Values returns all possible values for the type PrjnType.
+func (i PrjnType) Values() []enums.Enum { return enums.Values(_PrjnTypeValues) }
 
 // MarshalText implements the [encoding.TextMarshaler] interface.
-func (i PrjnType) MarshalText() ([]byte, error) {
-	return []byte(i.String()), nil
-}
+func (i PrjnType) MarshalText() ([]byte, error) { return []byte(i.String()), nil }
 
 // UnmarshalText implements the [encoding.TextUnmarshaler] interface.
-func (i *PrjnType) UnmarshalText(text []byte) error {
-	if err := i.SetString(string(text)); err != nil {
-		log.Println("PrjnType.UnmarshalText:", err)
-	}
-	return nil
-}
+func (i *PrjnType) UnmarshalText(text []byte) error { return enums.UnmarshalText(i, text, "PrjnType") }

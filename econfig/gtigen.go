@@ -6,7 +6,7 @@ import (
 	"cogentcore.org/core/gti"
 )
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/econfig.TestEnum", IDName: "test-enum", Doc: "TestEnum is an enum type for testing", Directives: []gti.Directive{{Tool: "go", Directive: "generate", Args: []string{"goki", "generate"}}, {Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/econfig.TestEnum", IDName: "test-enum", Doc: "TestEnum is an enum type for testing"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/econfig.Includeser", IDName: "includeser", Doc: "Includeser enables processing of Includes []string field with files to include in Config objects."})
 

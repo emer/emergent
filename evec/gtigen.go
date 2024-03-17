@@ -6,6 +6,6 @@ import (
 	"cogentcore.org/core/gti"
 )
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Dims", IDName: "dims", Doc: "Dims is a list of vector dimension (component) names", Directives: []gti.Directive{{Tool: "go", Directive: "generate", Args: []string{"goki", "generate", "-add-types"}}, {Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Dims", IDName: "dims", Doc: "Dims is a list of vector dimension (component) names"})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Vec2i", IDName: "vec-2-i", Doc: "Vec2i is a 2D vector/point with X and Y int components.", Fields: []gti.Field{{Name: "X"}, {Name: "Y"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Vec2i", IDName: "vec2i", Doc: "Vec2i is a 2D vector/point with X and Y int components.", Fields: []gti.Field{{Name: "X"}, {Name: "Y"}}})

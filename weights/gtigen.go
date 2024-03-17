@@ -6,7 +6,7 @@ import (
 	"cogentcore.org/core/gti"
 )
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/weights.Network", IDName: "network", Doc: "Network is temp structure for holding decoded weights", Directives: []gti.Directive{{Tool: "go", Directive: "generate", Args: []string{"goki", "generate", "-add-types"}}}, Fields: []gti.Field{{Name: "Network"}, {Name: "MetaData"}, {Name: "Layers"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/weights.Network", IDName: "network", Doc: "Network is temp structure for holding decoded weights", Directives: []gti.Directive{{Tool: "go", Directive: "generate", Args: []string{"core", "generate", "-add-types"}}}, Fields: []gti.Field{{Name: "Network"}, {Name: "MetaData"}, {Name: "Layers"}}})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/weights.Layer", IDName: "layer", Doc: "Layer is temp structure for holding decoded weights, one for each layer", Fields: []gti.Field{{Name: "Layer"}, {Name: "MetaData"}, {Name: "Units"}, {Name: "Prjns"}}})
 

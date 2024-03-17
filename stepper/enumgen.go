@@ -3,129 +3,46 @@
 package stepper
 
 import (
-	"errors"
-	"log"
-	"strconv"
-	"strings"
-
 	"cogentcore.org/core/enums"
 )
 
 var _RunStateValues = []RunState{0, 1, 2, 3}
 
-// RunStateN is the highest valid value
-// for type RunState, plus one.
+// RunStateN is the highest valid value for type RunState, plus one.
 const RunStateN RunState = 4
 
-// An "invalid array index" compiler error signifies that the constant values have changed.
-// Re-run the enumgen command to generate them again.
-func _RunStateNoOp() {
-	var x [1]struct{}
-	_ = x[Stopped-(0)]
-	_ = x[Paused-(1)]
-	_ = x[Stepping-(2)]
-	_ = x[Running-(3)]
-}
+var _RunStateValueMap = map[string]RunState{`Stopped`: 0, `Paused`: 1, `Stepping`: 2, `Running`: 3}
 
-var _RunStateNameToValueMap = map[string]RunState{
-	`execution is stopped. The Stepper is NOT waiting, so running again is basically a restart. The only way to go from Running or Stepping to Stopped is to explicitly call Stop(). Program state will not be preserved once the Stopped state is entered.`: 0,
-	`execution is stopped. the stepper is not waiting, so running again is basically a restart. the only way to go from running or stepping to stopped is to explicitly call stop(). program state will not be preserved once the stopped state is entered.`: 0,
-	`execution is paused. The sim is waiting for further instructions, and can continue, or stop.`:              1,
-	`execution is paused. the sim is waiting for further instructions, and can continue, or stop.`:              1,
-	`the application is running, but will pause if it hits a StepPoint that matches the current StepGrain.`:     2,
-	`the application is running, but will pause if it hits a steppoint that matches the current stepgrain.`:     2,
-	`the application is running, and will NOT pause at StepPoints. It will pause if a stop has been requested.`: 3,
-	`the application is running, and will not pause at steppoints. it will pause if a stop has been requested.`: 3,
-}
+var _RunStateDescMap = map[RunState]string{0: ``, 1: ``, 2: ``, 3: ``}
 
-var _RunStateDescMap = map[RunState]string{
-	0: ``,
-	1: ``,
-	2: ``,
-	3: ``,
-}
+var _RunStateMap = map[RunState]string{0: `Stopped`, 1: `Paused`, 2: `Stepping`, 3: `Running`}
 
-var _RunStateMap = map[RunState]string{
-	0: `execution is stopped. The Stepper is NOT waiting, so running again is basically a restart. The only way to go from Running or Stepping to Stopped is to explicitly call Stop(). Program state will not be preserved once the Stopped state is entered.`,
-	1: `execution is paused. The sim is waiting for further instructions, and can continue, or stop.`,
-	2: `the application is running, but will pause if it hits a StepPoint that matches the current StepGrain.`,
-	3: `the application is running, and will NOT pause at StepPoints. It will pause if a stop has been requested.`,
-}
+// String returns the string representation of this RunState value.
+func (i RunState) String() string { return enums.String(i, _RunStateMap) }
 
-// String returns the string representation
-// of this RunState value.
-func (i RunState) String() string {
-	if str, ok := _RunStateMap[i]; ok {
-		return str
-	}
-	return strconv.FormatInt(int64(i), 10)
-}
-
-// SetString sets the RunState value from its
-// string representation, and returns an
-// error if the string is invalid.
+// SetString sets the RunState value from its string representation,
+// and returns an error if the string is invalid.
 func (i *RunState) SetString(s string) error {
-	if val, ok := _RunStateNameToValueMap[s]; ok {
-		*i = val
-		return nil
-	}
-	if val, ok := _RunStateNameToValueMap[strings.ToLower(s)]; ok {
-		*i = val
-		return nil
-	}
-	return errors.New(s + " is not a valid value for type RunState")
+	return enums.SetString(i, s, _RunStateValueMap, "RunState")
 }
 
 // Int64 returns the RunState value as an int64.
-func (i RunState) Int64() int64 {
-	return int64(i)
-}
+func (i RunState) Int64() int64 { return int64(i) }
 
 // SetInt64 sets the RunState value from an int64.
-func (i *RunState) SetInt64(in int64) {
-	*i = RunState(in)
-}
+func (i *RunState) SetInt64(in int64) { *i = RunState(in) }
 
 // Desc returns the description of the RunState value.
-func (i RunState) Desc() string {
-	if str, ok := _RunStateDescMap[i]; ok {
-		return str
-	}
-	return i.String()
-}
+func (i RunState) Desc() string { return enums.Desc(i, _RunStateDescMap) }
 
-// RunStateValues returns all possible values
-// for the type RunState.
-func RunStateValues() []RunState {
-	return _RunStateValues
-}
+// RunStateValues returns all possible values for the type RunState.
+func RunStateValues() []RunState { return _RunStateValues }
 
-// Values returns all possible values
-// for the type RunState.
-func (i RunState) Values() []enums.Enum {
-	res := make([]enums.Enum, len(_RunStateValues))
-	for i, d := range _RunStateValues {
-		res[i] = d
-	}
-	return res
-}
-
-// IsValid returns whether the value is a
-// valid option for type RunState.
-func (i RunState) IsValid() bool {
-	_, ok := _RunStateMap[i]
-	return ok
-}
+// Values returns all possible values for the type RunState.
+func (i RunState) Values() []enums.Enum { return enums.Values(_RunStateValues) }
 
 // MarshalText implements the [encoding.TextMarshaler] interface.
-func (i RunState) MarshalText() ([]byte, error) {
-	return []byte(i.String()), nil
-}
+func (i RunState) MarshalText() ([]byte, error) { return []byte(i.String()), nil }
 
 // UnmarshalText implements the [encoding.TextUnmarshaler] interface.
-func (i *RunState) UnmarshalText(text []byte) error {
-	if err := i.SetString(string(text)); err != nil {
-		log.Println("RunState.UnmarshalText:", err)
-	}
-	return nil
-}
+func (i *RunState) UnmarshalText(text []byte) error { return enums.UnmarshalText(i, text, "RunState") }

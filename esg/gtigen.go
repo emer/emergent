@@ -10,17 +10,17 @@ var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Conds", IDN
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Cond", IDName: "cond", Doc: "Cond is one element of a conditional", Fields: []gti.Field{{Name: "El", Doc: "what type of conditional element is this"}, {Name: "Rule", Doc: "name of rule or token to evaluate for CRule"}, {Name: "Conds", Doc: "sub-conditions for SubCond"}}})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.CondEls", IDName: "cond-els", Doc: "CondEls are different types of conditional elements", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.CondEls", IDName: "cond-els", Doc: "CondEls are different types of conditional elements"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Item", IDName: "item", Doc: "Item is one item within a rule", Directives: []gti.Directive{{Tool: "git", Directive: "add"}}, Fields: []gti.Field{{Name: "Prob", Doc: "probability for choosing this item -- 0 if uniform random"}, {Name: "Elems", Doc: "elements of the rule -- for non-Cond rules"}, {Name: "Cond", Doc: "conditions for this item -- specified by ?"}, {Name: "SubRule", Doc: "for conditional, this is the sub-rule that is run with sub-items"}, {Name: "State", Doc: "state update name=value to set for rule"}}})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Elem", IDName: "elem", Doc: "Elem is one elemenent in a concrete Item: either rule or token", Directives: []gti.Directive{{Tool: "git", Directive: "add"}}, Fields: []gti.Field{{Name: "El", Doc: "type of element: Rule, Token, or SubItems"}, {Name: "Value", Doc: "value of the token: name of Rule or Token"}}})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Elements", IDName: "elements", Doc: "Elements are different types of elements", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Elements", IDName: "elements", Doc: "Elements are different types of elements"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.State", IDName: "state", Doc: "State holds the name=value state settings associated with rule or item\nas a string, string map"})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.RuleTypes", IDName: "rule-types", Doc: "RuleTypes are different types of rules (i.e., how the items are selected)", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.RuleTypes", IDName: "rule-types", Doc: "RuleTypes are different types of rules (i.e., how the items are selected)"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/esg.Rule", IDName: "rule", Doc: "Rule is one rule containing some number of items", Directives: []gti.Directive{{Tool: "git", Directive: "add"}}, Fields: []gti.Field{{Name: "Name", Doc: "name of rule"}, {Name: "Desc", Doc: "description / notes on rule"}, {Name: "Type", Doc: "type of rule -- how to choose the items"}, {Name: "Items", Doc: "items in rule"}, {Name: "State", Doc: "state update for rule"}, {Name: "PrevIdx", Doc: "previously selected item (from perspective of current rule)"}, {Name: "CurIdx", Doc: "current index in Items (what will be used next)"}, {Name: "RepeatP", Doc: "probability of repeating same item -- signaled by =%p"}, {Name: "Order", Doc: "permuted order if doing that"}}})
 

@@ -10,7 +10,7 @@ var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/env.Ctr", IDNam
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/env.Ctrs", IDName: "ctrs", Doc: "Ctrs contains an ordered slice of timescales,\nand a lookup map of counters by timescale\nused to manage counters in the Env.", Fields: []gti.Field{{Name: "Order", Doc: "ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)"}, {Name: "Ctrs", Doc: "map of the counters by timescale"}}})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/env.CurPrvF32", IDName: "cur-prv-f-32", Doc: "CurPrvF32 is basic state management for current and previous values, float32 values", Fields: []gti.Field{{Name: "Cur", Doc: "current value"}, {Name: "Prv", Doc: "previous value"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/env.CurPrvF32", IDName: "cur-prv-f32", Doc: "CurPrvF32 is basic state management for current and previous values, float32 values", Fields: []gti.Field{{Name: "Cur", Doc: "current value"}, {Name: "Prv", Doc: "previous value"}}})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/env.CurPrvInt", IDName: "cur-prv-int", Doc: "CurPrvInt is basic state management for current and previous values, int values", Fields: []gti.Field{{Name: "Cur", Doc: "current value"}, {Name: "Prv", Doc: "previous value"}}})
 

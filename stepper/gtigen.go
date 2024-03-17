@@ -6,7 +6,7 @@ import (
 	"cogentcore.org/core/gti"
 )
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/stepper.RunState", IDName: "run-state", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/stepper.RunState", IDName: "run-state"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/stepper.StopCheckFn", IDName: "stop-check-fn", Doc: "A StopCheckFn is a callback to check whether an arbitrary condition has been matched.\nIf a StopCheckFn returns true, the program is suspended with a RunState of Paused,\nand will remain so until the RunState changes to Stepping, Running, or Stopped.\nAs noted below for the PauseNotifyFn, the StopCheckFn is called with the Stepper's lock held."})
 

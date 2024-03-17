@@ -6,4 +6,4 @@ import (
 	"cogentcore.org/core/gti"
 )
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netparams.Sets", IDName: "sets", Doc: "Sets is a collection of Sheets that can be chosen among\ndepending on different desired configurations etc.  Thus, each Set\nrepresents a collection of different possible specific configurations,\nand different such configurations can be chosen by name to apply as desired.", Directives: []gti.Directive{{Tool: "git", Directive: "add"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netparams.Sets", IDName: "sets", Doc: "Sets is a collection of Sheets that can be chosen among\ndepending on different desired configurations etc.  Thus, each Set\nrepresents a collection of different possible specific configurations,\nand different such configurations can be chosen by name to apply as desired."})

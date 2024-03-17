@@ -10,4 +10,4 @@ var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/egui.GUI", IDNa
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/egui.ToolbarItem", IDName: "toolbar-item", Doc: "ToolbarItem holds the configuration values for a toolbar item", Fields: []gti.Field{{Name: "Label"}, {Name: "Icon"}, {Name: "Tooltip"}, {Name: "Active"}, {Name: "Func"}}})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/egui.ToolGhosting", IDName: "tool-ghosting", Doc: "ToolGhosting the mode enum", Directives: []gti.Directive{{Tool: "go", Directive: "generate", Args: []string{"goki", "generate"}}, {Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/egui.ToolGhosting", IDName: "tool-ghosting", Doc: "ToolGhosting the mode enum"})

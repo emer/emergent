@@ -513,7 +513,7 @@ func (nv *NetView) VarsUpdate() {
 		vb := vbi.(*gi.Button)
 		vb.SetSelected(vb.Text == nv.Var)
 	}
-	nv.ColorMapVal.UpdateWidget()
+	nv.ColorMapVal.Update()
 	vl.NeedsRender()
 }
 

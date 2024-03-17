@@ -10,7 +10,7 @@ var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.Layer", ID
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.Layers", IDName: "layers", Doc: "Layers is a slice of layers"})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.LayerType", IDName: "layer-type", Doc: "LayerType is the type of the layer: Input, Hidden, Target, Compare.\nClass parameter styles automatically key off of these types.\nSpecialized algorithms can extend this to other types, but these types encompass\nmost standard neural network models.", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.LayerType", IDName: "layer-type", Doc: "LayerType is the type of the layer: Input, Hidden, Target, Compare.\nClass parameter styles automatically key off of these types.\nSpecialized algorithms can extend this to other types, but these types encompass\nmost standard neural network models."})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.LayNames", IDName: "lay-names", Doc: "LayNames is a list of layer names.\nHas convenience methods for adding, validating."})
 
@@ -28,4 +28,4 @@ var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.Prjn", IDN
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.Prjns", IDName: "prjns", Doc: "Prjns is a slice of projections"})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.PrjnType", IDName: "prjn-type", Doc: "PrjnType is the type of the projection (extensible for more specialized algorithms).\nClass parameter styles automatically key off of these types.", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/emer.PrjnType", IDName: "prjn-type", Doc: "PrjnType is the type of the projection (extensible for more specialized algorithms).\nClass parameter styles automatically key off of these types."})

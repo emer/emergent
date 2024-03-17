@@ -3,7 +3,7 @@
 package main
 
 import (
-	"cogentcore.org/core/gti"
+	"goki.dev/gti"
 )
 
 var _ = gti.AddType(&gti.Type{Name: "main.Sim", IDName: "sim", Doc: "Sim holds the params, table, etc", Fields: []gti.Field{{Name: "Dist", Doc: "random params"}, {Name: "NSamp", Doc: "number of samples"}, {Name: "NBins", Doc: "number of bins in the histogram"}, {Name: "Range", Doc: "range for histogram"}, {Name: "Table", Doc: "table for raw data"}, {Name: "Hist", Doc: "histogram of data"}, {Name: "Plot", Doc: "the plot"}}})
