@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync"
 
+	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
 	"cogentcore.org/core/events"
@@ -990,52 +991,90 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.UpdateView()
 		})
 	gi.NewButton(tb).SetIcon(icons.ZoomIn).SetTooltip("zoom in").
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
 		OnClick(func(e events.Event) {
 			nv.SceneXYZ().Camera.Zoom(-.05)
 			nv.UpdateView()
 		})
 	gi.NewButton(tb).SetIcon(icons.ZoomOut).SetTooltip("zoom out").
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
 		OnClick(func(e events.Event) {
 			nv.SceneXYZ().Camera.Zoom(.05)
 			nv.UpdateView()
 		})
 	gi.NewSeparator(tb)
 	gi.NewLabel(tb).SetText("Rot:").SetTooltip("rotate display")
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Orbit(5, 0)
-		nv.UpdateView()
-	})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Orbit(0, 5)
-		nv.UpdateView()
-	})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Orbit(0, -5)
-		nv.UpdateView()
-	})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Orbit(-5, 0)
-		nv.UpdateView()
-	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(5, 0)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(0, 5)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(0, -5)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(-5, 0)
+			nv.UpdateView()
+		})
 	gi.NewSeparator(tb)
 
 	gi.NewLabel(tb).SetText("Pan:").SetTooltip("pan display")
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Pan(-.2, 0)
-		nv.UpdateView()
-	})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Pan(0, .2)
-		nv.UpdateView()
-	})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Pan(0, -.2)
-		nv.UpdateView()
-	})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).OnClick(func(e events.Event) {
-		nv.SceneXYZ().Camera.Pan(.2, 0)
-		nv.UpdateView()
-	})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(-.2, 0)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(0, .2)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(0, -.2)
+			nv.UpdateView()
+		})
+	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
+		OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(.2, 0)
+			nv.UpdateView()
+		})
 	gi.NewSeparator(tb)
 
 	gi.NewLabel(tb).SetText("Save:")
@@ -1073,12 +1112,18 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
 		OnClick(func(e events.Event) {
 			if nv.RecFastBkwd() {
 				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
 		OnClick(func(e events.Event) {
 			if nv.RecBkwd() {
 				nv.UpdateView()
@@ -1091,12 +1136,18 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.SkipNext).SetTooltip("move later by 1").
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
 		OnClick(func(e events.Event) {
 			if nv.RecFwd() {
 				nv.UpdateView()
 			}
 		})
 	gi.NewButton(tb).SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
+		Style(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		}).
 		OnClick(func(e events.Event) {
 			if nv.RecFastFwd() {
 				nv.UpdateView()
