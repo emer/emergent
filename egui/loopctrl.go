@@ -5,6 +5,7 @@
 package egui
 
 import (
+	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/gi"
 	"cogentcore.org/core/icons"
@@ -53,7 +54,10 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 		}
 		gi.NewButton(tb).SetText("Step").SetIcon(icons.SkipNext).
 			SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
-			StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
+			StyleFirst(func(s *styles.Style) {
+				s.SetEnabled(!gui.IsRunning)
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
 			OnClick(func(e events.Event) {
 				if !gui.IsRunning {
 					gui.IsRunning = true
