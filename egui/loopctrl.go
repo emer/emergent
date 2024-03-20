@@ -75,7 +75,7 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 		for _, s := range steps {
 			stepStrs = append(stepStrs, s.String())
 		}
-		scb.SetStrings(stepStrs)
+		scb.SetStrings(stepStrs...)
 		stack := loops.Stacks[mode]
 		scb.SetCurrentValue(stack.StepLevel.String())
 
