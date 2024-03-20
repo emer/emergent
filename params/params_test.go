@@ -213,7 +213,22 @@ var trgHypers = `{
         "StdDev": "0.1",
         "Val": "1.8"
       }
-    }
+    },
+    "History": [
+      {
+        "Sel": "Layer",
+        "Desc": "using default 1.8 inhib for all of network -- can explore",
+        "Params": {
+          "Layer.Inhib.Layer.Gi": "1.8"
+        },
+        "Hypers": {
+          "Layer.Inhib.Layer.Gi": {
+            "Min": "0.5",
+            "StdDev": "0.1"
+          }
+        }
+      }
+    ]
   },
   "Hidden2": {
     "Nm": "Hidden2",
@@ -225,7 +240,22 @@ var trgHypers = `{
         "StdDev": "0.1",
         "Val": "1.8"
       }
-    }
+    },
+    "History": [
+      {
+        "Sel": "Layer",
+        "Desc": "using default 1.8 inhib for all of network -- can explore",
+        "Params": {
+          "Layer.Inhib.Layer.Gi": "1.8"
+        },
+        "Hypers": {
+          "Layer.Inhib.Layer.Gi": {
+            "Min": "0.5",
+            "StdDev": "0.1"
+          }
+        }
+      }
+    ]
   },
   "Input": {
     "Nm": "Input",
@@ -237,7 +267,22 @@ var trgHypers = `{
         "StdDev": "0.1",
         "Val": "1.8"
       }
-    }
+    },
+    "History": [
+      {
+        "Sel": "Layer",
+        "Desc": "using default 1.8 inhib for all of network -- can explore",
+        "Params": {
+          "Layer.Inhib.Layer.Gi": "1.8"
+        },
+        "Hypers": {
+          "Layer.Inhib.Layer.Gi": {
+            "Min": "0.5",
+            "StdDev": "0.1"
+          }
+        }
+      }
+    ]
   },
   "Output": {
     "Nm": "Output",
@@ -249,7 +294,30 @@ var trgHypers = `{
         "StdDev": "0.1",
         "Val": "1.4"
       }
-    }
+    },
+    "History": [
+      {
+        "Sel": "Layer",
+        "Desc": "using default 1.8 inhib for all of network -- can explore",
+        "Params": {
+          "Layer.Inhib.Layer.Gi": "1.8"
+        },
+        "Hypers": {
+          "Layer.Inhib.Layer.Gi": {
+            "Min": "0.5",
+            "StdDev": "0.1"
+          }
+        }
+      },
+      {
+        "Sel": "#Output",
+        "Desc": "output definitely needs lower inhib -- true for smaller layers in general",
+        "Params": {
+          "Layer.Inhib.Layer.Gi": "1.4"
+        },
+        "Hypers": null
+      }
+    ]
   }
 }`
 
