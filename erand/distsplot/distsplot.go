@@ -5,7 +5,7 @@
 // Command distsplot plots histograms of random distributions
 package main
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"strconv"
