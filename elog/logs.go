@@ -54,7 +54,7 @@ type Logs struct {
 	Times map[string]bool `view:"-"`
 
 	// map of item indexes by name, for rapid access to items if they need to be modified after adding.
-	ItemIdxMap map[string]int `view:"-"`
+	ItemIndexMap map[string]int `view:"-"`
 
 	// sorted order of table scopes
 	TableOrder []etime.ScopeKey `view:"-"`
@@ -68,21 +68,21 @@ type Logs struct {
 // where needed.
 func (lg *Logs) AddItem(item *Item) *Item {
 	lg.Items = append(lg.Items, item)
-	if lg.ItemIdxMap == nil {
-		lg.ItemIdxMap = make(map[string]int)
+	if lg.ItemIndexMap == nil {
+		lg.ItemIndexMap = make(map[string]int)
 	}
 	// note: we're not really in a position to track errors in a big list of
 	// AddItem statements, so don't bother with error return
-	if _, has := lg.ItemIdxMap[item.Name]; has {
+	if _, has := lg.ItemIndexMap[item.Name]; has {
 		log.Printf("elog.AddItem Warning: item name repeated: %s -- item names must be unique -- use different scopes in their Write functions instead of adding multiple entries\n", item.Name)
 	}
-	lg.ItemIdxMap[item.Name] = len(lg.Items) - 1
+	lg.ItemIndexMap[item.Name] = len(lg.Items) - 1
 	return item
 }
 
 // ItemByName returns item by given name, false if not found
 func (lg *Logs) ItemByName(name string) (*Item, bool) {
-	idx, has := lg.ItemIdxMap[name]
+	idx, has := lg.ItemIndexMap[name]
 	if !has {
 		return nil, false
 	}
@@ -131,42 +131,42 @@ func (lg *Logs) MiscTable(name string) *etable.Table {
 	return dt
 }
 
-// IdxView returns the Index View of a log table for a given mode, time
+// IndexView returns the Index View of a log table for a given mode, time
 // This is used for data aggregation functions over the entire table.
 // It should not be altered (don't Filter!) and always shows the whole table.
-// See NamedIdxView for custom index views.
-func (lg *Logs) IdxView(mode etime.Modes, time etime.Times) *etable.IdxView {
-	return lg.IdxViewScope(etime.Scope(mode, time))
+// See NamedIndexView for custom index views.
+func (lg *Logs) IndexView(mode etime.Modes, time etime.Times) *etable.IndexView {
+	return lg.IndexViewScope(etime.Scope(mode, time))
 }
 
-// IdxViewScope returns the Index View of a log table for given etime.ScopeKey
+// IndexViewScope returns the Index View of a log table for given etime.ScopeKey
 // This is used for data aggregation functions over the entire table.
 // This view should not be altered and always shows the whole table.
-// See NamedIdxView for custom index views.
-func (lg *Logs) IdxViewScope(sk etime.ScopeKey) *etable.IdxView {
+// See NamedIndexView for custom index views.
+func (lg *Logs) IndexViewScope(sk etime.ScopeKey) *etable.IndexView {
 	lt := lg.Tables[sk]
-	return lt.GetIdxView()
+	return lt.GetIndexView()
 }
 
-// NamedIdxView returns a named Index View of a log table for a given mode, time.
+// NamedIndexView returns a named Index View of a log table for a given mode, time.
 // This is used for additional data aggregation, filtering etc.
 // When accessing the first time during writing a new row of the log,
 // it automatically shows a view of the entire table and returns true for 2nd arg.
 // You can then filter, sort, etc as needed.  Subsequent calls within same row Write will
 // return the last filtered view, and false for 2nd arg -- can then just reuse view.
-func (lg *Logs) NamedIdxView(mode etime.Modes, time etime.Times, name string) (*etable.IdxView, bool) {
-	return lg.NamedIdxViewScope(etime.Scope(mode, time), name)
+func (lg *Logs) NamedIndexView(mode etime.Modes, time etime.Times, name string) (*etable.IndexView, bool) {
+	return lg.NamedIndexViewScope(etime.Scope(mode, time), name)
 }
 
-// NamedIdxView returns a named Index View of a log table for a given mode, time.
+// NamedIndexView returns a named Index View of a log table for a given mode, time.
 // This is used for additional data aggregation, filtering etc.
 // When accessing the first time during writing a new row of the log,
 // it automatically shows a view of the entire table and returns true for 2nd arg.
 // You can then filter, sort, etc as needed.  Subsequent calls within same row Write will
 // return the last filtered view, and false for 2nd arg -- can then just reuse view.
-func (lg *Logs) NamedIdxViewScope(sk etime.ScopeKey, name string) (*etable.IdxView, bool) {
+func (lg *Logs) NamedIndexViewScope(sk etime.ScopeKey, name string) (*etable.IndexView, bool) {
 	lt := lg.Tables[sk]
-	return lt.NamedIdxView(name)
+	return lt.NamedIndexView(name)
 }
 
 // TableDetails returns the LogTable record of associated info for given table
@@ -289,14 +289,14 @@ func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int, di int) *etable.Table {
 		dt.SetNumRows(row + 1)
 	}
 	lg.WriteItems(sk, row)
-	lt.ResetIdxViews() // dirty that so it is regenerated later when needed
+	lt.ResetIndexViews() // dirty that so it is regenerated later when needed
 	lg.WriteLastRowToFile(lt)
 	return dt
 }
 
 // ResetLog resets the log for given mode, time, at given row.
 // by setting number of rows = 0
-// The IdxViews are reset too.
+// The IndexViews are reset too.
 func (lg *Logs) ResetLog(mode etime.Modes, time etime.Times) {
 	sk := etime.Scope(mode, time)
 	lt, ok := lg.Tables[sk]
@@ -305,7 +305,7 @@ func (lg *Logs) ResetLog(mode etime.Modes, time etime.Times) {
 	}
 	dt := lt.Table
 	dt.SetNumRows(0)
-	lt.ResetIdxViews()
+	lt.ResetIndexViews()
 }
 
 // MPIGatherTableRows calls empi.GatherTableRows on the given log table
@@ -326,7 +326,7 @@ func (lg *Logs) MPIGatherTableRows(mode etime.Modes, time etime.Times, comm *mpi
 	empi.GatherTableRows(mt, dt, comm)
 	lt.Table = mt
 	lg.MiscTables[skm] = dt // note: actual underlying tables are always being swapped
-	lt.ResetIdxViews()
+	lt.ResetIndexViews()
 }
 
 // SetLogFile sets the log filename for given scope

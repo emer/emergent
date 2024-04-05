@@ -18,7 +18,7 @@ func FlipBits(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 	}
 	var ons, offs []int
 	for i := 0; i < ln; i++ {
-		vl := tsr.FloatVal1D(i)
+		vl := tsr.FloatValue1D(i)
 		if vl == offVal {
 			offs = append(offs, i)
 		} else {

@@ -20,7 +20,7 @@ import (
 func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32TensorDi(layNm, di)
-	ly.UnitValsTensor(tsr, unitVar, di)
+	ly.UnitValuesTensor(tsr, unitVar, di)
 	return tsr
 }
 
@@ -30,7 +30,7 @@ func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int)
 func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32TensorDi(layNm, di)
-	ly.UnitValsRepTensor(tsr, unitVar, di)
+	ly.UnitValuesRepTensor(tsr, unitVar, di)
 	return tsr
 }
 
@@ -39,9 +39,9 @@ func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di i
 func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
 	ly := net.LayerByName(layNm)
 	tsrA := st.F32TensorDi(layNm, di) // standard re-used storage tensor
-	ly.UnitValsTensor(tsrA, unitVarA, di)
+	ly.UnitValuesTensor(tsrA, unitVarA, di)
 	tsrB := st.F32TensorDi(layNm+"_alt", di) // alternative storage tensor
-	ly.UnitValsTensor(tsrB, unitVarB, di)
+	ly.UnitValuesTensor(tsrB, unitVarB, di)
 	return metric.Correlation32(tsrA.Values, tsrB.Values)
 }
 
@@ -51,9 +51,9 @@ func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB str
 func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
 	ly := net.LayerByName(layNm)
 	tsrA := st.F32TensorDi(layNm, di) // standard re-used storage tensor
-	ly.UnitValsRepTensor(tsrA, unitVarA, di)
+	ly.UnitValuesRepTensor(tsrA, unitVarA, di)
 	tsrB := st.F32TensorDi(layNm+"_alt", di) // alternative storage tensor
-	ly.UnitValsRepTensor(tsrB, unitVarB, di)
+	ly.UnitValuesRepTensor(tsrB, unitVarB, di)
 	return metric.Correlation32(tsrA.Values, tsrB.Values)
 }
 
@@ -83,7 +83,7 @@ func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, di int, pat
 var PCAStrongThr = 0.01
 
 // PCAStats computes PCA statistics on recorded hidden activation patterns
-// on given log table (IdxView), and given list of layer names
+// on given log table (IndexView), and given list of layer names
 // and variable name -- columns named "layer_var".
 // Helpful for measuring the overall information (variance) in the representations
 // to detect a common failure mode where a few patterns dominate over everything ("hogs").
@@ -93,7 +93,7 @@ var PCAStrongThr = 0.01
 // layer_PCA_Next5: average strength of next 5 eigenvalues
 // layer_PCA_Rest: average strength of remaining eigenvalues (if more than 10 total eigens)
 // Uses SVD to compute much more efficiently than official PCA.
-func (st *Stats) PCAStats(ix *etable.IdxView, varNm string, layers []string) {
+func (st *Stats) PCAStats(ix *etable.IndexView, varNm string, layers []string) {
 	svd := &st.SVD
 	svd.Cond = PCAStrongThr
 	for _, lnm := range layers {

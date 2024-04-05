@@ -61,7 +61,7 @@ func (pr *Params) Apply(obj any, setMsg bool) error {
 			if cv, has := hv[pt]; has { // full path
 				cv["Val"] = v
 			} else {
-				hv[pt] = HyperVals{"Val": v}
+				hv[pt] = HyperValues{"Val": v}
 			}
 			continue
 		}

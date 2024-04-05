@@ -12,16 +12,16 @@ import (
 
 // UpdateNetView updates the gui visualization of the network.
 func (gui *GUI) UpdateNetView() {
-	if gui.ViewUpdt != nil {
-		gui.ViewUpdt.Update()
+	if gui.ViewUpdate != nil {
+		gui.ViewUpdate.Update()
 	}
 }
 
 // UpdateNetViewWhenStopped updates the gui visualization of the network.
 // when stopped either via stepping or user hitting stop button.
 func (gui *GUI) UpdateNetViewWhenStopped() {
-	if gui.ViewUpdt != nil {
-		gui.ViewUpdt.UpdateWhenStopped()
+	if gui.ViewUpdate != nil {
+		gui.ViewUpdate.UpdateWhenStopped()
 	}
 }
 

@@ -19,9 +19,9 @@ type FIx struct {
 	pad, pad1 uint32
 }
 
-// Idx returns the physical index of the logical index i.
+// Index returns the physical index of the logical index i.
 // i must be < Len.
-func (fi *FIx) Idx(i uint32) uint32 {
+func (fi *FIx) Index(i uint32) uint32 {
 	i += fi.Zi
 	if i >= fi.Len {
 		i -= fi.Len
@@ -29,14 +29,14 @@ func (fi *FIx) Idx(i uint32) uint32 {
 	return i
 }
 
-// IdxIsValid returns true if given index is valid: >= 0 and < Len
-func (fi *FIx) IdxIsValid(i uint32) bool {
+// IndexIsValid returns true if given index is valid: >= 0 and < Len
+func (fi *FIx) IndexIsValid(i uint32) bool {
 	return i < fi.Len
 }
 
 // Shift moves the zero index up by n.
 func (fi *FIx) Shift(n uint32) {
-	fi.Zi = uint32(fi.Idx(n))
+	fi.Zi = uint32(fi.Index(n))
 }
 
 //gosl: end ringidx

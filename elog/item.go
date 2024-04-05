@@ -55,7 +55,7 @@ type Item struct {
 	ErrCol string
 
 	// index of tensor to plot -- defaults to 0 -- use -1 to plot all
-	TensorIdx int
+	TensorIndex int
 
 	// specific color for plot -- uses default ordering of colors if empty
 	Color string

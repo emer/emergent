@@ -270,7 +270,7 @@ func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) *Item {
 func (lg *Logs) RunStats(stats ...string) {
 	sk := etime.Scope(etime.Train, etime.Run)
 	lt := lg.TableDetailsScope(sk)
-	ix, _ := lt.NamedIdxView("RunStats")
+	ix, _ := lt.NamedIndexView("RunStats")
 
 	spl := split.GroupBy(ix, []string{"RunName"})
 	for _, st := range stats {
@@ -396,30 +396,30 @@ func (lg *Logs) SetFixMinItems(min float64, itemNames ...string) {
 	}
 }
 
-// LastNRows returns an IdxView onto table for given scope with the last
+// LastNRows returns an IndexView onto table for given scope with the last
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
-// NamedIdxView functions.
-func (lg *Logs) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IdxView {
+// NamedIndexView functions.
+func (lg *Logs) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IndexView {
 	return lg.LastNRowsScope(etime.Scope(mode, time), n)
 }
 
-// LastNRowsScope returns an IdxView onto table for given scope with the last
+// LastNRowsScope returns an IndexView onto table for given scope with the last
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
-// NamedIdxView functions.
-func (lg *Logs) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IdxView {
-	ix, isnew := lg.NamedIdxViewScope(sk, "LastNRows")
+// NamedIndexView functions.
+func (lg *Logs) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IndexView {
+	ix, isnew := lg.NamedIndexViewScope(sk, "LastNRows")
 	if !isnew {
 		return ix
 	}
 	if n > ix.Len()-1 {
 		n = ix.Len() - 1
 	}
-	if ix.Idxs == nil { // should not happen
-		ix.Idxs = make([]int, ix.Table.Rows)
+	if ix.Indexes == nil { // should not happen
+		ix.Indexes = make([]int, ix.Table.Rows)
 	}
-	ix.Idxs = ix.Idxs[ix.Len()-n:]
+	ix.Indexes = ix.Indexes[ix.Len()-n:]
 	return ix
 }
 

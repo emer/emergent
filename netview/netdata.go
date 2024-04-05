@@ -41,7 +41,7 @@ type NetData struct { //gti:add
 	PrjnLay string
 
 	// 1D index of unit within PrjnLay for for viewing projections
-	PrjnUnIdx int
+	PrjnUnIndex int
 
 	// copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc
 	PrjnType string `edit:"-"`
@@ -50,16 +50,16 @@ type NetData struct { //gti:add
 	UnVars []string
 
 	// index of each variable in the Vars slice
-	UnVarIdxs map[string]int
+	UnVarIndexes map[string]int
 
 	// the list of synaptic variables saved
 	SynVars []string
 
 	// index of synaptic variable in the SynVars slice
-	SynVarIdxs map[string]int
+	SynVarIndexes map[string]int
 
-	// the circular ring index -- Max here is max number of values to store, Len is number stored, and Idx(Len-1) is the most recent one, etc
-	Ring ringidx.Idx
+	// the circular ring index -- Max here is max number of values to store, Len is number stored, and Index(Len-1) is the most recent one, etc
+	Ring ringidx.Index
 
 	// max data parallel data per unit
 	MaxData int
@@ -127,18 +127,18 @@ func (nd *NetData) Config() {
 	vlen := len(nvars)
 	if len(nd.UnVars) != vlen {
 		nd.UnVars = nvars
-		nd.UnVarIdxs = make(map[string]int, vlen)
+		nd.UnVarIndexes = make(map[string]int, vlen)
 		for vi, vn := range nd.UnVars {
-			nd.UnVarIdxs[vn] = vi
+			nd.UnVarIndexes[vn] = vi
 		}
 	}
 	svars := nd.Net.SynVarNames()
 	svlen := len(svars)
 	if len(nd.SynVars) != svlen {
 		nd.SynVars = svars
-		nd.SynVarIdxs = make(map[string]int, svlen)
+		nd.SynVarIndexes = make(map[string]int, svlen)
 		for vi, vn := range nd.SynVars {
-			nd.SynVarIdxs[vn] = vi
+			nd.SynVarIndexes[vn] = vi
 		}
 	}
 makeData:
@@ -229,7 +229,7 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 	nd.Config() // inexpensive if no diff, and safe..
 	vlen := len(nd.UnVars)
 	nd.Ring.Add(1)
-	lidx := nd.Ring.LastIdx()
+	lidx := nd.Ring.LastIndex()
 	maxData := nd.MaxData
 
 	if rastCtr < 0 {
@@ -261,7 +261,7 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 			for di := 0; di < maxData; di++ {
 				idx := lidx*nvu + vi*maxData*nu + di*nu
 				dvals := ld.Data[idx : idx+nu]
-				lay.UnitVals(&dvals, vnm, di)
+				lay.UnitValues(&dvals, vnm, di)
 				for ui := range dvals {
 					vl := dvals[ui]
 					if !mat32.IsNaN(vl) {
@@ -278,7 +278,7 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 // RecordLastCtrs records just the last counter string to be the given string
 // overwriting what was there before.
 func (nd *NetData) RecordLastCtrs(ctrs string) {
-	lidx := nd.Ring.LastIdx()
+	lidx := nd.Ring.LastIndex()
 	nd.Counters[lidx] = ctrs
 }
 
@@ -295,7 +295,7 @@ func (nd *NetData) UpdateUnVarRange() {
 		*vmx = -math.MaxFloat32
 
 		for ri := 0; ri < rlen; ri++ {
-			ridx := nd.Ring.Idx(ri)
+			ridx := nd.Ring.Index(ri)
 			mmidx := ridx * vlen
 			mn := nd.UnMinPer[mmidx+vi]
 			mx := nd.UnMaxPer[mmidx+vi]
@@ -313,13 +313,13 @@ func (nd *NetData) VarRange(vnm string) (float32, float32, bool) {
 	}
 	if strings.HasPrefix(vnm, "r.") || strings.HasPrefix(vnm, "s.") {
 		vnm = vnm[2:]
-		vi, ok := nd.SynVarIdxs[vnm]
+		vi, ok := nd.SynVarIndexes[vnm]
 		if !ok {
 			return 0, 0, false
 		}
 		return nd.SynMinVar[vi], nd.SynMaxVar[vi], true
 	}
-	vi, ok := nd.UnVarIdxs[vnm]
+	vi, ok := nd.UnVarIndexes[vnm]
 	if !ok {
 		return 0, 0, false
 	}
@@ -355,12 +355,12 @@ func (nd *NetData) RecordSyns() {
 	}
 }
 
-// RecIdx returns record index for given record number,
+// RecIndex returns record index for given record number,
 // which is -1 for current (last) record, or in [0..Len-1] for prior records.
-func (nd *NetData) RecIdx(recno int) int {
-	ridx := nd.Ring.LastIdx()
-	if nd.Ring.IdxIsValid(recno) {
-		ridx = nd.Ring.Idx(recno)
+func (nd *NetData) RecIndex(recno int) int {
+	ridx := nd.Ring.LastIndex()
+	if nd.Ring.IndexIsValid(recno) {
+		ridx = nd.Ring.Index(recno)
 	}
 	return ridx
 }
@@ -371,19 +371,19 @@ func (nd *NetData) CounterRec(recno int) string {
 	if nd.Ring.Len == 0 {
 		return ""
 	}
-	ridx := nd.RecIdx(recno)
+	ridx := nd.RecIndex(recno)
 	return nd.Counters[ridx]
 }
 
 // UnitVal returns the value for given layer, variable name, unit index, data parallel idx di,
 // and record number, which is -1 for current (last) record, or in [0..Len-1] for prior records.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) UnitVal(laynm string, vnm string, uidx1d int, recno int, di int) (float32, bool) {
+func (nd *NetData) UnitValue(laynm string, vnm string, uidx1d int, recno int, di int) (float32, bool) {
 	if nd.Ring.Len == 0 {
 		return 0, false
 	}
-	ridx := nd.RecIdx(recno)
-	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx, di)
+	ridx := nd.RecIndex(recno)
+	return nd.UnitValueIndex(laynm, vnm, uidx1d, ridx, di)
 }
 
 // RasterCtr returns the raster counter value at given record number (-1 = current)
@@ -391,7 +391,7 @@ func (nd *NetData) RasterCtr(recno int) (int, bool) {
 	if nd.Ring.Len == 0 {
 		return 0, false
 	}
-	ridx := nd.RecIdx(recno)
+	ridx := nd.RecIndex(recno)
 	return nd.RasterCtrs[ridx], true
 }
 
@@ -403,21 +403,21 @@ func (nd *NetData) UnitValRaster(laynm string, vnm string, uidx1d int, rastCtr i
 	if !has {
 		return 0, false
 	}
-	return nd.UnitValIdx(laynm, vnm, uidx1d, ridx, di)
+	return nd.UnitValueIndex(laynm, vnm, uidx1d, ridx, di)
 }
 
-// UnitValIdx returns the value for given layer, variable name, unit index, stored idx,
+// UnitValueIndex returns the value for given layer, variable name, unit index, stored idx,
 // and data parallel index.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int, di int) (float32, bool) {
+func (nd *NetData) UnitValueIndex(laynm string, vnm string, uidx1d int, ridx int, di int) (float32, bool) {
 	if strings.HasPrefix(vnm, "r.") {
 		svar := vnm[2:]
-		return nd.RecvUnitVal(laynm, svar, uidx1d)
+		return nd.RecvUnitValue(laynm, svar, uidx1d)
 	} else if strings.HasPrefix(vnm, "s.") {
 		svar := vnm[2:]
-		return nd.SendUnitVal(laynm, svar, uidx1d)
+		return nd.SendUnitValue(laynm, svar, uidx1d)
 	}
-	vi, ok := nd.UnVarIdxs[vnm]
+	vi, ok := nd.UnVarIndexes[vnm]
 	if !ok {
 		return 0, false
 	}
@@ -439,7 +439,7 @@ func (nd *NetData) UnitValIdx(laynm string, vnm string, uidx1d int, ridx int, di
 // RecvUnitVal returns the value for given layer, variable name, unit index,
 // for receiving projection variable, based on recorded synaptic projection data.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, bool) {
+func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32, bool) {
 	ld, ok := nd.LayData[laynm]
 	if nd.NoSynData || !ok || nd.PrjnLay == "" {
 		return 0, false
@@ -471,23 +471,23 @@ func (nd *NetData) RecvUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 	if spd == nil {
 		return 0, false
 	}
-	varIdx, err := pj.SynVarIdx(vnm)
+	varIndex, err := pj.SynVarIndex(vnm)
 	if err != nil {
 		return 0, false
 	}
-	synIdx := pj.SynIdx(uidx1d, nd.PrjnUnIdx)
-	if synIdx < 0 {
+	synIndex := pj.SynIndex(uidx1d, nd.PrjnUnIndex)
+	if synIndex < 0 {
 		return 0, false
 	}
 	nsyn := pj.Syn1DNum()
-	val := spd.SynData[varIdx*nsyn+synIdx]
+	val := spd.SynData[varIndex*nsyn+synIndex]
 	return val, true
 }
 
 // SendUnitVal returns the value for given layer, variable name, unit index,
 // for sending projection variable, based on recorded synaptic projection data.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
-func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, bool) {
+func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32, bool) {
 	ld, ok := nd.LayData[laynm]
 	if nd.NoSynData || !ok || nd.PrjnLay == "" {
 		return 0, false
@@ -519,16 +519,16 @@ func (nd *NetData) SendUnitVal(laynm string, vnm string, uidx1d int) (float32, b
 	if rpd == nil {
 		return 0, false
 	}
-	varIdx, err := pj.SynVarIdx(vnm)
+	varIndex, err := pj.SynVarIndex(vnm)
 	if err != nil {
 		return 0, false
 	}
-	synIdx := pj.SynIdx(nd.PrjnUnIdx, uidx1d)
-	if synIdx < 0 {
+	synIndex := pj.SynIndex(nd.PrjnUnIndex, uidx1d)
+	if synIndex < 0 {
 		return 0, false
 	}
 	nsyn := pj.Syn1DNum()
-	val := rpd.SynData[varIdx*nsyn+synIdx]
+	val := rpd.SynData[varIndex*nsyn+synIndex]
 	return val, true
 }
 
@@ -627,12 +627,12 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // Useful for replaying detailed trace for units of interest.
 func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //gti:add
 	nd := &nv.Data
-	if nd.PrjnLay == "" || nd.PrjnUnIdx < 0 {
+	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
 		return nil, nil
 	}
 
-	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIdx)
+	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
 
 	b := gi.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
 	plt := eplot.NewPlot2D(b)
@@ -664,7 +664,7 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //gti:add
 // SelectedUnitTable returns a table with all of the data for the
 // currently-selected unit, and data parallel index.
 func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
-	if nd.PrjnLay == "" || nd.PrjnUnIdx < 0 {
+	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
 		fmt.Printf("NetView:SelectedUnitTable -- no unit selected\n")
 		return nil
 	}
@@ -675,7 +675,7 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 		return nil
 	}
 
-	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIdx)
+	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
 
 	dt := &etable.Table{}
 	dt.SetMetaData("name", "NetView: "+selnm)
@@ -686,7 +686,7 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 	vlen := len(nd.UnVars)
 	nu := ld.NUnits
 	nvu := vlen * nd.MaxData * nu
-	uidx1d := nd.PrjnUnIdx
+	uidx1d := nd.PrjnUnIndex
 
 	sch := etable.Schema{
 		{"Rec", etensor.INT64, nil, nil},
@@ -697,12 +697,12 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 	dt.SetFromSchema(sch, ln)
 
 	for ri := 0; ri < ln; ri++ {
-		ridx := nd.RecIdx(ri)
-		dt.SetCellFloatIdx(0, ri, float64(ri))
+		ridx := nd.RecIndex(ri)
+		dt.SetCellFloatIndex(0, ri, float64(ri))
 		for vi := 0; vi < vlen; vi++ {
 			idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 			val := ld.Data[idx]
-			dt.SetCellFloatIdx(vi+1, ri, float64(val))
+			dt.SetCellFloatIndex(vi+1, ri, float64(val))
 		}
 	}
 	return dt

@@ -40,7 +40,7 @@ func NewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	return lm
 }
 
-func (lm *LayMesh) Sizes() (nVtx, nIdx int, hasColor bool) {
+func (lm *LayMesh) Sizes() (nVtx, nIndex int, hasColor bool) {
 	lm.Trans = true
 	lm.Dynamic = true
 	lm.Color = true
@@ -51,32 +51,32 @@ func (lm *LayMesh) Sizes() (nVtx, nIdx int, hasColor bool) {
 	lm.Shape.CopyShape(shp)
 	if lm.View.Params.Raster.On {
 		if shp.NumDims() == 4 {
-			lm.NVtx, lm.NIdx = lm.RasterSize4D()
+			lm.NVtx, lm.NIndex = lm.RasterSize4D()
 		} else {
-			lm.NVtx, lm.NIdx = lm.RasterSize2D()
+			lm.NVtx, lm.NIndex = lm.RasterSize2D()
 		}
 	} else {
 		if shp.NumDims() == 4 {
-			lm.NVtx, lm.NIdx = lm.Size4D()
+			lm.NVtx, lm.NIndex = lm.Size4D()
 		} else {
-			lm.NVtx, lm.NIdx = lm.Size2D()
+			lm.NVtx, lm.NIndex = lm.Size2D()
 		}
 	}
-	return lm.NVtx, lm.NIdx, lm.Color
+	return lm.NVtx, lm.NIndex, lm.Color
 }
 
-func (lm *LayMesh) Size2D() (nVtx, nIdx int) {
+func (lm *LayMesh) Size2D() (nVtx, nIndex int) {
 	nz := lm.Shape.Dim(0)
 	nx := lm.Shape.Dim(1)
 	segs := 1
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	nVtx = vtxSz * 5 * nz * nx
-	nIdx = idxSz * 5 * nz * nx
+	nIndex = idxSz * 5 * nz * nx
 	return
 }
 
-func (lm *LayMesh) Size4D() (nVtx, nIdx int) {
+func (lm *LayMesh) Size4D() (nVtx, nIndex int) {
 	npz := lm.Shape.Dim(0) // p = pool
 	npx := lm.Shape.Dim(1)
 	nuz := lm.Shape.Dim(2) // u = unit
@@ -86,7 +86,7 @@ func (lm *LayMesh) Size4D() (nVtx, nIdx int) {
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	nVtx = vtxSz * 5 * npz * npx * nuz * nux
-	nIdx = idxSz * 5 * npz * npx * nuz * nux
+	nIndex = idxSz * 5 * npz * npx * nuz * nux
 	return
 }
 
@@ -177,7 +177,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 			poff := pidx * vtxSz * 5
 			ioff := pidx * idxSz * 5
 			x0 := uo + float32(xi)
-			_, scaled, clr, _ := lm.View.UnitVal(lm.Lay, []int{zi, xi})
+			_, scaled, clr, _ := lm.View.UnitValue(lm.Lay, []int{zi, xi})
 			v4c := mat32.NewVec4Color(clr)
 			vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 			ht := 0.5 * mat32.Abs(scaled)
@@ -246,7 +246,7 @@ func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 					poff := pidx * vtxSz * 5
 					ioff := pidx * idxSz * 5
 					x0 := xp0 + xsc*(uo+float32(xui))
-					_, scaled, clr, _ := lm.View.UnitVal(lm.Lay, []int{zpi, xpi, zui, xui})
+					_, scaled, clr, _ := lm.View.UnitValue(lm.Lay, []int{zpi, xpi, zui, xui})
 					v4c := mat32.NewVec4Color(clr)
 					vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 					ht := 0.5 * mat32.Abs(scaled)

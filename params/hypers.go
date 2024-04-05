@@ -11,11 +11,11 @@ import (
 	"log"
 )
 
-// HyperVals is a string-value map for storing hyperparameter values
-type HyperVals map[string]string //gti:add
+// HyperValues is a string-value map for storing hyperparameter values
+type HyperValues map[string]string //gti:add
 
 // JSONString returns hyper values as a JSON formatted string
-func (hv *HyperVals) JSONString() string {
+func (hv *HyperValues) JSONString() string {
 	var buf bytes.Buffer
 	b, _ := json.Marshal(hv)
 	buf.Write(b)
@@ -23,14 +23,14 @@ func (hv *HyperVals) JSONString() string {
 }
 
 // SetJSONString sets from a JSON_formatted string
-func (hv *HyperVals) SetJSONString(str string) error {
+func (hv *HyperValues) SetJSONString(str string) error {
 	return json.Unmarshal([]byte(str), hv)
 }
 
-// CopyFrom copies from another HyperVals
-func (hv *HyperVals) CopyFrom(cp HyperVals) {
+// CopyFrom copies from another HyperValues
+func (hv *HyperValues) CopyFrom(cp HyperValues) {
 	if *hv == nil {
-		*hv = make(HyperVals, len(cp))
+		*hv = make(HyperValues, len(cp))
 	}
 	for k, v := range cp {
 		(*hv)[k] = v
@@ -41,7 +41,7 @@ func (hv *HyperVals) CopyFrom(cp HyperVals) {
 // to hyperparameter search as well as the values.
 // Use the key "Val" for the default value. This is equivalant to the value in
 // Params. "Min" and "Max" guid the range, and "Sigma" describes a Gaussian.
-type Hypers map[string]HyperVals //gti:add
+type Hypers map[string]HyperValues //gti:add
 
 // ParamByNameTry returns given parameter, by name.
 // Returns error if not found.
@@ -76,7 +76,7 @@ func (pr *Hypers) CopyFrom(cp Hypers) {
 		if shv, has := (*pr)[path]; has {
 			shv.CopyFrom(hv)
 		} else {
-			shv := HyperVals{}
+			shv := HyperValues{}
 			shv.CopyFrom(hv)
 			(*pr)[path] = shv
 		}

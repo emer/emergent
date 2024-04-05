@@ -111,9 +111,9 @@ func (st *Stats) Print(stats []string) string {
 	return str
 }
 
-// PrintVals returns values of given stats with given formats,
+// PrintValues returns values of given stats with given formats,
 // and delimiter
-func (st *Stats) PrintVals(stats, fmts []string, delim string) string {
+func (st *Stats) PrintValues(stats, fmts []string, delim string) string {
 	var str string
 	for i, nm := range stats {
 		fm := fmts[i]

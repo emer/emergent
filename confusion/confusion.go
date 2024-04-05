@@ -126,16 +126,16 @@ func (cm *Matrix) SumTFPN(class int) {
 	for c := 0; c < n; c++ {
 		for r := 0; r < n; r++ {
 			if r == class && c == class { //        True Positive
-				v := cm.Sum.FloatValRowCell(r, c)
+				v := cm.Sum.FloatValueRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 0, v)
 			} else if r == class && c != class { // False Positive
-				fn += cm.Sum.FloatValRowCell(r, c)
+				fn += cm.Sum.FloatValueRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 1, fp)
 			} else if r != class && c == class { // False Negative
-				fp += cm.Sum.FloatValRowCell(r, c)
+				fp += cm.Sum.FloatValueRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 2, fn)
 			} else { //                             True Negative
-				tn += cm.Sum.FloatValRowCell(r, c)
+				tn += cm.Sum.FloatValueRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 3, tn)
 			}
 		}
@@ -146,9 +146,9 @@ func (cm *Matrix) SumTFPN(class int) {
 }
 
 func (cm *Matrix) ScoreClass(class int) {
-	tp := cm.TFPN.FloatValRowCell(class, 0)
-	fp := cm.TFPN.FloatValRowCell(class, 1)
-	fn := cm.TFPN.FloatValRowCell(class, 2)
+	tp := cm.TFPN.FloatValueRowCell(class, 0)
+	fp := cm.TFPN.FloatValueRowCell(class, 1)
+	fn := cm.TFPN.FloatValueRowCell(class, 2)
 
 	precision := tp / (tp + fp)
 	cm.ClassScores.SetFloatRowCell(class, 0, precision)
@@ -165,9 +165,9 @@ func (cm *Matrix) ScoreMatrix() {
 
 	n := cm.N.Len()
 	for i := 0; i < n; i++ {
-		tp += cm.TFPN.FloatValRowCell(i, 0)
-		fp += cm.TFPN.FloatValRowCell(i, 1)
-		fn += cm.TFPN.FloatValRowCell(i, 2)
+		tp += cm.TFPN.FloatValueRowCell(i, 0)
+		fp += cm.TFPN.FloatValueRowCell(i, 1)
+		fn += cm.TFPN.FloatValueRowCell(i, 2)
 	}
 
 	// micro F1 - ignores class
@@ -178,7 +178,7 @@ func (cm *Matrix) ScoreMatrix() {
 	// some classes might not have any instances so check NaN
 	f1 = 0.0
 	for i := 0; i < n; i++ {
-		classf1 := cm.ClassScores.FloatValRowCell(i, 2)
+		classf1 := cm.ClassScores.FloatValueRowCell(i, 2)
 		if math.IsNaN(classf1) == false {
 			f1 += classf1
 		}
@@ -190,11 +190,11 @@ func (cm *Matrix) ScoreMatrix() {
 	f1 = 0.0
 	totalN := 0.0
 	for i := 0; i < n; i++ {
-		classf1 := cm.ClassScores.FloatValRowCell(i, 2) * cm.N.FloatVal1D(i)
+		classf1 := cm.ClassScores.FloatValueRowCell(i, 2) * cm.N.FloatValue1D(i)
 		if math.IsNaN(classf1) == false {
 			f1 += classf1
 		}
-		totalN += cm.N.FloatVal1D(i)
+		totalN += cm.N.FloatValue1D(i)
 	}
 	cm.MatrixScores.SetFloat1D(2, f1/totalN)
 }

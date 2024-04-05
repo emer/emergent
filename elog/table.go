@@ -20,10 +20,10 @@ type LogTable struct {
 	Meta map[string]string
 
 	// Index View of the table -- automatically updated when a new row of data is logged to the table.
-	IdxView *etable.IdxView `view:"-"`
+	IndexView *etable.IndexView `view:"-"`
 
-	// named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIdxView funtion for more details.
-	NamedViews map[string]*etable.IdxView `view:"-"`
+	// named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIndexView funtion for more details.
+	NamedViews map[string]*etable.IndexView `view:"-"`
 
 	// File to store the log into.
 	File *os.File `view:"-"`
@@ -36,40 +36,40 @@ type LogTable struct {
 func NewLogTable(table *etable.Table) *LogTable {
 	lt := &LogTable{Table: table}
 	lt.Meta = make(map[string]string)
-	lt.NamedViews = make(map[string]*etable.IdxView)
+	lt.NamedViews = make(map[string]*etable.IndexView)
 	return lt
 }
 
-// GetIdxView returns the index view for the whole table.
+// GetIndexView returns the index view for the whole table.
 // It is reset to nil after log row is written, and if nil
 // then it is initialized to reflect current rows.
-func (lt *LogTable) GetIdxView() *etable.IdxView {
-	if lt.IdxView == nil {
-		lt.IdxView = etable.NewIdxView(lt.Table)
+func (lt *LogTable) GetIndexView() *etable.IndexView {
+	if lt.IndexView == nil {
+		lt.IndexView = etable.NewIndexView(lt.Table)
 	}
-	return lt.IdxView
+	return lt.IndexView
 }
 
-// NamedIdxView returns a named Index View of the table, and true
+// NamedIndexView returns a named Index View of the table, and true
 // if this index view was newly created to show entire table (else false).
 // This is used for additional data aggregation, filtering etc.
 // It is reset to nil after log row is written, and if nil
 // then it is initialized to reflect current rows as a starting point (returning true).
 // Thus, the bool return value can be used for re-using cached indexes.
-func (lt *LogTable) NamedIdxView(name string) (*etable.IdxView, bool) {
+func (lt *LogTable) NamedIndexView(name string) (*etable.IndexView, bool) {
 	ix, has := lt.NamedViews[name]
 	isnew := false
 	if !has || ix == nil {
-		ix = etable.NewIdxView(lt.Table)
+		ix = etable.NewIndexView(lt.Table)
 		lt.NamedViews[name] = ix
 		isnew = true
 	}
 	return ix, isnew
 }
 
-// ResetIdxViews resets all IdxViews -- after log row is written
-func (lt *LogTable) ResetIdxViews() {
-	lt.IdxView = nil
+// ResetIndexViews resets all IndexViews -- after log row is written
+func (lt *LogTable) ResetIndexViews() {
+	lt.IndexView = nil
 	for nm := range lt.NamedViews {
 		lt.NamedViews[nm] = nil
 	}

@@ -84,47 +84,47 @@ type Prjn interface {
 	// Note: this is a global list so do not modify!
 	SynVarProps() map[string]string
 
-	// SynIdx returns the index of the synapse between given send, recv unit indexes
+	// SynIndex returns the index of the synapse between given send, recv unit indexes
 	// (1D, flat indexes). Returns -1 if synapse not found between these two neurons.
 	// This requires searching within connections for receiving unit (a bit slow).
-	SynIdx(sidx, ridx int) int
+	SynIndex(sidx, ridx int) int
 
-	// SynVarIdx returns the index of given variable within the synapse,
+	// SynVarIndex returns the index of given variable within the synapse,
 	// according to *this prjn's* SynVarNames() list (using a map to lookup index),
 	// or -1 and error message if not found.
-	SynVarIdx(varNm string) (int, error)
+	SynVarIndex(varNm string) (int, error)
 
 	// SynVarNum returns the number of synapse-level variables
 	// for this prjn.  This is needed for extending indexes in derived types.
 	SynVarNum() int
 
 	// Syn1DNum returns the number of synapses for this prjn as a 1D array.
-	// This is the max idx for SynVal1D and the number of vals set by SynVals.
+	// This is the max idx for SynVal1D and the number of vals set by SynValues.
 	Syn1DNum() int
 
-	// SynVal1D returns value of given variable index (from SynVarIdx) on given SynIdx.
+	// SynVal1D returns value of given variable index (from SynVarIndex) on given SynIndex.
 	// Returns NaN on invalid index.
 	// This is the core synapse var access method used by other methods,
 	// so it is the only one that needs to be updated for derived layer types.
-	SynVal1D(varIdx int, synIdx int) float32
+	SynVal1D(varIndex int, synIndex int) float32
 
-	// SynVals sets values of given variable name for each synapse, using the natural ordering
+	// SynValues sets values of given variable name for each synapse, using the natural ordering
 	// of the synapses (sender based for Leabra),
 	// into given float32 slice (only resized if not big enough).
 	// Returns error on invalid var name.
-	SynVals(vals *[]float32, varNm string) error
+	SynValues(vals *[]float32, varNm string) error
 
 	// SynVal returns value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes).
 	// Returns mat32.NaN() for access errors.
-	SynVal(varNm string, sidx, ridx int) float32
+	SynValue(varNm string, sidx, ridx int) float32
 
 	// SetSynVal sets value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes).
 	// Typically only supports base synapse variables and is not extended
 	// for derived types.
 	// Returns error for access errors.
-	SetSynVal(varNm string, sidx, ridx int, val float32) error
+	SetSynValue(varNm string, sidx, ridx int, val float32) error
 
 	// Defaults sets default parameter values for all Prjn parameters
 	Defaults()

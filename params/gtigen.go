@@ -14,7 +14,7 @@ var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/params.History"
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/params.HistoryImpl", IDName: "history-impl", Doc: "HistoryImpl implements the History interface.  Implementing object can\njust pass calls to a HistoryImpl field."})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/params.HyperVals", IDName: "hyper-vals", Doc: "HyperVals is a string-value map for storing hyperparameter values"})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/params.HyperValues", IDName: "hyper-vals", Doc: "HyperValues is a string-value map for storing hyperparameter values"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/params.Hypers", IDName: "hypers", Doc: "Hypers is a parallel structure to Params which stores information relevant\nto hyperparameter search as well as the values.\nUse the key \"Val\" for the default value. This is equivalant to the value in\nParams. \"Min\" and \"Max\" guid the range, and \"Sigma\" describes a Gaussian."})
 

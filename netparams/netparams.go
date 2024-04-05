@@ -59,10 +59,10 @@ func (ps *Sets) SetString(sheet, sel, param string, val string) error {
 
 // ParamVal returns the value of given parameter, in selection sel,
 // in sheet and set.  Returns error if anything is not found.
-func (ps *Sets) ParamVal(sheet, sel, param string) (string, error) {
+func (ps *Sets) ParamValue(sheet, sel, param string) (string, error) {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return "", err
 	}
-	return sp.ParamVal(sel, param)
+	return sp.ParamValue(sel, param)
 }

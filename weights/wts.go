@@ -37,10 +37,10 @@ func (ly *Layer) SetMetaData(key, val string) {
 
 // Prjn is temp structure for holding decoded weights, one for each projection
 type Prjn struct {
-	From     string
-	MetaData map[string]string    // used for optional prjn-level params, metadata such as GScale
-	MetaVals map[string][]float32 // optional values at the projection level
-	Rs       []Recv
+	From       string
+	MetaData   map[string]string    // used for optional prjn-level params, metadata such as GScale
+	MetaValues map[string][]float32 // optional values at the projection level
+	Rs         []Recv
 }
 
 func (pj *Prjn) SetMetaData(key, val string) {

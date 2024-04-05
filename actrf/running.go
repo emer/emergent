@@ -20,10 +20,10 @@ func RunningAvg(out *etensor.Float32, act, src etensor.Tensor, tau float32) {
 	out.SetShape(oshp, nil, []string{"ActY", "ActX", "SrcY", "SrcX"})
 	for ay := 0; ay < aNy; ay++ {
 		for ax := 0; ax < aNx; ax++ {
-			av := float32(etensor.Prjn2DVal(act, false, ay, ax))
+			av := float32(etensor.Prjn2DValue(act, false, ay, ax))
 			for ty := 0; ty < tNy; ty++ {
 				for tx := 0; tx < tNx; tx++ {
-					tv := float32(etensor.Prjn2DVal(src, false, ty, tx))
+					tv := float32(etensor.Prjn2DValue(src, false, ty, tx))
 					oi := []int{ay, ax, ty, tx}
 					oo := out.Offset(oi)
 					ov := out.Values[oo]

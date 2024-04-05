@@ -89,7 +89,7 @@ func (nv *NetView) OnInit() {
 	nv.Layout.OnInit()
 	nv.Params.NetView = nv
 	nv.Params.Defaults()
-	nv.ColorMap = colormap.AvailMaps[string(nv.Params.ColorMap)]
+	nv.ColorMap = colormap.AvailableMaps[string(nv.Params.ColorMap)]
 	nv.RecNo = -1
 	nv.Style(func(s *styles.Style) {
 		s.Direction = styles.Column
@@ -215,7 +215,7 @@ func (nv *NetView) UpdateImpl() {
 	nv.CurVarParams = vp
 
 	if !vp.Range.FixMin || !vp.Range.FixMax {
-		needUpdt := false
+		needUpdate := false
 		// need to autoscale
 		min, max, ok := nv.Data.VarRange(nv.Var)
 		if ok {
@@ -224,27 +224,27 @@ func (nv *NetView) UpdateImpl() {
 				nmin := float32(minmax.NiceRoundNumber(float64(min), true)) // true = below
 				if vp.Range.Min != nmin {
 					vp.Range.Min = nmin
-					needUpdt = true
+					needUpdate = true
 				}
 			}
 			if !vp.Range.FixMax {
 				nmax := float32(minmax.NiceRoundNumber(float64(max), false)) // false = above
 				if vp.Range.Max != nmax {
 					vp.Range.Max = nmax
-					needUpdt = true
+					needUpdate = true
 				}
 			}
 			if vp.ZeroCtr && !vp.Range.FixMin && !vp.Range.FixMax {
 				bmax := mat32.Max(mat32.Abs(vp.Range.Max), mat32.Abs(vp.Range.Min))
-				if !needUpdt {
+				if !needUpdate {
 					if vp.Range.Max != bmax || vp.Range.Min != -bmax {
-						needUpdt = true
+						needUpdate = true
 					}
 				}
 				vp.Range.Max = bmax
 				vp.Range.Min = -bmax
 			}
-			if needUpdt {
+			if needUpdate {
 				nv.VarScaleUpdate(nv.Var)
 			}
 		}
@@ -267,7 +267,7 @@ func (nv *NetView) Config() {
 
 // ConfigNetView configures the overall view widget
 func (nv *NetView) ConfigNetView() {
-	cmap, ok := colormap.AvailMaps[string(nv.Params.ColorMap)]
+	cmap, ok := colormap.AvailableMaps[string(nv.Params.ColorMap)]
 	if ok {
 		nv.ColorMap = cmap
 	} else {
@@ -722,12 +722,12 @@ func (nv *NetView) ReadUnlock() {
 
 // UnitVal returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
-func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
+func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	idx1d := lay.Shape().Offset(idx)
 	if idx1d >= lay.Shape().Len() {
 		raw, hasval = 0, false
 	} else {
-		raw, hasval = nv.Data.UnitVal(lay.Name(), nv.Var, idx1d, nv.RecNo, nv.Di)
+		raw, hasval = nv.Data.UnitValue(lay.Name(), nv.Var, idx1d, nv.RecNo, nv.Di)
 	}
 	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
 	return
@@ -739,7 +739,7 @@ func (nv *NetView) UnitVal(lay emer.Layer, idx []int) (raw, scaled float32, clr 
 func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	rs := lay.RepShape()
 	idx1d := rs.Offset(idx)
-	ridx := lay.RepIdxs()
+	ridx := lay.RepIndexes()
 	if len(ridx) == 0 { // no rep
 		if idx1d >= lay.Shape().Len() {
 			raw, hasval = 0, false
@@ -772,14 +772,14 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	}
 	if !hasval {
 		scaled = 0
-		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIdx {
+		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIndex {
 			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor
 		}
 	} else {
-		clp := nv.CurVarParams.Range.ClipVal(raw)
-		norm := nv.CurVarParams.Range.NormVal(clp)
+		clp := nv.CurVarParams.Range.ClipValue(raw)
+		norm := nv.CurVarParams.Range.NormValue(clp)
 		var op float32
 		if nv.CurVarParams.ZeroCtr {
 			scaled = float32(2*norm - 1)
@@ -947,7 +947,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 			s.Grow.Set(0, 1)
 		})
 	nv.ColorMapVal.OnChange(func(e events.Event) {
-		cmap, ok := colormap.AvailMaps[string(nv.Params.ColorMap)]
+		cmap, ok := colormap.AvailableMaps[string(nv.Params.ColorMap)]
 		if ok {
 			nv.ColorMap = cmap
 		}

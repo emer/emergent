@@ -109,7 +109,7 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
-			ri := etensor.Prjn2DIdx(recv, false, ry, rx)
+			ri := etensor.Prjn2DIndex(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
@@ -128,7 +128,7 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 					if clipx {
 						continue
 					}
-					si := etensor.Prjn2DIdx(send, false, sy, sx)
+					si := etensor.Prjn2DIndex(send, false, sy, sx)
 					off := ri*sNtot + si
 					if !cr.SelfCon && same && ri == si {
 						continue
@@ -177,7 +177,7 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 
 	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
-			ri := etensor.Prjn2DIdx(send, false, ry, rx)
+			ri := etensor.Prjn2DIndex(send, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
@@ -196,7 +196,7 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 					if clipx {
 						continue
 					}
-					si := etensor.Prjn2DIdx(recv, false, sy, sx)
+					si := etensor.Prjn2DIndex(recv, false, sy, sx)
 					off := si*sNtot + ri
 					if !cr.SelfCon && same && ri == si {
 						continue

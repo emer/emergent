@@ -10,12 +10,12 @@ There are also various utility functions for computing various useful statistics
 
 # Examples
 
-A common use-case for example is to use `F32Tensor` to manage a tensor that is reused every time you need to access values on a given layer (this was commonly named `ValsTsr` in existing Sims):
+A common use-case for example is to use `F32Tensor` to manage a tensor that is reused every time you need to access values on a given layer (this was commonly named `ValuesTsr` in existing Sims):
 
 ```Go
     ly := ctxt.Net.LayerByName(lnm)
     tsr := ctxt.Stats.F32Tensor(lnm)
-    ly.UnitValsTensor(tsr, "Act")
+    ly.UnitValuesTensor(tsr, "Act")
     // tsr now has the "Act" values from given layer -- can be logged, computed on, etc..
 ```
 

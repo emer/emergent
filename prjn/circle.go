@@ -98,8 +98,8 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 					}
 					d := int(mat32.Round(sp.DistTo(sctr)))
 					if d <= cr.Radius {
-						ri := etensor.Prjn2DIdx(recv, false, ry, rx)
-						si := etensor.Prjn2DIdx(send, false, sy, sx)
+						ri := etensor.Prjn2DIndex(recv, false, ry, rx)
+						si := etensor.Prjn2DIndex(send, false, sy, sx)
 						off := ri*sNtot + si
 						if !cr.SelfCon && same && ri == si {
 							continue

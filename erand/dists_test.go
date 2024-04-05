@@ -29,7 +29,7 @@ func TestGaussianGen(t *testing.T) {
 		vl := GaussianGen(mean, sig, -1)
 		dt.SetCellFloat("Val", i, vl)
 	}
-	ix := etable.NewIdxView(dt)
+	ix := etable.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
 	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
@@ -67,7 +67,7 @@ func TestBinomialGen(t *testing.T) {
 		vl := BinomialGen(n, p, -1)
 		dt.SetCellFloat("Val", i, vl)
 	}
-	ix := etable.NewIdxView(dt)
+	ix := etable.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
 	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
@@ -114,7 +114,7 @@ func TestPoissonGen(t *testing.T) {
 		vl := PoissonGen(lambda, -1)
 		dt.SetCellFloat("Val", i, vl)
 	}
-	ix := etable.NewIdxView(dt)
+	ix := etable.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
 	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
@@ -162,7 +162,7 @@ func TestGammaGen(t *testing.T) {
 		vl := GammaGen(alpha, beta, -1)
 		dt.SetCellFloat("Val", i, vl)
 	}
-	ix := etable.NewIdxView(dt)
+	ix := etable.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
 	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
@@ -200,7 +200,7 @@ func TestBetaGen(t *testing.T) {
 		vl := BetaGen(alpha, beta, -1)
 		dt.SetCellFloat("Val", i, vl)
 	}
-	ix := etable.NewIdxView(dt)
+	ix := etable.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
 	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]

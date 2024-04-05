@@ -67,12 +67,12 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		}
 	}
 
-	lay, _, _, unIdx := sw.LayerUnitAtPoint(e)
+	lay, _, _, unIndex := sw.LayerUnitAtPoint(e)
 	if lay == nil {
 		return
 	}
 	nv := sw.NetView
-	nv.Data.PrjnUnIdx = unIdx
+	nv.Data.PrjnUnIndex = unIndex
 	nv.Data.PrjnLay = lay.Name()
 	nv.UpdateView()
 	e.SetHandled()
@@ -88,18 +88,18 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 	sval := ""
 	if lay.Is2D() {
 		idx := []int{ly, lx}
-		val, _, _, hasval := nv.UnitVal(lay, idx)
+		val, _, _, hasval := nv.UnitValue(lay, idx)
 		if !hasval {
 			sval = fmt.Sprintf("[%d,%d]=n/a\n", lx, ly)
 		} else {
 			sval = fmt.Sprintf("[%d,%d]=%g\n", lx, ly, val)
 		}
 	} else if lay.Is4D() {
-		idx, ok := lay.Idx4DFrom2D(lx, ly)
+		idx, ok := lay.Index4DFrom2D(lx, ly)
 		if !ok {
 			return
 		}
-		val, _, _, hasval := nv.UnitVal(lay, idx)
+		val, _, _, hasval := nv.UnitValue(lay, idx)
 		if !hasval {
 			sval = fmt.Sprintf("[%d,%d][%d,%d]=n/a\n", idx[1], idx[0], idx[3], idx[2])
 		} else {
@@ -112,7 +112,7 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 	e.SetHandled()
 }
 
-func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx int) {
+func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIndex int) {
 	pos := e.Pos()
 	sc := sw.SceneXYZ()
 	laysGp := sc.ChildByName("Layers", 0)
@@ -153,17 +153,17 @@ func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIdx
 		lshp := lay.Shape()
 		if lay.Is2D() {
 			idx := []int{ly, lx}
-			if !lshp.IdxIsValid(idx) {
+			if !lshp.IndexIsValid(idx) {
 				continue
 			}
-			unIdx = lshp.Offset(idx)
+			unIndex = lshp.Offset(idx)
 			return
 		} else if lay.Is4D() {
-			idx, ok := lay.Idx4DFrom2D(lx, ly)
+			idx, ok := lay.Index4DFrom2D(lx, ly)
 			if !ok {
 				continue
 			}
-			unIdx = lshp.Offset(idx)
+			unIndex = lshp.Offset(idx)
 			return
 		} else {
 			continue // not supported

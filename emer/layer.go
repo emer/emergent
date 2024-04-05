@@ -60,9 +60,9 @@ type Layer interface {
 	// Is4D() returns true if this is a 4D layer (has Pools as inner 2 dimensions)
 	Is4D() bool
 
-	// Idx4DFrom2D returns the 4D index from 2D coordinates
+	// Index4DFrom2D returns the 4D index from 2D coordinates
 	// within which inner dims are interleaved.  Returns false if 2D coords are invalid.
-	Idx4DFrom2D(x, y int) ([]int, bool)
+	Index4DFrom2D(x, y int) ([]int, bool)
 
 	// Type returns the functional type of layer according to LayerType (extensible in
 	// more specialized algorithms)
@@ -123,10 +123,10 @@ type Layer interface {
 	// Note: this is a global list so do not modify!
 	UnitVarProps() map[string]string
 
-	// UnitVarIdx returns the index of given variable within the Neuron,
+	// UnitVarIndex returns the index of given variable within the Neuron,
 	// according to *this layer's* UnitVarNames() list (using a map to lookup index),
 	// or -1 and error message if not found.
-	UnitVarIdx(varNm string) (int, error)
+	UnitVarIndex(varNm string) (int, error)
 
 	// UnitVarNum returns the number of Neuron-level variables
 	// for this layer.  This is needed for extending indexes in derived types.
@@ -138,60 +138,60 @@ type Layer interface {
 	// returns NaN on invalid index.
 	// This is the core unit var access method used by other methods,
 	// so it is the only one that needs to be updated for derived layer types.
-	UnitVal1D(varIdx int, idx, di int) float32
+	UnitVal1D(varIndex int, idx, di int) float32
 
-	// UnitVals fills in values of given variable name on unit,
+	// UnitValues fills in values of given variable name on unit,
 	// for each unit in the layer, into given float32 slice (only resized if not big enough).
 	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	// Returns error on invalid var name.
-	UnitVals(vals *[]float32, varNm string, di int) error
+	UnitValues(vals *[]float32, varNm string, di int) error
 
-	// UnitValsTensor fills in values of given variable name on unit
+	// UnitValuesTensor fills in values of given variable name on unit
 	// for each unit in the layer, into given tensor.
 	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	// If tensor is not already big enough to hold the values, it is
 	// set to the same shape as the layer.
 	// Returns error on invalid var name.
-	UnitValsTensor(tsr etensor.Tensor, varNm string, di int) error
+	UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) error
 
-	// UnitValsRepTensor fills in values of given variable name on unit
+	// UnitValuesRepTensor fills in values of given variable name on unit
 	// for a smaller subset of representative units in the layer, into given tensor.
 	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	// This is used for computationally intensive stats or displays that work
 	// much better with a smaller number of units.
-	// The set of representative units are defined by SetRepIdxs -- all units
+	// The set of representative units are defined by SetRepIndexes -- all units
 	// are used if no such subset has been defined.
 	// If tensor is not already big enough to hold the values, it is
 	// set to RepShape to hold all the values if subset is defined,
-	// otherwise it calls UnitValsTensor and is identical to that.
+	// otherwise it calls UnitValuesTensor and is identical to that.
 	// Returns error on invalid var name.
-	UnitValsRepTensor(tsr etensor.Tensor, varNm string, di int) error
+	UnitValuesRepTensor(tsr etensor.Tensor, varNm string, di int) error
 
-	// RepIdxs returns the current set of representative unit indexes.
+	// RepIndexes returns the current set of representative unit indexes.
 	// which are a smaller subset of units that represent the behavior
 	// of the layer, for computationally intensive statistics and displays
 	// (e.g., PCA, ActRF, NetView rasters).
 	// Returns nil if none has been set (in which case all units should be used).
-	// See utility function CenterPoolIdxs that returns indexes of
+	// See utility function CenterPoolIndexes that returns indexes of
 	// units in the central pools of a 4D layer.
-	RepIdxs() []int
+	RepIndexes() []int
 
 	// RepShape returns the shape to use for the subset of representative
 	// unit indexes, in terms of an array of dimensions.  See Shape() for more info.
-	// Layers that set RepIdxs should also set this, otherwise a 1D array
-	// of len RepIdxs will be used.
+	// Layers that set RepIndexes should also set this, otherwise a 1D array
+	// of len RepIndexes will be used.
 	// See utility function CenterPoolShape that returns shape of
 	// units in the central pools of a 4D layer.
 	RepShape() *etensor.Shape
 
-	// SetRepIdxsShape sets the RepIdxs, and RepShape and as list of dimension sizes
-	SetRepIdxsShape(idxs, shape []int)
+	// SetRepIndexesShape sets the RepIndexes, and RepShape and as list of dimension sizes
+	SetRepIndexesShape(idxs, shape []int)
 
 	// UnitVal returns value of given variable name on given unit,
 	// using shape-based dimensional index.
 	// Returns NaN on invalid var name or index.
 	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
-	UnitVal(varNm string, idx []int, di int) float32
+	UnitValue(varNm string, idx []int, di int) float32
 
 	// NRecvPrjns returns the number of receiving projections
 	NRecvPrjns() int
@@ -217,7 +217,7 @@ type Layer interface {
 	// RecvNameTypeTry looks for a projection connected to this layer whose receiver layer has a given name and type
 	RecvNameTypeTry(recv, typ string) (Prjn, error)
 
-	// RecvPrjnVals fills in values of given synapse variable name,
+	// RecvPrjnValues fills in values of given synapse variable name,
 	// for projection from given sending layer and neuron 1D index,
 	// for all receiving neurons in this layer,
 	// into given float32 slice (only resized if not big enough).
@@ -227,9 +227,9 @@ type Layer interface {
 	// If the receiving neuron is not connected to the given sending layer or neuron
 	// then the value is set to mat32.NaN().
 	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
-	RecvPrjnVals(vals *[]float32, varNm string, sendLay Layer, sendIdx1D int, prjnType string) error
+	RecvPrjnValues(vals *[]float32, varNm string, sendLay Layer, sendIndex1D int, prjnType string) error
 
-	// SendPrjnVals fills in values of given synapse variable name,
+	// SendPrjnValues fills in values of given synapse variable name,
 	// for projection into given receiving layer and neuron 1D index,
 	// for all sending neurons in this layer,
 	// into given float32 slice (only resized if not big enough).
@@ -239,7 +239,7 @@ type Layer interface {
 	// If the sending neuron is not connected to the given receiving layer or neuron
 	// then the value is set to mat32.NaN().
 	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
-	SendPrjnVals(vals *[]float32, varNm string, recvLay Layer, recvIdx1D int, prjnType string) error
+	SendPrjnValues(vals *[]float32, varNm string, recvLay Layer, recvIndex1D int, prjnType string) error
 
 	// Defaults sets default parameter values for all Layer and recv projection parameters
 	Defaults()
@@ -296,10 +296,10 @@ var LayerDimNames2D = []string{"Y", "X"}
 // which have Pools and then neurons within pools.
 var LayerDimNames4D = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
 
-// CenterPoolIdxs returns the indexes for n x n center pools of given 4D layer.
-// Useful for setting RepIdxs on Layer.
+// CenterPoolIndexes returns the indexes for n x n center pools of given 4D layer.
+// Useful for setting RepIndexes on Layer.
 // Will crash if called on non-4D layers.
-func CenterPoolIdxs(ly Layer, n int) []int {
+func CenterPoolIndexes(ly Layer, n int) []int {
 	nPy := ly.Shape().Dim(0)
 	nPx := ly.Shape().Dim(1)
 	sPy := (nPy - n) / 2
@@ -326,13 +326,13 @@ func CenterPoolShape(ly Layer, n int) []int {
 	return []int{n, n, ly.Shape().Dim(2), ly.Shape().Dim(3)}
 }
 
-// Layer2DRepIdxs returns neuron indexes and corresponding 2D shape
+// Layer2DRepIndexes returns neuron indexes and corresponding 2D shape
 // for the representative neurons within a large 2D layer, for passing to
-// [SetRepIdxsShape].  These neurons are used for the raster plot
+// [SetRepIndexesShape].  These neurons are used for the raster plot
 // in the GUI and for computing PCA, among other cases where the full set
 // of neurons is problematic. The lower-left corner of neurons up to
 // given maxSize is selected.
-func Layer2DRepIdxs(ly Layer, maxSize int) (idxs, shape []int) {
+func Layer2DRepIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 	sh := ly.Shape()
 	my := min(maxSize, sh.Dim(0))
 	mx := min(maxSize, sh.Dim(1))

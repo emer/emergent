@@ -11,8 +11,8 @@ import (
 	"github.com/emer/emergent/v2/etime"
 )
 
-// ViewUpdt manages time scales for updating the NetView
-type ViewUpdt struct {
+// ViewUpdate manages time scales for updating the NetView
+type ViewUpdate struct {
 
 	// the network view
 	View *NetView `view:"-"`
@@ -37,7 +37,7 @@ type ViewUpdt struct {
 }
 
 // Config configures for given NetView and default train, test times
-func (vu *ViewUpdt) Config(nv *NetView, train, test etime.Times) {
+func (vu *ViewUpdate) Config(nv *NetView, train, test etime.Times) {
 	vu.View = nv
 	vu.On = true
 	vu.Train = train
@@ -45,8 +45,8 @@ func (vu *ViewUpdt) Config(nv *NetView, train, test etime.Times) {
 	vu.SkipInvis = true // more often running than debugging probably
 }
 
-// UpdtTime returns the relevant update time based on testing flag
-func (vu *ViewUpdt) UpdtTime(testing bool) etime.Times {
+// GetUpdateTime returns the relevant update time based on testing flag
+func (vu *ViewUpdate) GetUpdateTime(testing bool) etime.Times {
 	if testing {
 		return vu.Test
 	}
@@ -57,7 +57,7 @@ func (vu *ViewUpdt) UpdtTime(testing bool) etime.Times {
 // including recording new data and driving update of display.
 // This version is only for calling from a separate goroutine,
 // not the main event loop (see also Update).
-func (vu *ViewUpdt) GoUpdate() {
+func (vu *ViewUpdate) GoUpdate() {
 	if !vu.On || vu.View == nil {
 		return
 	}
@@ -76,7 +76,7 @@ func (vu *ViewUpdt) GoUpdate() {
 // including recording new data and driving update of display.
 // This version is only for calling from the main event loop
 // (see also GoUpdate).
-func (vu *ViewUpdt) Update() {
+func (vu *ViewUpdate) Update() {
 	if !vu.On || vu.View == nil {
 		return
 	}
@@ -96,7 +96,7 @@ func (vu *ViewUpdt) Update() {
 // This has different logic for the raster view vs. regular.
 // This is only for calling from a separate goroutine,
 // not the main event loop.
-func (vu *ViewUpdt) UpdateWhenStopped() {
+func (vu *ViewUpdate) UpdateWhenStopped() {
 	if !vu.On || vu.View == nil {
 		return
 	}
@@ -114,15 +114,15 @@ func (vu *ViewUpdt) UpdateWhenStopped() {
 }
 
 // UpdateTime triggers an update at given timescale.
-func (vu *ViewUpdt) UpdateTime(time etime.Times) {
+func (vu *ViewUpdate) UpdateTime(time etime.Times) {
 	if !vu.On || vu.View == nil {
 		return
 	}
-	viewUpdt := vu.UpdtTime(vu.Testing)
-	if viewUpdt == time {
+	viewUpdate := vu.GetUpdateTime(vu.Testing)
+	if viewUpdate == time {
 		vu.GoUpdate()
 	} else {
-		if viewUpdt < etime.Trial && time == etime.Trial {
+		if viewUpdate < etime.Trial && time == etime.Trial {
 			if vu.View.Params.Raster.On { // no extra rec here
 				vu.View.Data.RecordLastCtrs(vu.Text)
 				if vu.View.IsVisible() {
@@ -137,15 +137,15 @@ func (vu *ViewUpdt) UpdateTime(time etime.Times) {
 
 // IsCycleUpdating returns true if the view is updating at a cycle level,
 // either from raster or literal cycle level.
-func (vu *ViewUpdt) IsCycleUpdating() bool {
+func (vu *ViewUpdate) IsCycleUpdating() bool {
 	if !vu.On || vu.View == nil || !(vu.View.IsVisible() || !vu.SkipInvis) {
 		return false
 	}
-	viewUpdt := vu.UpdtTime(vu.Testing)
-	if viewUpdt > etime.ThetaCycle {
+	viewUpdate := vu.GetUpdateTime(vu.Testing)
+	if viewUpdate > etime.ThetaCycle {
 		return false
 	}
-	if viewUpdt == etime.Cycle {
+	if viewUpdate == etime.Cycle {
 		return true
 	}
 	if vu.View.Params.Raster.On {
@@ -155,7 +155,7 @@ func (vu *ViewUpdt) IsCycleUpdating() bool {
 }
 
 // IsViewingSynapse returns true if netview is actively viewing synapses.
-func (vu *ViewUpdt) IsViewingSynapse() bool {
+func (vu *ViewUpdate) IsViewingSynapse() bool {
 	if !vu.On || vu.View == nil || !(vu.View.IsVisible() || !vu.SkipInvis) {
 		return false
 	}
@@ -168,19 +168,19 @@ func (vu *ViewUpdt) IsViewingSynapse() bool {
 
 // UpdateCycle triggers an update at the Cycle (Millisecond) timescale,
 // using given text to display at bottom of view
-func (vu *ViewUpdt) UpdateCycle(cyc int) {
+func (vu *ViewUpdate) UpdateCycle(cyc int) {
 	if !vu.On || vu.View == nil {
 		return
 	}
-	viewUpdt := vu.UpdtTime(vu.Testing)
-	if viewUpdt > etime.ThetaCycle {
+	viewUpdate := vu.GetUpdateTime(vu.Testing)
+	if viewUpdate > etime.ThetaCycle {
 		return
 	}
 	if vu.View.Params.Raster.On {
 		vu.UpdateCycleRaster(cyc)
 		return
 	}
-	switch viewUpdt {
+	switch viewUpdate {
 	case etime.Cycle:
 		vu.GoUpdate()
 	case etime.FastSpike:
@@ -207,14 +207,14 @@ func (vu *ViewUpdt) UpdateCycle(cyc int) {
 }
 
 // UpdateCycleRaster raster version of Cycle update
-func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
+func (vu *ViewUpdate) UpdateCycleRaster(cyc int) {
 	if !vu.View.IsVisible() && vu.SkipInvis {
 		vu.View.RecordCounters(vu.Text)
 		return
 	}
-	viewUpdt := vu.UpdtTime(vu.Testing)
+	viewUpdate := vu.GetUpdateTime(vu.Testing)
 	vu.View.Record(vu.Text, cyc)
-	switch viewUpdt {
+	switch viewUpdate {
 	case etime.Cycle:
 		vu.View.GoUpdateView()
 	case etime.FastSpike:
@@ -245,7 +245,7 @@ func (vu *ViewUpdt) UpdateCycleRaster(cyc int) {
 // Should be done when the DWt values have been computed, before
 // updating Wts and zeroing.
 // NetView displays this recorded data when Update is next called.
-func (vu *ViewUpdt) RecordSyns() {
+func (vu *ViewUpdate) RecordSyns() {
 	if !vu.On || vu.View == nil {
 		return
 	}

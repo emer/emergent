@@ -21,7 +21,7 @@ import (
 // Either sequential or permuted random ordering is supported, with std Trial / Epoch
 // TimeScale counters to record progress and iterations through the table.
 // It also records the outer loop of Run as provided by the model.
-// It uses an IdxView indexed view of the Table, so a single shared table
+// It uses an IndexView indexed view of the Table, so a single shared table
 // can be used across different environments, with each having its own unique view.
 type FreqTable struct {
 
@@ -32,7 +32,7 @@ type FreqTable struct {
 	Dsc string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *etable.IdxView
+	Table *etable.IndexView
 
 	// number of samples to use in constructing the list of items to present according to frequency -- number per epoch ~ NSamples * Freq -- see RndSamp option
 	NSamples float64
@@ -124,8 +124,8 @@ func (ft *FreqTable) Sample() {
 	frqs := ft.Table.Table.ColByName(ft.FreqCol)
 
 	for ri := 0; ri < np; ri++ {
-		ti := ft.Table.Idxs[ri]
-		frq := frqs.FloatVal1D(ti)
+		ti := ft.Table.Indexes[ri]
+		frq := frqs.FloatValue1D(ti)
 		if ft.RndSamp {
 			n := int(ft.NSamples)
 			for i := 0; i < n; i++ {
@@ -146,16 +146,16 @@ func (ft *FreqTable) Sample() {
 }
 
 // Row returns the current row number in table, based on Sequential / perumuted Order and
-// already de-referenced through the IdxView's indexes to get the actual row in the table.
+// already de-referenced through the IndexView's indexes to get the actual row in the table.
 func (ft *FreqTable) Row() int {
-	return ft.Table.Idxs[ft.Order[ft.Trial.Cur]]
+	return ft.Table.Indexes[ft.Order[ft.Trial.Cur]]
 }
 
 func (ft *FreqTable) SetTrialName() {
 	if nms := ft.Table.Table.ColByName(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.StringVal1D(rw))
+			ft.TrialName.Set(nms.StringValue1D(rw))
 		}
 	}
 }
@@ -164,7 +164,7 @@ func (ft *FreqTable) SetGroupName() {
 	if nms := ft.Table.Table.ColByName(ft.GroupCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.StringVal1D(rw))
+			ft.GroupName.Set(nms.StringValue1D(rw))
 		}
 	}
 }

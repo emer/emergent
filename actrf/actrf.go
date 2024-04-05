@@ -102,14 +102,14 @@ func (af *RF) Add(act, src etensor.Tensor, thr float32) {
 	aNy, aNx, sNy, sNx := shp[0], shp[1], shp[2], shp[3]
 	for sy := 0; sy < sNy; sy++ {
 		for sx := 0; sx < sNx; sx++ {
-			tv := float32(etensor.Prjn2DVal(src, false, sy, sx))
+			tv := float32(etensor.Prjn2DValue(src, false, sy, sx))
 			if tv < thr {
 				continue
 			}
 			af.SumSrc.AddScalar([]int{sy, sx}, tv)
 			for ay := 0; ay < aNy; ay++ {
 				for ax := 0; ax < aNx; ax++ {
-					av := float32(etensor.Prjn2DVal(act, false, ay, ax))
+					av := float32(etensor.Prjn2DValue(act, false, ay, ax))
 					af.SumProd.AddScalar([]int{ay, ax, sy, sx}, av*tv)
 				}
 			}

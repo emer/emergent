@@ -19,7 +19,7 @@ Multiple different environments will typically be used in a model, e.g.,
 one for training and other(s) for testing.  Even if these envs all share
 a common database of patterns, a different Env should be used for each
 case where different counters and sequences of events etc are presented,
-which keeps them from interfering with each other.  Also, the etable.IdxView
+which keeps them from interfering with each other.  Also, the etable.IndexView
 can be used to allow multiple different Env's to all present different
 indexed views into a shared common etable.Table (e.g., train / test splits).
 The basic FixedTable env implementation uses this.

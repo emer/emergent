@@ -40,7 +40,7 @@ type Linear struct {
 	Inputs []float32
 
 	// for holding layer values
-	ValsTsrs map[string]*etensor.Float32 `view:"-"`
+	ValuesTsrs map[string]*etensor.Float32 `view:"-"`
 
 	// synaptic weights: outer loop is units, inner loop is inputs
 	Weights etensor.Float32
@@ -61,7 +61,7 @@ type Linear struct {
 // Layer is the subset of emer.Layer that is used by this code
 type Layer interface {
 	Name() string
-	UnitValsTensor(tsr etensor.Tensor, varNm string, di int) error
+	UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) error
 	Shape() *etensor.Shape
 }
 
@@ -182,15 +182,15 @@ func (dec *Linear) SetTargets(targs []float32) error {
 	return nil
 }
 
-// ValsTsr gets value tensor of given name, creating if not yet made
-func (dec *Linear) ValsTsr(name string) *etensor.Float32 {
-	if dec.ValsTsrs == nil {
-		dec.ValsTsrs = make(map[string]*etensor.Float32)
+// ValuesTsr gets value tensor of given name, creating if not yet made
+func (dec *Linear) ValuesTsr(name string) *etensor.Float32 {
+	if dec.ValuesTsrs == nil {
+		dec.ValuesTsrs = make(map[string]*etensor.Float32)
 	}
-	tsr, ok := dec.ValsTsrs[name]
+	tsr, ok := dec.ValuesTsrs[name]
 	if !ok {
 		tsr = &etensor.Float32{}
-		dec.ValsTsrs[name] = tsr
+		dec.ValuesTsrs[name] = tsr
 	}
 	return tsr
 }
@@ -201,8 +201,8 @@ func (dec *Linear) ValsTsr(name string) *etensor.Float32 {
 func (dec *Linear) Input(varNm string, di int) {
 	off := 0
 	for _, ly := range dec.Layers {
-		tsr := dec.ValsTsr(ly.Name())
-		ly.UnitValsTensor(tsr, varNm, di)
+		tsr := dec.ValuesTsr(ly.Name())
+		ly.UnitValuesTensor(tsr, varNm, di)
 		if dec.PoolIndex >= 0 {
 			shape := ly.Shape()
 			y := dec.PoolIndex / shape.Dim(1)

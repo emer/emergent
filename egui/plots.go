@@ -55,7 +55,7 @@ func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime
 		if item.Color != "" {
 			cp.Color = grr.Log1(colors.FromString(item.Color, nil))
 		}
-		cp.TensorIdx = item.TensorIdx
+		cp.TensorIndex = item.TensorIndex
 		cp.ErrCol = item.ErrCol
 
 		plt.Params.Title = title + " " + time + " Plot"

@@ -96,8 +96,8 @@ func (pd *PrjnData) RecordData(nd *NetData) {
 		vnm := vnms[vi]
 		si := vi * nsyn
 		sv := pd.SynData[si : si+nsyn]
-		pj.SynVals(&sv, vnm)
-		nvi := nd.SynVarIdxs[vnm]
+		pj.SynValues(&sv, vnm)
+		nvi := nd.SynVarIndexes[vnm]
 		mn := &nd.SynMinVar[nvi]
 		mx := &nd.SynMaxVar[nvi]
 		for _, vl := range sv {

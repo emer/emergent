@@ -120,7 +120,7 @@ and (optionally) `stepper.StopCheckFn` functions:
       tbar.AddAction(gi.ActOpts{Label: "Stop", Icon: "stop",
          Tooltip: "Stop the current program at its next natural stopping point (i.e., cleanly stopping when appropriate chunks of computation have completed).",
          UpdateFunc: func(act *gi.Action) {
-            act.SetActiveStateUpdt(ss.IsRunning)
+            act.SetActiveStateUpdate(ss.IsRunning)
       }}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
          fmt.Println("STOP!")
          ss.Stepper.Pause() // NOTE: call Pause here. Stop should only be called when starting over for a new run
@@ -130,7 +130,7 @@ and (optionally) `stepper.StopCheckFn` functions:
       })
       tbar.AddAction(gi.ActOpts{Label: "Cycle", Icon: "run", Tooltip: "Step to the end of a Cycle.",
          UpdateFunc: func(act *gi.Action) {
-            act.SetActiveStateUpdt(!ss.IsRunning)
+            act.SetActiveStateUpdate(!ss.IsRunning)
          }}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
          ss.RunSteps(Cycle, tbar)
       })

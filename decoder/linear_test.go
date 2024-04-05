@@ -21,7 +21,7 @@ func (tl *TestLayer) Name() string {
 	return "TestLayer"
 }
 
-func (tl *TestLayer) UnitValsTensor(tsr etensor.Tensor, varNm string, di int) error {
+func (tl *TestLayer) UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) error {
 	src, ok := tl.tensors[varNm]
 	if !ok {
 		return fmt.Errorf("bad key: %s", varNm)

@@ -41,7 +41,7 @@ type GUI struct {
 	Grids map[string]*etview.TensorGrid
 
 	// the view update for managing updates of netview
-	ViewUpdt *netview.ViewUpdt `view:"-"`
+	ViewUpdate *netview.ViewUpdate `view:"-"`
 
 	// net data for recording in nogui mode, if !nil
 	NetData *netview.NetData `view:"-"`
@@ -90,7 +90,7 @@ func (gui *GUI) Stopped() {
 	if gui.Body == nil {
 		return
 	}
-	if gui.ViewUpdt != nil {
+	if gui.ViewUpdate != nil {
 		gui.UpdateNetViewWhenStopped()
 	}
 	gui.GoUpdateWindow()

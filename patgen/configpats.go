@@ -45,8 +45,8 @@ func MixPats(dt *etable.Table, mp Vocab, colName string, poolSource []string) er
 					return err
 				}
 				vocSize := voc.Shapes()[0]
-				effIdx := row % vocSize // be safe and wrap-around to re-use patterns
-				frmPool := voc.SubSpace([]int{effIdx})
+				effIndex := row % vocSize // be safe and wrap-around to re-use patterns
+				frmPool := voc.SubSpace([]int{effIndex})
 				if !reflect.DeepEqual(trgPool.Shapes(), frmPool.Shapes()) {
 					err := fmt.Errorf("Vocab and pools in the table should have the same shape")
 					log.Println(err.Error())
@@ -70,7 +70,7 @@ func MixPatsN(dt *etable.Table, mp Vocab, colName string, poolSource []string, t
 	xSize := dt.ColByName(colName).Shapes()[2]
 	for ri := 0; ri < vocabN; ri++ {
 		row := targRow + ri
-		vocIdx := vocabStart + ri
+		vocIndex := vocabStart + ri
 		dt.SetCellString("Name", row, fmt.Sprint(name, row))
 		npool := 0
 		for iY := 0; iY < ySize; iY++ {
@@ -84,8 +84,8 @@ func MixPatsN(dt *etable.Table, mp Vocab, colName string, poolSource []string, t
 					return err
 				}
 				vocSize := voc.Shapes()[0]
-				effIdx := vocIdx % vocSize // be safe and wrap-around to re-use patterns
-				frmPool := voc.SubSpace([]int{effIdx})
+				effIndex := vocIndex % vocSize // be safe and wrap-around to re-use patterns
+				frmPool := voc.SubSpace([]int{effIndex})
 				if !reflect.DeepEqual(trgPool.Shapes(), frmPool.Shapes()) {
 					err := fmt.Errorf("Vocab and pools in the table should have the same shape")
 					log.Println(err.Error())

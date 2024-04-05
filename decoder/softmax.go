@@ -50,7 +50,7 @@ type SoftMax struct {
 	Target int
 
 	// for holding layer values
-	ValsTsrs map[string]*etensor.Float32 `view:"-"`
+	ValuesTsrs map[string]*etensor.Float32 `view:"-"`
 
 	// synaptic weights: outer loop is units, inner loop is inputs
 	Weights etensor.Float32
@@ -124,15 +124,15 @@ func (sm *SoftMax) TrainMPI(targ int) {
 	sm.BackMPI()
 }
 
-// ValsTsr gets value tensor of given name, creating if not yet made
-func (sm *SoftMax) ValsTsr(name string) *etensor.Float32 {
-	if sm.ValsTsrs == nil {
-		sm.ValsTsrs = make(map[string]*etensor.Float32)
+// ValuesTsr gets value tensor of given name, creating if not yet made
+func (sm *SoftMax) ValuesTsr(name string) *etensor.Float32 {
+	if sm.ValuesTsrs == nil {
+		sm.ValuesTsrs = make(map[string]*etensor.Float32)
 	}
-	tsr, ok := sm.ValsTsrs[name]
+	tsr, ok := sm.ValuesTsrs[name]
 	if !ok {
 		tsr = &etensor.Float32{}
-		sm.ValsTsrs[name] = tsr
+		sm.ValuesTsrs[name] = tsr
 	}
 	return tsr
 }
@@ -143,8 +143,8 @@ func (sm *SoftMax) ValsTsr(name string) *etensor.Float32 {
 func (sm *SoftMax) Input(varNm string, di int) {
 	off := 0
 	for _, ly := range sm.Layers {
-		tsr := sm.ValsTsr(ly.Name())
-		ly.UnitValsTensor(tsr, varNm, di)
+		tsr := sm.ValuesTsr(ly.Name())
+		ly.UnitValuesTensor(tsr, varNm, di)
 		for j, v := range tsr.Values {
 			sm.Inputs[off+j] = v
 		}

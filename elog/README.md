@@ -132,7 +132,7 @@ There are various additional analysis functions called here, for example this on
 func (ss *Sim) LogRunStats() {
     sk := etime.Scope(etime.Train, etime.Run)
     lt := ss.Logs.TableDetailsScope(sk)
-    ix, _ := lt.NamedIdxView("RunStats")
+    ix, _ := lt.NamedIndexView("RunStats")
 
     spl := split.GroupBy(ix, []string{"Params"})
     split.Desc(spl, "FirstZero")
@@ -308,7 +308,7 @@ Computing stats on the principal components of variance (PCA) across different i
 // PCAStats computes PCA statistics on recorded hidden activation patterns
 // from Analyze, Trial log data
 func (ss *Sim) PCAStats() {
-    ss.Stats.PCAStats(ss.Logs.IdxView(etime.Analyze, etime.Trial), "ActM", ss.Net.LayersByClass("Hidden"))
+    ss.Stats.PCAStats(ss.Logs.IndexView(etime.Analyze, etime.Trial), "ActM", ss.Net.LayersByClass("Hidden"))
     ss.Logs.ResetLog(etime.Analyze, etime.Trial)
 }
 ```
@@ -348,7 +348,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
 
 ## Error by Input Category
 
-This item creates a tensor column that records the average error for each category of input stimulus (e.g., for images from object categories), using the `split.GroupBy` function for `etable`.  The `IdxView` function (see also `NamedIdxView`) automatically manages the `etable.IdxView` indexed view onto a log table, which is used for all aggregation and further analysis of data, so that you can efficiently analyze filtered subsets of the original data.
+This item creates a tensor column that records the average error for each category of input stimulus (e.g., for images from object categories), using the `split.GroupBy` function for `etable`.  The `IndexView` function (see also `NamedIndexView`) automatically manages the `etable.IndexView` indexed view onto a log table, which is used for all aggregation and further analysis of data, so that you can efficiently analyze filtered subsets of the original data.
 
 ```Go
     ss.Logs.AddItem(&elog.Item{
@@ -358,10 +358,10 @@ This item creates a tensor column that records the average error for each catego
         DimNames:  []string{"Cat"},
         Plot:      true,
         Range:     minmax.F64{Min: 0},
-        TensorIdx: -1, // plot all values
+        TensorIndex: -1, // plot all values
         Write: elog.WriteMap{
             etime.Scope(etime.Test, etime.Epoch): func(ctx *elog.Context) {
-                ix := ctx.Logs.IdxView(etime.Test, etime.Trial)
+                ix := ctx.Logs.IndexView(etime.Test, etime.Trial)
                 spl := split.GroupBy(ix, []string{"Cat"})
                 split.AggTry(spl, "Err", agg.AggMean)
                 cats := spl.AggsToTable(etable.ColNameOnly)

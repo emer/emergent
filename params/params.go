@@ -85,7 +85,7 @@ func (sl *Sel) SetString(param string, val string) {
 }
 
 // ParamVal returns the value of given parameter
-func (sl *Sel) ParamVal(param string) (string, error) {
+func (sl *Sel) ParamValue(param string) (string, error) {
 	return sl.Params.ParamByNameTry(param)
 }
 
@@ -159,12 +159,12 @@ func (sh *Sheet) SetString(sel, param string, val string) error {
 }
 
 // ParamVal returns the value of given parameter, in selection sel
-func (sh *Sheet) ParamVal(sel, param string) (string, error) {
+func (sh *Sheet) ParamValue(sel, param string) (string, error) {
 	sp, err := sh.SelByNameTry(sel)
 	if err != nil {
 		return "", err
 	}
-	return sp.ParamVal(param)
+	return sp.ParamValue(param)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -267,12 +267,12 @@ func (ps *Set) SetString(sheet, sel, param string, val string) error {
 
 // ParamVal returns the value of given parameter, in selection sel,
 // in sheet
-func (ps *Set) ParamVal(sheet, sel, param string) (string, error) {
+func (ps *Set) ParamValue(sheet, sel, param string) (string, error) {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return "", err
 	}
-	return sp.ParamVal(sel, param)
+	return sp.ParamValue(sel, param)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -342,10 +342,10 @@ func (ps *Sets) SetString(set, sheet, sel, param string, val string) error {
 
 // ParamVal returns the value of given parameter, in selection sel,
 // in sheet and set.  Returns error if anything is not found.
-func (ps *Sets) ParamVal(set, sheet, sel, param string) (string, error) {
+func (ps *Sets) ParamValue(set, sheet, sel, param string) (string, error) {
 	sp, err := ps.SetByNameTry(set)
 	if err != nil {
 		return "", err
 	}
-	return sp.ParamVal(sheet, sel, param)
+	return sp.ParamValue(sheet, sel, param)
 }

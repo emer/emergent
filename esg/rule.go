@@ -53,10 +53,10 @@ type Rule struct { //git:add
 	State State
 
 	// previously selected item (from perspective of current rule)
-	PrevIdx int
+	PrevIndex int
 
 	// current index in Items (what will be used next)
-	CurIdx int
+	CurIndex int
 
 	// probability of repeating same item -- signaled by =%p
 	RepeatP float32
@@ -67,8 +67,8 @@ type Rule struct { //git:add
 
 // Init initializes the rules -- only relevant for ordered rules (restarts at start)
 func (rl *Rule) Init() {
-	rl.CurIdx = 0
-	rl.PrevIdx = -1
+	rl.CurIndex = 0
+	rl.PrevIndex = -1
 	if rl.Type == PermutedItems {
 		rl.Order = rand.Perm(len(rl.Items))
 	}
@@ -82,13 +82,13 @@ func (rl *Rule) Gen(rls *Rules) {
 	if rls.Trace {
 		fmt.Printf("Fired Rule: %v\n", rl.Name)
 	}
-	if rl.RepeatP > 0 && rl.PrevIdx >= 0 {
+	if rl.RepeatP > 0 && rl.PrevIndex >= 0 {
 		rpt := erand.BoolP32(rl.RepeatP, -1)
 		if rpt {
 			if rls.Trace {
-				fmt.Printf("Selected item: %v due to RepeatP = %v\n", rl.PrevIdx, rl.RepeatP)
+				fmt.Printf("Selected item: %v due to RepeatP = %v\n", rl.PrevIndex, rl.RepeatP)
 			}
-			rl.Items[rl.PrevIdx].Gen(rl, rls)
+			rl.Items[rl.PrevIndex].Gen(rl, rls)
 			return
 		}
 	}
@@ -99,7 +99,7 @@ func (rl *Rule) Gen(rls *Rules) {
 		if rls.Trace {
 			fmt.Printf("Selected item: %v from: %v uniform random\n", opt, no)
 		}
-		rl.PrevIdx = opt
+		rl.PrevIndex = opt
 		rl.Items[opt].Gen(rl, rls)
 	case ProbItems:
 		pv := rand.Float32()
@@ -110,12 +110,12 @@ func (rl *Rule) Gen(rls *Rules) {
 				if rls.Trace {
 					fmt.Printf("Selected item: %v using rnd val: %v sum: %v\n", ii, pv, sum)
 				}
-				rl.PrevIdx = ii
+				rl.PrevIndex = ii
 				it.Gen(rl, rls)
 				return
 			}
 		}
-		rl.PrevIdx = -1
+		rl.PrevIndex = -1
 		if rls.Trace {
 			fmt.Printf("No items selected using rnd val: %v sum: %v\n", pv, sum)
 		}
@@ -137,22 +137,22 @@ func (rl *Rule) Gen(rls *Rules) {
 		if rls.Trace {
 			fmt.Printf("Selected item: %v from: %v matching Conds\n", copts[opt], no)
 		}
-		rl.PrevIdx = copts[opt]
+		rl.PrevIndex = copts[opt]
 		rl.Items[copts[opt]].Gen(rl, rls)
 	case SequentialItems:
 		no := len(rl.Items)
 		if no == 0 {
 			return
 		}
-		if rl.CurIdx >= no {
-			rl.CurIdx = 0
+		if rl.CurIndex >= no {
+			rl.CurIndex = 0
 		}
-		opt := rl.CurIdx
+		opt := rl.CurIndex
 		if rls.Trace {
 			fmt.Printf("Selected item: %v sequentially\n", opt)
 		}
-		rl.PrevIdx = opt
-		rl.CurIdx++
+		rl.PrevIndex = opt
+		rl.CurIndex++
 		rl.Items[opt].Gen(rl, rls)
 	case PermutedItems:
 		no := len(rl.Items)
@@ -161,18 +161,18 @@ func (rl *Rule) Gen(rls *Rules) {
 		}
 		if len(rl.Order) != no {
 			rl.Order = rand.Perm(no)
-			rl.CurIdx = 0
+			rl.CurIndex = 0
 		}
-		if rl.CurIdx >= no {
+		if rl.CurIndex >= no {
 			erand.PermuteInts(rl.Order)
-			rl.CurIdx = 0
+			rl.CurIndex = 0
 		}
-		opt := rl.Order[rl.CurIdx]
+		opt := rl.Order[rl.CurIndex]
 		if rls.Trace {
 			fmt.Printf("Selected item: %v sequentially\n", opt)
 		}
-		rl.PrevIdx = opt
-		rl.CurIdx++
+		rl.PrevIndex = opt
+		rl.CurIndex++
 		rl.Items[opt].Gen(rl, rls)
 	}
 }

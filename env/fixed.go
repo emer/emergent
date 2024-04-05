@@ -18,7 +18,7 @@ import (
 // either sequential or permuted random ordering, and uses standard Trial / Epoch
 // TimeScale counters to record progress and iterations through the table.
 // It also records the outer loop of Run as provided by the model.
-// It uses an IdxView indexed view of the Table, so a single shared table
+// It uses an IndexView indexed view of the Table, so a single shared table
 // can be used across different environments, with each having its own unique view.
 type FixedTable struct {
 
@@ -29,7 +29,7 @@ type FixedTable struct {
 	Dsc string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *etable.IdxView
+	Table *etable.IndexView
 
 	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order
 	Sequential bool
@@ -95,7 +95,7 @@ func (ft *FixedTable) Init(run int) {
 // then a Run counter is added, otherwise just Epoch and Trial.
 // NameCol and GroupCol are initialized to "Name" and "Group"
 // so set these to something else after this if needed.
-func (ft *FixedTable) Config(tbl *etable.IdxView) {
+func (ft *FixedTable) Config(tbl *etable.IndexView) {
 	ft.Table = tbl
 	ft.Init(0)
 }
@@ -116,19 +116,19 @@ func (ft *FixedTable) PermuteOrder() {
 }
 
 // Row returns the current row number in table, based on Sequential / perumuted Order and
-// already de-referenced through the IdxView's indexes to get the actual row in the table.
+// already de-referenced through the IndexView's indexes to get the actual row in the table.
 func (ft *FixedTable) Row() int {
 	if ft.Sequential {
-		return ft.Table.Idxs[ft.Trial.Cur]
+		return ft.Table.Indexes[ft.Trial.Cur]
 	}
-	return ft.Table.Idxs[ft.Order[ft.Trial.Cur]]
+	return ft.Table.Indexes[ft.Order[ft.Trial.Cur]]
 }
 
 func (ft *FixedTable) SetTrialName() {
 	if nms := ft.Table.Table.ColByName(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.StringVal1D(rw))
+			ft.TrialName.Set(nms.StringValue1D(rw))
 		}
 	}
 }
@@ -137,7 +137,7 @@ func (ft *FixedTable) SetGroupName() {
 	if nms := ft.Table.Table.ColByName(ft.GroupCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.StringVal1D(rw))
+			ft.GroupName.Set(nms.StringValue1D(rw))
 		}
 	}
 }

@@ -15,7 +15,7 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func tweakVal(msd, fact, exp10 float32, isRmdr bool) float32 {
+func tweakValue(msd, fact, exp10 float32, isRmdr bool) float32 {
 	if isRmdr {
 		return mat32.Truncate(msd+fact*mat32.Pow(10, exp10), 3)
 	}
@@ -32,14 +32,14 @@ func Tweak(v float32, log, incr bool) []float32 {
 	base := mat32.Pow(10, ex)
 	basem1 := mat32.Pow(10, ex-1)
 	fact := mat32.Round(v / base)
-	msd := tweakVal(0, fact, ex, false)
+	msd := tweakValue(0, fact, ex, false)
 	rmdr := mat32.Round((v - msd) / basem1)
 	var vals []float32
 	sv := fact
 	isRmdr := false
 	if rmdr != 0 {
 		if rmdr < 0 {
-			msd = tweakVal(0, fact-1, ex, false)
+			msd = tweakValue(0, fact-1, ex, false)
 			rmdr = mat32.Round((v - msd) / basem1)
 		}
 		sv = rmdr
@@ -49,33 +49,33 @@ func Tweak(v float32, log, incr bool) []float32 {
 	switch sv {
 	case 1:
 		if log {
-			vals = append(vals, tweakVal(msd, 5, ex-1, isRmdr), tweakVal(msd, 2, ex, isRmdr))
+			vals = append(vals, tweakValue(msd, 5, ex-1, isRmdr), tweakValue(msd, 2, ex, isRmdr))
 		}
 		if incr {
-			vals = append(vals, tweakVal(msd, 9, ex-1, isRmdr))
-			vals = append(vals, tweakVal(msd, 1.1, ex, isRmdr))
+			vals = append(vals, tweakValue(msd, 9, ex-1, isRmdr))
+			vals = append(vals, tweakValue(msd, 1.1, ex, isRmdr))
 		}
 	case 2:
 		if log {
-			vals = append(vals, tweakVal(msd, 1, ex, isRmdr), tweakVal(msd, 5, ex, isRmdr))
+			vals = append(vals, tweakValue(msd, 1, ex, isRmdr), tweakValue(msd, 5, ex, isRmdr))
 		}
 		if incr {
 			if !log {
-				vals = append(vals, tweakVal(msd, 1, ex, isRmdr))
+				vals = append(vals, tweakValue(msd, 1, ex, isRmdr))
 			}
-			vals = append(vals, tweakVal(msd, 3, ex, isRmdr))
+			vals = append(vals, tweakValue(msd, 3, ex, isRmdr))
 		}
 	case 5:
 		if log {
-			vals = append(vals, tweakVal(msd, 2, ex, isRmdr), tweakVal(msd, 1, ex+1, isRmdr))
+			vals = append(vals, tweakValue(msd, 2, ex, isRmdr), tweakValue(msd, 1, ex+1, isRmdr))
 		}
 		if incr {
-			vals = append(vals, tweakVal(msd, 4, ex, isRmdr), tweakVal(msd, 6, ex, isRmdr))
+			vals = append(vals, tweakValue(msd, 4, ex, isRmdr), tweakValue(msd, 6, ex, isRmdr))
 		}
 	case 9:
-		vals = append(vals, tweakVal(msd, 8, ex, isRmdr), tweakVal(msd, 1, ex+1, isRmdr))
+		vals = append(vals, tweakValue(msd, 8, ex, isRmdr), tweakValue(msd, 1, ex+1, isRmdr))
 	default:
-		vals = append(vals, tweakVal(msd, sv-1, ex, isRmdr), tweakVal(msd, sv+1, ex, isRmdr))
+		vals = append(vals, tweakValue(msd, sv-1, ex, isRmdr), tweakValue(msd, sv+1, ex, isRmdr))
 	}
 	return vals
 }

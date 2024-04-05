@@ -27,7 +27,7 @@ func ConfigPCAPlot(plt *eplot.Plot2D, dt *etable.Table, nm string) {
 
 // ClustPlot does one cluster plot on given table column name
 // and label name
-func ClustPlot(plt *eplot.Plot2D, ix *etable.IdxView, colNm, lblNm string) {
+func ClustPlot(plt *eplot.Plot2D, ix *etable.IndexView, colNm, lblNm string) {
 	nm, _ := ix.Table.MetaData["name"]
 	smat := &simat.SimMat{}
 	smat.TableCol(ix, colNm, lblNm, false, metric.Euclidean64)

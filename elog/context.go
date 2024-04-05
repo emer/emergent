@@ -150,7 +150,7 @@ func (ctx *Context) SetAggItem(mode etime.Modes, time etime.Times, itemNm string
 // Supports scalar or tensor cells.
 // returns aggregated value(s).
 func (ctx *Context) SetAggItemScope(scope etime.ScopeKey, itemNm string, ag agg.Aggs) []float64 {
-	ix := ctx.Logs.IdxViewScope(scope)
+	ix := ctx.Logs.IndexViewScope(scope)
 	vals := agg.Agg(ix, itemNm, ag)
 	if len(vals) == 0 {
 		fmt.Printf("elog.Context SetAggItemScope for item: %s in scope: %s -- could not aggregate item: %s from scope: %s -- check names\n", ctx.Item.Name, ctx.Scope, itemNm, scope)
@@ -244,7 +244,7 @@ func (ctx *Context) Layer(layNm string) emer.Layer {
 func (ctx *Context) GetLayerTensor(layNm, unitVar string) *etensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValsTensor(tsr, unitVar, ctx.Di)
+	ly.UnitValuesTensor(tsr, unitVar, ctx.Di)
 	return tsr
 }
 
@@ -253,7 +253,7 @@ func (ctx *Context) GetLayerTensor(layNm, unitVar string) *etensor.Float32 {
 func (ctx *Context) GetLayerRepTensor(layNm, unitVar string) *etensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValsRepTensor(tsr, unitVar, ctx.Di)
+	ly.UnitValuesRepTensor(tsr, unitVar, ctx.Di)
 	return tsr
 }
 
@@ -291,20 +291,20 @@ func (ctx *Context) ClosestPat(layNm, unitVar string, pats *etable.Table, colnm,
 }
 
 ///////////////////////////////////////////////////
-//  IdxViews
+//  IndexViews
 
-// LastNRows returns an IdxView onto table for given scope with the last
+// LastNRows returns an IndexView onto table for given scope with the last
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
-// NamedIdxView functions.
-func (ctx *Context) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IdxView {
+// NamedIndexView functions.
+func (ctx *Context) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IndexView {
 	return ctx.LastNRowsScope(etime.Scope(mode, time), n)
 }
 
-// LastNRowsScope returns an IdxView onto table for given scope with the last
+// LastNRowsScope returns an IndexView onto table for given scope with the last
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
-// NamedIdxView functions.
-func (ctx *Context) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IdxView {
+// NamedIndexView functions.
+func (ctx *Context) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IndexView {
 	return ctx.Logs.LastNRowsScope(sk, n)
 }

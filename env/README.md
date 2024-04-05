@@ -10,7 +10,7 @@ By adhering to this interface, it is then easier to mix-and-match environments w
 
 The overall division of labor is that the model keeps track of the outer-most Run time-scale depending on its own parameters and learning trajectory and the environment is responsible for generating patterns for each run.
 
-Multiple different environments will typically be used in a model, e.g., one for training and other(s) for testing.  Even if these envs all share a common database of patterns, a different Env should be used for each case where different counters and sequences of events etc are presented, which keeps them from interfering with each other.  Also, the etable.IdxView can be used to allow multiple different Env's to all present different indexed views into a shared common etable.Table (e.g., train / test splits). The basic `FixedTable` env implementation uses this.
+Multiple different environments will typically be used in a model, e.g., one for training and other(s) for testing.  Even if these envs all share a common database of patterns, a different Env should be used for each case where different counters and sequences of events etc are presented, which keeps them from interfering with each other.  Also, the etable.IndexView can be used to allow multiple different Env's to all present different indexed views into a shared common etable.Table (e.g., train / test splits). The basic `FixedTable` env implementation uses this.
 
 Thus, the Env encapsulates all of the counter management logic for each aspect of model training and testing, so that the model itself just needs to manage which Env to use, when, and manage the connection of the Env States as inputs to the model, and vice-versa for Actions on the Env coming from the model.
 

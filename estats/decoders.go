@@ -36,10 +36,10 @@ func (st *Stats) LinearDecodeTrain(decName, varNm string, di int, trainVal float
 // SoftLinearDecodeTrain does decoding and training on the decoder
 // of the given name, using given training index value, saving
 // the results to Float stats named with the decoder + Out and Err.
-// Returns Err which is 1 if output != trainIdx, 0 otherwise.
+// Returns Err which is 1 if output != trainIndex, 0 otherwise.
 // di is a data parallel index di, for networks capable
 // of processing input patterns in parallel.
-func (st *Stats) SoftMaxDecodeTrain(decName, varNm string, di int, trainIdx int) (float32, error) {
+func (st *Stats) SoftMaxDecodeTrain(decName, varNm string, di int, trainIndex int) (float32, error) {
 	dec, ok := st.SoftMaxDecoders[decName]
 	if !ok {
 		err := fmt.Errorf("SoftMax Decoder named: %s not found", decName)
@@ -49,10 +49,10 @@ func (st *Stats) SoftMaxDecodeTrain(decName, varNm string, di int, trainIdx int)
 	out := dec.Decode(varNm, di)
 	st.SetInt(decName+"Out", out)
 	derr := float32(0)
-	if out != trainIdx {
+	if out != trainIndex {
 		derr = 1
 	}
 	st.SetFloat32(decName+"Err", derr)
-	dec.Train(trainIdx)
+	dec.Train(trainIndex)
 	return derr, nil
 }

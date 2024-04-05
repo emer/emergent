@@ -364,7 +364,7 @@ func (pt *PoolTileSub) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Fl
 						pwt = efuns.GaussVecDistNoNorm(sp, spctr, psig)
 					}
 					wt := fwt * pwt
-					rwt := pt.TopoRange.ProjVal(wt)
+					rwt := pt.TopoRange.ProjValue(wt)
 					wts.Set([]int{ruy, rux, suy, sux}, rwt)
 				}
 			}
@@ -454,7 +454,7 @@ func (pt *PoolTileSub) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Fl
 								pwt = efuns.GaussVecDistNoNorm(sp, spctr, psig)
 							}
 							wt := fwt * pwt
-							rwt := pt.TopoRange.ProjVal(wt)
+							rwt := pt.TopoRange.ProjValue(wt)
 							wts.Set([]int{ruy, rux, fy, fx, suy, sux}, rwt)
 						}
 					}
@@ -549,7 +549,7 @@ func (pt *PoolTileSub) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.
 						pwt = sigx * sigy
 					}
 					wt := fwt * pwt
-					rwt := pt.TopoRange.ProjVal(wt)
+					rwt := pt.TopoRange.ProjValue(wt)
 					wts.Set([]int{ruy, rux, suy, sux}, rwt)
 				}
 			}
@@ -642,7 +642,7 @@ func (pt *PoolTileSub) TopoWtsSigmoid4D(send, recv *etensor.Shape, wts *etensor.
 								pwt = sigx * sigy
 							}
 							wt := fwt * pwt
-							rwt := pt.TopoRange.ProjVal(wt)
+							rwt := pt.TopoRange.ProjValue(wt)
 							wts.Set([]int{ruy, rux, fy, fx, suy, sux}, rwt)
 						}
 					}

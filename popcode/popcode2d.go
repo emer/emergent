@@ -149,7 +149,7 @@ func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val mat32.Vec2, add bool) error {
 			}
 			idx := []int{yi, xi}
 			if add {
-				val := float64(act) + pat.FloatVal(idx)
+				val := float64(act) + pat.FloatValue(idx)
 				pat.SetFloat(idx, val)
 			} else {
 				pat.SetFloat(idx, float64(act))
@@ -178,7 +178,7 @@ func (pc *TwoD) Decode(pat etensor.Tensor) (mat32.Vec2, error) {
 		for yi := 0; yi < ny; yi++ {
 			for xi := 0; xi < nx; xi++ {
 				idx := []int{yi, xi}
-				act := float32(pat.FloatVal(idx))
+				act := float32(pat.FloatValue(idx))
 				if act < pc.Thr {
 					act = 0
 				}
@@ -264,7 +264,7 @@ func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (mat32.Vec2, error) {
 	for yi := 0; yi < ny; yi++ {
 		for xi := 0; xi < nx; xi++ {
 			idx := []int{yi, xi}
-			act := float32(pat.FloatVal(idx))
+			act := float32(pat.FloatValue(idx))
 			if act < pc.Thr {
 				act = 0
 			}
@@ -346,7 +346,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]mat32.Vec2
 						continue
 					}
 					idx := []int{y, x}
-					act := float32(pat.FloatVal(idx))
+					act := float32(pat.FloatValue(idx))
 					sum += act
 					ns++
 				}
@@ -380,7 +380,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]mat32.Vec2
 					continue
 				}
 				idx := []int{y, x}
-				act := float32(pat.FloatVal(idx))
+				act := float32(pat.FloatValue(idx))
 				if act < pc.Thr {
 					act = 0
 				}

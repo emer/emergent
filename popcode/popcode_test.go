@@ -32,9 +32,9 @@ func TestPopCode1D(t *testing.T) {
 	pc.Values(&vals, 11)
 	// fmt.Printf("vals: %v\n", vals)
 
-	corVals := []float32{-0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5}
+	corValues := []float32{-0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5}
 
-	CmprFloats(vals, corVals, "vals for 11 units", t)
+	CmprFloats(vals, corValues, "vals for 11 units", t)
 
 	var pat []float32
 	pc.Encode(&pat, 0.5, 11, Set)
@@ -86,10 +86,10 @@ func TestPopCode2D(t *testing.T) {
 	pc.Values(&valsX, &valsY, 11, 11)
 	// fmt.Printf("vals: %v\n", valsX)
 
-	corVals := []float32{-0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5}
+	corValues := []float32{-0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5}
 
-	CmprFloats(valsX, corVals, "valsX for 11 units", t)
-	CmprFloats(valsY, corVals, "valsY for 11 units", t)
+	CmprFloats(valsX, corValues, "valsX for 11 units", t)
+	CmprFloats(valsY, corValues, "valsY for 11 units", t)
 
 	var pat etensor.Float32
 	pat.SetShape([]int{11, 11}, nil, nil)
@@ -161,9 +161,9 @@ func TestRing(t *testing.T) {
 	pc.Values(&vals, 25)
 	// fmt.Printf("vals: %v\n", vals)
 
-	corVals := []float32{0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345, 360}
+	corValues := []float32{0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345, 360}
 
-	CmprFloats(vals, corVals, "vals for 25 units", t)
+	CmprFloats(vals, corValues, "vals for 25 units", t)
 
 	var pat []float32
 	tvals := []float32{180, 330, 359, 300, 90, 30, 1}

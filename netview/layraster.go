@@ -10,7 +10,7 @@ import (
 	"cogentcore.org/core/xyz"
 )
 
-func (lm *LayMesh) RasterSize2D() (nVtx, nIdx int) {
+func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
 	rs := lm.Lay.RepShape()
 	nuz := rs.Dim(0)
 	nux := rs.Dim(1)
@@ -20,11 +20,11 @@ func (lm *LayMesh) RasterSize2D() (nVtx, nIdx int) {
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	nVtx = vtxSz * 5 * nz * nx
-	nIdx = idxSz * 5 * nz * nx
+	nIndex = idxSz * 5 * nz * nx
 	return
 }
 
-func (lm *LayMesh) RasterSize4D() (nVtx, nIdx int) {
+func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 	rs := lm.Lay.RepShape()
 	npz := rs.Dim(0) // p = pool
 	npx := rs.Dim(1)
@@ -38,7 +38,7 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIdx int) {
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	nVtx = vtxSz * 5 * npz * npx * nz * nx
-	nIdx = idxSz * 5 * npz * npx * nz * nx
+	nIndex = idxSz * 5 * npz * npx * nz * nx
 	return
 }
 

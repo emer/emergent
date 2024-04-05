@@ -16,7 +16,7 @@ func (st *Stats) ConfigRasters(net emer.Network, maxCyc int, layers []string) {
 	for _, lnm := range st.Rasters {
 		ly := net.LayerByName(lnm)
 		sr := st.F32Tensor("Raster_" + lnm)
-		nu := len(ly.RepIdxs())
+		nu := len(ly.RepIndexes())
 		if nu == 0 {
 			nu = ly.Shape().Len()
 		}

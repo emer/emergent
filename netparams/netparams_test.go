@@ -120,7 +120,7 @@ func TestParamSetsWriteGo(t *testing.T) {
 }
 
 func TestParamSetsSet(t *testing.T) {
-	cval, err := paramSets.ParamVal("Base", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err := paramSets.ParamValue("Base", "Prjn", "Prjn.Learn.WtBal.On")
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,7 +132,7 @@ func TestParamSetsSet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	cval, err = paramSets.ParamVal("Base", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Prjn", "Prjn.Learn.WtBal.On")
 	// fmt.Printf("new value: %s\n", cval)
 	if cval != "true" {
 		t.Errorf("value should have been true: %s\n", cval)
@@ -141,17 +141,17 @@ func TestParamSetsSet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	cval, err = paramSets.ParamVal("Base", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Prjn", "Prjn.Learn.WtBal.On")
 	// fmt.Printf("new value: %s\n", cval)
 	if cval != "5.1" {
 		t.Errorf("value should have been 5.1: %s\n", cval)
 	}
-	cval, err = paramSets.ParamVal("Basre", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Basre", "Prjn", "Prjn.Learn.WtBal.On")
 	if err == nil {
 		t.Errorf("Should have had an error")
 	}
 	// fmt.Printf("error: %s\n", err)
-	cval, err = paramSets.ParamVal("Base", "Prjns", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Prjns", "Prjn.Learn.WtBal.On")
 	if err == nil {
 		t.Errorf("Should have had an error")
 	}
