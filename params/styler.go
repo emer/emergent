@@ -40,16 +40,17 @@ type StylerObj interface {
 	Object() any
 }
 
-// AddClass adds given class to current class string,
+// AddClass adds given class(es) to current class string,
 // ensuring it is not a duplicate of existing, and properly
 // adding spaces
-func AddClass(cur, class string) string {
-	if ClassMatch(cur, class) {
+func AddClass(cur string, class ...string) string {
+	cls := strings.Join(class, " ")
+	if ClassMatch(cur, cls) {
 		return cur
 	}
 	cur = strings.TrimSpace(cur)
 	if len(cur) == 0 {
-		return class
+		return cls
 	}
-	return cur + " " + class
+	return cur + " " + cls
 }

@@ -52,13 +52,10 @@ type Prjn interface {
 	// Connect sets the basic connection parameters for this projection (send, recv, pattern, and type)
 	// Connect(send, recv Layer, pat prjn.Pattern, typ PrjnType)
 
-	// SetClass sets CSS-style class name(s) for this projection (space-separated if multiple)
-	// Returns Prjn so it can be chained to set other properties too
-	SetClass(cls string) Prjn
-
 	// AddClass adds a CSS-style class name(s) for this prjn,
 	// ensuring that it is not a duplicate, and properly space separated.
-	AddClass(cls string)
+	// Returns Prjn so it can be chained to set other properties too
+	AddClass(cls ...string) Prjn
 
 	// Label satisfies the gi.Labeler interface for getting the name of objects generically
 	Label() string
