@@ -1,0 +1,34 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Set up Core
+      run: go install cogentcore.org/core/core@main && core setup
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./... -coverprofile cover.out
+
+    - name: Update coverage report
+      uses: ncruces/go-coverage-report@v0
+      with:
+        coverage-file: cover.out
+      if: github.event_name == 'push'
