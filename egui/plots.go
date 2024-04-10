@@ -34,7 +34,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 
 		plt := gui.NewPlotTab(key, mode+" "+time+" Plot")
 		plt.SetTable(lt.Table)
-		plt.Params.FmMetaMap(lt.Meta)
+		plt.Params.FromMetaMap(lt.Meta)
 
 		ConfigPlotFromLog(title, plt, lg, key)
 	}
@@ -67,8 +67,8 @@ func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime
 			plt.Params.LegendCol = legend
 		}
 	}
-	plt.ColsFmMetaMap(lt.Table.MetaData)
-	plt.ColsFmMetaMap(lt.Meta)
+	plt.ColsFromMetaMap(lt.Table.MetaData)
+	plt.ColsFromMetaMap(lt.Meta)
 	plt.Update()
 }
 

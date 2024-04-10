@@ -49,7 +49,7 @@ func (rt *EnzRate) Update() {
 // occurring in forward component (s * e), vs just 1 in back
 func (rt *EnzRate) SetKmVol(km, vol, k2, k3 float64) {
 	k1 := (k2 + k3) / km
-	rt.K1 = CoFmN(k1, vol)
+	rt.K1 = CoFromN(k1, vol)
 	rt.K2 = k2
 	rt.K3 = k3
 	rt.Update()

@@ -47,9 +47,9 @@ func PctActInTensor(trow *etensor.Float32) float32 {
 	return float32(NOnInTensor(trow)) / float32(trow.Len())
 }
 
-// NFmPct returns the number of bits for given pct (proportion 0-1),
+// NFromPct returns the number of bits for given pct (proportion 0-1),
 // relative to total n.  uses math.Round.
-func NFmPct(pct float32, n int) int {
+func NFromPct(pct float32, n int) int {
 	return int(math.Round(float64(n) * float64(pct)))
 }
 
@@ -71,8 +71,8 @@ func AddVocabEmpty(mp Vocab, name string, rows, poolY, poolX int) (*etensor.Floa
 // will be returned and printed if it cannot be satisfied in a reasonable
 // amount of time.
 func AddVocabPermutedBinary(mp Vocab, name string, rows, poolY, poolX int, pctAct, minPctDiff float32) (*etensor.Float32, error) {
-	nOn := NFmPct(pctAct, poolY*poolX)
-	minDiff := NFmPct(minPctDiff, nOn)
+	nOn := NFromPct(pctAct, poolY*poolX)
+	minDiff := NFromPct(minPctDiff, nOn)
 	tsr := etensor.NewFloat32([]int{rows, poolY, poolX}, nil, []string{"row", "Y", "X"})
 	err := PermutedBinaryMinDiff(tsr, nOn, 1, 0, minDiff)
 	mp[name] = tsr

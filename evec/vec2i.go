@@ -32,18 +32,18 @@ func NewVec2iScalar(s int) Vec2i {
 	return Vec2i{X: s, Y: s}
 }
 
-// NewVec2iFmVec2Round converts from floating point mat32.Vec2 vector to int, using rounding
-func NewVec2iFmVec2Round(v mat32.Vec2) Vec2i {
+// NewVec2iFromVec2Round converts from floating point mat32.Vec2 vector to int, using rounding
+func NewVec2iFromVec2Round(v mat32.Vec2) Vec2i {
 	return Vec2i{int(mat32.Round(v.X)), int(mat32.Round(v.Y))}
 }
 
-// NewVec2iFmVec2Floor converts from floating point mat32.Vec2 vector to int, using floor
-func NewVec2iFmVec2Floor(v mat32.Vec2) Vec2i {
+// NewVec2iFromVec2Floor converts from floating point mat32.Vec2 vector to int, using floor
+func NewVec2iFromVec2Floor(v mat32.Vec2) Vec2i {
 	return Vec2i{int(mat32.Floor(v.X)), int(mat32.Floor(v.Y))}
 }
 
-// NewVec2iFmVec2Ceil converts from floating point mat32.Vec2 vector to int, using ceil
-func NewVec2iFmVec2Ceil(v mat32.Vec2) Vec2i {
+// NewVec2iFromVec2Ceil converts from floating point mat32.Vec2 vector to int, using ceil
+func NewVec2iFromVec2Ceil(v mat32.Vec2) Vec2i {
 	return Vec2i{X: int(mat32.Ceil(v.X)), Y: int(mat32.Ceil(v.Y))}
 }
 

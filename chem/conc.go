@@ -9,7 +9,7 @@ func CoToN(co, vol float64) float64 {
 	return co * vol
 }
 
-// CoFmN returns concentration from N, for given volume: co / vol
-func CoFmN(n, vol float64) float64 {
+// CoFromN returns concentration from N, for given volume: co / vol
+func CoFromN(n, vol float64) float64 {
 	return n / vol
 }

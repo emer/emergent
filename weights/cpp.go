@@ -73,7 +73,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			if err != nil {
 				errlist = append(errlist, err)
 			}
-			fm := strings.TrimPrefix(css[1], "Fm:")
+			fm := strings.TrimPrefix(css[1], "From:")
 			if len(lw.Prjns) < pi+1 {
 				lw.Prjns = append(lw.Prjns, Prjn{From: fm})
 			}

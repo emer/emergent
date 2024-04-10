@@ -32,7 +32,7 @@ type React struct {
 // dividing forward Kf by volume to compensate for 2 volume-based concentrations
 // occurring in forward component, vs just 1 in back
 func (rt *React) SetVol(f, vol, b float64) {
-	rt.Kf = CoFmN(f, vol)
+	rt.Kf = CoFromN(f, vol)
 	rt.Kb = b
 }
 
