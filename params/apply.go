@@ -12,8 +12,8 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/laser"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/reflectx"
 )
 
 // PathAfterType returns the portion of a path string after the initial
@@ -51,7 +51,7 @@ func (pr *Params) Apply(obj any, setMsg bool) error {
 		if styob, has := obj.(StylerObj); has {
 			obj = styob.Object()
 		}
-	} else if lblr, has := obj.(gi.Labeler); has {
+	} else if lblr, has := obj.(core.Labeler); has {
 		objNm = lblr.Label()
 	}
 	var errs []error
@@ -109,7 +109,7 @@ func (pr *Hypers) Apply(obj any, setMsg bool) error {
 		if styob, has := obj.(StylerObj); has {
 			obj = styob.Object()
 		}
-	} else if lblr, has := obj.(gi.Labeler); has {
+	} else if lblr, has := obj.(core.Labeler); has {
 		objNm = lblr.Label()
 	}
 	if hv, ok := obj.(Hypers); ok {
@@ -175,7 +175,7 @@ func (ps *Sel) TargetTypeMatch(obj any) bool {
 			return true
 		}
 	}
-	tnm := laser.NonPtrType(reflect.TypeOf(obj)).Name()
+	tnm := reflectx.NonPtrType(reflect.TypeOf(obj)).Name()
 	return tnm == trg || tnm == trgh
 }
 
@@ -188,7 +188,7 @@ func (ps *Sel) SelMatch(obj any) bool {
 	if styob, has := obj.(StylerObj); has {
 		obj = styob.Object()
 	}
-	gotyp := laser.NonPtrType(reflect.TypeOf(obj)).Name()
+	gotyp := reflectx.NonPtrType(reflect.TypeOf(obj)).Name()
 	return SelMatch(ps.Sel, stylr.Name(), stylr.Class(), stylr.TypeName(), gotyp)
 }
 
@@ -285,7 +285,7 @@ func (ps *Sheet) SelNoMatchWarn(setName, objName string) error {
 // the target type should already have been identified and this should only
 // be called when there is an expectation of the path working.
 func FindParam(val reflect.Value, path string) (reflect.Value, error) {
-	npv := laser.NonPtrValue(val)
+	npv := reflectx.NonPtrValue(val)
 	if npv.Kind() != reflect.Struct {
 		if !npv.IsValid() {
 			err := fmt.Errorf("params.FindParam: object is nil -- must Build *before* applying params!  path: %v\n", path)
@@ -314,7 +314,7 @@ func FindParam(val reflect.Value, path string) (reflect.Value, error) {
 // converts the string param val as appropriate for target type.
 // returns error if path not found or cannot set (always logged).
 func SetParam(obj any, path string, val string) error {
-	npv := laser.NonPtrValue(reflect.ValueOf(obj))
+	npv := reflectx.NonPtrValue(reflect.ValueOf(obj))
 	if npv.Kind() == reflect.Map { // only for string maps
 		npv.SetMapIndex(reflect.ValueOf(path), reflect.ValueOf(val))
 		return nil
@@ -324,7 +324,7 @@ func SetParam(obj any, path string, val string) error {
 	if err != nil {
 		return err
 	}
-	err = laser.SetRobust(fld.Interface(), val)
+	err = reflectx.SetRobust(fld.Interface(), val)
 	if err != nil {
 		slog.Error("params.SetParam: field could not be set", "path", path, "value", val, "err", err)
 		return err
@@ -340,7 +340,7 @@ func GetParam(obj any, path string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	npf := laser.NonPtrValue(fld)
+	npf := reflectx.NonPtrValue(fld)
 	switch npf.Kind() {
 	case reflect.Float64, reflect.Float32:
 		return npf.Float(), nil

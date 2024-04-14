@@ -14,12 +14,12 @@ import (
 	"os"
 	"sort"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/gox/indent"
-	"cogentcore.org/core/grows"
-	"cogentcore.org/core/grows/jsons"
-	"cogentcore.org/core/grows/tomls"
+	"cogentcore.org/core/iox/jsonx"
+	"cogentcore.org/core/iox/tomlx"
 	"github.com/BurntSushi/toml"
+	"goki.dev/grows"
 	"golang.org/x/exp/maps"
 )
 
@@ -33,25 +33,25 @@ func WriteGoPrelude(w io.Writer, varNm string) {
 }
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Params) OpenJSON(filename gi.Filename) error {
+func (pr *Params) OpenJSON(filename core.Filename) error {
 	*pr = make(Params) // reset
-	return jsons.Open(pr, string(filename))
+	return jsonx.Open(pr, string(filename))
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Params) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Params) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Params) OpenTOML(filename gi.Filename) error {
+func (pr *Params) OpenTOML(filename core.Filename) error {
 	*pr = make(Params) // reset
-	return tomls.Open(pr, string(filename))
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Params) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename)) // pelletier/go-toml produces bad output on maps
+func (pr *Params) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename)) // pelletier/go-toml produces bad output on maps
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -86,7 +86,7 @@ func (pr *Params) StringGoCode() []byte {
 }
 
 // SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Params) SaveGoCode(filename gi.Filename) error {
+func (pr *Params) SaveGoCode(filename core.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -102,7 +102,7 @@ func (pr *Params) SaveGoCode(filename gi.Filename) error {
 //   Hypers
 
 // OpenJSON opens hypers from a JSON-formatted file.
-func (pr *Hypers) OpenJSON(filename gi.Filename) error {
+func (pr *Hypers) OpenJSON(filename core.Filename) error {
 	*pr = make(Hypers) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
@@ -113,19 +113,19 @@ func (pr *Hypers) OpenJSON(filename gi.Filename) error {
 }
 
 // SaveJSON saves hypers to a JSON-formatted file.
-func (pr *Hypers) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Hypers) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Hypers) OpenTOML(filename gi.Filename) error {
+func (pr *Hypers) OpenTOML(filename core.Filename) error {
 	*pr = make(Hypers) // reset
-	return tomls.Open(pr, string(filename))
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Hypers) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename))
+func (pr *Hypers) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename))
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -162,7 +162,7 @@ func (pr *Hypers) StringGoCode() []byte {
 }
 
 // SaveGoCode saves hypers to corresponding Go initializer code.
-func (pr *Hypers) SaveGoCode(filename gi.Filename) error {
+func (pr *Hypers) SaveGoCode(filename core.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -178,7 +178,7 @@ func (pr *Hypers) SaveGoCode(filename gi.Filename) error {
 //   Sel
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Sel) OpenJSON(filename gi.Filename) error {
+func (pr *Sel) OpenJSON(filename core.Filename) error {
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
 		log.Println(err)
@@ -188,18 +188,18 @@ func (pr *Sel) OpenJSON(filename gi.Filename) error {
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Sel) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Sel) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Sel) OpenTOML(filename gi.Filename) error {
-	return tomls.Open(pr, string(filename))
+func (pr *Sel) OpenTOML(filename core.Filename) error {
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Sel) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename))
+func (pr *Sel) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename))
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -226,7 +226,7 @@ func (pr *Sel) StringGoCode() []byte {
 }
 
 // SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Sel) SaveGoCode(filename gi.Filename) error {
+func (pr *Sel) SaveGoCode(filename core.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -242,7 +242,7 @@ func (pr *Sel) SaveGoCode(filename gi.Filename) error {
 //   Sheet
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Sheet) OpenJSON(filename gi.Filename) error {
+func (pr *Sheet) OpenJSON(filename core.Filename) error {
 	*pr = make(Sheet, 0) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
@@ -253,19 +253,19 @@ func (pr *Sheet) OpenJSON(filename gi.Filename) error {
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Sheet) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Sheet) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Sheet) OpenTOML(filename gi.Filename) error {
+func (pr *Sheet) OpenTOML(filename core.Filename) error {
 	*pr = make(Sheet, 0) // reset
-	return tomls.Open(pr, string(filename))
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Sheet) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename))
+func (pr *Sheet) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename))
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -294,7 +294,7 @@ func (pr *Sheet) StringGoCode() []byte {
 }
 
 // SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Sheet) SaveGoCode(filename gi.Filename) error {
+func (pr *Sheet) SaveGoCode(filename core.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -310,7 +310,7 @@ func (pr *Sheet) SaveGoCode(filename gi.Filename) error {
 //   Sheets
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Sheets) OpenJSON(filename gi.Filename) error {
+func (pr *Sheets) OpenJSON(filename core.Filename) error {
 	*pr = make(Sheets) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
@@ -321,19 +321,19 @@ func (pr *Sheets) OpenJSON(filename gi.Filename) error {
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Sheets) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Sheets) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Sheets) OpenTOML(filename gi.Filename) error {
+func (pr *Sheets) OpenTOML(filename core.Filename) error {
 	*pr = make(Sheets) // reset
-	return tomls.Open(pr, string(filename))
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Sheets) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename))
+func (pr *Sheets) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename))
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -369,7 +369,7 @@ func (pr *Sheets) StringGoCode() []byte {
 }
 
 // SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Sheets) SaveGoCode(filename gi.Filename) error {
+func (pr *Sheets) SaveGoCode(filename core.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -385,7 +385,7 @@ func (pr *Sheets) SaveGoCode(filename gi.Filename) error {
 //   Set
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Set) OpenJSON(filename gi.Filename) error {
+func (pr *Set) OpenJSON(filename core.Filename) error {
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
 		log.Println(err)
@@ -395,18 +395,18 @@ func (pr *Set) OpenJSON(filename gi.Filename) error {
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Set) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Set) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Set) OpenTOML(filename gi.Filename) error {
-	return tomls.Open(pr, string(filename))
+func (pr *Set) OpenTOML(filename core.Filename) error {
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Set) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename))
+func (pr *Set) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename))
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -422,7 +422,7 @@ func (pr *Set) WriteGoCode(w io.Writer, depth int, name string) {
 //   Sets
 
 // OpenJSON opens params from a JSON-formatted file.
-func (pr *Sets) OpenJSON(filename gi.Filename) error {
+func (pr *Sets) OpenJSON(filename core.Filename) error {
 	*pr = make(Sets) // reset
 	b, err := ioutil.ReadFile(string(filename))
 	if err != nil {
@@ -433,19 +433,19 @@ func (pr *Sets) OpenJSON(filename gi.Filename) error {
 }
 
 // SaveJSON saves params to a JSON-formatted file.
-func (pr *Sets) SaveJSON(filename gi.Filename) error {
-	return jsons.Save(pr, string(filename))
+func (pr *Sets) SaveJSON(filename core.Filename) error {
+	return jsonx.Save(pr, string(filename))
 }
 
 // OpenTOML opens params from a TOML-formatted file.
-func (pr *Sets) OpenTOML(filename gi.Filename) error {
+func (pr *Sets) OpenTOML(filename core.Filename) error {
 	*pr = make(Sets) // reset
-	return tomls.Open(pr, string(filename))
+	return tomlx.Open(pr, string(filename))
 }
 
 // SaveTOML saves params to a TOML-formatted file.
-func (pr *Sets) SaveTOML(filename gi.Filename) error {
-	// return tomls.Save(pr, string(filename))
+func (pr *Sets) SaveTOML(filename core.Filename) error {
+	// return tomlx.Save(pr, string(filename))
 	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
 		return toml.NewEncoder(w)
 	})
@@ -474,7 +474,7 @@ func (pr *Sets) StringGoCode() []byte {
 }
 
 // SaveGoCode saves params to corresponding Go initializer code.
-func (pr *Sets) SaveGoCode(filename gi.Filename) error {
+func (pr *Sets) SaveGoCode(filename core.Filename) error {
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -487,63 +487,63 @@ func (pr *Sets) SaveGoCode(filename gi.Filename) error {
 }
 
 /*
-var ParamsProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var ParamsProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
+			{"SaveGoCode", tree.Props{
 				"label": "Save Code As...",
 				"desc":  "save to Go-formatted initializer code in file",
 				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".go",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"StringGoCode", ki.Props{
+		{"StringGoCode", tree.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
@@ -552,63 +552,63 @@ var ParamsProps = ki.Props{
 	},
 }
 
-var HypersProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var HypersProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
+			{"SaveGoCode", tree.Props{
 				"label": "Save Code As...",
 				"desc":  "save to Go-formatted initializer code in file",
 				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".go",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"StringGoCode", ki.Props{
+		{"StringGoCode", tree.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
@@ -617,63 +617,63 @@ var HypersProps = ki.Props{
 	},
 }
 
-var SelProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var SelProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
+			{"SaveGoCode", tree.Props{
 				"label": "Save Code As...",
 				"desc":  "save to Go-formatted initializer code in file",
 				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".go",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"StringGoCode", ki.Props{
+		{"StringGoCode", tree.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
@@ -682,63 +682,63 @@ var SelProps = ki.Props{
 	},
 }
 
-var SheetProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var SheetProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
+			{"SaveGoCode", tree.Props{
 				"label": "Save Code As...",
 				"desc":  "save to Go-formatted initializer code in file",
 				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".go",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"StringGoCode", ki.Props{
+		{"StringGoCode", tree.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
@@ -747,70 +747,70 @@ var SheetProps = ki.Props{
 	},
 }
 
-var SheetsProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var SheetsProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
+			{"SaveGoCode", tree.Props{
 				"label": "Save Code As...",
 				"desc":  "save to Go-formatted initializer code in file",
 				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".go",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"StringGoCode", ki.Props{
+		{"StringGoCode", tree.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
 			"show-return": true,
 		}},
-		{"sep-diffs", ki.BlankProp{}},
-		{"DiffsWithin", ki.Props{
+		{"sep-diffs", tree.BlankProp{}},
+		{"DiffsWithin", tree.Props{
 			"desc":        "reports where the same param path is being set to different values within this set (both within the same Sheet and betwen sheets)",
 			"icon":        "search",
 			"show-return": true,
@@ -818,54 +818,54 @@ var SheetsProps = ki.Props{
 	},
 }
 
-var SetProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var SetProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"sep-diffs", ki.BlankProp{}},
-		{"DiffsWithin", ki.Props{
+		{"sep-diffs", tree.BlankProp{}},
+		{"DiffsWithin", tree.Props{
 			"desc":        "reports where the same param path is being set to different values within this set (both within the same Sheet and betwen sheets)",
 			"icon":        "search",
 			"show-return": true,
@@ -873,85 +873,85 @@ var SetProps = ki.Props{
 	},
 }
 
-var SetsProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Save", ki.PropSlice{
-			{"SaveTOML", ki.Props{
+var SetsProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"Save", tree.PropSlice{
+			{"SaveTOML", tree.Props{
 				"label": "Save As TOML...",
 				"desc":  "save to TOML formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"SaveJSON", ki.Props{
+			{"SaveJSON", tree.Props{
 				"label": "Save As JSON...",
 				"desc":  "save to JSON formatted file",
 				"icon":  "file-save",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
-			{"SaveGoCode", ki.Props{
+			{"SaveGoCode", tree.Props{
 				"label": "Save Code As...",
 				"desc":  "save to Go-formatted initializer code in file",
 				"icon":  "go",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".go",
 					}},
 				},
 			}},
 		}},
-		{"Open", ki.PropSlice{
-			{"OpenTOML", ki.Props{
+		{"Open", tree.PropSlice{
+			{"OpenTOML", tree.Props{
 				"label": "Open...",
 				"desc":  "open from TOML formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".toml",
 					}},
 				},
 			}},
-			{"OpenJSON", ki.Props{
+			{"OpenJSON", tree.Props{
 				"label": "Open...",
 				"desc":  "open from JSON formatted file",
 				"icon":  "file-open",
-				"Args": ki.PropSlice{
-					{"File Name", ki.Props{
+				"Args": tree.PropSlice{
+					{"File Name", tree.Props{
 						"ext": ".json",
 					}},
 				},
 			}},
 		}},
-		{"StringGoCode", ki.Props{
+		{"StringGoCode", tree.Props{
 			"label":       "Show Code",
 			"desc":        "shows the Go-formatted initializer code, can be copy / pasted into program",
 			"icon":        "go",
 			"show-return": true,
 		}},
-		{"sep-diffs", ki.BlankProp{}},
-		{"DiffsAll", ki.Props{
+		{"sep-diffs", tree.BlankProp{}},
+		{"DiffsAll", tree.Props{
 			"desc":        "between all sets, reports where the same param path is being set to different values",
 			"icon":        "search",
 			"show-return": true,
 		}},
-		{"DiffsFirst", ki.Props{
+		{"DiffsFirst", tree.Props{
 			"desc":        "between first set (e.g., the Base set) and rest of sets, reports where the same param path is being set to different values",
 			"icon":        "search",
 			"show-return": true,
 		}},
-		{"DiffsWithin", ki.Props{
+		{"DiffsWithin", tree.Props{
 			"desc":        "reports all the cases where the same param path is being set to different values within different sheets in given set",
 			"icon":        "search",
 			"show-return": true,
-			"Args": ki.PropSlice{
-				{"Set Name", ki.Props{}},
+			"Args": tree.PropSlice{
+				{"Set Name", tree.Props{}},
 			},
 		}},
 	},

@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"cogentcore.org/core/laser"
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/reflectx"
 	"golang.org/x/exp/maps"
 )
 
@@ -156,7 +156,7 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 	for _, slnm := range slsort {
 		sel := slnms[slnm]
 		flx := sels[sel]
-		// fmt.Println(laser.StringJSON(sel), "\n", laser.StringJSON(flx))
+		// fmt.Println(reflectx.StringJSON(sel), "\n", reflectx.StringJSON(flx))
 		var f0 *FlexVal
 		for _, fv := range flx {
 			if f0 == nil {
@@ -198,7 +198,7 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 
 				var pars []float32 // param vals to search
 				if tweak[0] == '[' {
-					err := laser.SetRobust(&pars, tweak)
+					err := reflectx.SetRobust(&pars, tweak)
 					if err != nil {
 						fmt.Println("Error processing tweak value list:", tweak, "error:", err)
 						continue

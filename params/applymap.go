@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/laser"
+	"cogentcore.org/core/reflectx"
 )
 
 // ApplyMap applies given map[string]any values, where the map keys
@@ -21,9 +21,9 @@ import (
 // It always prints a message if a parameter fails to be set, and returns an error.
 func ApplyMap(obj any, vals map[string]any, setMsg bool) error {
 	objv := reflect.ValueOf(obj)
-	npv := laser.NonPtrValue(objv)
+	npv := reflectx.NonPtrValue(objv)
 	if npv.Kind() == reflect.Map {
-		err := laser.CopyMapRobust(obj, vals)
+		err := reflectx.CopyMapRobust(obj, vals)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -38,14 +38,14 @@ func ApplyMap(obj any, vals map[string]any, setMsg bool) error {
 		if err != nil {
 			errs = append(errs, err)
 		}
-		err = laser.SetRobust(fld.Interface(), v)
+		err = reflectx.SetRobust(fld.Interface(), v)
 		if err != nil {
 			err = fmt.Errorf("ApplyMap: was not able to apply value: %v to field: %s", v, k)
 			log.Println(err)
 			errs = append(errs, err)
 		}
 		if setMsg {
-			log.Printf("ApplyMap: set field: %s = %#v\n", k, laser.NonPtrValue(fld).Interface())
+			log.Printf("ApplyMap: set field: %s = %#v\n", k, reflectx.NonPtrValue(fld).Interface())
 		}
 	}
 	return errors.Join(errs...)
@@ -66,7 +66,7 @@ func MapToSheet(vals map[string]any) (*Sheet, error) {
 			errs = append(errs, err)
 			continue
 		}
-		vstr := laser.ToString(v)
+		vstr := reflectx.ToString(v)
 
 		sl := &Sel{Sel: fld[0], SetName: "ApplyMap"}
 		sl.Params = make(Params)

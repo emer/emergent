@@ -7,7 +7,7 @@ package netview
 import (
 	"strings"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"github.com/emer/emergent/v2/etime"
 )
 
@@ -107,7 +107,7 @@ func (vu *ViewUpdate) UpdateWhenStopped() {
 	if !vu.View.Params.Raster.On { // always record when not in raster mode
 		vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	}
-	if vu.View.Scene.Is(gi.ScUpdating) {
+	if vu.View.Scene.Is(core.ScUpdating) {
 		return
 	}
 	vu.View.GoUpdateView()

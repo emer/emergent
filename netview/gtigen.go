@@ -6,9 +6,8 @@ import (
 	"sync"
 
 	"cogentcore.org/core/colors/colormap"
-	"cogentcore.org/core/giv"
 	"cogentcore.org/core/gti"
-	"cogentcore.org/core/ki"
+	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
 	"cogentcore.org/core/xyzv"
 )
@@ -22,7 +21,7 @@ var SceneType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview
 
 // NewScene adds a new [Scene] with the given name to the given parent:
 // Scene is a Widget for managing the 3D Scene of the NetView
-func NewScene(parent ki.Ki, name ...string) *Scene {
+func NewScene(parent tree.Ki, name ...string) *Scene {
 	return parent.NewChild(SceneType, name...).(*Scene)
 }
 
@@ -30,7 +29,7 @@ func NewScene(parent ki.Ki, name ...string) *Scene {
 func (t *Scene) KiType() *gti.Type { return SceneType }
 
 // New returns a new [*Scene] value
-func (t *Scene) New() ki.Ki { return &Scene{} }
+func (t *Scene) New() tree.Ki { return &Scene{} }
 
 // SetNetView sets the [Scene.NetView]
 func (t *Scene) SetNetView(v *NetView) *Scene { t.NetView = v; return t }
@@ -57,7 +56,7 @@ var LayObjType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netvie
 
 // NewLayObj adds a new [LayObj] with the given name to the given parent:
 // LayObj is the Layer 3D object within the NetView
-func NewLayObj(parent ki.Ki, name ...string) *LayObj {
+func NewLayObj(parent tree.Ki, name ...string) *LayObj {
 	return parent.NewChild(LayObjType, name...).(*LayObj)
 }
 
@@ -65,7 +64,7 @@ func NewLayObj(parent ki.Ki, name ...string) *LayObj {
 func (t *LayObj) KiType() *gti.Type { return LayObjType }
 
 // New returns a new [*LayObj] value
-func (t *LayObj) New() ki.Ki { return &LayObj{} }
+func (t *LayObj) New() tree.Ki { return &LayObj{} }
 
 // SetLayName sets the [LayObj.LayName]:
 // name of the layer we represent
@@ -83,7 +82,7 @@ var LayNameType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netvi
 
 // NewLayName adds a new [LayName] with the given name to the given parent:
 // LayName is the Layer name as a Text2D within the NetView
-func NewLayName(parent ki.Ki, name ...string) *LayName {
+func NewLayName(parent tree.Ki, name ...string) *LayName {
 	return parent.NewChild(LayNameType, name...).(*LayName)
 }
 
@@ -91,7 +90,7 @@ func NewLayName(parent ki.Ki, name ...string) *LayName {
 func (t *LayName) KiType() *gti.Type { return LayNameType }
 
 // New returns a new [*LayName] value
-func (t *LayName) New() ki.Ki { return &LayName{} }
+func (t *LayName) New() tree.Ki { return &LayName{} }
 
 // SetNetView sets the [LayName.NetView]:
 // our netview
@@ -106,12 +105,12 @@ func (t *LayName) SetText(v string) *LayName { t.Text = v; return t }
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview.NetData", IDName: "net-data", Doc: "NetData maintains a record of all the network data that has been displayed\nup to a given maximum number of records (updates), using efficient ring index logic\nwith no copying to store in fixed-sized buffers.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Methods: []gti.Method{{Name: "OpenJSON", Doc: "OpenJSON opens colors from a JSON-formatted file.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"filename"}, Returns: []string{"error"}}, {Name: "SaveJSON", Doc: "SaveJSON saves colors to a JSON-formatted file.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"filename"}, Returns: []string{"error"}}}, Fields: []gti.Field{{Name: "Net", Doc: "the network that we're viewing"}, {Name: "NoSynData", Doc: "copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"}, {Name: "PrjnLay", Doc: "name of the layer with unit for viewing projections (connection / synapse-level values)"}, {Name: "PrjnUnIndex", Doc: "1D index of unit within PrjnLay for for viewing projections"}, {Name: "PrjnType", Doc: "copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc"}, {Name: "UnVars", Doc: "the list of unit variables saved"}, {Name: "UnVarIndexes", Doc: "index of each variable in the Vars slice"}, {Name: "SynVars", Doc: "the list of synaptic variables saved"}, {Name: "SynVarIndexes", Doc: "index of synaptic variable in the SynVars slice"}, {Name: "Ring", Doc: "the circular ring index -- Max here is max number of values to store, Len is number stored, and Index(Len-1) is the most recent one, etc"}, {Name: "MaxData", Doc: "max data parallel data per unit"}, {Name: "LayData", Doc: "the layer data -- map keyed by layer name"}, {Name: "UnMinPer", Doc: "unit var min values for each Ring.Max * variable"}, {Name: "UnMaxPer", Doc: "unit var max values for each Ring.Max * variable"}, {Name: "UnMinVar", Doc: "min values for unit variables"}, {Name: "UnMaxVar", Doc: "max values for unit variables"}, {Name: "SynMinVar", Doc: "min values for syn variables"}, {Name: "SynMaxVar", Doc: "max values for syn variables"}, {Name: "Counters", Doc: "counter strings"}, {Name: "RasterCtrs", Doc: "raster counter values"}, {Name: "RasterMap", Doc: "map of raster counter values to record numbers"}, {Name: "RastCtr", Doc: "dummy raster counter when passed a -1 -- increments and wraps around"}}})
 
 // NetViewType is the [gti.Type] for [NetView]
-var NetViewType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview.NetView", IDName: "net-view", Doc: "NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d\n3D framework.", Methods: []gti.Method{{Name: "PlotSelectedUnit", Doc: "PlotSelectedUnit opens a window with a plot of all the data for the\ncurrently-selected unit.\nUseful for replaying detailed trace for units of interest.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"Table", "Plot2D"}}, {Name: "Current", Doc: "Current records the current state of the network, including synaptic values,\nand updates the display.  Use this when switching to NetView tab after network\nhas been running while viewing another tab, because the network state\nis typically not recored then.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "SaveWeights", Doc: "SaveWeights saves the network weights -- when called with giv.CallMethod\nit will auto-prompt for filename", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"filename"}}, {Name: "OpenWeights", Doc: "OpenWeights opens the network weights -- when called with giv.CallMethod\nit will auto-prompt for filename", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"filename"}}, {Name: "ShowNonDefaultParams", Doc: "ShowNonDefaultParams shows a dialog of all the parameters that\nare not at their default values in the network.  Useful for setting params.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowAllParams", Doc: "ShowAllParams shows a dialog of all the parameters in the network.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyLayerParams", Doc: "ShowKeyLayerParams shows a dialog with a listing for all layers in the network,\nof the most important layer-level params (specific to each algorithm)", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyPrjnParams", Doc: "ShowKeyPrjnParams shows a dialog with a listing for all Recv projections in the network,\nof the most important projection-level params (specific to each algorithm)", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}}, Embeds: []gti.Field{{Name: "Layout"}}, Fields: []gti.Field{{Name: "Net", Doc: "the network that we're viewing"}, {Name: "Var", Doc: "current variable that we're viewing"}, {Name: "Di", Doc: "current data parallel index di, for networks capable of processing input patterns in parallel."}, {Name: "Vars", Doc: "the list of variables to view"}, {Name: "SynVars", Doc: "list of synaptic variables"}, {Name: "SynVarsMap", Doc: "map of synaptic variable names to index"}, {Name: "VarParams", Doc: "parameters for the list of variables to view"}, {Name: "CurVarParams", Doc: "current var params -- only valid during Update of display"}, {Name: "Params", Doc: "parameters controlling how the view is rendered"}, {Name: "ColorMap", Doc: "color map for mapping values to colors -- set by name in Params"}, {Name: "ColorMapVal", Doc: "color map value representing ColorMap"}, {Name: "RecNo", Doc: "record number to display -- use -1 to always track latest, otherwise in range"}, {Name: "LastCtrs", Doc: "last non-empty counters string provided -- re-used if no new one"}, {Name: "Data", Doc: "contains all the network data with history"}, {Name: "DataMu", Doc: "mutex on data access"}}, Instance: &NetView{}})
+var NetViewType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview.NetView", IDName: "net-view", Doc: "NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d\n3D framework.", Methods: []gti.Method{{Name: "PlotSelectedUnit", Doc: "PlotSelectedUnit opens a window with a plot of all the data for the\ncurrently-selected unit.\nUseful for replaying detailed trace for units of interest.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"Table", "Plot2D"}}, {Name: "Current", Doc: "Current records the current state of the network, including synaptic values,\nand updates the display.  Use this when switching to NetView tab after network\nhas been running while viewing another tab, because the network state\nis typically not recored then.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "SaveWeights", Doc: "SaveWeights saves the network weights -- when called with views.CallMethod\nit will auto-prompt for filename", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"filename"}}, {Name: "OpenWeights", Doc: "OpenWeights opens the network weights -- when called with views.CallMethod\nit will auto-prompt for filename", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Args: []string{"filename"}}, {Name: "ShowNonDefaultParams", Doc: "ShowNonDefaultParams shows a dialog of all the parameters that\nare not at their default values in the network.  Useful for setting params.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowAllParams", Doc: "ShowAllParams shows a dialog of all the parameters in the network.", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyLayerParams", Doc: "ShowKeyLayerParams shows a dialog with a listing for all layers in the network,\nof the most important layer-level params (specific to each algorithm)", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyPrjnParams", Doc: "ShowKeyPrjnParams shows a dialog with a listing for all Recv projections in the network,\nof the most important projection-level params (specific to each algorithm)", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}, Returns: []string{"string"}}}, Embeds: []gti.Field{{Name: "Layout"}}, Fields: []gti.Field{{Name: "Net", Doc: "the network that we're viewing"}, {Name: "Var", Doc: "current variable that we're viewing"}, {Name: "Di", Doc: "current data parallel index di, for networks capable of processing input patterns in parallel."}, {Name: "Vars", Doc: "the list of variables to view"}, {Name: "SynVars", Doc: "list of synaptic variables"}, {Name: "SynVarsMap", Doc: "map of synaptic variable names to index"}, {Name: "VarParams", Doc: "parameters for the list of variables to view"}, {Name: "CurVarParams", Doc: "current var params -- only valid during Update of display"}, {Name: "Params", Doc: "parameters controlling how the view is rendered"}, {Name: "ColorMap", Doc: "color map for mapping values to colors -- set by name in Params"}, {Name: "ColorMapVal", Doc: "color map value representing ColorMap"}, {Name: "RecNo", Doc: "record number to display -- use -1 to always track latest, otherwise in range"}, {Name: "LastCtrs", Doc: "last non-empty counters string provided -- re-used if no new one"}, {Name: "Data", Doc: "contains all the network data with history"}, {Name: "DataMu", Doc: "mutex on data access"}}, Instance: &NetView{}})
 
 // NewNetView adds a new [NetView] with the given name to the given parent:
 // NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
 // 3D framework.
-func NewNetView(parent ki.Ki, name ...string) *NetView {
+func NewNetView(parent tree.Ki, name ...string) *NetView {
 	return parent.NewChild(NetViewType, name...).(*NetView)
 }
 
@@ -119,7 +118,7 @@ func NewNetView(parent ki.Ki, name ...string) *NetView {
 func (t *NetView) KiType() *gti.Type { return NetViewType }
 
 // New returns a new [*NetView] value
-func (t *NetView) New() ki.Ki { return &NetView{} }
+func (t *NetView) New() tree.Ki { return &NetView{} }
 
 // SetDi sets the [NetView.Di]:
 // current data parallel index di, for networks capable of processing input patterns in parallel.
@@ -155,7 +154,7 @@ func (t *NetView) SetColorMap(v *colormap.Map) *NetView { t.ColorMap = v; return
 
 // SetColorMapVal sets the [NetView.ColorMapVal]:
 // color map value representing ColorMap
-func (t *NetView) SetColorMapVal(v *giv.ColorMapValue) *NetView { t.ColorMapVal = v; return t }
+func (t *NetView) SetColorMapVal(v *views.ColorMapValue) *NetView { t.ColorMapVal = v; return t }
 
 // SetRecNo sets the [NetView.RecNo]:
 // record number to display -- use -1 to always track latest, otherwise in range

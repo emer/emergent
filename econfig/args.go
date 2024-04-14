@@ -13,8 +13,8 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/grows/tomls"
-	"cogentcore.org/core/laser"
+	"cogentcore.org/core/iox/tomlx"
+	"cogentcore.org/core/reflectx"
 	"github.com/emer/empi/v2/mpi"
 	"github.com/iancoleman/strcase"
 )
@@ -92,7 +92,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 		return
 	}
 
-	isbool := laser.NonPtrValue(fval).Kind() == reflect.Bool
+	isbool := reflectx.NonPtrValue(fval).Kind() == reflect.Bool
 
 	var value string
 	switch {
@@ -134,7 +134,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 
 // SetArgValue sets given arg name to given value, into settable reflect.Value
 func SetArgValue(name string, fval reflect.Value, value string) error {
-	nptyp := laser.NonPtrType(fval.Type())
+	nptyp := reflectx.NonPtrType(fval.Type())
 	vk := nptyp.Kind()
 	switch {
 	// todo: enum
@@ -142,12 +142,12 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 	// 	return kit.Enums.SetAnyEnumValueFromString(fval, value)
 	case vk == reflect.Map:
 		mval := make(map[string]any)
-		err := tomls.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		err := tomlx.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
 			mpi.Println(err)
 			return err
 		}
-		err = laser.CopyMapRobust(fval.Interface(), mval["tmp"])
+		err = reflectx.CopyMapRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
 			mpi.Println(err)
 			err = fmt.Errorf("econfig.ParseArgs: not able to set map field from arg: %s val: %s", name, value)
@@ -156,12 +156,12 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 		}
 	case vk == reflect.Slice:
 		mval := make(map[string]any)
-		err := tomls.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
+		err := tomlx.ReadBytes(&mval, []byte("tmp="+value)) // use toml decoder
 		if err != nil {
 			mpi.Println(err)
 			return err
 		}
-		err = laser.CopySliceRobust(fval.Interface(), mval["tmp"])
+		err = reflectx.CopySliceRobust(fval.Interface(), mval["tmp"])
 		if err != nil {
 			mpi.Println(err)
 			err = fmt.Errorf("econfig.ParseArgs: not able to set slice field from arg: %s val: %s", name, value)
@@ -169,7 +169,7 @@ func SetArgValue(name string, fval reflect.Value, value string) error {
 			return err
 		}
 	default:
-		err := laser.SetRobust(fval.Interface(), value) // overkill but whatever
+		err := reflectx.SetRobust(fval.Interface(), value) // overkill but whatever
 		if err != nil {
 			err := fmt.Errorf("econfig.ParseArgs: not able to set field from arg: %s val: %s", name, value)
 			mpi.Println(err)
@@ -202,19 +202,19 @@ func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect
 // fieldArgNamesStruct returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
 func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]reflect.Value) {
-	if laser.AnyIsNil(obj) {
+	if reflectx.AnyIsNil(obj) {
 		return
 	}
 	ov := reflect.ValueOf(obj)
 	if ov.Kind() == reflect.Pointer && ov.IsNil() {
 		return
 	}
-	val := laser.NonPtrValue(ov)
+	val := reflectx.NonPtrValue(ov)
 	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
-		if laser.NonPtrType(f.Type).Kind() == reflect.Struct {
+		if reflectx.NonPtrType(f.Type).Kind() == reflect.Struct {
 			nwPath := f.Name
 			if path != "" {
 				nwPath = path + "." + nwPath
@@ -226,10 +226,10 @@ func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]ref
 					nwNest = true
 				}
 			}
-			fieldArgNamesStruct(laser.PtrValue(fv).Interface(), nwPath, nwNest, allArgs)
+			fieldArgNamesStruct(reflectx.PtrValue(fv).Interface(), nwPath, nwNest, allArgs)
 			continue
 		}
-		pval := laser.PtrValue(fv)
+		pval := reflectx.PtrValue(fv)
 		addAllCases(f.Name, path, pval, allArgs)
 		if f.Type.Kind() == reflect.Bool {
 			addAllCases("No"+f.Name, path, pval, allArgs)

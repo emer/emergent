@@ -7,10 +7,10 @@ package netview
 import (
 	"fmt"
 
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
 	"cogentcore.org/core/xyzv"
 	"github.com/emer/emergent/v2/emer"
@@ -60,7 +60,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		if ok {
 			lay := ln.NetView.Net.LayerByName(ln.Text)
 			if lay != nil {
-				giv.StructViewDialog(sw, lay, "Layer: "+lay.Name(), true)
+				views.StructViewDialog(sw, lay, "Layer: "+lay.Name(), true)
 			}
 			e.SetHandled()
 			return
@@ -108,7 +108,7 @@ func (sw *Scene) LongHoverEvent(e events.Event) {
 	} else {
 		return // not supported
 	}
-	gi.NewTooltipTextAt(sw, sval, e.WindowPos(), lay.Size().ToPoint()).Run()
+	core.NewTooltipTextAt(sw, sval, e.WindowPos(), lay.Size().ToPoint()).Run()
 	e.SetHandled()
 }
 
@@ -128,7 +128,7 @@ func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unInd
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		lay = nv.Net.Layer(li)
-		lg := lgi.(*xyz.Group)
+		lg := lcore.(*xyz.Group)
 		lp := lay.Pos()
 		lp.Y = -lp.Y // reverse direction
 		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)

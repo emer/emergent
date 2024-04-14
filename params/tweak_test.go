@@ -7,7 +7,7 @@ package params
 import (
 	"testing"
 
-	"cogentcore.org/core/laser"
+	"cogentcore.org/core/reflectx"
 	"github.com/andreyvit/diff"
 )
 
@@ -250,10 +250,10 @@ func TestTweakHypers(t *testing.T) {
 	basenet := tweakSets.SetByName("Base").Sheets["Network"]
 	hypers.ApplySheet(basenet, false)
 
-	// fmt.Println("hypers:", laser.StringJSON(hypers))
+	// fmt.Println("hypers:", reflectx.StringJSON(hypers))
 
 	srch := TweaksFromHypers(hypers)
-	ss := laser.StringJSON(srch)
+	ss := reflectx.StringJSON(srch)
 	// fmt.Println("\n\n##########\n", ss)
 	if ss != trgSearch {
 		t.Errorf("Test Tweak Search output incorrect at: %v!\n", diff.LineDiff(ss, trgSearch))

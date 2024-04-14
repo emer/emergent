@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"strings"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
@@ -536,7 +536,7 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 //   IO
 
 // OpenJSON opens colors from a JSON-formatted file.
-func (nd *NetData) OpenJSON(filename gi.Filename) error { //gti:add
+func (nd *NetData) OpenJSON(filename core.Filename) error { //gti:add
 	fp, err := os.Open(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -558,7 +558,7 @@ func (nd *NetData) OpenJSON(filename gi.Filename) error { //gti:add
 }
 
 // SaveJSON saves colors to a JSON-formatted file.
-func (nd *NetData) SaveJSON(filename gi.Filename) error { //gti:add
+func (nd *NetData) SaveJSON(filename core.Filename) error { //gti:add
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -634,7 +634,7 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //gti:add
 
 	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
 
-	b := gi.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
+	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
 	plt := eplot.NewPlot2D(b)
 	plt.Params.Title = "NetView " + selnm
 	plt.Params.XAxisCol = "Rec"
@@ -709,22 +709,22 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 }
 
 /*
-var NetDataProps = ki.Props{
-	"CallMethods": ki.PropSlice{
-		{"SaveJSON", ki.Props{
+var NetDataProps = tree.Props{
+	"CallMethods": tree.PropSlice{
+		{"SaveJSON", tree.Props{
 			"desc": "save recorded network view data to file",
 			"icon": "file-save",
-			"Args": ki.PropSlice{
-				{"File Name", ki.Props{
+			"Args": tree.PropSlice{
+				{"File Name", tree.Props{
 					"ext": ".netdat,.netdat.gz",
 				}},
 			},
 		}},
-		{"OpenJSON", ki.Props{
+		{"OpenJSON", tree.Props{
 			"desc": "open recorded network view data from file",
 			"icon": "file-open",
-			"Args": ki.PropSlice{
-				{"File Name", ki.Props{
+			"Args": tree.PropSlice{
+				{"File Name", tree.Props{
 					"ext": ".netdat,.netdat.gz",
 				}},
 			},

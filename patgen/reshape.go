@@ -7,7 +7,7 @@ package patgen
 import (
 	"log"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
 )
@@ -35,11 +35,11 @@ func ReshapeCpp(dt *etable.Table) {
 // ReshapeCppFile fixes C++ emergent table shape which is reversed from Go.
 // It loads file from fname and saves to fixnm
 func ReshapeCppFile(dt *etable.Table, fname, fixnm string) {
-	err := dt.OpenCSV(gi.Filename(fname), etable.Tab)
+	err := dt.OpenCSV(core.Filename(fname), etable.Tab)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	ReshapeCpp(dt)
-	dt.SaveCSV(gi.Filename(fixnm), etable.Tab, true)
+	dt.SaveCSV(core.Filename(fixnm), etable.Tab, true)
 }

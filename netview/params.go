@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"cogentcore.org/core/giv"
+	"cogentcore.org/core/views"
 	"github.com/emer/etable/v2/minmax"
 )
 
@@ -72,7 +72,7 @@ type Params struct { //gti:add
 	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" default:"0.05"`
 
 	// name of color map to use
-	ColorMap giv.ColorMapName
+	ColorMap views.ColorMapName
 
 	// opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
 	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`
@@ -102,14 +102,14 @@ func (nv *Params) Defaults() {
 		nv.ZeroAlpha = 0.5
 	}
 	if nv.ColorMap == "" {
-		nv.ColorMap = giv.ColorMapName("ColdHot")
+		nv.ColorMap = views.ColorMapName("ColdHot")
 	}
 	if nv.NFastSteps == 0 {
 		nv.NFastSteps = 10
 	}
 }
 
-// Update satisfies the gi.Updater interface and will trigger display update on edits
+// Update satisfies the core.Updater interface and will trigger display update on edits
 func (nv *Params) Update() {
 	if nv.NetView != nil {
 		nv.NetView.Config()

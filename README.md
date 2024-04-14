@@ -39,7 +39,7 @@ See [python README](https://github.com/emer/leabra/blob/master/python/README.md)
 
 * The system is fully usable from within Python -- see the [Python Wiki](https://github.com/emer/emergent/wiki/Python).  This includes interoperating with PyTorch via [eTorch](https://github.com/emer/etorch), and [PsyNeuLink](https://princetonuniversity.github.io/PsyNeuLink/) to make Leabra models accessible in that framework, and vice-versa.  Furthermore, interactive, IDE-level tools such as `Jupyter` and `nteract` can be used to interactively develop and analyze the models, etc.
 
-* We are leveraging the [GoGi Gui](https://cogentcore.org/core/gi/v2) to provide interactive 2D and 3D GUI interfaces to models, capturing the essential functionality of the original C++ emergent interface, but in a much more a-la-carte fashion.  We also use and support the [GoNum](https://github.com/gonum) framework for analyzing and plotting results within Go.
+* We are leveraging the [Cogent Core GUI](https://cogentcore.org/core) to provide interactive 2D and 3D GUI interfaces to models, capturing the essential functionality of the original C++ emergent interface, but in a much more a-la-carte fashion.  We also use and support the [GoNum](https://github.com/gonum) framework for analyzing and plotting results within Go.
 
 # Design / Organization
 

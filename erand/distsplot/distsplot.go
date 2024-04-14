@@ -10,10 +10,10 @@ package main
 import (
 	"strconv"
 
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
 	"cogentcore.org/core/icons"
+	"cogentcore.org/core/views"
 	"github.com/emer/emergent/v2/erand"
 	"github.com/emer/etable/v2/eplot"
 	"github.com/emer/etable/v2/etable"
@@ -119,15 +119,15 @@ func (ss *Sim) ConfigPlot(plt *eplot.Plot2D, dt *etable.Table) *eplot.Plot2D {
 }
 
 // ConfigGUI configures the Cogent Core GUI interface for this simulation.
-func (ss *Sim) ConfigGUI() *gi.Body {
-	b := gi.NewBody("distplot")
+func (ss *Sim) ConfigGUI() *core.Body {
+	b := core.NewBody("distplot")
 
-	split := gi.NewSplits(b, "split")
+	split := core.NewSplits(b, "split")
 
-	sv := giv.NewStructView(split, "sv")
+	sv := views.NewStructView(split, "sv")
 	sv.SetStruct(ss)
 
-	tv := gi.NewTabs(split, "tv")
+	tv := core.NewTabs(split, "tv")
 
 	pt := tv.NewTab("Histogram")
 	plt := eplot.NewPlot2D(pt)
@@ -135,16 +135,16 @@ func (ss *Sim) ConfigGUI() *gi.Body {
 
 	split.SetSplits(.3, .7)
 
-	b.AddAppBar(func(tb *gi.Toolbar) {
-		gi.NewButton(tb).SetText("Run").SetIcon(icons.Update).
+	b.AddAppBar(func(tb *core.Toolbar) {
+		core.NewButton(tb).SetText("Run").SetIcon(icons.Update).
 			SetTooltip("Generate data and plot histogram.").
 			OnClick(func(e events.Event) {
 				ss.Run()
 			})
-		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
+		core.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
 			SetTooltip("Opens your browser on the README file that contains instructions for how to run this model.").
 			OnClick(func(e events.Event) {
-				gi.TheApp.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
+				core.TheApp.OpenURL("https://github.com/emer/emergent/v2/blob/master/erand/distplot/README.md")
 			})
 	})
 	b.RunMainWindow()

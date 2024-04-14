@@ -5,7 +5,7 @@
 package egui
 
 import (
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"github.com/emer/emergent/v2/actrf"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/etview"
@@ -34,12 +34,12 @@ func (gui *GUI) SetGrid(name string, tg *etview.TensorGrid) {
 
 // ConfigRasterGrid configures a raster grid for given layer name.
 // Uses Raster_laynm and given Tensor that has the raster data.
-func (gui *GUI) ConfigRasterGrid(lay *gi.Layout, laynm string, rast *etensor.Float32) *etview.TensorGrid {
+func (gui *GUI) ConfigRasterGrid(lay *core.Layout, laynm string, rast *etensor.Float32) *etview.TensorGrid {
 	tg := gui.Grid(laynm)
 	tg.SetName(laynm + "Raster")
-	gi.NewLabel(lay, laynm, laynm+":")
+	core.NewLabel(lay, laynm, laynm+":")
 	lay.AddChild(tg)
-	gi.NewSpace(lay, laynm+"_spc")
+	core.NewSpace(lay, laynm+"_spc")
 	rast.SetMetaData("grid-fill", "1")
 	tg.SetTensor(rast)
 	return tg

@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/laser"
+	"cogentcore.org/core/reflectx"
 )
 
 // Usage returns the usage string for args based on given Config object
@@ -28,17 +28,17 @@ func Usage(cfg any) string {
 
 // usageStruct adds usage info to given strings.Builder
 func usageStruct(obj any, path string, b *strings.Builder) {
-	typ := laser.NonPtrType(reflect.TypeOf(obj))
-	val := laser.NonPtrValue(reflect.ValueOf(obj))
+	typ := reflectx.NonPtrType(reflect.TypeOf(obj))
+	val := reflectx.NonPtrValue(reflect.ValueOf(obj))
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
-		if laser.NonPtrType(f.Type).Kind() == reflect.Struct {
+		if reflectx.NonPtrType(f.Type).Kind() == reflect.Struct {
 			nwPath := f.Name
 			if path != "" {
 				nwPath = path + "." + nwPath
 			}
-			usageStruct(laser.PtrValue(fv).Interface(), nwPath, b)
+			usageStruct(reflectx.PtrValue(fv).Interface(), nwPath, b)
 			continue
 		}
 		nm := f.Name

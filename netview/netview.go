@@ -20,15 +20,15 @@ import (
 	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/events/key"
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
 	"cogentcore.org/core/icons"
-	"cogentcore.org/core/ki"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/tree"
+	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/etable/v2/minmax"
@@ -37,7 +37,7 @@ import (
 // NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
 // 3D framework.
 type NetView struct {
-	gi.Layout
+	core.Layout
 
 	// the network that we're viewing
 	Net emer.Network `set:"-"`
@@ -70,7 +70,7 @@ type NetView struct {
 	ColorMap *colormap.Map
 
 	// color map value representing ColorMap
-	ColorMapVal *giv.ColorMapValue
+	ColorMapVal *views.ColorMapValue
 
 	// record number to display -- use -1 to always track latest, otherwise in range
 	RecNo int
@@ -274,16 +274,16 @@ func (nv *NetView) ConfigNetView() {
 		log.Printf("NetView: %v  ColorMap named: %v not found in colormap.AvailMaps\n", nv.Nm, nv.Params.ColorMap)
 	}
 	if !nv.HasChildren() {
-		tb := gi.NewToolbar(nv, "tbar")
-		nlay := gi.NewLayout(nv, "net")
+		tb := core.NewToolbar(nv, "tbar")
+		nlay := core.NewLayout(nv, "net")
 		nlay.Style(func(s *styles.Style) {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
 		})
-		gi.NewLabel(nv, "counters").SetText(strings.Repeat(" ", 200))
-		vb := gi.NewToolbar(nv, "vbar")
+		core.NewLabel(nv, "counters").SetText(strings.Repeat(" ", 200))
+		vb := core.NewToolbar(nv, "vbar")
 
-		vlay := gi.NewFrame(nlay, "vars")
+		vlay := core.NewFrame(nlay, "vars")
 		vlay.Style(func(s *styles.Style) {
 			s.Display = styles.Grid
 			s.Columns = nv.Params.NVarCols
@@ -320,20 +320,20 @@ func (nv *NetView) ReconfigMeshes() {
 	}
 }
 
-func (nv *NetView) Toolbar() *gi.Toolbar {
-	return nv.ChildByName("tbar", 0).(*gi.Toolbar)
+func (nv *NetView) Toolbar() *core.Toolbar {
+	return nv.ChildByName("tbar", 0).(*core.Toolbar)
 }
 
-func (nv *NetView) NetLay() *gi.Layout {
-	return nv.ChildByName("net", 1).(*gi.Layout)
+func (nv *NetView) NetLay() *core.Layout {
+	return nv.ChildByName("net", 1).(*core.Layout)
 }
 
-func (nv *NetView) Counters() *gi.Label {
-	return nv.ChildByName("counters", 2).(*gi.Label)
+func (nv *NetView) Counters() *core.Label {
+	return nv.ChildByName("counters", 2).(*core.Label)
 }
 
-func (nv *NetView) Viewbar() *gi.Toolbar {
-	return nv.ChildByName("vbar", 3).(*gi.Toolbar)
+func (nv *NetView) Viewbar() *core.Toolbar {
+	return nv.ChildByName("vbar", 3).(*core.Toolbar)
 }
 
 func (nv *NetView) SceneWidget() *Scene {
@@ -345,8 +345,8 @@ func (nv *NetView) SceneXYZ() *xyz.Scene {
 
 }
 
-func (nv *NetView) VarsLay() *gi.Frame {
-	return nv.NetLay().ChildByName("vars", 0).(*gi.Frame)
+func (nv *NetView) VarsLay() *core.Frame {
+	return nv.NetLay().ChildByName("vars", 0).(*core.Frame)
 }
 
 // SetCounters sets the counters widget view display at bottom of netview
@@ -360,7 +360,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 // UpdateRecNo updates the record number viewing
 func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
-	rlbl := vbar.ChildByName("rec", 10).(*gi.Label)
+	rlbl := vbar.ChildByName("rec", 10).(*core.Label)
 	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo)).Update()
 }
 
@@ -511,7 +511,7 @@ func (nv *NetView) VarsListUpdate() {
 func (nv *NetView) VarsUpdate() {
 	vl := nv.VarsLay()
 	for _, vbi := range *vl.Children() {
-		vb := vbi.(*gi.Button)
+		vb := vbi.(*core.Button)
 		vb.SetSelected(vb.Text == nv.Var)
 	}
 	nv.ColorMapVal.Update()
@@ -528,7 +528,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 	mod := false
 
 	if ci := tb.ChildByName("mnsw", 4); ci != nil {
-		sw := ci.(*gi.Switch)
+		sw := ci.(*core.Switch)
 		if sw.IsChecked() != vp.Range.FixMin {
 			mod = true
 			sw.SetChecked(vp.Range.FixMin)
@@ -536,7 +536,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		}
 	}
 	if ci := tb.ChildByName("mxsw", 6); ci != nil {
-		sw := ci.(*gi.Switch)
+		sw := ci.(*core.Switch)
 		if sw.IsChecked() != vp.Range.FixMax {
 			mod = true
 			sw.SetChecked(vp.Range.FixMax)
@@ -544,7 +544,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		}
 	}
 	if ci := tb.ChildByName("mnsp", 5); ci != nil {
-		sp := ci.(*gi.Spinner)
+		sp := ci.(*core.Spinner)
 		mnv := vp.Range.Min
 		if sp.Value != mnv {
 			mod = true
@@ -553,7 +553,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		}
 	}
 	if ci := tb.ChildByName("mxsp", 7); ci != nil {
-		sp := ci.(*gi.Spinner)
+		sp := ci.(*core.Spinner)
 		mxv := vp.Range.Max
 		if sp.Value != mxv {
 			mod = true
@@ -562,7 +562,7 @@ func (nv *NetView) VarScaleUpdate(varNm string) bool {
 		}
 	}
 	if ci := tb.ChildByName("zcsw", 8); ci != nil {
-		sw := ci.(*gi.Switch)
+		sw := ci.(*core.Switch)
 		if sw.IsChecked() != vp.ZeroCtr {
 			mod = true
 			sw.SetChecked(vp.ZeroCtr)
@@ -587,7 +587,7 @@ func (nv *NetView) VarsConfig() {
 	prjnprops := nv.Net.SynVarProps()
 	for _, vn := range nv.Vars {
 		vn := vn
-		vb := gi.NewButton(vl).SetText(vn).SetType(gi.ButtonAction)
+		vb := core.NewButton(vl).SetText(vn).SetType(core.ButtonAction)
 		pstr := ""
 		if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
 			pstr = prjnprops[vn[2:]]
@@ -621,13 +621,13 @@ func (nv *NetView) ViewConfig() {
 		nv.ViewDefaults()
 	}
 	// todo:
-	// vs.BgColor = gi.Prefs.Colors.Background // reset in case user changes
+	// vs.BgColor = core.Prefs.Colors.Background // reset in case user changes
 	nlay := nv.Net.NLayers()
 	laysGp := se.ChildByName("Layers", 0)
 	if laysGp == nil {
 		laysGp = xyz.NewGroup(se, "Layers")
 	}
-	layConfig := ki.Config{}
+	layConfig := tree.Config{}
 	for li := 0; li < nlay; li++ {
 		lay := nv.Net.Layer(li)
 		lmesh := se.MeshByName(lay.Name())
@@ -638,7 +638,7 @@ func (nv *NetView) ViewConfig() {
 		}
 		layConfig.Add(xyz.GroupType, lay.Name())
 	}
-	gpConfig := ki.Config{}
+	gpConfig := tree.Config{}
 	gpConfig.Add(LayObjType, "layer")
 	gpConfig.Add(LayNameType, "name")
 
@@ -652,7 +652,7 @@ func (nv *NetView) ViewConfig() {
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
-		lg := lgi.(*xyz.Group)
+		lg := lcore.(*xyz.Group)
 		lg.ConfigChildren(gpConfig) // won't do update b/c of above
 		lp := ly.Pos()
 		lp.Y = -lp.Y // reverse direction
@@ -696,7 +696,7 @@ func (nv *NetView) ViewDefaults() {
 	se.Camera.Near = 0.1
 	se.Camera.LookAt(math32.V3(0, 0, 0), math32.V3(0, 1, 0))
 	// todo:
-	// vs.BgColor = gi.Prefs.Colors.Background
+	// vs.BgColor = core.Prefs.Colors.Background
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
 	dir := xyz.NewDirLight(se, "dirUp", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, 0)
@@ -805,7 +805,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 		lgp = xyz.NewGroup(se, "Labels")
 	}
 
-	lbConfig := ki.Config{}
+	lbConfig := tree.Config{}
 	for _, ls := range labs {
 		lbConfig.Add(xyz.Text2DType, ls)
 	}
@@ -854,37 +854,37 @@ func (nv *NetView) LayerByName(lay string) *xyz.Group {
 	return ly.(*xyz.Group)
 }
 
-func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
-	giv.NewFuncButton(tb, nv.Update).SetText("Init").SetIcon(icons.Update)
-	giv.NewFuncButton(tb, nv.Current).SetIcon(icons.Update)
-	gi.NewButton(tb).SetText("Config").SetIcon(icons.Settings).
+func (nv *NetView) ConfigToolbar(tb *core.Toolbar) {
+	views.NewFuncButton(tb, nv.Update).SetText("Init").SetIcon(icons.Update)
+	views.NewFuncButton(tb, nv.Current).SetIcon(icons.Update)
+	core.NewButton(tb).SetText("Config").SetIcon(icons.Settings).
 		SetTooltip("set parameters that control display (font size etc)").
 		OnClick(func(e events.Event) {
-			giv.StructViewDialog(nv, &nv.Params, nv.Nm+" Params", true)
+			views.StructViewDialog(nv, &nv.Params, nv.Nm+" Params", true)
 		})
-	gi.NewSeparator(tb)
-	gi.NewButton(tb).SetText("Weights").SetType(gi.ButtonAction).SetMenu(func(m *gi.Scene) {
-		fb := giv.NewFuncButton(m, nv.SaveWeights).SetIcon(icons.Save)
+	core.NewSeparator(tb)
+	core.NewButton(tb).SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
+		fb := views.NewFuncButton(m, nv.SaveWeights).SetIcon(icons.Save)
 		fb.Args[0].SetTag("ext", ".wts,.wts.gz")
-		fb = giv.NewFuncButton(m, nv.OpenWeights).SetIcon(icons.Open)
+		fb = views.NewFuncButton(m, nv.OpenWeights).SetIcon(icons.Open)
 		fb.Args[0].SetTag("ext", ".wts,.wts.gz")
 	})
-	gi.NewButton(tb).SetText("Params").SetIcon(icons.Info).SetMenu(func(m *gi.Scene) {
-		giv.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
-		giv.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
-		giv.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
-		giv.NewFuncButton(m, nv.ShowKeyPrjnParams).SetIcon(icons.Info)
+	core.NewButton(tb).SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene) {
+		views.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
+		views.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
+		views.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
+		views.NewFuncButton(m, nv.ShowKeyPrjnParams).SetIcon(icons.Info)
 	})
-	gi.NewButton(tb).SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *gi.Scene) {
-		giv.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
-		giv.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
-		gi.NewSeparator(m)
-		giv.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
+	core.NewButton(tb).SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
+		views.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
+		views.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
+		core.NewSeparator(m)
+		views.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
 	})
-	gi.NewSeparator(tb)
+	core.NewSeparator(tb)
 	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
-	gi.NewLabel(tb).SetText("Di:").SetTooltip(ditp)
-	dis := gi.NewSpinner(tb).SetTooltip(ditp).SetMin(0).SetStep(1).SetValue(float32(nv.Di))
+	core.NewLabel(tb).SetText("Di:").SetTooltip(ditp)
+	dis := core.NewSpinner(tb).SetTooltip(ditp).SetMin(0).SetStep(1).SetValue(float32(nv.Di))
 	dis.OnChange(func(e events.Event) {
 		maxData := nv.Net.MaxParallelData()
 		md := int(dis.Value)
@@ -894,8 +894,8 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		dis.SetValue(float32(nv.Di))
 		nv.UpdateView()
 	})
-	gi.NewSeparator(tb)
-	rchk := gi.NewSwitch(tb).SetText("Raster").
+	core.NewSeparator(tb)
+	rchk := core.NewSwitch(tb).SetText("Raster").
 		SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)").
 		SetChecked(nv.Params.Raster.On)
 	rchk.OnChange(func(e events.Event) {
@@ -903,7 +903,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.ReconfigMeshes()
 		nv.UpdateView()
 	})
-	xchk := gi.NewSwitch(tb).SetText("X").SetType(gi.SwitchCheckbox).
+	xchk := core.NewSwitch(tb).SetText("X").SetType(core.SwitchCheckbox).
 		SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
 		SetChecked(nv.Params.Raster.XAxis)
 	xchk.OnChange(func(e events.Event) {
@@ -917,8 +917,8 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		vp.Defaults()
 	}
 
-	gi.NewSeparator(tb)
-	mnsw := gi.NewSwitch(tb, "mnsw").SetText("Min").SetType(gi.SwitchCheckbox).
+	core.NewSeparator(tb)
+	mnsw := core.NewSwitch(tb, "mnsw").SetText("Min").SetType(core.SwitchCheckbox).
 		SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMin)
 	mnsw.OnChange(func(e events.Event) {
@@ -927,7 +927,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.VarScaleUpdate(nv.Var) // todo: before update?
 		nv.UpdateView()
 	})
-	mnsp := gi.NewSpinner(tb, "mnsp").SetValue(vp.Range.Min)
+	mnsp := core.NewSpinner(tb, "mnsp").SetValue(vp.Range.Min)
 	mnsp.OnChange(func(e events.Event) {
 		vp := nv.VarParams[nv.Var]
 		vp.Range.SetMin(mnsp.Value)
@@ -938,7 +938,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.UpdateView()
 	})
 
-	nv.ColorMapVal = giv.NewValue(tb, &nv.Params.ColorMap, "cmap").(*giv.ColorMapValue)
+	nv.ColorMapVal = views.NewValue(tb, &nv.Params.ColorMap, "cmap").(*views.ColorMapValue)
 	cmap := nv.ColorMapVal.AsWidget()
 	cmap.AsWidget().SetTooltip("Color map for translating values into colors -- click to select alternative.").
 		Style(func(s *styles.Style) {
@@ -954,7 +954,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.UpdateView()
 	})
 
-	mxsw := gi.NewSwitch(tb, "mxsw").SetText("Max").SetType(gi.SwitchCheckbox).
+	mxsw := core.NewSwitch(tb, "mxsw").SetText("Max").SetType(core.SwitchCheckbox).
 		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 		SetChecked(vp.Range.FixMax)
 	mxsw.OnChange(func(e events.Event) {
@@ -963,7 +963,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
-	mxsp := gi.NewSpinner(tb, "mxsp").SetValue(vp.Range.Max)
+	mxsp := core.NewSpinner(tb, "mxsp").SetValue(vp.Range.Max)
 	mxsp.OnChange(func(e events.Event) {
 		vp := nv.VarParams[nv.Var]
 		vp.Range.SetMax(mxsp.Value)
@@ -973,7 +973,7 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 		nv.VarScaleUpdate(nv.Var)
 		nv.UpdateView()
 	})
-	zcsw := gi.NewSwitch(tb, "zcsw").SetText("ZeroCtr").
+	zcsw := core.NewSwitch(tb, "zcsw").SetText("ZeroCtr").
 		SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
 		SetChecked(vp.ZeroCtr)
 	zcsw.OnChange(func(e events.Event) {
@@ -984,13 +984,13 @@ func (nv *NetView) ConfigToolbar(tb *gi.Toolbar) {
 	})
 }
 
-func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
-	gi.NewButton(tb).SetIcon(icons.Update).SetTooltip("reset to default initial display").
+func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
+	core.NewButton(tb).SetIcon(icons.Update).SetTooltip("reset to default initial display").
 		OnClick(func(e events.Event) {
 			nv.SceneXYZ().SetCamera("default")
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.ZoomIn).SetTooltip("zoom in").
+	core.NewButton(tb).SetIcon(icons.ZoomIn).SetTooltip("zoom in").
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -998,7 +998,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Zoom(-.05)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.ZoomOut).SetTooltip("zoom out").
+	core.NewButton(tb).SetIcon(icons.ZoomOut).SetTooltip("zoom out").
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1006,9 +1006,9 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Zoom(.05)
 			nv.UpdateView()
 		})
-	gi.NewSeparator(tb)
-	gi.NewLabel(tb).SetText("Rot:").SetTooltip("rotate display")
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
+	core.NewSeparator(tb)
+	core.NewLabel(tb).SetText("Rot:").SetTooltip("rotate display")
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1016,7 +1016,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Orbit(5, 0)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1024,7 +1024,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Orbit(0, 5)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1032,7 +1032,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Orbit(0, -5)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1040,10 +1040,10 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Orbit(-5, 0)
 			nv.UpdateView()
 		})
-	gi.NewSeparator(tb)
+	core.NewSeparator(tb)
 
-	gi.NewLabel(tb).SetText("Pan:").SetTooltip("pan display")
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
+	core.NewLabel(tb).SetText("Pan:").SetTooltip("pan display")
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1051,7 +1051,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Pan(-.2, 0)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1059,7 +1059,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Pan(0, .2)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1067,7 +1067,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Pan(0, -.2)
 			nv.UpdateView()
 		})
-	gi.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
+	core.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1075,13 +1075,13 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 			nv.SceneXYZ().Camera.Pan(.2, 0)
 			nv.UpdateView()
 		})
-	gi.NewSeparator(tb)
+	core.NewSeparator(tb)
 
-	gi.NewLabel(tb).SetText("Save:")
+	core.NewLabel(tb).SetText("Save:")
 	for i := 1; i <= 4; i++ {
 		i := i
 		nm := fmt.Sprintf("%d", i)
-		gi.NewButton(tb).SetText(nm).
+		core.NewButton(tb).SetText(nm).
 			SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
 			OnClick(func(e events.Event) {
 				sc := nv.SceneXYZ()
@@ -1098,20 +1098,20 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 				nv.UpdateView()
 			})
 	}
-	gi.NewSeparator(tb)
+	core.NewSeparator(tb)
 
-	gi.NewLabel(tb).SetText("Time:").
+	core.NewLabel(tb).SetText("Time:").
 		SetTooltip("states are recorded over time -- last N can be reviewed using these buttons")
 
-	gi.NewLabel(tb, "rec").SetText(fmt.Sprintf("%4d ", nv.RecNo)).
+	core.NewLabel(tb, "rec").SetText(fmt.Sprintf("%4d ", nv.RecNo)).
 		SetTooltip("current view record: -1 means latest, 0 = earliest")
-	gi.NewButton(tb).SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
+	core.NewButton(tb).SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
 		OnClick(func(e events.Event) {
 			if nv.RecFullBkwd() {
 				nv.UpdateView()
 			}
 		})
-	gi.NewButton(tb).SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
+	core.NewButton(tb).SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1120,7 +1120,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 				nv.UpdateView()
 			}
 		})
-	gi.NewButton(tb).SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
+	core.NewButton(tb).SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1129,13 +1129,13 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 				nv.UpdateView()
 			}
 		})
-	gi.NewButton(tb).SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
+	core.NewButton(tb).SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
 		OnClick(func(e events.Event) {
 			if nv.RecTrackLatest() {
 				nv.UpdateView()
 			}
 		})
-	gi.NewButton(tb).SetIcon(icons.SkipNext).SetTooltip("move later by 1").
+	core.NewButton(tb).SetIcon(icons.SkipNext).SetTooltip("move later by 1").
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1144,7 +1144,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 				nv.UpdateView()
 			}
 		})
-	gi.NewButton(tb).SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
+	core.NewButton(tb).SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
 		}).
@@ -1153,7 +1153,7 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 				nv.UpdateView()
 			}
 		})
-	gi.NewButton(tb).SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
+	core.NewButton(tb).SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
 		OnClick(func(e events.Event) {
 			if nv.RecTrackLatest() {
 				nv.UpdateView()
@@ -1161,15 +1161,15 @@ func (nv *NetView) ConfigViewbar(tb *gi.Toolbar) {
 		})
 }
 
-// SaveWeights saves the network weights -- when called with giv.CallMethod
+// SaveWeights saves the network weights -- when called with views.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) SaveWeights(filename gi.Filename) { //gti:add
+func (nv *NetView) SaveWeights(filename core.Filename) { //gti:add
 	nv.Net.SaveWtsJSON(filename)
 }
 
-// OpenWeights opens the network weights -- when called with giv.CallMethod
+// OpenWeights opens the network weights -- when called with views.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) OpenWeights(filename gi.Filename) { //gti:add
+func (nv *NetView) OpenWeights(filename core.Filename) { //gti:add
 	nv.Net.OpenWtsJSON(filename)
 }
 

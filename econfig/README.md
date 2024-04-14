@@ -5,7 +5,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 * Standard usage:
     + `cfg := &ss.Config`
     + `cfg.Defaults()` -- sets hard-coded defaults -- user should define and call this method first.
-    + It is better to use the `def:` field tag however because it then shows in `-h` or `--help` usage and in the [GoGi](https://cogentcore.org/core/gi/v2) GUI.  See [Default Tags](#def_default_tags) for how to specify def values for more complex types.
+    + It is better to use the `default:` field tag however because it then shows in `-h` or `--help` usage and in the [Cogent Core](https://cogentcore.org/core) GUI.  See [Default Tags](#def_default_tags) for how to specify def values for more complex types.
     + `econfig.Config(cfg, "config.toml")` -- sets config values according to the standard order, with given file name specifying the default config file name.
 
 * Has support for nested `Include` paths, which are processed in the natural deepest-first order. The processed `Config` struct field will contain a list of all such files processed.  There are two options for include file support:
@@ -50,7 +50,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
   "Prjn:Prjn.Learn.LRate.Base" = 0.05
 ```
 
-* Field tag `def:"value"`, used in the [GoGi](https://cogentcore.org/core/gi/v2) GUI, sets the initial default value and is shown for the `-h` or `--help` usage info.
+* Field tag `default:"value"`, used in the [Cogent Core](https://cogentcore.org/core) GUI, sets the initial default value and is shown for the `-h` or `--help` usage info.
 
 * [kit](https://cogentcore.org/core/ki) registered "enum" `const` types, with names automatically parsed from string values (including bit flags).  Must use the [goki stringer](https://github.com/goki/stringer) version to generate `FromString()` method, and register the type like this: `var KitTestEnum = kit.Enums.AddEnum(TestEnumN, kit.NotBitFlag, nil)` -- see [enum.go](enum.go) file for example.
 

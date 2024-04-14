@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 )
 
 // FlexVal is a specific flexible value for the Flex parameter map
@@ -149,7 +149,7 @@ func (fl *Flex) JSONString() string {
 }
 
 // SaveJSON saves hypers to a JSON-formatted file.
-func (fl *Flex) SaveJSON(filename gi.Filename) error {
+func (fl *Flex) SaveJSON(filename core.Filename) error {
 	b, err := json.MarshalIndent(fl, "", "  ")
 	if err != nil {
 		log.Println(err) // unlikely

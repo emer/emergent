@@ -9,7 +9,7 @@ package emer
 import (
 	"io"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/weights"
@@ -25,7 +25,7 @@ type Network interface {
 	// Name() returns name of the network
 	Name() string
 
-	// Label satisfies the gi.Labeler interface for getting the name of objects generically
+	// Label satisfies the core.Labeler interface for getting the name of objects generically
 	Label() string
 
 	// NLayers returns the number of layers in the network
@@ -127,11 +127,11 @@ type Network interface {
 
 	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
 	// to a JSON-formatted file.  If filename has .gz extension, then file is gzip compressed.
-	SaveWtsJSON(filename gi.Filename) error
+	SaveWtsJSON(filename core.Filename) error
 
 	// OpenWtsJSON opens network weights (and any other state that adapts with learning)
 	// from a JSON-formatted file.  If filename has .gz extension, then file is gzip uncompressed.
-	OpenWtsJSON(filename gi.Filename) error
+	OpenWtsJSON(filename core.Filename) error
 
 	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
 	Bounds() (min, max math32.Vec3)

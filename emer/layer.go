@@ -30,7 +30,7 @@ type Layer interface {
 	// the parent network that this layer belongs to (which layers may want to retain).
 	InitName(lay Layer, name string, net Network)
 
-	// Label satisfies the gi.Labeler interface for getting the name of objects generically
+	// Label satisfies the core.Labeler interface for getting the name of objects generically
 	Label() string
 
 	// SetName sets name of layer
@@ -354,7 +354,7 @@ func Layer2DRepIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 // Layers is a slice of layers
 type Layers []Layer
 
-// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+// ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 func (ls *Layers) ElemLabel(idx int) string {
 	return (*ls)[idx].Name()
 }

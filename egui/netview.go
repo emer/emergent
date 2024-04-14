@@ -5,7 +5,7 @@
 package egui
 
 import (
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/netview"
 )
@@ -49,5 +49,5 @@ func (gui *GUI) SaveNetData(extra string) {
 		return
 	}
 	ndfn := gui.NetData.Net.Name() + "_" + extra + ".netdata.gz"
-	gui.NetData.SaveJSON(gi.Filename(ndfn))
+	gui.NetData.SaveJSON(core.Filename(ndfn))
 }

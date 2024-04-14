@@ -7,8 +7,8 @@ package egui
 //go:generate core generate -add-types
 
 import (
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/views"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
 	"github.com/emer/etable/v2/eplot"
@@ -47,13 +47,13 @@ type GUI struct {
 	NetData *netview.NetData `view:"-"`
 
 	// displays Sim fields on left
-	StructView *giv.StructView `view:"-"`
+	StructView *views.StructView `view:"-"`
 
 	// tabs for different view elements: plots, rasters
-	Tabs *gi.Tabs `view:"-"`
+	Tabs *core.Tabs `view:"-"`
 
 	// Body is the content of the sim window
-	Body *gi.Body `view:"-"`
+	Body *core.Body `view:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
@@ -98,16 +98,16 @@ func (gui *GUI) Stopped() {
 
 // MakeBody returns default window Body content
 func (gui *GUI) MakeBody(sim any, appname, title, about string) {
-	giv.NoSentenceCaseFor = append(giv.NoSentenceCaseFor, "github.com/emer")
+	views.NoSentenceCaseFor = append(views.NoSentenceCaseFor, "github.com/emer")
 
-	gui.Body = gi.NewBody(appname).SetTitle(title)
+	gui.Body = core.NewBody(appname).SetTitle(title)
 	// gui.Body.App().About = about
-	split := gi.NewSplits(gui.Body, "split")
-	gui.StructView = giv.NewStructView(split, "sv").SetStruct(sim)
-	if tb, ok := sim.(gi.Toolbarer); ok {
+	split := core.NewSplits(gui.Body, "split")
+	gui.StructView = views.NewStructView(split, "sv").SetStruct(sim)
+	if tb, ok := sim.(core.Toolbarer); ok {
 		gui.Body.AddAppBar(tb.ConfigToolbar)
 	}
-	gui.Tabs = gi.NewTabs(split, "tv")
+	gui.Tabs = core.NewTabs(split, "tv")
 	split.SetSplits(.2, .8)
 }
 
@@ -124,16 +124,16 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 	if closePrompt {
 		/*
 			inQuitPrompt := false
-			gi.SetQuitReqFunc(func() {
+			core.SetQuitReqFunc(func() {
 				if inQuitPrompt {
 					return
 				}
 				inQuitPrompt = true
-				gi.PromptDialog(vp, gi.DlgOpts{Title: "Really Quit?",
-					Prompt: "Are you <i>sure</i> you want to quit and lose any unsaved params, weights, logs, etc?"}, gi.AddOk, gi.AddCancel,
-					gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
-						if sig == int64(gi.DialogAccepted) {
-							gi.Quit()
+				core.PromptDialog(vp, core.DlgOpts{Title: "Really Quit?",
+					Prompt: "Are you <i>sure</i> you want to quit and lose any unsaved params, weights, logs, etc?"}, core.AddOk, core.AddCancel,
+					gui.Win.This(), func(recv, send tree.Ki, sig int64, data any) {
+						if sig == int64(core.DialogAccepted) {
+							core.Quit()
 						} else {
 							inQuitPrompt = false
 						}
@@ -141,16 +141,16 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 			})
 
 			inClosePrompt := false
-			gui.Win.SetCloseReqFunc(func(w *gi.Window) {
+			gui.Win.SetCloseReqFunc(func(w *core.Window) {
 				if inClosePrompt {
 					return
 				}
 				inClosePrompt = true
-				gi.PromptDialog(vp, gi.DlgOpts{Title: "Really Close gui.Window?",
-					Prompt: "Are you <i>sure</i> you want to close the gui.Window?  This will Quit the App as well, losing all unsaved params, weights, logs, etc"}, gi.AddOk, gi.AddCancel,
-					gui.Win.This(), func(recv, send ki.Ki, sig int64, data any) {
-						if sig == int64(gi.DialogAccepted) {
-							gi.Quit()
+				core.PromptDialog(vp, core.DlgOpts{Title: "Really Close gui.Window?",
+					Prompt: "Are you <i>sure</i> you want to close the gui.Window?  This will Quit the App as well, losing all unsaved params, weights, logs, etc"}, core.AddOk, core.AddCancel,
+					gui.Win.This(), func(recv, send tree.Ki, sig int64, data any) {
+						if sig == int64(core.DialogAccepted) {
+							core.Quit()
 						} else {
 							inClosePrompt = false
 						}
@@ -159,8 +159,8 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 		*/
 	}
 
-	// gui.Win.SetCloseCleanFunc(func(w *gi.Window) {
-	// 	go gi.Quit() // once main gui.Window is closed, quit
+	// gui.Win.SetCloseCleanFunc(func(w *core.Window) {
+	// 	go core.Quit() // once main gui.Window is closed, quit
 	// })
 
 	gui.Active = true

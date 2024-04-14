@@ -10,7 +10,7 @@ Here's the start of the main ConfigGUI method:
 
 ```Go
 // ConfigGUI configures the Cogent Core GUI interface for this simulation.
-func (ss *Sim) ConfigGUI() *gi.Window {
+func (ss *Sim) ConfigGUI() *core.Window {
 	title := "Leabra Random Associator"
 	ss.GUI.MakeWindow(ss, "ra25", title, `This demonstrates a basic Leabra model. See <a href="https://github.com/emer/emergent">emergent on GitHub</a>.</p>`)
 	ss.GUI.CycleUpdateInterval = 10
@@ -25,7 +25,7 @@ func (ss *Sim) ConfigGUI() *gi.Window {
 
 ## Toolbar Items
 
-The `ToolbarItem` class provides toolbar configuration options, taking the place of `gi.ActOpts` from existing code that operates directly at the `GoGi` level.  The main differences are
+The `ToolbarItem` class provides toolbar configuration options, taking the place of `core.ActOpts` from existing code that operates directly at the `GoGi` level.  The main differences are
 
 * The standard `UpdateFunc` options of either making the action active or inactive while the sim is running are now handled using `Active: equi.ActiveStopped` or `egui.ActiveRunning` or `egui.ActiveAlways`
 
@@ -79,8 +79,8 @@ Here's an `ActiveRunning` case:
 ## Spike Rasters
 
 ```Go
-	stb := ss.GUI.TabView.AddNewTab(gi.KiT_Layout, "Spike Rasters").(*gi.Layout)
-	stb.Lay = gi.LayoutVert
+	stb := ss.GUI.TabView.AddNewTab(core.KiT_Layout, "Spike Rasters").(*core.Layout)
+	stb.Lay = core.LayoutVert
 	stb.SetStretchMax()
 	for _, lnm := range ss.Stats.Rasters {
 		sr := ss.Stats.F32Tensor("Raster_" + lnm)

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"cogentcore.org/core/laser"
+	"cogentcore.org/core/reflectx"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/prjn"
 	"github.com/emer/emergent/v2/weights"
@@ -57,7 +57,7 @@ type Prjn interface {
 	// Returns Prjn so it can be chained to set other properties too
 	AddClass(cls ...string) Prjn
 
-	// Label satisfies the gi.Labeler interface for getting the name of objects generically
+	// Label satisfies the core.Labeler interface for getting the name of objects generically
 	Label() string
 
 	// IsOff returns true if projection or either send or recv layer has been turned Off.
@@ -172,7 +172,7 @@ type Prjn interface {
 // Prjns is a slice of projections
 type Prjns []Prjn
 
-// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+// ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 func (pl *Prjns) ElemLabel(idx int) string {
 	if len(*pl) == 0 {
 		return "(empty)"
@@ -181,7 +181,7 @@ func (pl *Prjns) ElemLabel(idx int) string {
 		return ""
 	}
 	pj := (*pl)[idx]
-	if laser.AnyIsNil(pj) {
+	if reflectx.AnyIsNil(pj) {
 		return "nil"
 	}
 	return pj.Name()

@@ -6,8 +6,8 @@ package egui
 
 import (
 	"cogentcore.org/core/abilities"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
-	"cogentcore.org/core/gi"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
 	"github.com/emer/emergent/v2/etime"
@@ -16,7 +16,7 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []etime.Modes) {
+func (gui *GUI) AddLooperCtrl(tb *core.Toolbar, loops *looper.Manager, modes []etime.Modes) {
 	gui.AddToolbarItem(tb, ToolbarItem{Label: "Stop",
 		Icon:    icons.Stop,
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
@@ -30,7 +30,7 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 
 	for _, m := range modes {
 		mode := m
-		gi.NewButton(tb).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
+		core.NewButton(tb).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
 			SetTooltip("Run the " + mode.String() + " process").
 			StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
 			OnClick(func(e events.Event) {
@@ -52,7 +52,7 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 			stepN[st.String()] = 1
 			stringToEnumTime[st.String()] = st
 		}
-		gi.NewButton(tb).SetText("Step").SetIcon(icons.SkipNext).
+		core.NewButton(tb).SetText("Step").SetIcon(icons.SkipNext).
 			SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
 			StyleFirst(func(s *styles.Style) {
 				s.SetEnabled(!gui.IsRunning)
@@ -70,7 +70,7 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 				}
 			})
 
-		scb := gi.NewChooser(tb, "step")
+		scb := core.NewChooser(tb, "step")
 		stepStrs := []string{}
 		for _, s := range steps {
 			stepStrs = append(stepStrs, s.String())
@@ -79,7 +79,7 @@ func (gui *GUI) AddLooperCtrl(tb *gi.Toolbar, loops *looper.Manager, modes []eti
 		stack := loops.Stacks[mode]
 		scb.SetCurrentValue(stack.StepLevel.String())
 
-		sb := gi.NewSpinner(tb, "step-n").SetTooltip("number of iterations per step").
+		sb := core.NewSpinner(tb, "step-n").SetTooltip("number of iterations per step").
 			SetStep(1).SetMin(1).SetValue(1)
 		sb.OnChange(func(e events.Event) {
 			stepN[scb.CurrentItem.Value.(string)] = int(sb.Value)

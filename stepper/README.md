@@ -115,29 +115,29 @@ and (optionally) `stepper.StopCheckFn` functions:
 8. Add code to the user interface to start, pause, and stop the simulation:
 
    ```go
-   func (ss *Sim) ConfigGUI() *gi.Window {
+   func (ss *Sim) ConfigGUI() *core.Window {
       ...
-      tbar.AddAction(gi.ActOpts{Label: "Stop", Icon: "stop",
+      tbar.AddAction(core.ActOpts{Label: "Stop", Icon: "stop",
          Tooltip: "Stop the current program at its next natural stopping point (i.e., cleanly stopping when appropriate chunks of computation have completed).",
-         UpdateFunc: func(act *gi.Action) {
+         UpdateFunc: func(act *core.Action) {
             act.SetActiveStateUpdate(ss.IsRunning)
-      }}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+      }}, win.This(), func(recv, send tree.Ki, sig int64, data interface{}) {
          fmt.Println("STOP!")
          ss.Stepper.Pause() // NOTE: call Pause here. Stop should only be called when starting over for a new run
          ss.IsRunning = false
          ss.ToolBar.UpdateActions()
          ss.Win.Viewport.SetNeedsFullRender()
       })
-      tbar.AddAction(gi.ActOpts{Label: "Cycle", Icon: "run", Tooltip: "Step to the end of a Cycle.",
-         UpdateFunc: func(act *gi.Action) {
+      tbar.AddAction(core.ActOpts{Label: "Cycle", Icon: "run", Tooltip: "Step to the end of a Cycle.",
+         UpdateFunc: func(act *core.Action) {
             act.SetActiveStateUpdate(!ss.IsRunning)
-         }}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+         }}, win.This(), func(recv, send tree.Ki, sig int64, data interface{}) {
          ss.RunSteps(Cycle, tbar)
       })
       ...
    }
    
-   func (ss *Sim) RunSteps(grain StepGrain, tbar *gi.ToolBar) {
+   func (ss *Sim) RunSteps(grain StepGrain, tbar *core.ToolBar) {
       if !ss.IsRunning {
          ss.IsRunning = true
          tbar.UpdateActions()

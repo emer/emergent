@@ -110,7 +110,7 @@ func NewSheet() *Sheet {
 	return &sh
 }
 
-// ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+// ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 func (sh *Sheet) ElemLabel(idx int) string {
 	return (*sh)[idx].Sel
 }
@@ -315,7 +315,7 @@ func (ps *Sets) ValidateSheets(valids []string) error {
 	return err
 }
 
-// // ElemLabel satisfies the gi.SliceLabeler interface to provide labels for slice elements
+// // ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
 // func (ps *Sets) ElemLabel(idx int) string {
 // 	return (*ps)[idx].Name
 // }

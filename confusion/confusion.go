@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"math"
 
-	"cogentcore.org/core/gi"
+	"cogentcore.org/core/core"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/simat"
 )
@@ -200,34 +200,34 @@ func (cm *Matrix) ScoreMatrix() {
 }
 
 // SaveCSV saves Prob result to a CSV file, comma separated
-func (cm *Matrix) SaveCSV(fname gi.Filename) {
+func (cm *Matrix) SaveCSV(fname core.Filename) {
 	etensor.SaveCSV(&cm.Prob, fname, ',')
 }
 
 // OpenCSV opens Prob result from a CSV file, comma separated
-func (cm *Matrix) OpenCSV(fname gi.Filename) {
+func (cm *Matrix) OpenCSV(fname core.Filename) {
 	etensor.OpenCSV(&cm.Prob, fname, ',')
 }
 
 /*
-var MatrixProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"SaveCSV", ki.Props{
+var MatrixProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"SaveCSV", tree.Props{
 			"label": "Save CSV...",
 			"icon":  "file-save",
 			"desc":  "Save CSV-formatted confusion probabilities (Probs)",
-			"Args": ki.PropSlice{
-				{"CSV File Name", ki.Props{
+			"Args": tree.PropSlice{
+				{"CSV File Name", tree.Props{
 					"ext": ".csv",
 				}},
 			},
 		}},
-		{"OpenCSV", ki.Props{
+		{"OpenCSV", tree.Props{
 			"label": "Open CSV...",
 			"icon":  "file-open",
 			"desc":  "Open CSV-formatted confusion probabilities (Probs)",
-			"Args": ki.PropSlice{
-				{"Weights File Name", ki.Props{
+			"Args": tree.PropSlice{
+				{"Weights File Name", tree.Props{
 					"ext": ".csv",
 				}},
 			},

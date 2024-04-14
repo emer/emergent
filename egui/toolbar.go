@@ -5,8 +5,8 @@
 package egui
 
 import (
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
-	"cogentcore.org/core/gi"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
 )
@@ -21,8 +21,8 @@ type ToolbarItem struct {
 }
 
 // AddToolbarItem adds a toolbar item but also checks when it be active in the UI
-func (gui *GUI) AddToolbarItem(tb *gi.Toolbar, item ToolbarItem) {
-	itm := gi.NewButton(tb).SetText(item.Label).SetIcon(item.Icon).
+func (gui *GUI) AddToolbarItem(tb *core.Toolbar, item ToolbarItem) {
+	itm := core.NewButton(tb).SetText(item.Label).SetIcon(item.Icon).
 		SetTooltip(item.Tooltip).OnClick(func(e events.Event) {
 		item.Func()
 	})
