@@ -121,10 +121,10 @@ func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unInd
 	}
 	nv := sw.NetView
 	nmin, nmax := nv.Net.Bounds()
-	nsz := nmax.Sub(nmin).Sub(math32.V3(1, 1, 0)).Max(math32.V3(1, 1, 1))
-	nsc := math32.V3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
+	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
+	nsc := math32.Vec3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
 	szc := math32.Max(nsc.X, nsc.Y)
-	poff := math32.V3Scalar(0.5)
+	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		lay = nv.Net.Layer(li)
@@ -139,7 +139,7 @@ func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unInd
 		ray := lo.RayPick(pos)
 		// layer is in XZ plane with norm pointing up in Y axis
 		// offset is 0 in local coordinates
-		plane := math32.Plane{Norm: math32.V3(0, 1, 0), Off: 0}
+		plane := math32.Plane{Norm: math32.Vec3(0, 1, 0), Off: 0}
 		pt, ok := ray.IntersectPlane(plane)
 		if !ok || pt.Z > 0 { // Z > 0 means clicked "in front" of plane -- where labels are
 			continue

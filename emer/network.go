@@ -134,7 +134,7 @@ type Network interface {
 	OpenWtsJSON(filename core.Filename) error
 
 	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
-	Bounds() (min, max math32.Vec3)
+	Bounds() (min, max math32.Vector3)
 
 	// VarRange returns the min / max values for given variable
 	VarRange(varNm string) (min, max float32, err error)

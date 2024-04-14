@@ -35,7 +35,7 @@ type Includer interface {
 // Returns an error if any of the include files cannot be found on IncludePath.
 // Does not alter cfg.
 func IncludesStack(cfg Includeser) ([]string, error) {
-	clone := reflect.New(reflectx.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includeser)
+	clone := reflect.New(reflectx.NonPointerType(reflect.TypeOf(cfg))).Interface().(Includeser)
 	*clone.IncludesPtr() = *cfg.IncludesPtr()
 	return includesStackImpl(clone, nil)
 }
@@ -73,7 +73,7 @@ func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 // Returns an error if any of the include files cannot be found on IncludePath.
 // Does not alter cfg.
 func IncludeStack(cfg Includer) ([]string, error) {
-	clone := reflect.New(reflectx.NonPtrType(reflect.TypeOf(cfg))).Interface().(Includer)
+	clone := reflect.New(reflectx.NonPointerType(reflect.TypeOf(cfg))).Interface().(Includer)
 	*clone.IncludePtr() = *cfg.IncludePtr()
 	return includeStackImpl(clone, nil)
 }

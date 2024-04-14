@@ -8,4 +8,4 @@ import (
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Dims", IDName: "dims", Doc: "Dims is a list of vector dimension (component) names"})
 
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Vec2i", IDName: "vec2i", Doc: "Vec2i is a 2D vector/point with X and Y int components.", Fields: []gti.Field{{Name: "X"}, {Name: "Y"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/evec.Vector2i", IDName: "vec2i", Doc: "Vector2i is a 2D vector/point with X and Y int components.", Fields: []gti.Field{{Name: "X"}, {Name: "Y"}}})

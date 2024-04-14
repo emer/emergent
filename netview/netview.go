@@ -645,10 +645,10 @@ func (nv *NetView) ViewConfig() {
 	laysGp.ConfigChildren(layConfig)
 
 	nmin, nmax := nv.Net.Bounds()
-	nsz := nmax.Sub(nmin).Sub(math32.V3(1, 1, 0)).Max(math32.V3(1, 1, 1))
-	nsc := math32.V3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
+	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
+	nsc := math32.Vec3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
 	szc := math32.Max(nsc.X, nsc.Y)
-	poff := math32.V3Scalar(0.5)
+	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
@@ -678,7 +678,7 @@ func (nv *NetView) ViewConfig() {
 		txt.Defaults()
 		txt.NetView = nv
 		txt.SetText(ly.Name())
-		txt.Pose.Scale = math32.V3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
+		txt.Pose.Scale = math32.Vector3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
 		txt.Styles.Background = colors.C(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
@@ -694,7 +694,7 @@ func (nv *NetView) ViewDefaults() {
 	se.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1
-	se.Camera.LookAt(math32.V3(0, 0, 0), math32.V3(0, 1, 0))
+	se.Camera.LookAt(math32.Vec3(0, 0, 0), math32.Vec3(0, 1, 0))
 	// todo:
 	// vs.BgColor = core.Prefs.Colors.Background
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
@@ -815,9 +815,9 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 			// lb.Defaults()
 			lb.SetText(ls)
 			// todo:
-			// lb.SetProp("text-align", styles.Start)
-			// lb.SetProp("vertical-align", styles.Start)
-			// lb.SetProp("white-space", styles.WhiteSpacePre)
+			// lb.SetProperty("text-align", styles.Start)
+			// lb.SetProperty("vertical-align", styles.Start)
+			// lb.SetProperty("white-space", styles.WhiteSpacePre)
 		}
 		return true
 	}

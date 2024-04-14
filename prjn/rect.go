@@ -18,13 +18,13 @@ import (
 type Rect struct {
 
 	// size of rectangle in sending layer that each receiving unit receives from
-	Size evec.Vec2i
+	Size evec.Vector2i
 
 	// starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position
-	Start evec.Vec2i
+	Start evec.Vector2i
 
 	// scaling to apply to receiving unit position to compute corresponding position in sending layer of the lower-left corner of rectangle
-	Scale math32.Vec2
+	Scale math32.Vector2
 
 	// auto-set the Scale as function of the relative sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)
 	AutoScale bool
@@ -42,10 +42,10 @@ type Rect struct {
 	Recip bool
 
 	// starting position in receiving layer -- if > 0 then units below this starting point remain unconnected
-	RecvStart evec.Vec2i
+	RecvStart evec.Vector2i
 
 	// number of units in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected
-	RecvN evec.Vec2i
+	RecvN evec.Vector2i
 }
 
 func NewRect() *Rect {
@@ -102,8 +102,8 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := math32.V2(float32(sNx), float32(sNy))
-		rsz := math32.V2(float32(rNxEff), float32(rNyEff))
+		ssz := math32.Vec2(float32(sNx), float32(sNy))
+		rsz := math32.Vec2(float32(rNxEff), float32(rNyEff))
 		sc = ssz.Div(rsz)
 	}
 
@@ -170,8 +170,8 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := math32.V2(float32(sNx), float32(sNy))
-		rsz := math32.V2(float32(rNxEff), float32(rNyEff))
+		ssz := math32.Vec2(float32(sNx), float32(sNy))
+		rsz := math32.Vec2(float32(rNxEff), float32(rNyEff))
 		sc = ssz.Div(rsz)
 	}
 

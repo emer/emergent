@@ -24,10 +24,10 @@ type Circle struct {
 	Radius int
 
 	// starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position
-	Start evec.Vec2i
+	Start evec.Vector2i
 
 	// scaling to apply to receiving unit position to compute sending center as function of recv unit position
-	Scale math32.Vec2
+	Scale math32.Vector2
 
 	// auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size
 	AutoScale bool
@@ -77,21 +77,21 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := math32.V2(float32(sNx), float32(sNy))
+		ssz := math32.Vec2(float32(sNx), float32(sNy))
 		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
 			ssz.X -= float32(2 * cr.Start.X)
 			ssz.Y -= float32(2 * cr.Start.Y)
 		}
-		rsz := math32.V2(float32(rNx), float32(rNy))
+		rsz := math32.Vec2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
 
 	for ry := 0; ry < rNy; ry++ {
 		for rx := 0; rx < rNx; rx++ {
-			sctr := math32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
+			sctr := math32.Vec2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
 			for sy := 0; sy < sNy; sy++ {
 				for sx := 0; sx < sNx; sx++ {
-					sp := math32.V2(float32(sx), float32(sy))
+					sp := math32.Vec2(float32(sx), float32(sy))
 					if cr.Wrap {
 						sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 						sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)
@@ -131,16 +131,16 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := math32.V2(float32(sNx), float32(sNy))
+		ssz := math32.Vec2(float32(sNx), float32(sNy))
 		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
 			ssz.X -= float32(2 * cr.Start.X)
 			ssz.Y -= float32(2 * cr.Start.Y)
 		}
-		rsz := math32.V2(float32(rNx), float32(rNy))
+		rsz := math32.Vec2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
-	sctr := math32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
-	sp := math32.V2(float32(sx), float32(sy))
+	sctr := math32.Vec2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
+	sp := math32.Vec2(float32(sx), float32(sy))
 	if cr.Wrap {
 		sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 		sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)

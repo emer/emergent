@@ -28,12 +28,12 @@ func Usage(cfg any) string {
 
 // usageStruct adds usage info to given strings.Builder
 func usageStruct(obj any, path string, b *strings.Builder) {
-	typ := reflectx.NonPtrType(reflect.TypeOf(obj))
-	val := reflectx.NonPtrValue(reflect.ValueOf(obj))
+	typ := reflectx.NonPointerType(reflect.TypeOf(obj))
+	val := reflectx.NonPointerValue(reflect.ValueOf(obj))
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
-		if reflectx.NonPtrType(f.Type).Kind() == reflect.Struct {
+		if reflectx.NonPointerType(f.Type).Kind() == reflect.Struct {
 			nwPath := f.Name
 			if path != "" {
 				nwPath = path + "." + nwPath

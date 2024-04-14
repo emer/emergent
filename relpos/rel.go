@@ -85,7 +85,7 @@ func NewAbove(other string) Rel {
 
 // Pos returns the relative position compared to other position and size, based on settings
 // osz and sz must both have already been scaled by relevant Scale factor
-func (rp *Rel) Pos(op math32.Vec3, osz math32.Vec2, sz math32.Vec2) math32.Vec3 {
+func (rp *Rel) Pos(op math32.Vector3, osz math32.Vector2, sz math32.Vector2) math32.Vector3 {
 	if rp.Scale == 0 {
 		rp.Defaults()
 	}

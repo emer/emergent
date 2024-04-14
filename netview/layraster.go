@@ -74,7 +74,7 @@ func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-	pos := math32.Vec3{}
+	pos := math32.Vector3{}
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
@@ -96,7 +96,7 @@ func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 			if xi-1 == curRast {
 				xoff++
 			}
-			v4c := math32.NewVec4Color(clr)
+			v4c := math32.NewVector4Color(clr)
 			vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 			ht := htsc * math32.Abs(scaled)
 			if ht < MinUnitHeight {
@@ -121,7 +121,7 @@ func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(math32.V3(0, -0.5, -fnz), math32.V3(fnx, 0.5, 0))
+	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -157,7 +157,7 @@ func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-	pos := math32.Vec3{}
+	pos := math32.Vector3{}
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
@@ -179,7 +179,7 @@ func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 			if zi-1 == curRast {
 				zoff = 0
 			}
-			v4c := math32.NewVec4Color(clr)
+			v4c := math32.NewVector4Color(clr)
 			vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 			ht := htsc * math32.Abs(scaled)
 			if ht < MinUnitHeight {
@@ -204,7 +204,7 @@ func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(math32.V3(0, -0.5, -fnz), math32.V3(fnx, 0.5, 0))
+	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -255,7 +255,7 @@ func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-	pos := math32.Vec3{}
+	pos := math32.Vector3{}
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
@@ -281,7 +281,7 @@ func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 					if xi-1 == curRast {
 						xoff++
 					}
-					v4c := math32.NewVec4Color(clr)
+					v4c := math32.NewVector4Color(clr)
 					vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 					ht := htsc * math32.Abs(scaled)
 					if ht < MinUnitHeight {
@@ -308,7 +308,7 @@ func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(math32.V3(0, -0.5, -fnpoz*fnuz), math32.V3(fnpox*fnux, 0.5, 0))
+	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpoz*fnuz), math32.Vec3(fnpox*fnux, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -359,7 +359,7 @@ func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-	pos := math32.Vec3{}
+	pos := math32.Vector3{}
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
@@ -385,7 +385,7 @@ func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 					if zi-1 == curRast {
 						zoff = 0
 					}
-					v4c := math32.NewVec4Color(clr)
+					v4c := math32.NewVector4Color(clr)
 					vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 					ht := htsc * math32.Abs(scaled)
 					if ht < MinUnitHeight {
@@ -412,6 +412,6 @@ func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(math32.V3(0, -0.5, -fnpoz*fnuz), math32.V3(fnpox*fnux, 0.5, 0))
+	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpoz*fnuz), math32.Vec3(fnpox*fnux, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }

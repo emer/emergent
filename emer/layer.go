@@ -87,16 +87,16 @@ type Layer interface {
 	// where the vertical dimension is Y and Z is the depth dimension.  However, in the
 	// more "layer-centric" way of thinking about it, it is natural for the width & height
 	// to map onto X and Y, and then Z is left over for stacking vertically.
-	Pos() math32.Vec3
+	Pos() math32.Vector3
 
 	// SetPos sets the 3D position of this layer -- will generally be overwritten by
 	// automatic RelPos setting, unless that doesn't specify a valid relative position.
-	SetPos(pos math32.Vec3)
+	SetPos(pos math32.Vector3)
 
 	// Size returns the display size of this layer for the 3D view -- see Pos() for general info.
 	// This is multiplied by the RelPos.Scale factor to rescale layer sizes, and takes
 	// into account 2D and 4D layer structures.
-	Size() math32.Vec2
+	Size() math32.Vector2
 
 	// Index returns a 0..n-1 index of the position of the layer within list of layers
 	// in the network.  For backprop networks, index position has computational significance.

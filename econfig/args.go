@@ -92,7 +92,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 		return
 	}
 
-	isbool := reflectx.NonPtrValue(fval).Kind() == reflect.Bool
+	isbool := reflectx.NonPointerValue(fval).Kind() == reflect.Bool
 
 	var value string
 	switch {
@@ -134,7 +134,7 @@ func ParseArg(s string, args []string, allArgs map[string]reflect.Value, errNotF
 
 // SetArgValue sets given arg name to given value, into settable reflect.Value
 func SetArgValue(name string, fval reflect.Value, value string) error {
-	nptyp := reflectx.NonPtrType(fval.Type())
+	nptyp := reflectx.NonPointerType(fval.Type())
 	vk := nptyp.Kind()
 	switch {
 	// todo: enum
@@ -209,12 +209,12 @@ func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]ref
 	if ov.Kind() == reflect.Pointer && ov.IsNil() {
 		return
 	}
-	val := reflectx.NonPtrValue(ov)
+	val := reflectx.NonPointerValue(ov)
 	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		fv := val.Field(i)
-		if reflectx.NonPtrType(f.Type).Kind() == reflect.Struct {
+		if reflectx.NonPointerType(f.Type).Kind() == reflect.Struct {
 			nwPath := f.Name
 			if path != "" {
 				nwPath = path + "." + nwPath

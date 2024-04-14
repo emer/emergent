@@ -18,13 +18,13 @@ import (
 type PoolRect struct {
 
 	// size of rectangle (of pools) in sending layer that each receiving unit receives from
-	Size evec.Vec2i
+	Size evec.Vector2i
 
 	// starting pool offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv pool position
-	Start evec.Vec2i
+	Start evec.Vector2i
 
 	// scaling to apply to receiving pool osition to compute corresponding position in sending layer of the lower-left corner of rectangle
-	Scale math32.Vec2
+	Scale math32.Vector2
 
 	// auto-set the Scale as function of the relative pool sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)
 	AutoScale bool
@@ -39,10 +39,10 @@ type PoolRect struct {
 	SelfCon bool
 
 	// starting pool position in receiving layer -- if > 0 then pools below this starting point remain unconnected
-	RecvStart evec.Vec2i
+	RecvStart evec.Vector2i
 
 	// number of pools in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected
-	RecvN evec.Vec2i
+	RecvN evec.Vector2i
 }
 
 func NewPoolRect() *PoolRect {
@@ -92,8 +92,8 @@ func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := math32.V2(float32(sNx), float32(sNy))
-		rsz := math32.V2(float32(rNx), float32(rNy))
+		ssz := math32.Vec2(float32(sNx), float32(sNy))
+		rsz := math32.Vec2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
 

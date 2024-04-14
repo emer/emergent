@@ -21,7 +21,7 @@ import (
 // It always prints a message if a parameter fails to be set, and returns an error.
 func ApplyMap(obj any, vals map[string]any, setMsg bool) error {
 	objv := reflect.ValueOf(obj)
-	npv := reflectx.NonPtrValue(objv)
+	npv := reflectx.NonPointerValue(objv)
 	if npv.Kind() == reflect.Map {
 		err := reflectx.CopyMapRobust(obj, vals)
 		if err != nil {
@@ -45,7 +45,7 @@ func ApplyMap(obj any, vals map[string]any, setMsg bool) error {
 			errs = append(errs, err)
 		}
 		if setMsg {
-			log.Printf("ApplyMap: set field: %s = %#v\n", k, reflectx.NonPtrValue(fld).Interface())
+			log.Printf("ApplyMap: set field: %s = %#v\n", k, reflectx.NonPointerValue(fld).Interface())
 		}
 	}
 	return errors.Join(errs...)

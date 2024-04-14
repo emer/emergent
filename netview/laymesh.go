@@ -168,7 +168,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-	pos := math32.Vec3{}
+	pos := math32.Vector3{}
 
 	lm.View.ReadLock()
 	for zi := nz - 1; zi >= 0; zi-- {
@@ -178,7 +178,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 			ioff := pidx * idxSz * 5
 			x0 := uo + float32(xi)
 			_, scaled, clr, _ := lm.View.UnitValue(lm.Lay, []int{zi, xi})
-			v4c := math32.NewVec4Color(clr)
+			v4c := math32.NewVector4Color(clr)
 			vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 			ht := 0.5 * math32.Abs(scaled)
 			if ht < MinUnitHeight {
@@ -203,7 +203,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(math32.V3(0, -0.5, -fnz), math32.V3(fnx, 0.5, 0))
+	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }
 
@@ -233,7 +233,7 @@ func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
 	pidx := 0 // plane index
-	pos := math32.Vec3{}
+	pos := math32.Vector3{}
 
 	lm.View.ReadLock()
 	for zpi := npz - 1; zpi >= 0; zpi-- {
@@ -247,7 +247,7 @@ func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 					ioff := pidx * idxSz * 5
 					x0 := xp0 + xsc*(uo+float32(xui))
 					_, scaled, clr, _ := lm.View.UnitValue(lm.Lay, []int{zpi, xpi, zui, xui})
-					v4c := math32.NewVec4Color(clr)
+					v4c := math32.NewVector4Color(clr)
 					vshape.SetColor(clrAry, poff, 5*vtxSz, v4c)
 					ht := 0.5 * math32.Abs(scaled)
 					if ht < MinUnitHeight {
@@ -274,6 +274,6 @@ func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	lm.View.ReadUnlock()
 
 	lm.BBoxMu.Lock()
-	lm.BBox.SetBounds(math32.V3(0, -0.5, -fnpz*fnuz), math32.V3(fnpx*fnux, 0.5, 0))
+	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpz*fnuz), math32.Vec3(fnpx*fnux, 0.5, 0))
 	lm.BBoxMu.Unlock()
 }

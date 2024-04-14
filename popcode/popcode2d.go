@@ -23,13 +23,13 @@ type TwoD struct {
 	Code PopCodes
 
 	// minimum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode
-	Min math32.Vec2
+	Min math32.Vector2
 
 	// maximum value representable on each dim -- for GaussBump, typically include extra to allow mean with activity on either side to represent the lowest value you want to encode
-	Max math32.Vec2
+	Max math32.Vector2
 
 	// sigma parameters of a gaussian specifying the tuning width of the coarse-coded units, in normalized 0-1 range
-	Sigma math32.Vec2 `default:"0.2"`
+	Sigma math32.Vector2 `default:"0.2"`
 
 	// ensure that encoded and decoded value remains within specified range -- generally not useful with wrap
 	Clip bool
@@ -78,7 +78,7 @@ func (pc *TwoD) SetRange(min, max, sigma float32) {
 // If add == false (use Set const for clarity), values are set to pattern
 // else if add == true (Add), then values are added to any existing,
 // for encoding additional values in same pattern.
-func (pc *TwoD) Encode(pat etensor.Tensor, val math32.Vec2, add bool) error {
+func (pc *TwoD) Encode(pat etensor.Tensor, val math32.Vector2, add bool) error {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Encode: pattern must have 2 dimensions")
 		log.Println(err)
@@ -119,17 +119,17 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val math32.Vec2, add bool) error {
 }
 
 // EncodeImpl is the implementation of encoding -- e.g., used twice for Wrap
-func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val math32.Vec2, add bool) error {
+func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val math32.Vector2, add bool) error {
 	rng := pc.Max.Sub(pc.Min)
 
-	gnrm := math32.V2Scalar(1).Div(rng.Mul(pc.Sigma))
+	gnrm := math32.Vector2Scalar(1).Div(rng.Mul(pc.Sigma))
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
-	nf := math32.V2(float32(nx-1), float32(ny-1))
+	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 	for yi := 0; yi < ny; yi++ {
 		for xi := 0; xi < nx; xi++ {
-			fi := math32.V2(float32(xi), float32(yi))
+			fi := math32.Vec2(float32(xi), float32(yi))
 			trg := pc.Min.Add(incr.Mul(fi))
 			act := float32(0)
 			switch pc.Code {
@@ -162,11 +162,11 @@ func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val math32.Vec2, add bool) error 
 // Decode decodes 2D value from a pattern of activation
 // as the activation-weighted-average of the unit's preferred
 // tuning values.
-func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vec2, error) {
+func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vector2, error) {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Decode: pattern must have 2 dimensions")
 		log.Println(err)
-		return math32.Vec2{}, err
+		return math32.Vector2{}, err
 	}
 	if pc.WrapX || pc.WrapY {
 		ny := pat.Dim(0)
@@ -186,7 +186,7 @@ func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vec2, error) {
 				xs[xi] += act * xdiv
 			}
 		}
-		var val math32.Vec2
+		var val math32.Vector2
 		switch {
 		case pc.WrapX && pc.WrapY:
 			dx := Ring{}
@@ -253,12 +253,12 @@ func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vec2, error) {
 }
 
 // DecodeImpl does direct decoding of x, y simultaneously -- for non-wrap
-func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (math32.Vec2, error) {
-	avg := math32.Vec2{}
+func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (math32.Vector2, error) {
+	avg := math32.Vector2{}
 	rng := pc.Max.Sub(pc.Min)
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
-	nf := math32.V2(float32(nx-1), float32(ny-1))
+	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 	sum := float32(0)
 	for yi := 0; yi < ny; yi++ {
@@ -268,7 +268,7 @@ func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (math32.Vec2, error) {
 			if act < pc.Thr {
 				act = 0
 			}
-			fi := math32.V2(float32(xi), float32(yi))
+			fi := math32.Vec2(float32(xi), float32(yi))
 			trg := pc.Min.Add(incr.Mul(fi))
 			avg = avg.Add(trg.MulScalar(act))
 			sum += act
@@ -284,7 +284,7 @@ func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (math32.Vec2, error) {
 // vals slice will be constructed if len != n
 func (pc *TwoD) Values(valsX, valsY *[]float32, nx, ny int) {
 	rng := pc.Max.Sub(pc.Min)
-	nf := math32.V2(float32(nx-1), float32(ny-1))
+	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 
 	// X
@@ -312,7 +312,7 @@ func (pc *TwoD) Values(valsX, valsY *[]float32, nx, ny int) {
 // accumulate (0 = localist, single points, 1 = +/- 1 points on
 // either side in a square around central point, etc)
 // Allocates a temporary slice of size pat, and sorts that: relatively expensive
-func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vec2, error) {
+func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vector2, error) {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD DecodeNPeaks: pattern must have 2 dimensions")
 		log.Println(err)
@@ -321,7 +321,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vec
 	rng := pc.Max.Sub(pc.Min)
 	ny := pat.Dim(0)
 	nx := pat.Dim(1)
-	nf := math32.V2(float32(nx-1), float32(ny-1))
+	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 
 	type navg struct {
@@ -363,9 +363,9 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vec
 		return avgs[i].avg > avgs[j].avg
 	})
 
-	vals := make([]math32.Vec2, nvals)
+	vals := make([]math32.Vector2, nvals)
 	for i := range vals {
-		avg := math32.Vec2{}
+		avg := math32.Vector2{}
 		sum := float32(0)
 		mxi := avgs[i].x
 		myi := avgs[i].y
@@ -384,7 +384,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vec
 				if act < pc.Thr {
 					act = 0
 				}
-				fi := math32.V2(float32(x), float32(y))
+				fi := math32.Vec2(float32(x), float32(y))
 				trg := pc.Min.Add(incr.Mul(fi))
 				avg = avg.Add(trg.MulScalar(act))
 				sum += act
