@@ -12,13 +12,13 @@ import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyzv"
+	"cogentcore.org/core/xyzview"
 	"github.com/emer/emergent/v2/emer"
 )
 
 // Scene is a Widget for managing the 3D Scene of the NetView
 type Scene struct {
-	xyzv.Scene
+	xyzview.Scene
 
 	NetView *NetView
 }

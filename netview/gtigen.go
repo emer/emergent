@@ -9,7 +9,7 @@ import (
 	"cogentcore.org/core/gti"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyzv"
+	"cogentcore.org/core/xyzview"
 )
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview.LayData", IDName: "lay-data", Doc: "LayData maintains a record of all the data for a given layer", Fields: []gti.Field{{Name: "LayName", Doc: "the layer name"}, {Name: "NUnits", Doc: "cached number of units"}, {Name: "Data", Doc: "the full data, in that order"}, {Name: "RecvPrjns", Doc: "receiving projection data -- shared with SendPrjns"}, {Name: "SendPrjns", Doc: "sending projection data -- shared with RecvPrjns"}}})
@@ -21,15 +21,15 @@ var SceneType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview
 
 // NewScene adds a new [Scene] with the given name to the given parent:
 // Scene is a Widget for managing the 3D Scene of the NetView
-func NewScene(parent tree.Ki, name ...string) *Scene {
+func NewScene(parent tree.Node, name ...string) *Scene {
 	return parent.NewChild(SceneType, name...).(*Scene)
 }
 
-// KiType returns the [*gti.Type] of [Scene]
-func (t *Scene) KiType() *gti.Type { return SceneType }
+// NodeType returns the [*gti.Type] of [Scene]
+func (t *Scene) NodeType() *gti.Type { return SceneType }
 
 // New returns a new [*Scene] value
-func (t *Scene) New() tree.Ki { return &Scene{} }
+func (t *Scene) New() tree.Node { return &Scene{} }
 
 // SetNetView sets the [Scene.NetView]
 func (t *Scene) SetNetView(v *NetView) *Scene { t.NetView = v; return t }
@@ -38,16 +38,16 @@ func (t *Scene) SetNetView(v *NetView) *Scene { t.NetView = v; return t }
 func (t *Scene) SetTooltip(v string) *Scene { t.Tooltip = v; return t }
 
 // SetSelectionMode sets the [Scene.SelectionMode]
-func (t *Scene) SetSelectionMode(v xyzv.SelectionModes) *Scene { t.SelectionMode = v; return t }
+func (t *Scene) SetSelectionMode(v xyzview.SelectionModes) *Scene { t.SelectionMode = v; return t }
 
 // SetCurrentSelected sets the [Scene.CurrentSelected]
 func (t *Scene) SetCurrentSelected(v xyz.Node) *Scene { t.CurrentSelected = v; return t }
 
 // SetCurrentManipPoint sets the [Scene.CurrentManipPoint]
-func (t *Scene) SetCurrentManipPoint(v *xyzv.ManipPoint) *Scene { t.CurrentManipPoint = v; return t }
+func (t *Scene) SetCurrentManipPoint(v *xyzview.ManipPoint) *Scene { t.CurrentManipPoint = v; return t }
 
 // SetSelectionParams sets the [Scene.SelectionParams]
-func (t *Scene) SetSelectionParams(v xyzv.SelectionParams) *Scene { t.SelectionParams = v; return t }
+func (t *Scene) SetSelectionParams(v xyzview.SelectionParams) *Scene { t.SelectionParams = v; return t }
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netview.LayMesh", IDName: "lay-mesh", Doc: "LayMesh is a xyz.Mesh that represents a layer -- it is dynamically updated using the\nUpdate method which only resets the essential Vertex elements.\nThe geometry is literal in the layer size: 0,0,0 lower-left corner and increasing X,Z\nfor the width and height of the layer, in unit (1) increments per unit..\nNetView applies an overall scaling to make it fit within the larger view.", Embeds: []gti.Field{{Name: "MeshBase"}}, Fields: []gti.Field{{Name: "Lay", Doc: "layer that we render"}, {Name: "Shape", Doc: "current shape that has been constructed -- if same, just update"}, {Name: "View", Doc: "netview that we're in"}}})
 
@@ -56,15 +56,15 @@ var LayObjType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netvie
 
 // NewLayObj adds a new [LayObj] with the given name to the given parent:
 // LayObj is the Layer 3D object within the NetView
-func NewLayObj(parent tree.Ki, name ...string) *LayObj {
+func NewLayObj(parent tree.Node, name ...string) *LayObj {
 	return parent.NewChild(LayObjType, name...).(*LayObj)
 }
 
-// KiType returns the [*gti.Type] of [LayObj]
-func (t *LayObj) KiType() *gti.Type { return LayObjType }
+// NodeType returns the [*gti.Type] of [LayObj]
+func (t *LayObj) NodeType() *gti.Type { return LayObjType }
 
 // New returns a new [*LayObj] value
-func (t *LayObj) New() tree.Ki { return &LayObj{} }
+func (t *LayObj) New() tree.Node { return &LayObj{} }
 
 // SetLayName sets the [LayObj.LayName]:
 // name of the layer we represent
@@ -82,15 +82,15 @@ var LayNameType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netvi
 
 // NewLayName adds a new [LayName] with the given name to the given parent:
 // LayName is the Layer name as a Text2D within the NetView
-func NewLayName(parent tree.Ki, name ...string) *LayName {
+func NewLayName(parent tree.Node, name ...string) *LayName {
 	return parent.NewChild(LayNameType, name...).(*LayName)
 }
 
-// KiType returns the [*gti.Type] of [LayName]
-func (t *LayName) KiType() *gti.Type { return LayNameType }
+// NodeType returns the [*gti.Type] of [LayName]
+func (t *LayName) NodeType() *gti.Type { return LayNameType }
 
 // New returns a new [*LayName] value
-func (t *LayName) New() tree.Ki { return &LayName{} }
+func (t *LayName) New() tree.Node { return &LayName{} }
 
 // SetNetView sets the [LayName.NetView]:
 // our netview
@@ -110,15 +110,15 @@ var NetViewType = gti.AddType(&gti.Type{Name: "github.com/emer/emergent/v2/netvi
 // NewNetView adds a new [NetView] with the given name to the given parent:
 // NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
 // 3D framework.
-func NewNetView(parent tree.Ki, name ...string) *NetView {
+func NewNetView(parent tree.Node, name ...string) *NetView {
 	return parent.NewChild(NetViewType, name...).(*NetView)
 }
 
-// KiType returns the [*gti.Type] of [NetView]
-func (t *NetView) KiType() *gti.Type { return NetViewType }
+// NodeType returns the [*gti.Type] of [NetView]
+func (t *NetView) NodeType() *gti.Type { return NetViewType }
 
 // New returns a new [*NetView] value
-func (t *NetView) New() tree.Ki { return &NetView{} }
+func (t *NetView) New() tree.Node { return &NetView{} }
 
 // SetDi sets the [NetView.Di]:
 // current data parallel index di, for networks capable of processing input patterns in parallel.

@@ -131,7 +131,7 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 				inQuitPrompt = true
 				core.PromptDialog(vp, core.DlgOpts{Title: "Really Quit?",
 					Prompt: "Are you <i>sure</i> you want to quit and lose any unsaved params, weights, logs, etc?"}, core.AddOk, core.AddCancel,
-					gui.Win.This(), func(recv, send tree.Ki, sig int64, data any) {
+					gui.Win.This(), func(recv, send tree.Node, sig int64, data any) {
 						if sig == int64(core.DialogAccepted) {
 							core.Quit()
 						} else {
@@ -148,7 +148,7 @@ func (gui *GUI) FinalizeGUI(closePrompt bool) {
 				inClosePrompt = true
 				core.PromptDialog(vp, core.DlgOpts{Title: "Really Close gui.Window?",
 					Prompt: "Are you <i>sure</i> you want to close the gui.Window?  This will Quit the App as well, losing all unsaved params, weights, logs, etc"}, core.AddOk, core.AddCancel,
-					gui.Win.This(), func(recv, send tree.Ki, sig int64, data any) {
+					gui.Win.This(), func(recv, send tree.Node, sig int64, data any) {
 						if sig == int64(core.DialogAccepted) {
 							core.Quit()
 						} else {

@@ -121,7 +121,7 @@ and (optionally) `stepper.StopCheckFn` functions:
          Tooltip: "Stop the current program at its next natural stopping point (i.e., cleanly stopping when appropriate chunks of computation have completed).",
          UpdateFunc: func(act *core.Action) {
             act.SetActiveStateUpdate(ss.IsRunning)
-      }}, win.This(), func(recv, send tree.Ki, sig int64, data interface{}) {
+      }}, win.This(), func(recv, send tree.Node, sig int64, data interface{}) {
          fmt.Println("STOP!")
          ss.Stepper.Pause() // NOTE: call Pause here. Stop should only be called when starting over for a new run
          ss.IsRunning = false
@@ -131,7 +131,7 @@ and (optionally) `stepper.StopCheckFn` functions:
       tbar.AddAction(core.ActOpts{Label: "Cycle", Icon: "run", Tooltip: "Step to the end of a Cycle.",
          UpdateFunc: func(act *core.Action) {
             act.SetActiveStateUpdate(!ss.IsRunning)
-         }}, win.This(), func(recv, send tree.Ki, sig int64, data interface{}) {
+         }}, win.This(), func(recv, send tree.Node, sig int64, data interface{}) {
          ss.RunSteps(Cycle, tbar)
       })
       ...
