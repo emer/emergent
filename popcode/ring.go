@@ -5,7 +5,7 @@
 package popcode
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Ring is a OneD popcode that encodes a circular value such as an angle
@@ -48,10 +48,10 @@ func (pc *Ring) Encode(pat *[]float32, val float32, n int) {
 	pc.AllocVecs(n)
 	rng := pc.Max - pc.Min
 	sr := pc.Sigma * rng
-	if mat32.Abs(pc.Max-val) < sr { // close to top
+	if math32.Abs(pc.Max-val) < sr { // close to top
 		pc.EncodeImpl(&pc.LowVec, pc.Min+(val-pc.Max), n) // 0 + (340 - 360) = -20
 		pc.EncodeImpl(&pc.HighVec, val, n)
-	} else if mat32.Abs(val-pc.Min) < sr { // close to bottom
+	} else if math32.Abs(val-pc.Min) < sr { // close to bottom
 		pc.EncodeImpl(&pc.LowVec, val, n)                  // 0 + (340 - 360) = -20
 		pc.EncodeImpl(&pc.HighVec, pc.Max+(val-pc.Min), n) // 360 + (20-0) = 380
 	} else {
@@ -71,7 +71,7 @@ func (pc *Ring) EncodeImpl(pat *[]float32, val float32, n int) {
 		*pat = make([]float32, n)
 	}
 	if pc.Clip {
-		val = mat32.Clamp(val, pc.Min, pc.Max)
+		val = math32.Clamp(val, pc.Min, pc.Max)
 	}
 	rng := pc.Max - pc.Min
 	gnrm := 1 / (rng * pc.Sigma)
@@ -82,9 +82,9 @@ func (pc *Ring) EncodeImpl(pat *[]float32, val float32, n int) {
 		switch pc.Code {
 		case GaussBump:
 			dist := gnrm * (trg - val)
-			act = mat32.Exp(-(dist * dist))
+			act = math32.Exp(-(dist * dist))
 		case Localist:
-			dist := mat32.Abs(trg - val)
+			dist := math32.Abs(trg - val)
 			if dist > incr {
 				act = 0
 			} else {
@@ -177,7 +177,7 @@ func (pc *Ring) Decode(pat []float32) float32 {
 			sum += act
 		}
 	}
-	sum = mat32.Max(sum, pc.MinSum)
+	sum = math32.Max(sum, pc.MinSum)
 	avg /= sum
 	return avg
 }

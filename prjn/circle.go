@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
@@ -27,7 +27,7 @@ type Circle struct {
 	Start evec.Vec2i
 
 	// scaling to apply to receiving unit position to compute sending center as function of recv unit position
-	Scale mat32.Vec2
+	Scale math32.Vec2
 
 	// auto-scale sending center positions as function of relative sizes of send and recv layers -- if Start is positive then assumes it is a border, subtracted from sending size
 	AutoScale bool
@@ -77,26 +77,26 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.V2(float32(sNx), float32(sNy))
+		ssz := math32.V2(float32(sNx), float32(sNy))
 		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
 			ssz.X -= float32(2 * cr.Start.X)
 			ssz.Y -= float32(2 * cr.Start.Y)
 		}
-		rsz := mat32.V2(float32(rNx), float32(rNy))
+		rsz := math32.V2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
 
 	for ry := 0; ry < rNy; ry++ {
 		for rx := 0; rx < rNx; rx++ {
-			sctr := mat32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
+			sctr := math32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
 			for sy := 0; sy < sNy; sy++ {
 				for sx := 0; sx < sNx; sx++ {
-					sp := mat32.V2(float32(sx), float32(sy))
+					sp := math32.V2(float32(sx), float32(sy))
 					if cr.Wrap {
 						sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 						sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)
 					}
-					d := int(mat32.Round(sp.DistTo(sctr)))
+					d := int(math32.Round(sp.DistTo(sctr)))
 					if d <= cr.Radius {
 						ri := etensor.Prjn2DIndex(recv, false, ry, rx)
 						si := etensor.Prjn2DIndex(send, false, sy, sx)
@@ -131,16 +131,16 @@ func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.V2(float32(sNx), float32(sNy))
+		ssz := math32.V2(float32(sNx), float32(sNy))
 		if cr.Start.X >= 0 && cr.Start.Y >= 0 {
 			ssz.X -= float32(2 * cr.Start.X)
 			ssz.Y -= float32(2 * cr.Start.Y)
 		}
-		rsz := mat32.V2(float32(rNx), float32(rNy))
+		rsz := math32.V2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
-	sctr := mat32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
-	sp := mat32.V2(float32(sx), float32(sy))
+	sctr := math32.V2(float32(rx)*sc.X+float32(cr.Start.X), float32(ry)*sc.Y+float32(cr.Start.Y))
+	sp := math32.V2(float32(sx), float32(sy))
 	if cr.Wrap {
 		sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 		sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)

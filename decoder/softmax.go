@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/empi/v2/mpi"
 	"github.com/emer/etable/v2/etensor"
@@ -171,7 +171,7 @@ func (sm *SoftMax) Forward() {
 	for ui := range sm.Units {
 		u := &sm.Units[ui]
 		u.Net -= max
-		u.Exp = mat32.FastExp(u.Net)
+		u.Exp = math32.FastExp(u.Net)
 		sum += u.Exp
 	}
 	for ui := range sm.Units {

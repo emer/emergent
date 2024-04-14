@@ -5,7 +5,7 @@
 package netview
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/emer"
 )
 
@@ -101,9 +101,9 @@ func (pd *PrjnData) RecordData(nd *NetData) {
 		mn := &nd.SynMinVar[nvi]
 		mx := &nd.SynMaxVar[nvi]
 		for _, vl := range sv {
-			if !mat32.IsNaN(vl) {
-				*mn = mat32.Min(*mn, vl)
-				*mx = mat32.Max(*mx, vl)
+			if !math32.IsNaN(vl) {
+				*mn = math32.Min(*mn, vl)
+				*mx = math32.Max(*mx, vl)
 			}
 		}
 	}

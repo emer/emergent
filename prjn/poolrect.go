@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/evec"
 	"github.com/emer/etable/v2/etensor"
@@ -24,7 +24,7 @@ type PoolRect struct {
 	Start evec.Vec2i
 
 	// scaling to apply to receiving pool osition to compute corresponding position in sending layer of the lower-left corner of rectangle
-	Scale mat32.Vec2
+	Scale math32.Vec2
 
 	// auto-set the Scale as function of the relative pool sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)
 	AutoScale bool
@@ -92,8 +92,8 @@ func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.V2(float32(sNx), float32(sNy))
-		rsz := mat32.V2(float32(rNx), float32(rNy))
+		ssz := math32.V2(float32(sNx), float32(sNy))
+		rsz := math32.V2(float32(rNx), float32(rNy))
 		sc = ssz.Div(rsz)
 	}
 
@@ -112,11 +112,11 @@ func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 			ris := rpi * rNn
 			sst := cr.Start
 			if cr.RoundScale {
-				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
-				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
+				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(math32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
 			} else {
-				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
-				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
+				sst.X += int(math32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(math32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)

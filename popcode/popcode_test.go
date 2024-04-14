@@ -7,7 +7,7 @@ package popcode
 import (
 	"testing"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etensor"
 )
 
@@ -18,7 +18,7 @@ const difTolMulti = float32(1.0e-2)
 
 func CmprFloats(out, cor []float32, msg string, t *testing.T) {
 	for i := range out {
-		dif := mat32.Abs(out[i] - cor[i])
+		dif := math32.Abs(out[i] - cor[i])
 		if dif > difTol { // allow for small numerical diffs
 			t.Errorf("%v err: out: %v, cor: %v, dif: %v\n", msg, out[i], cor[i], dif)
 		}
@@ -46,7 +46,7 @@ func TestPopCode1D(t *testing.T) {
 
 	val := pc.Decode(pat)
 	//fmt.Printf("decode pat for 0.5: %v\n", val)
-	if mat32.Abs(val-0.5) > difTol {
+	if math32.Abs(val-0.5) > difTol {
 		t.Errorf("did not decode properly: val: %v != 0.5", val)
 	}
 }
@@ -68,11 +68,11 @@ func TestPopCode1DMulti(t *testing.T) {
 	// fmt.Printf("decode pat for 0.25, 0.75: %v\n", vals)
 	for _, val := range vals {
 		if val > 0.5 {
-			if mat32.Abs(val-0.9) > difTolMulti {
+			if math32.Abs(val-0.9) > difTolMulti {
 				t.Errorf("did not decode properly: val: %v != 0.9", val)
 			}
 		} else {
-			if mat32.Abs(val-0.1) > difTolMulti {
+			if math32.Abs(val-0.1) > difTolMulti {
 				t.Errorf("did not decode properly: val: %v != 0.1", val)
 			}
 		}
@@ -93,7 +93,7 @@ func TestPopCode2D(t *testing.T) {
 
 	var pat etensor.Float32
 	pat.SetShape([]int{11, 11}, nil, nil)
-	pc.Encode(&pat, mat32.V2(0.3, 0.9), Set)
+	pc.Encode(&pat, math32.V2(0.3, 0.9), Set)
 	// fmt.Printf("pat for 0.5: %v\n", pat)
 
 	corPat := []float32{8.7642576e-08, 5.0434767e-07, 1.7603463e-06, 3.7266532e-06, 4.7851167e-06, 3.7266532e-06, 1.7603463e-06, 5.0434767e-07, 8.7642576e-08, 9.237448e-09, 5.905302e-10, 2.2603292e-06, 1.3007299e-05, 4.5399953e-05, 9.611166e-05, 0.0001234098, 9.611166e-05, 4.5399953e-05, 1.3007299e-05, 2.2603292e-06, 2.3823696e-07, 1.5229979e-08, 3.53575e-05, 0.00020346837, 0.0007101748, 0.0015034394, 0.0019304542, 0.0015034394, 0.0007101748, 0.00020346837, 3.53575e-05, 3.7266532e-06, 2.3823696e-07, 0.00033546257, 0.0019304551, 0.0067379503, 0.014264241, 0.018315647, 0.014264241, 0.006737947, 0.001930456, 0.00033546257, 3.53575e-05, 2.2603292e-06, 0.0019304542, 0.011109002, 0.038774215, 0.08208501, 0.10539925, 0.08208501, 0.038774207, 0.011109007, 0.0019304542, 0.00020346837, 1.3007299e-05, 0.006737947, 0.038774207, 0.1353353, 0.28650483, 0.3678795, 0.28650483, 0.13533528, 0.038774226, 0.006737947, 0.0007101748, 4.5399953e-05, 0.014264233, 0.08208501, 0.28650486, 0.6065308, 0.77880096, 0.6065308, 0.2865048, 0.08208503, 0.014264233, 0.0015034394, 9.611166e-05, 0.018315637, 0.10539923, 0.36787945, 0.7788008, 1, 0.7788008, 0.3678794, 0.10539925, 0.018315637, 0.0019304542, 0.0001234098, 0.014264233, 0.08208499, 0.28650478, 0.6065306, 0.77880067, 0.6065306, 0.2865047, 0.08208499, 0.014264233, 0.0015034394, 9.611166e-05, 0.0067379437, 0.03877419, 0.13533522, 0.28650466, 0.36787927, 0.28650466, 0.13533519, 0.038774196, 0.0067379437, 0.0007101744, 4.5399953e-05, 0.0019304542, 0.011109002, 0.038774207, 0.08208499, 0.10539923, 0.08208499, 0.038774196, 0.011109002, 0.0019304542, 0.00020346837, 1.3007299e-05}
@@ -105,10 +105,10 @@ func TestPopCode2D(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if mat32.Abs(val.X-0.3) > difTol {
+	if math32.Abs(val.X-0.3) > difTol {
 		t.Errorf("did not decode properly: val: %v != 0.3", val)
 	}
-	if mat32.Abs(val.Y-0.9) > difTol {
+	if math32.Abs(val.Y-0.9) > difTol {
 		t.Errorf("did not decode properly: val: %v != 0.9", val)
 	}
 }
@@ -120,8 +120,8 @@ func TestPopCode2DMulti(t *testing.T) {
 	var pat etensor.Float32
 	// note: usually you'd use a larger pattern size for multiple values
 	pat.SetShape([]int{11, 11}, nil, nil)
-	pc.Encode(&pat, mat32.V2(0.1, 0.9), Set)
-	pc.Encode(&pat, mat32.V2(0.9, 0.1), Add)
+	pc.Encode(&pat, math32.V2(0.1, 0.9), Set)
+	pc.Encode(&pat, math32.V2(0.9, 0.1), Add)
 
 	// fmt.Printf("pat for 0.1, 0.9: %v\n", pat)
 
@@ -137,13 +137,13 @@ func TestPopCode2DMulti(t *testing.T) {
 	// fmt.Printf("decode pat for 0.1, 0.9; 0.9, 0.1: %v\n", vals)
 	for _, valv := range vals {
 		for d := 0; d < 2; d++ {
-			val := valv.Dim(mat32.Dims(d))
+			val := valv.Dim(math32.Dims(d))
 			if val > 0.5 {
-				if mat32.Abs(val-0.9) > difTolMulti {
+				if math32.Abs(val-0.9) > difTolMulti {
 					t.Errorf("did not decode properly: val: %v != 0.9", val)
 				}
 			} else {
-				if mat32.Abs(val-0.1) > difTolMulti {
+				if math32.Abs(val-0.1) > difTolMulti {
 					t.Errorf("did not decode properly: val: %v != 0.1", val)
 				}
 			}
@@ -172,7 +172,7 @@ func TestRing(t *testing.T) {
 		// fmt.Printf("pat for 180: %v\n", pat)
 		val := pc.Decode(pat)
 		// fmt.Printf("decode pat for 180: %v\n", val)
-		if mat32.Abs(val-vl) > 4 { // very bad tolerances
+		if math32.Abs(val-vl) > 4 { // very bad tolerances
 			t.Errorf("did not decode properly: val: %v != %v", val, vl)
 		}
 	}
@@ -206,7 +206,7 @@ func TestTwoDWrap(t *testing.T) {
 	pat.SetShape([]int{21, 21}, nil, nil)
 	tangs := []float32{-179, -90, 0, 90, 179}
 	for _, ang := range tangs {
-		v := mat32.V2(ang, .5)
+		v := math32.V2(ang, .5)
 		pc.Encode(&pat, v, Set)
 		// fmt.Printf("ang: %g\n", ang)
 		// for i := 0; i < 21; i++ {
@@ -218,7 +218,7 @@ func TestTwoDWrap(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if mat32.Abs(val.X-ang) > 2 && !(val.X >= 179 && ang <= -179) { // very bad tolerances
+		if math32.Abs(val.X-ang) > 2 && !(val.X >= 179 && ang <= -179) { // very bad tolerances
 			t.Errorf("did not decode properly: val: %v != %v", val.X, ang)
 		}
 	}

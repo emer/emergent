@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"cogentcore.org/core/glop/indent"
+	"cogentcore.org/core/gox/indent"
 	"github.com/emer/emergent/v2/etime"
 )
 

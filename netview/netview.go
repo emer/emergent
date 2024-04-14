@@ -26,7 +26,7 @@ import (
 	"cogentcore.org/core/giv"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/ki"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/xyz"
@@ -235,7 +235,7 @@ func (nv *NetView) UpdateImpl() {
 				}
 			}
 			if vp.ZeroCtr && !vp.Range.FixMin && !vp.Range.FixMax {
-				bmax := mat32.Max(mat32.Abs(vp.Range.Max), mat32.Abs(vp.Range.Min))
+				bmax := math32.Max(math32.Abs(vp.Range.Max), math32.Abs(vp.Range.Min))
 				if !needUpdate {
 					if vp.Range.Max != bmax || vp.Range.Min != -bmax {
 						needUpdate = true
@@ -645,10 +645,10 @@ func (nv *NetView) ViewConfig() {
 	laysGp.ConfigChildren(layConfig)
 
 	nmin, nmax := nv.Net.Bounds()
-	nsz := nmax.Sub(nmin).Sub(mat32.V3(1, 1, 0)).Max(mat32.V3(1, 1, 1))
-	nsc := mat32.V3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
-	szc := mat32.Max(nsc.X, nsc.Y)
-	poff := mat32.V3Scalar(0.5)
+	nsz := nmax.Sub(nmin).Sub(math32.V3(1, 1, 0)).Max(math32.V3(1, 1, 1))
+	nsc := math32.V3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
+	szc := math32.Max(nsc.X, nsc.Y)
+	poff := math32.V3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
@@ -678,7 +678,7 @@ func (nv *NetView) ViewConfig() {
 		txt.Defaults()
 		txt.NetView = nv
 		txt.SetText(ly.Name())
-		txt.Pose.Scale = mat32.V3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
+		txt.Pose.Scale = math32.V3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
 		txt.Styles.Background = colors.C(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
@@ -694,7 +694,7 @@ func (nv *NetView) ViewDefaults() {
 	se.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1
-	se.Camera.LookAt(mat32.V3(0, 0, 0), mat32.V3(0, 1, 0))
+	se.Camera.LookAt(math32.V3(0, 0, 0), math32.V3(0, 1, 0))
 	// todo:
 	// vs.BgColor = gi.Prefs.Colors.Background
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
@@ -783,7 +783,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 		var op float32
 		if nv.CurVarParams.ZeroCtr {
 			scaled = float32(2*norm - 1)
-			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*mat32.Abs(scaled))
+			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*math32.Abs(scaled))
 		} else {
 			scaled = float32(norm)
 			op = (nv.Params.ZeroAlpha + (1-nv.Params.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%

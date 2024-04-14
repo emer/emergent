@@ -4,9 +4,9 @@
 
 package efuns
 
-import "cogentcore.org/core/mat32"
+import "cogentcore.org/core/math32"
 
 // Logistic is the logistic (sigmoid) function of x: 1/(1 + e^(-gain*(x-off)))
 func Logistic(x, gain, off float32) float32 {
-	return 1.0 / (1.0 + mat32.FastExp(-gain*(x-off)))
+	return 1.0 / (1.0 + math32.FastExp(-gain*(x-off)))
 }

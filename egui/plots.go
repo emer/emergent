@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"cogentcore.org/core/colors"
-	"cogentcore.org/core/grr"
+	"cogentcore.org/core/errors"
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/etable/v2/eplot"
@@ -53,7 +53,7 @@ func ConfigPlotFromLog(title string, plt *eplot.Plot2D, lg *elog.Logs, key etime
 		cp := plt.SetColParams(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
 
 		if item.Color != "" {
-			cp.Color = grr.Log1(colors.FromString(item.Color, nil))
+			cp.Color = errors.Log1(colors.FromString(item.Color, nil))
 		}
 		cp.TensorIndex = item.TensorIndex
 		cp.ErrCol = item.ErrCol

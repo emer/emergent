@@ -9,7 +9,7 @@ package popcode
 import (
 	"sort"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 type PopCodes int
@@ -97,7 +97,7 @@ func (pc *OneD) Encode(pat *[]float32, val float32, n int, add bool) {
 		*pat = make([]float32, n)
 	}
 	if pc.Clip {
-		val = mat32.Clamp(val, pc.Min, pc.Max)
+		val = math32.Clamp(val, pc.Min, pc.Max)
 	}
 	rng := pc.Max - pc.Min
 	gnrm := 1 / (rng * pc.Sigma)
@@ -108,9 +108,9 @@ func (pc *OneD) Encode(pat *[]float32, val float32, n int, add bool) {
 		switch pc.Code {
 		case GaussBump:
 			dist := gnrm * (trg - val)
-			act = mat32.Exp(-(dist * dist))
+			act = math32.Exp(-(dist * dist))
 		case Localist:
-			dist := mat32.Abs(trg - val)
+			dist := math32.Abs(trg - val)
 			if dist > incr {
 				act = 0
 			} else {
@@ -146,7 +146,7 @@ func (pc *OneD) Decode(pat []float32) float32 {
 		avg += trg * act
 		sum += act
 	}
-	sum = mat32.Max(sum, pc.MinSum)
+	sum = math32.Max(sum, pc.MinSum)
 	avg /= sum
 	return avg
 }
@@ -229,7 +229,7 @@ func (pc *OneD) DecodeNPeaks(pat []float32, nvals, width int) []float32 {
 			avg += trg * act
 			sum += act
 		}
-		sum = mat32.Max(sum, pc.MinSum)
+		sum = math32.Max(sum, pc.MinSum)
 		vals[i] = avg / sum
 	}
 

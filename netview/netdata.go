@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	"cogentcore.org/core/gi"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
 	"github.com/emer/etable/v2/eplot"
@@ -264,9 +264,9 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 				lay.UnitValues(&dvals, vnm, di)
 				for ui := range dvals {
 					vl := dvals[ui]
-					if !mat32.IsNaN(vl) {
-						*mn = mat32.Min(*mn, vl)
-						*mx = mat32.Max(*mx, vl)
+					if !math32.IsNaN(vl) {
+						*mn = math32.Min(*mn, vl)
+						*mx = math32.Max(*mx, vl)
 					}
 				}
 			}
@@ -299,8 +299,8 @@ func (nd *NetData) UpdateUnVarRange() {
 			mmidx := ridx * vlen
 			mn := nd.UnMinPer[mmidx+vi]
 			mx := nd.UnMaxPer[mmidx+vi]
-			*vmn = mat32.Min(*vmn, mn)
-			*vmx = mat32.Max(*vmx, mx)
+			*vmn = math32.Min(*vmn, mn)
+			*vmx = math32.Max(*vmx, mx)
 		}
 	}
 }
@@ -430,7 +430,7 @@ func (nd *NetData) UnitValueIndex(laynm string, vnm string, uidx1d int, ridx int
 	nvu := vlen * nd.MaxData * nu
 	idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 	val := ld.Data[idx]
-	if mat32.IsNaN(val) {
+	if math32.IsNaN(val) {
 		return 0, false
 	}
 	return val, true
@@ -582,7 +582,7 @@ func (nd *NetData) SaveJSON(filename gi.Filename) error { //gti:add
 func (nd *NetData) ReadJSON(r io.Reader) error {
 	dec := json.NewDecoder(r)
 	err := dec.Decode(nd) // this is way to do it on reader instead of bytes
-	nan := mat32.NaN()
+	nan := math32.NaN()
 	for _, ld := range nd.LayData {
 		for i := range ld.Data {
 			if ld.Data[i] == NaNSub {
@@ -604,7 +604,7 @@ const NaNSub = -1.11e-37
 func (nd *NetData) WriteJSON(w io.Writer) error {
 	for _, ld := range nd.LayData {
 		for i := range ld.Data {
-			if mat32.IsNaN(ld.Data[i]) {
+			if math32.IsNaN(ld.Data[i]) {
 				ld.Data[i] = NaNSub
 			}
 		}

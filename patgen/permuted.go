@@ -10,7 +10,7 @@ import (
 	"log"
 	"math"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/erand"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/metric"
@@ -140,8 +140,8 @@ func RowVsPrevDist32(tsr *etensor.Float32, row int, fun metric.Func32) (min, max
 	for i := 0; i <= row-1; i++ {
 		crow := tsr.SubSpace([]int{i}).(*etensor.Float32)
 		dst := fun(lrow.Values, crow.Values)
-		min = mat32.Min(min, dst)
-		max = mat32.Max(max, dst)
+		min = math32.Min(min, dst)
+		max = math32.Max(max, dst)
 	}
 	return
 }

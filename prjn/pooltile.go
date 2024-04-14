@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
@@ -324,14 +324,14 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 	wshp := []int{rNuY, rNuX, sNuY, sNuX}
 	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "szY", "szX"})
 
-	fsz := mat32.V2(float32(sNuX-1), float32(sNuY-1)) // full rf size
-	hfsz := fsz.MulScalar(0.5)                        // half rf
-	fsig := pt.GaussFull.Sigma * hfsz.X               // full sigma
+	fsz := math32.V2(float32(sNuX-1), float32(sNuY-1)) // full rf size
+	hfsz := fsz.MulScalar(0.5)                         // half rf
+	fsig := pt.GaussFull.Sigma * hfsz.X                // full sigma
 	if fsig <= 0 {
 		fsig = pt.GaussFull.Sigma
 	}
 
-	psz := mat32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
+	psz := math32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
 	if sNuX > 1 {
 		psz.X -= 1
 	}
@@ -344,7 +344,7 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 		psig = pt.GaussInPool.Sigma
 	}
 
-	rsz := mat32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
+	rsz := math32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
 	if rNuX > 1 {
 		rsz.X -= 1
 	}
@@ -355,7 +355,7 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 	hrsz := rsz.MulScalar(0.5)
 	for ruy := 0; ruy < rNuY; ruy++ {
 		for rux := 0; rux < rNuX; rux++ {
-			rpos := mat32.V2(float32(rux), float32(ruy)).Sub(hrsz).Div(hrsz) // -1..1 normalized r unit pos
+			rpos := math32.V2(float32(rux), float32(ruy)).Sub(hrsz).Div(hrsz) // -1..1 normalized r unit pos
 			rfpos := rpos.MulScalar(pt.GaussFull.CtrMove)
 			rppos := rpos.MulScalar(pt.GaussInPool.CtrMove)
 			sfctr := rfpos.Mul(hfsz).Add(hfsz) // sending center for full
@@ -364,7 +364,7 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 				for sux := 0; sux < sNuX; sux++ {
 					fwt := float32(1)
 					if pt.GaussFull.On {
-						sf := mat32.V2(float32(sux), float32(suy))
+						sf := math32.V2(float32(sux), float32(suy))
 						if pt.GaussFull.Wrap {
 							sf.X = edge.WrapMinDist(sf.X, fsz.X, sfctr.X)
 							sf.Y = edge.WrapMinDist(sf.Y, fsz.Y, sfctr.Y)
@@ -373,7 +373,7 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 					}
 					pwt := float32(1)
 					if pt.GaussInPool.On {
-						sp := mat32.V2(float32(sux), float32(suy))
+						sp := math32.V2(float32(sux), float32(suy))
 						if pt.GaussInPool.Wrap {
 							sp.X = edge.WrapMinDist(sp.X, psz.X, spctr.X)
 							sp.Y = edge.WrapMinDist(sp.Y, psz.Y, spctr.Y)
@@ -413,14 +413,14 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 	wshp := []int{rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX}
 	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX"})
 
-	fsz := mat32.V2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
-	hfsz := fsz.MulScalar(0.5)                                            // half rf
-	fsig := pt.GaussFull.Sigma * hfsz.X                                   // full sigma
+	fsz := math32.V2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
+	hfsz := fsz.MulScalar(0.5)                                             // half rf
+	fsig := pt.GaussFull.Sigma * hfsz.X                                    // full sigma
 	if fsig <= 0 {
 		fsig = pt.GaussFull.Sigma
 	}
 
-	psz := mat32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
+	psz := math32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
 	if sNuX > 1 {
 		psz.X -= 1
 	}
@@ -433,7 +433,7 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 		psig = pt.GaussInPool.Sigma
 	}
 
-	rsz := mat32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
+	rsz := math32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
 	if rNuX > 1 {
 		rsz.X -= 1
 	}
@@ -443,7 +443,7 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 	hrsz := rsz.MulScalar(0.5)
 	for ruy := 0; ruy < rNuY; ruy++ {
 		for rux := 0; rux < rNuX; rux++ {
-			rpos := mat32.V2(float32(rux), float32(ruy)).Sub(hrsz).Div(hrsz) // -1..1 normalized r unit pos
+			rpos := math32.V2(float32(rux), float32(ruy)).Sub(hrsz).Div(hrsz) // -1..1 normalized r unit pos
 			rfpos := rpos.MulScalar(pt.GaussFull.CtrMove)
 			rppos := rpos.MulScalar(pt.GaussInPool.CtrMove)
 			sfctr := rfpos.Mul(hfsz).Add(hfsz) // sending center for full
@@ -454,7 +454,7 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 						for sux := 0; sux < sNuX; sux++ {
 							fwt := float32(1)
 							if pt.GaussFull.On {
-								sf := mat32.V2(float32(fx*sNuX+sux), float32(fy*sNuY+suy))
+								sf := math32.V2(float32(fx*sNuX+sux), float32(fy*sNuY+suy))
 								if pt.GaussFull.Wrap {
 									sf.X = edge.WrapMinDist(sf.X, fsz.X, sfctr.X)
 									sf.Y = edge.WrapMinDist(sf.Y, fsz.Y, sfctr.Y)
@@ -463,7 +463,7 @@ func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float
 							}
 							pwt := float32(1)
 							if pt.GaussInPool.On {
-								sp := mat32.V2(float32(sux), float32(suy))
+								sp := math32.V2(float32(sux), float32(suy))
 								if pt.GaussInPool.Wrap {
 									sp.X = edge.WrapMinDist(sp.X, psz.X, spctr.X)
 									sp.Y = edge.WrapMinDist(sp.Y, psz.Y, spctr.Y)
@@ -534,11 +534,11 @@ func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.Flo
 	wshp := []int{rNuY, rNuX, sNuY, sNuX}
 	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "sNuY", "sNuX"})
 
-	fsz := mat32.V2(float32(sNuX-1), float32(sNuY-1)) // full rf size
-	hfsz := fsz.MulScalar(0.5)                        // half rf
-	fgain := pt.SigFull.Gain * hfsz.X                 // full gain
+	fsz := math32.V2(float32(sNuX-1), float32(sNuY-1)) // full rf size
+	hfsz := fsz.MulScalar(0.5)                         // half rf
+	fgain := pt.SigFull.Gain * hfsz.X                  // full gain
 
-	psz := mat32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
+	psz := math32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
 	if sNuX > 1 {
 		psz.X -= 1
 	}
@@ -548,7 +548,7 @@ func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.Flo
 	hpsz := psz.MulScalar(0.5)          // half rf
 	pgain := pt.SigInPool.Gain * hpsz.X // pool sigma
 
-	rsz := mat32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
+	rsz := math32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
 	if rNuX > 1 {
 		rsz.X -= 1
 	}
@@ -558,8 +558,8 @@ func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.Flo
 	hrsz := rsz.MulScalar(0.5)
 	for ruy := 0; ruy < rNuY; ruy++ {
 		for rux := 0; rux < rNuX; rux++ {
-			rpos := mat32.V2(float32(rux), float32(ruy)).Div(hrsz) // 0..2 normalized r unit pos
-			sgn := mat32.V2(1, 1)
+			rpos := math32.V2(float32(rux), float32(ruy)).Div(hrsz) // 0..2 normalized r unit pos
+			sgn := math32.V2(1, 1)
 			rfpos := rpos.SubScalar(0.5).MulScalar(pt.SigFull.CtrMove).AddScalar(0.5)
 			rppos := rpos.SubScalar(0.5).MulScalar(pt.SigInPool.CtrMove).AddScalar(0.5)
 			if rpos.X >= 1 { // flip direction half-way through
@@ -580,14 +580,14 @@ func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.Flo
 				for sux := 0; sux < sNuX; sux++ {
 					fwt := float32(1)
 					if pt.SigFull.On {
-						sf := mat32.V2(float32(sux), float32(suy))
+						sf := math32.V2(float32(sux), float32(suy))
 						sigx := efuns.Logistic(sgn.X*sf.X, fgain, sfctr.X)
 						sigy := efuns.Logistic(sgn.Y*sf.Y, fgain, sfctr.Y)
 						fwt = sigx * sigy
 					}
 					pwt := float32(1)
 					if pt.SigInPool.On {
-						sp := mat32.V2(float32(sux), float32(suy))
+						sp := math32.V2(float32(sux), float32(suy))
 						sigx := efuns.Logistic(sgn.X*sp.X, pgain, spctr.X)
 						sigy := efuns.Logistic(sgn.Y*sp.Y, pgain, spctr.Y)
 						pwt = sigx * sigy
@@ -625,11 +625,11 @@ func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *etensor.Shape, wts *etensor.Flo
 	wshp := []int{rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX}
 	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX"})
 
-	fsz := mat32.V2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
-	hfsz := fsz.MulScalar(0.5)                                            // half rf
-	fgain := pt.SigFull.Gain * hfsz.X                                     // full gain
+	fsz := math32.V2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
+	hfsz := fsz.MulScalar(0.5)                                             // half rf
+	fgain := pt.SigFull.Gain * hfsz.X                                      // full gain
 
-	psz := mat32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
+	psz := math32.V2(float32(sNuX), float32(sNuY)) // within-pool rf size
 	if sNuX > 1 {
 		psz.X -= 1
 	}
@@ -639,7 +639,7 @@ func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *etensor.Shape, wts *etensor.Flo
 	hpsz := psz.MulScalar(0.5)          // half rf
 	pgain := pt.SigInPool.Gain * hpsz.X // pool sigma
 
-	rsz := mat32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
+	rsz := math32.V2(float32(rNuX), float32(rNuY)) // recv units-in-pool size
 	if rNuX > 1 {
 		rsz.X -= 1
 	}
@@ -649,8 +649,8 @@ func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *etensor.Shape, wts *etensor.Flo
 	hrsz := rsz.MulScalar(0.5)
 	for ruy := 0; ruy < rNuY; ruy++ {
 		for rux := 0; rux < rNuX; rux++ {
-			rpos := mat32.V2(float32(rux), float32(ruy)).Div(hrsz) // 0..2 normalized r unit pos
-			sgn := mat32.V2(1, 1)
+			rpos := math32.V2(float32(rux), float32(ruy)).Div(hrsz) // 0..2 normalized r unit pos
+			sgn := math32.V2(1, 1)
 			rfpos := rpos.SubScalar(0.5).MulScalar(pt.SigFull.CtrMove).AddScalar(0.5)
 			rppos := rpos.SubScalar(0.5).MulScalar(pt.SigInPool.CtrMove).AddScalar(0.5)
 			if rpos.X >= 1 { // flip direction half-way through
@@ -673,14 +673,14 @@ func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *etensor.Shape, wts *etensor.Flo
 						for sux := 0; sux < sNuX; sux++ {
 							fwt := float32(1)
 							if pt.SigFull.On {
-								sf := mat32.V2(float32(fx*sNuX+sux), float32(fy*sNuY+suy))
+								sf := math32.V2(float32(fx*sNuX+sux), float32(fy*sNuY+suy))
 								sigx := efuns.Logistic(sgn.X*sf.X, fgain, sfctr.X)
 								sigy := efuns.Logistic(sgn.Y*sf.Y, fgain, sfctr.Y)
 								fwt = sigx * sigy
 							}
 							pwt := float32(1)
 							if pt.SigInPool.On {
-								sp := mat32.V2(float32(sux), float32(suy))
+								sp := math32.V2(float32(sux), float32(suy))
 								sigx := efuns.Logistic(sgn.X*sp.X, pgain, spctr.X)
 								sigy := efuns.Logistic(sgn.Y*sp.Y, pgain, spctr.Y)
 								pwt = sigx * sigy

@@ -13,7 +13,7 @@ package relpos
 //go:generate core generate -add-types
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Rel defines a position relationship among layers, in terms of X,Y width and height of layer
@@ -85,7 +85,7 @@ func NewAbove(other string) Rel {
 
 // Pos returns the relative position compared to other position and size, based on settings
 // osz and sz must both have already been scaled by relevant Scale factor
-func (rp *Rel) Pos(op mat32.Vec3, osz mat32.Vec2, sz mat32.Vec2) mat32.Vec3 {
+func (rp *Rel) Pos(op math32.Vec3, osz math32.Vec2, sz math32.Vec2) math32.Vec3 {
 	if rp.Scale == 0 {
 		rp.Defaults()
 	}

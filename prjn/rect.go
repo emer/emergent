@@ -5,7 +5,7 @@
 package prjn
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/evec"
 	"github.com/emer/etable/v2/etensor"
@@ -24,7 +24,7 @@ type Rect struct {
 	Start evec.Vec2i
 
 	// scaling to apply to receiving unit position to compute corresponding position in sending layer of the lower-left corner of rectangle
-	Scale mat32.Vec2
+	Scale math32.Vec2
 
 	// auto-set the Scale as function of the relative sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)
 	AutoScale bool
@@ -102,8 +102,8 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.V2(float32(sNx), float32(sNy))
-		rsz := mat32.V2(float32(rNxEff), float32(rNyEff))
+		ssz := math32.V2(float32(sNx), float32(sNy))
+		rsz := math32.V2(float32(rNxEff), float32(rNyEff))
 		sc = ssz.Div(rsz)
 	}
 
@@ -112,11 +112,11 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 			ri := etensor.Prjn2DIndex(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
-				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
-				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
+				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(math32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
 			} else {
-				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
-				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
+				sst.X += int(math32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(math32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)
@@ -170,8 +170,8 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 
 	sc := cr.Scale
 	if cr.AutoScale {
-		ssz := mat32.V2(float32(sNx), float32(sNy))
-		rsz := mat32.V2(float32(rNxEff), float32(rNyEff))
+		ssz := math32.V2(float32(sNx), float32(sNy))
+		rsz := math32.V2(float32(rNxEff), float32(rNyEff))
 		sc = ssz.Div(rsz)
 	}
 
@@ -180,11 +180,11 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 			ri := etensor.Prjn2DIndex(send, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
-				sst.X += int(mat32.Round(float32(rx-cr.RecvStart.X) * sc.X))
-				sst.Y += int(mat32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
+				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(math32.Round(float32(ry-cr.RecvStart.Y) * sc.Y))
 			} else {
-				sst.X += int(mat32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
-				sst.Y += int(mat32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
+				sst.X += int(math32.Floor(float32(rx-cr.RecvStart.X) * sc.X))
+				sst.Y += int(math32.Floor(float32(ry-cr.RecvStart.Y) * sc.Y))
 			}
 			for y := 0; y < cr.Size.Y; y++ {
 				sy, clipy := edge.Edge(sst.Y+y, sNy, cr.Wrap)

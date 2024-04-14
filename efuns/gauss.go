@@ -9,20 +9,20 @@ package efuns
 //go:generate core generate -add-types
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // GaussVecDistNoNorm returns the gaussian of the distance between two 2D vectors
 // using given sigma standard deviation, without normalizing area under gaussian
 // (i.e., max value is 1 at dist = 0)
-func GaussVecDistNoNorm(a, b mat32.Vec2, sigma float32) float32 {
+func GaussVecDistNoNorm(a, b math32.Vec2, sigma float32) float32 {
 	dsq := a.DistToSquared(b)
-	return mat32.FastExp((-0.5 * dsq) / (sigma * sigma))
+	return math32.FastExp((-0.5 * dsq) / (sigma * sigma))
 }
 
 // Gauss1DNoNorm returns the gaussian of a given x value, without normalizing
 // (i.e., max value is 1 at x = 0)
 func Gauss1DNoNorm(x, sig float32) float32 {
 	x /= sig
-	return mat32.FastExp(-0.5 * x * x)
+	return math32.FastExp(-0.5 * x * x)
 }

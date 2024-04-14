@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 func TestRels(t *testing.T) {
@@ -16,12 +16,12 @@ func TestRels(t *testing.T) {
 	rp.Defaults()
 	rp.Rel = RightOf
 	rp.YAlign = Center
-	rs := rp.Pos(mat32.Vec3{}, mat32.V2(10, 10), mat32.V2(4, 4))
+	rs := rp.Pos(math32.Vec3{}, math32.V2(10, 10), math32.V2(4, 4))
 	fmt.Printf("rp: %v rs: %v\n", rp, rs)
 	rp.YAlign = Front
-	rs = rp.Pos(mat32.Vec3{}, mat32.V2(10, 10), mat32.V2(4, 4))
+	rs = rp.Pos(math32.Vec3{}, math32.V2(10, 10), math32.V2(4, 4))
 	fmt.Printf("rp: %v rs: %v\n", rp, rs)
 	rp.YAlign = Back
-	rs = rp.Pos(mat32.Vec3{}, mat32.V2(10, 10), mat32.V2(4, 4))
+	rs = rp.Pos(math32.Vec3{}, math32.V2(10, 10), math32.V2(4, 4))
 	fmt.Printf("rp: %v rs: %v\n", rp, rs)
 }

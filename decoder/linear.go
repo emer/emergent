@@ -9,7 +9,7 @@ package decoder
 import (
 	"fmt"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/empi/v2/mpi"
 	"github.com/emer/etable/v2/etensor"
 )
@@ -70,7 +70,7 @@ func IdentityFunc(x float32) float32 { return x }
 // LogisticFunc implements the standard logistic function.
 // Its outputs are in the range (0, 1).
 // Also known as Sigmoid. See https://en.wikipedia.org/wiki/Logistic_function.
-func LogisticFunc(x float32) float32 { return 1 / (1 + mat32.FastExp(-x)) }
+func LogisticFunc(x float32) float32 { return 1 / (1 + math32.FastExp(-x)) }
 
 // LinearUnit has variables for Linear decoder unit
 type LinearUnit struct {

@@ -116,7 +116,7 @@ type Prjn interface {
 
 	// SynVal returns value of given variable name on the synapse
 	// between given send, recv unit indexes (1D, flat indexes).
-	// Returns mat32.NaN() for access errors.
+	// Returns math32.NaN() for access errors.
 	SynValue(varNm string, sidx, ridx int) float32
 
 	// SetSynVal sets value of given variable name on the synapse

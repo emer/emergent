@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	"cogentcore.org/core/glop/num"
+	"cogentcore.org/core/gox/num"
 )
 
 func TestPoisson(t *testing.T) {

@@ -9,12 +9,12 @@
 // with modifications needed to suit Cogent Core functionality.
 
 // Package evec has vector types for emergent, including Vec2i which is a 2D
-// vector with int values, using the API based on mat32.Vec2i.
-// This is distinct from mat32.Vec2i because it uses int instead of int32, and
+// vector with int values, using the API based on math32.Vec2i.
+// This is distinct from math32.Vec2i because it uses int instead of int32, and
 // the int is significantly easier to deal with for layer sizing params etc.
 package evec
 
-import "cogentcore.org/core/mat32"
+import "cogentcore.org/core/math32"
 
 // Vec2i is a 2D vector/point with X and Y int components.
 type Vec2i struct {
@@ -32,24 +32,24 @@ func NewVec2iScalar(s int) Vec2i {
 	return Vec2i{X: s, Y: s}
 }
 
-// NewVec2iFromVec2Round converts from floating point mat32.Vec2 vector to int, using rounding
-func NewVec2iFromVec2Round(v mat32.Vec2) Vec2i {
-	return Vec2i{int(mat32.Round(v.X)), int(mat32.Round(v.Y))}
+// NewVec2iFromVec2Round converts from floating point math32.Vec2 vector to int, using rounding
+func NewVec2iFromVec2Round(v math32.Vec2) Vec2i {
+	return Vec2i{int(math32.Round(v.X)), int(math32.Round(v.Y))}
 }
 
-// NewVec2iFromVec2Floor converts from floating point mat32.Vec2 vector to int, using floor
-func NewVec2iFromVec2Floor(v mat32.Vec2) Vec2i {
-	return Vec2i{int(mat32.Floor(v.X)), int(mat32.Floor(v.Y))}
+// NewVec2iFromVec2Floor converts from floating point math32.Vec2 vector to int, using floor
+func NewVec2iFromVec2Floor(v math32.Vec2) Vec2i {
+	return Vec2i{int(math32.Floor(v.X)), int(math32.Floor(v.Y))}
 }
 
-// NewVec2iFromVec2Ceil converts from floating point mat32.Vec2 vector to int, using ceil
-func NewVec2iFromVec2Ceil(v mat32.Vec2) Vec2i {
-	return Vec2i{X: int(mat32.Ceil(v.X)), Y: int(mat32.Ceil(v.Y))}
+// NewVec2iFromVec2Ceil converts from floating point math32.Vec2 vector to int, using ceil
+func NewVec2iFromVec2Ceil(v math32.Vec2) Vec2i {
+	return Vec2i{X: int(math32.Ceil(v.X)), Y: int(math32.Ceil(v.Y))}
 }
 
-// ToVec2 returns floating point mat32.Vec2 from int
-func (v Vec2i) ToVec2() mat32.Vec2 {
-	return mat32.V2(float32(v.X), float32(v.Y))
+// ToVec2 returns floating point math32.Vec2 from int
+func (v Vec2i) ToVec2() math32.Vec2 {
+	return math32.V2(float32(v.X), float32(v.Y))
 }
 
 // IsNil returns true if all values are 0 (uninitialized).

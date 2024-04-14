@@ -15,7 +15,7 @@ import (
 	"sort"
 
 	"cogentcore.org/core/gi"
-	"cogentcore.org/core/glop/indent"
+	"cogentcore.org/core/gox/indent"
 	"cogentcore.org/core/grows"
 	"cogentcore.org/core/grows/jsons"
 	"cogentcore.org/core/grows/tomls"

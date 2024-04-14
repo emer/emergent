@@ -122,7 +122,7 @@ The following all work together to provide a convenient layer of abstraction for
 
 * [esg](esg) is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
 
-* [evec](evec) has `Vec2i` which uses plain `int` X, Y fields, whereas the `mat32` package uses `int32` which are needed for graphics but int is more convenient in models.
+* [evec](evec) has `Vec2i` which uses plain `int` X, Y fields, whereas the `math32` package uses `int32` which are needed for graphics but int is more convenient in models.
 
 * [popcode](popcode) supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
 

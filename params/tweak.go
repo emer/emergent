@@ -11,15 +11,15 @@ import (
 	"strings"
 
 	"cogentcore.org/core/laser"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"golang.org/x/exp/maps"
 )
 
 func tweakValue(msd, fact, exp10 float32, isRmdr bool) float32 {
 	if isRmdr {
-		return mat32.Truncate(msd+fact*mat32.Pow(10, exp10), 3)
+		return math32.Truncate(msd+fact*math32.Pow(10, exp10), 3)
 	}
-	return mat32.Truncate(fact*mat32.Pow(10, exp10), 3)
+	return math32.Truncate(fact*math32.Pow(10, exp10), 3)
 }
 
 // Tweak returns parameters to try below and above the given value.
@@ -28,19 +28,19 @@ func tweakValue(msd, fact, exp10 float32, isRmdr bool) float32 {
 // These apply to the 2nd significant digit (remainder after most significant digit)
 // if that is present in the original value.
 func Tweak(v float32, log, incr bool) []float32 {
-	ex := mat32.Floor(mat32.Log10(v))
-	base := mat32.Pow(10, ex)
-	basem1 := mat32.Pow(10, ex-1)
-	fact := mat32.Round(v / base)
+	ex := math32.Floor(math32.Log10(v))
+	base := math32.Pow(10, ex)
+	basem1 := math32.Pow(10, ex-1)
+	fact := math32.Round(v / base)
 	msd := tweakValue(0, fact, ex, false)
-	rmdr := mat32.Round((v - msd) / basem1)
+	rmdr := math32.Round((v - msd) / basem1)
 	var vals []float32
 	sv := fact
 	isRmdr := false
 	if rmdr != 0 {
 		if rmdr < 0 {
 			msd = tweakValue(0, fact-1, ex, false)
-			rmdr = mat32.Round((v - msd) / basem1)
+			rmdr = math32.Round((v - msd) / basem1)
 		}
 		sv = rmdr
 		ex--
