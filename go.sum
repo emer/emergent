@@ -1,7 +1,7 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-cogentcore.org/core v0.0.9 h1:Ird5o4wewSe8/dvsmd47YvkP5JZCiaE9hUSrb2692N8=
-cogentcore.org/core v0.0.9/go.mod h1:SAJedgd5nd0iB2cHl//DyCO+rugd/u7KCHXHNjnQOmA=
+cogentcore.org/core v0.1.0 h1:fJjpk7jd77IIUCDoauwukOeTVsWU+SuDyIhDXb3PYTM=
+cogentcore.org/core v0.1.0/go.mod h1:SAJedgd5nd0iB2cHl//DyCO+rugd/u7KCHXHNjnQOmA=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 gioui.org v0.0.0-20210308172011-57750fc8a0a6/go.mod h1:RSH6KIUZ0p2xy5zHDxgAM4zumjgTw83q2ge/PI+yyw8=
 git.sr.ht/~sbinet/cmpimg v0.1.0 h1:E0zPRk2muWuCqSKSVZIWsgtU9pjsw3eKHi8VmQeScxo=
@@ -59,12 +59,10 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2 v1.11.0 h1:G/nrcoOa7ZXlpoa/91N3X7mM3r8eIlMBBJZvsz/mxKI=
 github.com/dlclark/regexp2 v1.11.0/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
-github.com/emer/empi/v2 v2.0.0-dev0.0.5 h1:9UJOv0x5W0g5bvgmzq9Gl7YQiIe3KFKDxcEC5nGpz+Q=
-github.com/emer/empi/v2 v2.0.0-dev0.0.5/go.mod h1:HLhDVyWhxdfykD2Rh2Cg/Ul/bxep5Gi5ixA1y4ByiyQ=
-github.com/emer/etable/v2 v2.0.0-dev0.0.18 h1:9F10/UnTJeUvuLgA5f6FVbuEnCXkO7Fcu18S2qhAD40=
-github.com/emer/etable/v2 v2.0.0-dev0.0.18/go.mod h1:REeMfrU5ajUm5iFOQK/6Jf77qIxqt+njmYFcJg1HwHk=
-github.com/emer/gosl/v2 v2.0.0-dev0.0.12 h1:d0GR9VID0iNas1TdMNHuqQp0lPzydKxqNopl6DT4MIo=
-github.com/emer/gosl/v2 v2.0.0-dev0.0.12/go.mod h1:s3TcYTiJvySq4PEQ42HrQ+yetfn4GnCAmpE+9jLGqRI=
+github.com/emer/etable/v2 v2.0.0-dev0.0.19 h1:y9Bf8JsaEQgJy0eRvejLWavyKYuK4bIsM9ItXmX9A0Y=
+github.com/emer/etable/v2 v2.0.0-dev0.0.19/go.mod h1:gaeUP26DyqxI8e6wEEM9Tm0WjGtpakPGMXx0kFs5Fxw=
+github.com/emer/gosl/v2 v2.0.0-dev0.0.13 h1:Ieko7yC+nEVwUNFe0cNrXD/wzbhP4RLBV8sJbBcs7BU=
+github.com/emer/gosl/v2 v2.0.0-dev0.0.13/go.mod h1:Eu7AxAjgrSBiCr6ch8u1gDpaM3fY03zxxhH+r5zbYYc=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=

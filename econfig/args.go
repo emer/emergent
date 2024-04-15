@@ -15,7 +15,7 @@ import (
 
 	"cogentcore.org/core/iox/tomlx"
 	"cogentcore.org/core/reflectx"
-	"github.com/emer/empi/v2/mpi"
+	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/iancoleman/strcase"
 )
 

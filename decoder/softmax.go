@@ -17,7 +17,7 @@ import (
 
 	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/empi/v2/mpi"
+	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/emer/etable/v2/etensor"
 )
 

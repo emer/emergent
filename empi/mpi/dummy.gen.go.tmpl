@@ -1,0 +1,69 @@
+// Copyright (c) 2020, The Emergent Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+//go:build !mpi
+
+package mpi
+
+import (
+	"fmt"
+	"log"
+	"unsafe"
+)
+
+{{range .In}}
+
+// Send{{.Name}} sends values to toProc, using given unique tag identifier.
+// This is Blocking. Must have a corresponding Recv call with same tag on toProc, from this proc
+func (cm *Comm) Send{{.Name}}(toProc int, tag int, vals []{{or .Type}}) error {
+	return nil
+}
+
+// Recv64{{.Name}} receives values from proc fmProc, using given unique tag identifier
+// This is Blocking. Must have a corresponding Send call with same tag on fmProc, to this proc
+func (cm *Comm) Recv{{.Name}}(fmProc int, tag int, vals []{{or .Type}}) error {
+	return nil
+}
+
+// Bcast{{.Name}} broadcasts slice from fmProc to all other procs.
+// All nodes have the same vals after this call, copied from fmProc.
+func (cm *Comm) Bcast{{.Name}}(fmProc int, vals []{{or .Type}}) error {
+	return nil
+}
+
+// Reduce{{.Name}} reduces all values across procs to toProc in orig to dest using given operation.
+// IMPORTANT: orig and dest must be different slices
+func (cm *Comm) Reduce{{.Name}}(toProc int, op Op, dest, orig []{{or .Type}}) error {
+	return nil
+}
+
+// AllReduce{{.Name}} reduces all values across procs to all procs from orig into dest using given operation.
+// IMPORTANT: orig and dest must be different slices
+func (cm *Comm) AllReduce{{.Name}}(op Op, dest, orig []{{or .Type}}) error {
+	return nil
+}
+
+// Gather{{.Name}} gathers values from all procs into toProc proc, tiled into dest of size np * len(orig).
+// This is inverse of Scatter.
+// IMPORTANT: orig and dest must be different slices.
+func (cm *Comm) Gather{{.Name}}(toProc int, dest, orig []{{or .Type}}) error {
+	return nil
+}
+
+// AllGather{{.Name}} gathers values from all procs into all procs,
+// tiled by proc into dest of size np * len(orig).
+// IMPORTANT: orig and dest must be different slices
+func (cm *Comm) AllGather{{.Name}}(dest, orig []{{or .Type}}) error {
+	return nil
+}
+
+// Scatter{{.Name}} scatters values from fmProc to all procs, distributing len(dest) size chunks to
+// each proc from orig slice, which must be of size np * len(dest).  This is inverse of Gather.
+// IMPORTANT: orig and dest must be different slices
+func (cm *Comm) Scatter{{.Name}}(fmProc int, dest, orig []{{or .Type}}) error {
+	return nil
+}
+
+{{- end}}
+

@@ -14,10 +14,10 @@ import (
 	"strconv"
 
 	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/emergent/v2/empi"
+	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/empi/v2/empi"
-	"github.com/emer/empi/v2/mpi"
 	"github.com/emer/etable/v2/etable"
 )
 

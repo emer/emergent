@@ -11,8 +11,8 @@ import (
 
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/empi/v2/mpi"
 )
 
 // AddStd adds the standard command line args used by most sims

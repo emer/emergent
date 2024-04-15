@@ -9,8 +9,8 @@ import (
 	"log"
 	"math/rand"
 
+	"github.com/emer/emergent/v2/empi"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/empi/v2/empi"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
 )
