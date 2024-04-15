@@ -22,7 +22,7 @@ import (
 // is used for checking the type of the target.  Also, they all fall within the same
 // Sel selector scope which is used to determine what specific objects to apply the
 // parameters to.
-type Params map[string]string //gti:add
+type Params map[string]string //types:add
 
 // ParamByNameTry returns given parameter, by name.
 // Returns error if not found.
@@ -53,7 +53,7 @@ func (pr *Params) SetByName(name, value string) {
 // params.Sel specifies a selector for the scope of application of a set of
 // parameters, using standard css selector syntax (. prefix = class, # prefix = name,
 // and no prefix = type)
-type Sel struct { //gti:add
+type Sel struct { //types:add
 
 	// selector for what to apply the parameters to, using standard css selector syntax: .Example applies to anything with a Class tag of 'Example', #Example applies to anything with a Name of 'Example', and Example with no prefix applies to anything of type 'Example'
 	Sel string `width:"30"`
@@ -102,7 +102,7 @@ func (sl *Sel) ParamValue(param string) (string, error) {
 //
 // This is the highest level of params that has an Apply method -- above this level
 // application must be done under explicit program control.
-type Sheet []*Sel //gti:add
+type Sheet []*Sel //types:add
 
 // NewSheet returns a new Sheet
 func NewSheet() *Sheet {
@@ -170,7 +170,7 @@ func (sh *Sheet) ParamValue(sel, param string) (string, error) {
 ///////////////////////////////////////////////////////////////////////
 
 // Sheets is a map of named sheets -- used in the Set
-type Sheets map[string]*Sheet //gti:add
+type Sheets map[string]*Sheet //types:add
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -192,7 +192,7 @@ type Sheets map[string]*Sheet //gti:add
 // Note that there is NO deterministic ordering of the Sheets due to the use of
 // a Go map structure, which specifically randomizes order, so simply iterating over them
 // and applying may produce unexpected results -- it is better to lookup by name.
-type Set struct { //gti:add
+type Set struct { //types:add
 
 	// description of this param set -- when should it be used?  how is it different from the other sets?
 	Desc string `width:"60"`
@@ -281,7 +281,7 @@ func (ps *Set) ParamValue(sheet, sel, param string) (string, error) {
 // depending on different desired configurations etc.  Thus, each Set
 // represents a collection of different possible specific configurations,
 // and different such configurations can be chosen by name to apply as desired.
-type Sets map[string]*Set //gti:add
+type Sets map[string]*Set //types:add
 
 // SetByNameTry tries to find given set by name, and returns error
 // if not found (also logs the error)

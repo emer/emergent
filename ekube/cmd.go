@@ -13,7 +13,7 @@ import (
 )
 
 // Build builds a Docker image for the emergent model in the current directory.
-func Build(c *Config) error { //gti:add
+func Build(c *Config) error { //types:add
 	f, err := os.Create("Dockerfile")
 	if err != nil {
 		return err

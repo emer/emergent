@@ -12,7 +12,7 @@ import (
 )
 
 // HyperValues is a string-value map for storing hyperparameter values
-type HyperValues map[string]string //gti:add
+type HyperValues map[string]string //types:add
 
 // JSONString returns hyper values as a JSON formatted string
 func (hv *HyperValues) JSONString() string {
@@ -41,7 +41,7 @@ func (hv *HyperValues) CopyFrom(cp HyperValues) {
 // to hyperparameter search as well as the values.
 // Use the key "Val" for the default value. This is equivalant to the value in
 // Params. "Min" and "Max" guid the range, and "Sigma" describes a Gaussian.
-type Hypers map[string]HyperValues //gti:add
+type Hypers map[string]HyperValues //types:add
 
 // ParamByNameTry returns given parameter, by name.
 // Returns error if not found.

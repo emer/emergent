@@ -17,7 +17,7 @@ import (
 var NVarCols = 2
 
 // RasterParams holds parameters controlling the raster plot view
-type RasterParams struct { //gti:add
+type RasterParams struct { //types:add
 
 	// if true, show a raster plot over time, otherwise units
 	On bool
@@ -48,7 +48,7 @@ func (nv *RasterParams) Defaults() {
 }
 
 // Params holds parameters controlling how the view is rendered
-type Params struct { //gti:add
+type Params struct { //types:add
 
 	// raster plot parameters
 	Raster RasterParams `view:"inline"`
@@ -118,7 +118,7 @@ func (nv *Params) Update() {
 }
 
 // VarParams holds parameters for display of each variable
-type VarParams struct { //gti:add
+type VarParams struct { //types:add
 
 	// name of the variable
 	Var string

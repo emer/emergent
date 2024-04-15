@@ -197,7 +197,7 @@ func (nv *NetView) UpdateView() {
 // and updates the display.  Use this when switching to NetView tab after network
 // has been running while viewing another tab, because the network state
 // is typically not recored then.
-func (nv *NetView) Current() { //gti:add
+func (nv *NetView) Current() { //types:add
 	nv.Record("", -1)
 	nv.RecordSyns()
 	nv.UpdateView()
@@ -1163,26 +1163,26 @@ func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
 
 // SaveWeights saves the network weights -- when called with views.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) SaveWeights(filename core.Filename) { //gti:add
+func (nv *NetView) SaveWeights(filename core.Filename) { //types:add
 	nv.Net.SaveWtsJSON(filename)
 }
 
 // OpenWeights opens the network weights -- when called with views.CallMethod
 // it will auto-prompt for filename
-func (nv *NetView) OpenWeights(filename core.Filename) { //gti:add
+func (nv *NetView) OpenWeights(filename core.Filename) { //types:add
 	nv.Net.OpenWtsJSON(filename)
 }
 
 // ShowNonDefaultParams shows a dialog of all the parameters that
 // are not at their default values in the network.  Useful for setting params.
-func (nv *NetView) ShowNonDefaultParams() string { //gti:add
+func (nv *NetView) ShowNonDefaultParams() string { //types:add
 	nds := nv.Net.NonDefaultParams()
 	texteditor.TextDialog(nv, "Non Default Params: "+nv.Nm, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
-func (nv *NetView) ShowAllParams() string { //gti:add
+func (nv *NetView) ShowAllParams() string { //types:add
 	nds := nv.Net.AllParams()
 	texteditor.TextDialog(nv, "All Params: "+nv.Nm, nds)
 	return nds
@@ -1190,7 +1190,7 @@ func (nv *NetView) ShowAllParams() string { //gti:add
 
 // ShowKeyLayerParams shows a dialog with a listing for all layers in the network,
 // of the most important layer-level params (specific to each algorithm)
-func (nv *NetView) ShowKeyLayerParams() string { //gti:add
+func (nv *NetView) ShowKeyLayerParams() string { //types:add
 	nds := nv.Net.KeyLayerParams()
 	texteditor.TextDialog(nv, "Key Layer Params: "+nv.Nm, nds)
 	return nds
@@ -1198,7 +1198,7 @@ func (nv *NetView) ShowKeyLayerParams() string { //gti:add
 
 // ShowKeyPrjnParams shows a dialog with a listing for all Recv projections in the network,
 // of the most important projection-level params (specific to each algorithm)
-func (nv *NetView) ShowKeyPrjnParams() string { //gti:add
+func (nv *NetView) ShowKeyPrjnParams() string { //types:add
 	nds := nv.Net.KeyPrjnParams()
 	texteditor.TextDialog(nv, "Key Prjn Params: "+nv.Nm, nds)
 	return nds

@@ -29,7 +29,7 @@ import (
 // NetData maintains a record of all the network data that has been displayed
 // up to a given maximum number of records (updates), using efficient ring index logic
 // with no copying to store in fixed-sized buffers.
-type NetData struct { //gti:add
+type NetData struct { //types:add
 
 	// the network that we're viewing
 	Net emer.Network `json:"-"`
@@ -536,7 +536,7 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 //   IO
 
 // OpenJSON opens colors from a JSON-formatted file.
-func (nd *NetData) OpenJSON(filename core.Filename) error { //gti:add
+func (nd *NetData) OpenJSON(filename core.Filename) error { //types:add
 	fp, err := os.Open(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -558,7 +558,7 @@ func (nd *NetData) OpenJSON(filename core.Filename) error { //gti:add
 }
 
 // SaveJSON saves colors to a JSON-formatted file.
-func (nd *NetData) SaveJSON(filename core.Filename) error { //gti:add
+func (nd *NetData) SaveJSON(filename core.Filename) error { //types:add
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
@@ -625,7 +625,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // PlotSelectedUnit opens a window with a plot of all the data for the
 // currently-selected unit.
 // Useful for replaying detailed trace for units of interest.
-func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //gti:add
+func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:add
 	nd := &nv.Data
 	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
