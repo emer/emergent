@@ -128,7 +128,7 @@ func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unInd
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		lay = nv.Net.Layer(li)
-		lg := lcore.(*xyz.Group)
+		lg := lgi.(*xyz.Group)
 		lp := lay.Pos()
 		lp.Y = -lp.Y // reverse direction
 		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)

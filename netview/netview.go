@@ -652,7 +652,7 @@ func (nv *NetView) ViewConfig() {
 	poff.Y = -0.5
 	for li, lgi := range *laysGp.Children() {
 		ly := nv.Net.Layer(li)
-		lg := lcore.(*xyz.Group)
+		lg := lgi.(*xyz.Group)
 		lg.ConfigChildren(gpConfig) // won't do update b/c of above
 		lp := ly.Pos()
 		lp.Y = -lp.Y // reverse direction

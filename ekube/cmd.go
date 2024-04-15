@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"cogentcore.org/core/xe"
+	"cogentcore.org/core/exec"
 )
 
 // Build builds a Docker image for the emergent model in the current directory.
@@ -23,7 +23,7 @@ func Build(c *Config) error { //types:add
 	if err != nil {
 		return err
 	}
-	err = xe.Verbose().SetBuffer(false).Run("docker", "build", "-t", filepath.Base(c.Dir)+":latest", ".")
+	err = exec.Verbose().SetBuffer(false).Run("docker", "build", "-t", filepath.Base(c.Dir)+":latest", ".")
 	if err != nil {
 		return err
 	}
