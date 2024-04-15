@@ -226,10 +226,10 @@ func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]ref
 					nwNest = true
 				}
 			}
-			fieldArgNamesStruct(reflectx.PtrValue(fv).Interface(), nwPath, nwNest, allArgs)
+			fieldArgNamesStruct(reflectx.PointerValue(fv).Interface(), nwPath, nwNest, allArgs)
 			continue
 		}
-		pval := reflectx.PtrValue(fv)
+		pval := reflectx.PointerValue(fv)
 		addAllCases(f.Name, path, pval, allArgs)
 		if f.Type.Kind() == reflect.Bool {
 			addAllCases("No"+f.Name, path, pval, allArgs)

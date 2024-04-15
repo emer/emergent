@@ -38,7 +38,7 @@ func usageStruct(obj any, path string, b *strings.Builder) {
 			if path != "" {
 				nwPath = path + "." + nwPath
 			}
-			usageStruct(reflectx.PtrValue(fv).Interface(), nwPath, b)
+			usageStruct(reflectx.PointerValue(fv).Interface(), nwPath, b)
 			continue
 		}
 		nm := f.Name

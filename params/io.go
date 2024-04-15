@@ -16,10 +16,10 @@ import (
 
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/gox/indent"
+	"cogentcore.org/core/iox"
 	"cogentcore.org/core/iox/jsonx"
 	"cogentcore.org/core/iox/tomlx"
 	"github.com/BurntSushi/toml"
-	"goki.dev/grows"
 	"golang.org/x/exp/maps"
 )
 
@@ -52,7 +52,7 @@ func (pr *Params) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Params) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename)) // pelletier/go-toml produces bad output on maps
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }
@@ -126,7 +126,7 @@ func (pr *Hypers) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Hypers) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename))
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }
@@ -200,7 +200,7 @@ func (pr *Sel) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sel) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename))
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }
@@ -266,7 +266,7 @@ func (pr *Sheet) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sheet) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename))
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }
@@ -334,7 +334,7 @@ func (pr *Sheets) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sheets) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename))
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }
@@ -407,7 +407,7 @@ func (pr *Set) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Set) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename))
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }
@@ -446,7 +446,7 @@ func (pr *Sets) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sets) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename))
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }

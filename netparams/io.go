@@ -14,11 +14,11 @@ import (
 
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/gox/indent"
+	"cogentcore.org/core/iox"
 	"cogentcore.org/core/iox/jsonx"
 	"cogentcore.org/core/iox/tomlx"
 	"github.com/BurntSushi/toml"
 	"github.com/emer/emergent/v2/params"
-	"goki.dev/grows"
 )
 
 // WriteGoPrelude writes the start of a go file in package main that starts a
@@ -56,7 +56,7 @@ func (pr *Sets) OpenTOML(filename core.Filename) error {
 // SaveTOML saves params to a TOML-formatted file.
 func (pr *Sets) SaveTOML(filename core.Filename) error {
 	// return tomlx.Save(pr, string(filename)) // pelletier/go-toml produces bad output on maps
-	return grows.Save(pr, string(filename), func(w io.Writer) grows.Encoder {
+	return iox.Save(pr, string(filename), func(w io.Writer) iox.Encoder {
 		return toml.NewEncoder(w)
 	})
 }

@@ -6,11 +6,11 @@
 // and the deployment of those images to Kubernetes clusters.
 package main
 
+import "cogentcore.org/core/cli"
+
 //go:generate core generate
 
-import "cogentcore.org/core/grease"
-
 func main() {
-	opts := grease.DefaultOptions("ekube", "ekube provides easy building of Docker images for emergent models and the deployment of those images to Kubernetes clusters.")
-	grease.Run(opts, &Config{}, Build)
+	opts := cli.DefaultOptions("ekube", "ekube provides easy building of Docker images for emergent models and the deployment of those images to Kubernetes clusters.")
+	cli.Run(opts, &Config{}, Build)
 }
