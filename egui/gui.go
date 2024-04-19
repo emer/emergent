@@ -62,7 +62,7 @@ type GUI struct {
 func (gui *GUI) UpdateWindow() {
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
-		tb.UpdateBar()
+		tb.ApplyStyleUpdate()
 	}
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really neccesary
@@ -76,7 +76,7 @@ func (gui *GUI) GoUpdateWindow() {
 
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
-		tb.UpdateBar()
+		tb.ApplyStyleUpdate()
 	}
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really neccesary
