@@ -6,7 +6,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/elog)
 
 The `elog.Item` provides a full definition of each distinct item that is logged with a map of Write functions keyed by a scope string that reflects the time scale and mode.  The same function can be used across multiple scopes, or a different function for each scope, etc.
 
-The Items are written to the table *in the order added*, so you can take advantage of previously-computed item values based on the actual ordering of item code.  For example, intermediate values can be stored / retrieved from Stats, or from other items on a log, e.g., using `Context.LogItemFloat` function.
+The Items are written to the table *in the order added*, so you can take advantage of previously computed item values based on the actual ordering of item code.  For example, intermediate values can be stored / retrieved from Stats, or from other items on a log, e.g., using `Context.LogItemFloat` function.
 
 The Items are then processed in `CreateTables()` to create a set of `etable.Table` tables to hold the data.
 

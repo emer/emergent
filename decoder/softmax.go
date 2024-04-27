@@ -22,7 +22,7 @@ import (
 )
 
 // SoftMax is a softmax decoder, which is the best choice for a 1-hot classification
-// using the widely-used SoftMax function: https://en.wikipedia.org/wiki/Softmax_function
+// using the widely used SoftMax function: https://en.wikipedia.org/wiki/Softmax_function
 type SoftMax struct {
 
 	// learning rate

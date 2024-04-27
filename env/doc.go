@@ -41,7 +41,7 @@ model will only work within a particular paradigm of environments following
 specific conventions.
 
 See e.g., env.FixedTable for particular implementation of a fixed Table
-of patterns, for one example of a widely-used paradigm.
+of patterns, for one example of a widely used paradigm.
 
 Typically each specific implementation of this Env interface will have
 multiple parameters etc that can be modified to control env behavior --

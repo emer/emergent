@@ -12,7 +12,7 @@ into the following sub-repositories:
 * emer: defines the primary structural interfaces for emergent, at the level of
 Network, Layer, and Prjn (projection).  These contain no algorithm-specific code
 and are only about the overall structure of a network, sufficient to support general
-purpose tools such as the 3D NetView.  It also houses widely-used support classes used
+purpose tools such as the 3D NetView.  It also houses widely used support classes used
 in algorithm-specific code, including things like MinMax and AvgMax, and also the
 parameter-styling infrastructure (emer.Params, emer.ParamStyle, emer.ParamSet and
 emer.ParamSets).

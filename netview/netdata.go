@@ -623,7 +623,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // }
 
 // PlotSelectedUnit opens a window with a plot of all the data for the
-// currently-selected unit.
+// currently selected unit.
 // Useful for replaying detailed trace for units of interest.
 func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:add
 	nd := &nv.Data
@@ -662,7 +662,7 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:a
 }
 
 // SelectedUnitTable returns a table with all of the data for the
-// currently-selected unit, and data parallel index.
+// currently selected unit, and data parallel index.
 func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
 		fmt.Printf("NetView:SelectedUnitTable -- no unit selected\n")

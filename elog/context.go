@@ -24,7 +24,7 @@ type WriteFunc func(ctx *Context)
 // Context provides the context for logging Write functions.
 // SetContext must be called on Logs to set the Stats and Net values
 // Provides various convenience functions for setting log values
-// and other commonly-used operations.
+// and other commonly used operations.
 type Context struct {
 
 	// pointer to the Logs object with all log data

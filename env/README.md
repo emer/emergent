@@ -22,7 +22,7 @@ The `EnvDesc` interface provides additional methods (originally included in `Env
 
 The `Step` should update all relevant state elements as appropriate, so these can be queried by the user. Particular paradigms of environments must establish naming conventions for these state elements which then allow the model to use the information appropriately -- the Env interface only provides the most basic framework for establishing these paradigms, and ultimately a given model will only work within a particular paradigm of environments following specific conventions.
 
-See e.g., env.FixedTable for particular implementation of a fixed Table of patterns, for one example of a widely-used paradigm.
+See e.g., env.FixedTable for particular implementation of a fixed Table of patterns, for one example of a widely used paradigm.
 
 Typically each specific implementation of this Env interface will have multiple parameters etc that can be modified to control env behavior -- all of this is paradigm-specific and outside the scope of this basic interface.
 
