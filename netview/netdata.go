@@ -657,7 +657,7 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:a
 		plt.SetColParams(vnm, disp, vp.Range.FixMin, float64(min), vp.Range.FixMax, float64(vp.Range.Max))
 	}
 
-	b.NewWindow().SetNewWindow(true).Run()
+	b.RunWindow()
 	return dt, plt
 }
 
