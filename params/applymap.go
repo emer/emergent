@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/reflectx"
+	"cogentcore.org/core/base/reflectx"
 )
 
 // ApplyMap applies given map[string]any values, where the map keys

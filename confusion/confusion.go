@@ -11,8 +11,8 @@ import (
 	"math"
 
 	"cogentcore.org/core/core"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/simat"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/simat"
 )
 
 // Matrix computes the confusion matrix, with rows representing
@@ -21,36 +21,36 @@ import (
 type Matrix struct { //git:add
 
 	// normalized probability of confusion: Row = ground truth class, Col = actual response for that class.
-	Prob etensor.Float64 `view:"no-inline"`
+	Prob tensor.Float64 `view:"no-inline"`
 
 	// incremental sums
-	Sum etensor.Float64 `view:"no-inline"`
+	Sum tensor.Float64 `view:"no-inline"`
 
 	// counts per ground truth (rows)
-	N etensor.Float64 `view:"no-inline"`
+	N tensor.Float64 `view:"no-inline"`
 
 	// visualization using SimMat
 	Vis simat.SimMat `view:"no-inline"`
 
 	// true pos/neg, false pos/neg for each class, generated from the confusion matrix
-	TFPN etensor.Float64 `view:"no-inline"`
+	TFPN tensor.Float64 `view:"no-inline"`
 
 	// precision, recall and F1 score by class
-	ClassScores etensor.Float64 `view:"no-inline"`
+	ClassScores tensor.Float64 `view:"no-inline"`
 
 	// micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class
-	MatrixScores etensor.Float64 `view:"no-inline"`
+	MatrixScores tensor.Float64 `view:"no-inline"`
 }
 
 // Init initializes the Matrix for given number of classes,
 // and resets the data to zero.
 func (cm *Matrix) Init(n int) {
-	cm.Prob.SetShape([]int{n, n}, nil, []string{"N", "N"})
-	cm.Sum.SetShape([]int{n, n}, nil, []string{"N", "N"})
-	cm.N.SetShape([]int{n}, nil, []string{"N"})
-	cm.TFPN.SetShape([]int{n, 4}, nil, []string{"TP", "FP", "FN", "TN"})
-	cm.ClassScores.SetShape([]int{n, 3}, nil, []string{"Precision", "Recall", "F1"})
-	cm.MatrixScores.SetShape([]int{3}, nil, []string{"Precision", "Recall", "F1"})
+	cm.Prob.SetShape([]int{n, n}, "N", "N")
+	cm.Sum.SetShape([]int{n, n}, "N", "N")
+	cm.N.SetShape([]int{n}, "N")
+	cm.TFPN.SetShape([]int{n, 4}, "TP", "FP", "FN", "TN")
+	cm.ClassScores.SetShape([]int{n, 3}, "Precision", "Recall", "F1")
+	cm.MatrixScores.SetShape([]int{3}, "Precision", "Recall", "F1")
 	cm.Vis.Mat = &cm.Prob
 	cm.Reset()
 }
@@ -68,7 +68,7 @@ func (cm *Matrix) Reset() {
 // SetLabels sets the class labels, for visualization in Vis
 func (cm *Matrix) SetLabels(lbls []string) {
 	cm.Vis.Rows = lbls
-	cm.Vis.Cols = lbls
+	cm.Vis.Columns = lbls
 }
 
 // InitFromLabels does initialization based on given labels.
@@ -88,7 +88,7 @@ func (cm *Matrix) Incr(class, resp int) {
 	if class < 0 || resp < 0 {
 		return
 	}
-	ncat := cm.Sum.Dim(0)
+	ncat := cm.Sum.DimSize(0)
 	if class >= ncat || resp >= ncat {
 		return
 	}
@@ -126,16 +126,16 @@ func (cm *Matrix) SumTFPN(class int) {
 	for c := 0; c < n; c++ {
 		for r := 0; r < n; r++ {
 			if r == class && c == class { //        True Positive
-				v := cm.Sum.FloatValueRowCell(r, c)
+				v := cm.Sum.FloatRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 0, v)
 			} else if r == class && c != class { // False Positive
-				fn += cm.Sum.FloatValueRowCell(r, c)
+				fn += cm.Sum.FloatRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 1, fp)
 			} else if r != class && c == class { // False Negative
-				fp += cm.Sum.FloatValueRowCell(r, c)
+				fp += cm.Sum.FloatRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 2, fn)
 			} else { //                             True Negative
-				tn += cm.Sum.FloatValueRowCell(r, c)
+				tn += cm.Sum.FloatRowCell(r, c)
 				cm.TFPN.SetFloatRowCell(class, 3, tn)
 			}
 		}
@@ -146,9 +146,9 @@ func (cm *Matrix) SumTFPN(class int) {
 }
 
 func (cm *Matrix) ScoreClass(class int) {
-	tp := cm.TFPN.FloatValueRowCell(class, 0)
-	fp := cm.TFPN.FloatValueRowCell(class, 1)
-	fn := cm.TFPN.FloatValueRowCell(class, 2)
+	tp := cm.TFPN.FloatRowCell(class, 0)
+	fp := cm.TFPN.FloatRowCell(class, 1)
+	fn := cm.TFPN.FloatRowCell(class, 2)
 
 	precision := tp / (tp + fp)
 	cm.ClassScores.SetFloatRowCell(class, 0, precision)
@@ -165,9 +165,9 @@ func (cm *Matrix) ScoreMatrix() {
 
 	n := cm.N.Len()
 	for i := 0; i < n; i++ {
-		tp += cm.TFPN.FloatValueRowCell(i, 0)
-		fp += cm.TFPN.FloatValueRowCell(i, 1)
-		fn += cm.TFPN.FloatValueRowCell(i, 2)
+		tp += cm.TFPN.FloatRowCell(i, 0)
+		fp += cm.TFPN.FloatRowCell(i, 1)
+		fn += cm.TFPN.FloatRowCell(i, 2)
 	}
 
 	// micro F1 - ignores class
@@ -178,7 +178,7 @@ func (cm *Matrix) ScoreMatrix() {
 	// some classes might not have any instances so check NaN
 	f1 = 0.0
 	for i := 0; i < n; i++ {
-		classf1 := cm.ClassScores.FloatValueRowCell(i, 2)
+		classf1 := cm.ClassScores.FloatRowCell(i, 2)
 		if math.IsNaN(classf1) == false {
 			f1 += classf1
 		}
@@ -190,23 +190,23 @@ func (cm *Matrix) ScoreMatrix() {
 	f1 = 0.0
 	totalN := 0.0
 	for i := 0; i < n; i++ {
-		classf1 := cm.ClassScores.FloatValueRowCell(i, 2) * cm.N.FloatValue1D(i)
+		classf1 := cm.ClassScores.FloatRowCell(i, 2) * cm.N.Float1D(i)
 		if math.IsNaN(classf1) == false {
 			f1 += classf1
 		}
-		totalN += cm.N.FloatValue1D(i)
+		totalN += cm.N.Float1D(i)
 	}
 	cm.MatrixScores.SetFloat1D(2, f1/totalN)
 }
 
 // SaveCSV saves Prob result to a CSV file, comma separated
 func (cm *Matrix) SaveCSV(fname core.Filename) {
-	etensor.SaveCSV(&cm.Prob, fname, ',')
+	tensor.SaveCSV(&cm.Prob, fname, ',')
 }
 
 // OpenCSV opens Prob result from a CSV file, comma separated
 func (cm *Matrix) OpenCSV(fname core.Filename) {
-	etensor.OpenCSV(&cm.Prob, fname, ',')
+	tensor.OpenCSV(&cm.Prob, fname, ',')
 }
 
 /*

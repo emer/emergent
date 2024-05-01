@@ -5,24 +5,23 @@
 package empi
 
 import (
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/empi/mpi"
-	"github.com/emer/etable/v2/etable"
 )
 
 // GatherTableRows does an MPI AllGather on given src table data, gathering into dest.
 // dest will have np * src.Rows Rows, filled with each processor's data, in order.
 // dest must be a clone of src: if not same number of cols, will be configured from src.
-func GatherTableRows(dest, src *etable.Table, comm *mpi.Comm) {
+func GatherTableRows(dest, src *table.Table, comm *mpi.Comm) {
 	sr := src.Rows
 	np := mpi.WorldSize()
 	dr := np * sr
-	if len(dest.Cols) != len(src.Cols) {
-		dest.SetFromSchema(src.Schema(), dr)
-	} else {
-		dest.SetNumRows(dr)
+	if len(dest.Columns) != len(src.Columns) {
+		*dest = *src.Clone()
 	}
-	for ci, st := range src.Cols {
-		dt := dest.Cols[ci]
+	dest.SetNumRows(dr)
+	for ci, st := range src.Columns {
+		dt := dest.Columns[ci]
 		GatherTensorRows(dt, st, comm)
 	}
 }
@@ -33,15 +32,14 @@ func GatherTableRows(dest, src *etable.Table, comm *mpi.Comm) {
 // just aggregated directly across processors.
 // dest will be a clone of src if not the same (cos & rows),
 // does nothing for strings.
-func ReduceTable(dest, src *etable.Table, comm *mpi.Comm, op mpi.Op) {
+func ReduceTable(dest, src *table.Table, comm *mpi.Comm, op mpi.Op) {
 	sr := src.Rows
-	if len(dest.Cols) != len(src.Cols) {
-		dest.SetFromSchema(src.Schema(), sr)
-	} else {
-		dest.SetNumRows(sr)
+	if len(dest.Columns) != len(src.Columns) {
+		*dest = *src.Clone()
 	}
-	for ci, st := range src.Cols {
-		dt := dest.Cols[ci]
+	dest.SetNumRows(sr)
+	for ci, st := range src.Columns {
+		dt := dest.Columns[ci]
 		ReduceTensor(dt, st, comm, op)
 	}
 }

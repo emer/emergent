@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/emer/etable/v2/etable"
+	"cogentcore.org/core/tensor/table"
 )
 
 func TestVocab(t *testing.T) {
@@ -48,7 +48,7 @@ func TestVocab(t *testing.T) {
 	fmt.Println(m["B''"].String())
 
 	// config pats
-	dt := etable.NewTable("TrainAB")
+	dt := table.NewTable("TrainAB")
 	InitPats(dt, "TrainAB", "describe", "Input", "ECout", 6, 3, 2, 3, 3)
 	MixPats(dt, m, "Input", []string{"A", "B", "ctxt1", "ctxt1", "empty", "B'"})
 	MixPats(dt, m, "ECout", []string{"A", "B", "ctxt1", "ctxt1", "empty", "B'"})
@@ -57,10 +57,10 @@ func TestVocab(t *testing.T) {
 	Shuffle(dt, []int{0, 1, 2, 3, 4, 5}, []string{"Input", "ECout"}, false)
 
 	fmt.Println("Input Pats")
-	fmt.Println(dt.ColByName("Input").Shapes())
-	fmt.Println(dt.ColByName("Input").T())
+	fmt.Println(dt.ColumnByName("Input").Shape().Sizes)
+	fmt.Println(dt.ColumnByName("Input").T())
 
 	fmt.Println("ECout Pats")
-	fmt.Println(dt.ColByName("ECout").Shapes())
-	fmt.Println(dt.ColByName("ECout").T())
+	fmt.Println(dt.ColumnByName("ECout").Shape().Sizes)
+	fmt.Println(dt.ColumnByName("ECout").T())
 }

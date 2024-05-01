@@ -12,11 +12,11 @@ import (
 	"log"
 	"os"
 
+	"cogentcore.org/core/base/indent"
+	"cogentcore.org/core/base/iox"
+	"cogentcore.org/core/base/iox/jsonx"
+	"cogentcore.org/core/base/iox/tomlx"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/gox/indent"
-	"cogentcore.org/core/iox"
-	"cogentcore.org/core/iox/jsonx"
-	"cogentcore.org/core/iox/tomlx"
 	"github.com/BurntSushi/toml"
 	"github.com/emer/emergent/v2/params"
 )

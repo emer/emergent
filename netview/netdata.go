@@ -19,11 +19,10 @@ import (
 
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/plot/plotview"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
-	"github.com/emer/etable/v2/eplot"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // NetData maintains a record of all the network data that has been displayed
@@ -625,7 +624,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // PlotSelectedUnit opens a window with a plot of all the data for the
 // currently selected unit.
 // Useful for replaying detailed trace for units of interest.
-func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:add
+func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotview.PlotView) { //types:add
 	nd := &nv.Data
 	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
@@ -635,9 +634,9 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:a
 	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
 
 	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
-	plt := eplot.NewPlot2D(b)
+	plt := plotview.NewPlotView(b)
 	plt.Params.Title = "NetView " + selnm
-	plt.Params.XAxisCol = "Rec"
+	plt.Params.XAxisColumn = "Rec"
 
 	b.AddAppBar(plt.ConfigToolbar)
 	dt := nd.SelectedUnitTable(nv.Di)
@@ -654,7 +653,7 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:a
 		if min < 0 && vp.Range.FixMin && vp.MinMax.Min >= 0 {
 			min = 0 // netview uses -1..1 but not great for graphs unless needed
 		}
-		plt.SetColParams(vnm, disp, vp.Range.FixMin, float64(min), vp.Range.FixMax, float64(vp.Range.Max))
+		plt.SetColParams(vnm, disp, vp.Range.FixMin, min, vp.Range.FixMax, vp.Range.Max)
 	}
 
 	b.RunWindow()
@@ -662,8 +661,8 @@ func (nv *NetView) PlotSelectedUnit() (*etable.Table, *eplot.Plot2D) { //types:a
 }
 
 // SelectedUnitTable returns a table with all of the data for the
-// currently selected unit, and data parallel index.
-func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
+// currently-selected unit, and data parallel index.
+func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
 		fmt.Printf("NetView:SelectedUnitTable -- no unit selected\n")
 		return nil
@@ -677,7 +676,7 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 
 	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
 
-	dt := &etable.Table{}
+	dt := &table.Table{}
 	dt.SetMetaData("name", "NetView: "+selnm)
 	dt.SetMetaData("read-only", "true")
 	dt.SetMetaData("precision", strconv.Itoa(4))
@@ -688,21 +687,19 @@ func (nd *NetData) SelectedUnitTable(di int) *etable.Table {
 	nvu := vlen * nd.MaxData * nu
 	uidx1d := nd.PrjnUnIndex
 
-	sch := etable.Schema{
-		{"Rec", etensor.INT64, nil, nil},
-	}
+	dt.AddIntColumn("Rec")
 	for _, vnm := range nd.UnVars {
-		sch = append(sch, etable.Column{vnm, etensor.FLOAT64, nil, nil})
+		dt.AddFloat64Column(vnm)
 	}
-	dt.SetFromSchema(sch, ln)
+	dt.SetNumRows(ln)
 
 	for ri := 0; ri < ln; ri++ {
 		ridx := nd.RecIndex(ri)
-		dt.SetCellFloatIndex(0, ri, float64(ri))
+		dt.SetFloatIndex(0, ri, float64(ri))
 		for vi := 0; vi < vlen; vi++ {
 			idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 			val := ld.Data[idx]
-			dt.SetCellFloatIndex(vi+1, ri, float64(val))
+			dt.SetFloatIndex(vi+1, ri, float64(val))
 		}
 	}
 	return dt

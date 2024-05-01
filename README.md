@@ -43,7 +43,11 @@ See [python README](https://github.com/emer/leabra/blob/master/python/README.md)
 
 # Design / Organization
 
+<<<<<<< HEAD
 * The `emergent` repository contains a collection of packages supporting the implementation of biologically based neural networks.  The main package is `emer` which specifies a minimal abstract interface for a neural network.  The `etable` `etable.Table` data structure (DataTable in C++) is in a separate repository under the overall `emer` project umbrella, as are specific algorithms such as `leabra` which implement the `emer` interface.
+=======
+* The `emergent` repository contains a collection of packages supporting the implementation of biologically-based neural networks.  The main package is `emer` which specifies a minimal abstract interface for a neural network.  The `table` `table.Table` data structure (DataTable in C++) is in a separate repository under the overall `emer` project umbrella, as are specific algorithms such as `leabra` which implement the `emer` interface.
+>>>>>>> 5874d12 (updated to core v0.1.2 with tensor/table etc)
 
 * Go uses `interfaces` to represent abstract collections of functionality (i.e., sets of methods).  The `emer` package provides a set of interfaces for each structural level (e.g., `emer.Layer` etc) -- any given specific layer must implement all of these methods, and the structural containers (e.g., the list of layers in a network) are lists of these interfaces.  An interface is implicitly a *pointer* to an actual concrete object that implements the interface.
 
@@ -64,7 +68,7 @@ func (nt *Network) InitActs() {
 
 * There are 3 main levels of structure: `Network`, `Layer` and `Prjn` (projection).  The Network calls methods on its Layers, and Layers iterate over both `Neuron` data structures (which have only a minimal set of methods) and the `Prjn`s, to implement the relevant computations.  The `Prjn` fully manages everything about a projection of connectivity between two layers, including the full list of `Syanpse` elements in the connection.  There is no "ConGroup" or "ConState" level as was used in C++, which greatly simplifies many things.  The Layer also has a set of `Pool` elements, one for each level at which inhibition is computed (there is always one for the Layer, and then optionally one for each Sub-Pool of units (*Pool* is the new simpler term for "Unit Group" from C++ emergent).
 
-* Layers have a `Shape` property, using the `etensor.Shape` type (see `etable` package), which specifies their n-dimensional (tensor) shape.  Standard layers are expected to use a 2D Y*X shape (note: dimension order is now outer-to-inner or *RowMajor* now), and a 4D shape then enables `Pools` ("unit groups") as hypercolumn-like structures within a layer that can have their own local level of inihbition, and are also used extensively for organizing patterns of connectivity.
+* Layers have a `Shape` property, using the `tensor.Shape` type (see `table` package), which specifies their n-dimensional (tensor) shape.  Standard layers are expected to use a 2D Y*X shape (note: dimension order is now outer-to-inner or *RowMajor* now), and a 4D shape then enables `Pools` ("unit groups") as hypercolumn-like structures within a layer that can have their own local level of inihbition, and are also used extensively for organizing patterns of connectivity.
 
 # Packages
 
@@ -136,7 +140,7 @@ The following all work together to provide a convenient layer of abstraction for
 
 Here are the other repositories within `emer` that provide additional, optional elements for simulations:
 
-* [etable](https://github.com/emer/etable/v2) repository holds all of the more general-purpose "DataTable" or DataFrame (`etable.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `etensor` n-dimensional array, `eplot` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`, and lots of data analysis tools like similarity / distance matricies, PCA, cluster plots, etc.
+* [table](https://cogentcore.org/core/tensor/table) repository holds all of the more general-purpose "DataTable" or DataFrame (`table.Table`) related code, which is our version of something like `pandas` or `xarray` in Python.  This includes the `tensor` n-dimensional array, `plotview` for interactive plotting of data, and basic utility packages like `minmax` and `bitslice`, and lots of data analysis tools like similarity / distance matricies, PCA, cluster plots, etc.
 
 * [eMPI](https://github.com/emer/empi) provides an MPI (message passing interface) distributed memory implementation -- see [MPI Wiki page](https://github.com/emer/emergent/wiki/MPI)
 

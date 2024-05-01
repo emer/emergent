@@ -10,7 +10,7 @@ $ go build -tags mpi
 
 The `empi/empi` package has methods to support use of MPI in emergent simulations:
 
-* Gathering `etable.Table` and `etensor.Tensor` data across processors.
+* Gathering `table.Table` and `tensor.Tensor` data across processors.
 
 * `AllocN` allocates n items to process across mpi processors.
 

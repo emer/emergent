@@ -6,10 +6,10 @@ package prjn
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // Circle implements a circular pattern of connectivity between two layers
@@ -66,10 +66,10 @@ func (cr *Circle) Name() string {
 	return "Circle"
 }
 
-func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy, sNx, _, _ := etensor.Prjn2DShape(send, false)
-	rNy, rNx, _, _ := etensor.Prjn2DShape(recv, false)
+	sNy, sNx, _, _ := tensor.Prjn2DShape(send, false)
+	rNy, rNx, _, _ := tensor.Prjn2DShape(recv, false)
 
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -98,8 +98,8 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 					}
 					d := int(math32.Round(sp.DistTo(sctr)))
 					if d <= cr.Radius {
-						ri := etensor.Prjn2DIndex(recv, false, ry, rx)
-						si := etensor.Prjn2DIndex(send, false, sy, sx)
+						ri := tensor.Prjn2DIndex(recv, false, ry, rx)
+						si := tensor.Prjn2DIndex(send, false, sy, sx)
 						off := ri*sNtot + si
 						if !cr.SelfCon && same && ri == si {
 							continue
@@ -118,9 +118,9 @@ func (cr *Circle) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *e
 // GaussWts returns gaussian weight value for given unit indexes in
 // given send and recv layers according to Gaussian Sigma and MaxWt.
 // Can be used for a Prjn.SetScalesFunc or SetWtsFunc
-func (cr *Circle) GaussWts(si, ri int, send, recv *etensor.Shape) float32 {
-	sNy, sNx, _, _ := etensor.Prjn2DShape(send, false)
-	rNy, rNx, _, _ := etensor.Prjn2DShape(recv, false)
+func (cr *Circle) GaussWts(si, ri int, send, recv *tensor.Shape) float32 {
+	sNy, sNx, _, _ := tensor.Prjn2DShape(send, false)
+	rNy, rNx, _, _ := tensor.Prjn2DShape(recv, false)
 
 	ry := ri / rNx // todo: this is not right for 4d!
 	rx := ri % rNx

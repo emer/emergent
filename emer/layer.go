@@ -11,10 +11,10 @@ import (
 	"io"
 
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/relpos"
 	"github.com/emer/emergent/v2/weights"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // Layer defines the basic interface for neural network layers, used for managing the structural
@@ -52,7 +52,7 @@ type Layer interface {
 	// Row-major ordering is default (Y then X), outer-most to inner-most.
 	// if 2D, then it is a simple Y,X layer with no sub-structure (pools).
 	// If 4D, then it number of pools Y, X and then number of units per pool Y, X
-	Shape() *etensor.Shape
+	Shape() *tensor.Shape
 
 	// Is2D() returns true if this is a 2D layer (no Pools)
 	Is2D() bool
@@ -152,7 +152,7 @@ type Layer interface {
 	// If tensor is not already big enough to hold the values, it is
 	// set to the same shape as the layer.
 	// Returns error on invalid var name.
-	UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) error
+	UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error
 
 	// UnitValuesRepTensor fills in values of given variable name on unit
 	// for a smaller subset of representative units in the layer, into given tensor.
@@ -165,7 +165,7 @@ type Layer interface {
 	// set to RepShape to hold all the values if subset is defined,
 	// otherwise it calls UnitValuesTensor and is identical to that.
 	// Returns error on invalid var name.
-	UnitValuesRepTensor(tsr etensor.Tensor, varNm string, di int) error
+	UnitValuesRepTensor(tsr tensor.Tensor, varNm string, di int) error
 
 	// RepIndexes returns the current set of representative unit indexes.
 	// which are a smaller subset of units that represent the behavior
@@ -182,7 +182,7 @@ type Layer interface {
 	// of len RepIndexes will be used.
 	// See utility function CenterPoolShape that returns shape of
 	// units in the central pools of a 4D layer.
-	RepShape() *etensor.Shape
+	RepShape() *tensor.Shape
 
 	// SetRepIndexesShape sets the RepIndexes, and RepShape and as list of dimension sizes
 	SetRepIndexesShape(idxs, shape []int)
@@ -300,11 +300,11 @@ var LayerDimNames4D = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
 // Useful for setting RepIndexes on Layer.
 // Will crash if called on non-4D layers.
 func CenterPoolIndexes(ly Layer, n int) []int {
-	nPy := ly.Shape().Dim(0)
-	nPx := ly.Shape().Dim(1)
+	nPy := ly.Shape().DimSize(0)
+	nPx := ly.Shape().DimSize(1)
 	sPy := (nPy - n) / 2
 	sPx := (nPx - n) / 2
-	nu := ly.Shape().Dim(2) * ly.Shape().Dim(3)
+	nu := ly.Shape().DimSize(2) * ly.Shape().DimSize(3)
 	nt := n * n * nu
 	idxs := make([]int, nt)
 	ix := 0
@@ -323,7 +323,7 @@ func CenterPoolIndexes(ly Layer, n int) []int {
 // CenterPoolShape returns shape for n x n center pools of given 4D layer.
 // Useful for setting RepShape on Layer.
 func CenterPoolShape(ly Layer, n int) []int {
-	return []int{n, n, ly.Shape().Dim(2), ly.Shape().Dim(3)}
+	return []int{n, n, ly.Shape().DimSize(2), ly.Shape().DimSize(3)}
 }
 
 // Layer2DRepIndexes returns neuron indexes and corresponding 2D shape
@@ -334,8 +334,8 @@ func CenterPoolShape(ly Layer, n int) []int {
 // given maxSize is selected.
 func Layer2DRepIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 	sh := ly.Shape()
-	my := min(maxSize, sh.Dim(0))
-	mx := min(maxSize, sh.Dim(1))
+	my := min(maxSize, sh.DimSize(0))
+	mx := min(maxSize, sh.DimSize(1))
 	shape = []int{my, mx}
 	idxs = make([]int, my*mx)
 	i := 0

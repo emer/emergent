@@ -5,11 +5,11 @@
 package estats
 
 import (
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/metric"
+	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/metric"
-	"github.com/emer/etable/v2/norm"
 )
 
 // funcs contains misc stats functions
@@ -17,7 +17,7 @@ import (
 // SetLayerTensor sets tensor of Unit values on a layer for given variable
 // to a F32Tensor with name = layNm
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
-func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
+func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int) *tensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32TensorDi(layNm, di)
 	ly.UnitValuesTensor(tsr, unitVar, di)
@@ -27,7 +27,7 @@ func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int)
 // SetLayerRepTensor sets tensor of representative Unit values on a layer
 // for given variable to a F32Tensor with name = layNm
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
-func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di int) *etensor.Float32 {
+func (st *Stats) SetLayerRepTensor(net emer.Network, layNm, unitVar string, di int) *tensor.Float32 {
 	ly := net.LayerByName(layNm)
 	tsr := st.F32TensorDi(layNm, di)
 	ly.UnitValuesRepTensor(tsr, unitVar, di)
@@ -60,17 +60,17 @@ func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB 
 // ClosestStat finds the closest pattern in given column of given table of possible patterns,
 // compared to layer activation pattern using given variable.  Returns the row number,
 // correlation value, and value of a column named namecol for that row if non-empty.
-// Column must be etensor.Float32
+// Column must be tensor.Float32
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
-func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, di int, pats *etable.Table, colnm, namecol string) (int, float32, string) {
+func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, di int, pats *table.Table, colnm, namecol string) (int, float32, string) {
 	tsr := st.SetLayerTensor(net, layNm, unitVar, di)
-	col := pats.ColByName(colnm)
+	col := pats.ColumnByName(colnm)
 	// note: requires Increasing metric so using Inv
-	row, cor := metric.ClosestRow32(tsr, col.(*etensor.Float32), metric.InvCorrelation32)
+	row, cor := metric.ClosestRow32(tsr, col.(*tensor.Float32), metric.InvCorrelation32)
 	cor = 1 - cor // convert back to correl
 	nm := ""
 	if namecol != "" {
-		nm = pats.CellString(namecol, row)
+		nm = pats.StringValue(namecol, row)
 	}
 	return row, cor, nm
 }
@@ -93,7 +93,7 @@ var PCAStrongThr = 0.01
 // layer_PCA_Next5: average strength of next 5 eigenvalues
 // layer_PCA_Rest: average strength of remaining eigenvalues (if more than 10 total eigens)
 // Uses SVD to compute much more efficiently than official PCA.
-func (st *Stats) PCAStats(ix *etable.IndexView, varNm string, layers []string) {
+func (st *Stats) PCAStats(ix *table.IndexView, varNm string, layers []string) {
 	svd := &st.SVD
 	svd.Cond = PCAStrongThr
 	for _, lnm := range layers {
@@ -119,7 +119,7 @@ func (st *Stats) PCAStats(ix *etable.IndexView, varNm string, layers []string) {
 		st.SetFloat(lnm+"_PCA_Top5", top5/5)
 		st.SetFloat(lnm+"_PCA_Next5", next5/5)
 		if ln > 10 {
-			sum := norm.Sum64(svd.Values)
+			sum := stats.Sum64(svd.Values)
 			ravg := (sum - (top5 + next5)) / float64(ln-10)
 			st.SetFloat(lnm+"_PCA_Rest", ravg)
 		} else {

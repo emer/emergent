@@ -6,9 +6,9 @@ package prjn
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/evec"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // Rect implements a rectangular pattern of connectivity between two layers
@@ -72,13 +72,13 @@ func (cr *Rect) Name() string {
 	return "Rect"
 }
 
-func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if cr.Recip {
 		return cr.ConnectRecip(send, recv, same)
 	}
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy, sNx, _, _ := etensor.Prjn2DShape(send, false)
-	rNy, rNx, _, _ := etensor.Prjn2DShape(recv, false)
+	sNy, sNx, _, _ := tensor.Prjn2DShape(send, false)
+	rNy, rNx, _, _ := tensor.Prjn2DShape(recv, false)
 
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -109,7 +109,7 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 
 	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
-			ri := etensor.Prjn2DIndex(recv, false, ry, rx)
+			ri := tensor.Prjn2DIndex(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
@@ -128,7 +128,7 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 					if clipx {
 						continue
 					}
-					si := etensor.Prjn2DIndex(send, false, sy, sx)
+					si := tensor.Prjn2DIndex(send, false, sy, sx)
 					off := ri*sNtot + si
 					if !cr.SelfCon && same && ri == si {
 						continue
@@ -143,10 +143,10 @@ func (cr *Rect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *ete
 	return
 }
 
-func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy, sNx, _, _ := etensor.Prjn2DShape(recv, false) // swapped!
-	rNy, rNx, _, _ := etensor.Prjn2DShape(send, false)
+	sNy, sNx, _, _ := tensor.Prjn2DShape(recv, false) // swapped!
+	rNy, rNx, _, _ := tensor.Prjn2DShape(send, false)
 
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -177,7 +177,7 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 
 	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
-			ri := etensor.Prjn2DIndex(send, false, ry, rx)
+			ri := tensor.Prjn2DIndex(send, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
@@ -196,7 +196,7 @@ func (cr *Rect) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn
 					if clipx {
 						continue
 					}
-					si := etensor.Prjn2DIndex(recv, false, sy, sx)
+					si := tensor.Prjn2DIndex(recv, false, sy, sx)
 					off := si*sNtot + ri
 					if !cr.SelfCon && same && ri == si {
 						continue

@@ -10,7 +10,7 @@ import (
 	"cogentcore.org/core/types"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyzview"
+	"cogentcore.org/core/xyz/xyzview"
 )
 
 var _ = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.LayData", IDName: "lay-data", Doc: "LayData maintains a record of all the data for a given layer", Fields: []types.Field{{Name: "LayName", Doc: "the layer name"}, {Name: "NUnits", Doc: "cached number of units"}, {Name: "Data", Doc: "the full data, in that order"}, {Name: "RecvPrjns", Doc: "receiving projection data -- shared with SendPrjns"}, {Name: "SendPrjns", Doc: "sending projection data -- shared with RecvPrjns"}}})

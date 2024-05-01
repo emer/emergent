@@ -5,11 +5,11 @@
 package egui
 
 import (
-	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
+	"cogentcore.org/core/styles/abilities"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 )

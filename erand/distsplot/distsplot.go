@@ -13,13 +13,13 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/icons"
+	"cogentcore.org/core/math32/minmax"
+	"cogentcore.org/core/plot/plotview"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/histogram"
+	"cogentcore.org/core/tensor/table"
 	"cogentcore.org/core/views"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/eplot"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/histogram"
-	"github.com/emer/etable/v2/minmax"
 )
 
 func main() {
@@ -46,13 +46,13 @@ type Sim struct {
 	Range minmax.F64
 
 	// table for raw data
-	Table *etable.Table `view:"no-inline"`
+	Table *table.Table `view:"no-inline"`
 
 	// histogram of data
-	Hist *etable.Table `view:"no-inline"`
+	Hist *table.Table `view:"no-inline"`
 
 	// the plot
-	Plot *eplot.Plot2D `view:"-"`
+	Plot *plotview.PlotView `view:"-"`
 }
 
 // TheSim is the overall state for this simulation
@@ -68,8 +68,8 @@ func (ss *Sim) Config() {
 	ss.NBins = 100
 	ss.Range.Set(0, 1)
 	ss.Update()
-	ss.Table = &etable.Table{}
-	ss.Hist = &etable.Table{}
+	ss.Table = &table.Table{}
+	ss.Hist = &table.Table{}
 	ss.ConfigTable(ss.Table)
 	ss.Run()
 }
@@ -86,35 +86,32 @@ func (ss *Sim) Run() {
 	dt.SetNumRows(ss.NSamp)
 	for vi := 0; vi < ss.NSamp; vi++ {
 		vl := ss.Dist.Gen(-1)
-		dt.SetCellFloat("Val", vi, float64(vl))
+		dt.SetFloat("Val", vi, float64(vl))
 	}
 
-	histogram.F64Table(ss.Hist, dt.Cols[0].(*etensor.Float64).Values, ss.NBins, ss.Range.Min, ss.Range.Max)
+	histogram.F64Table(ss.Hist, dt.Columns[0].(*tensor.Float64).Values, ss.NBins, ss.Range.Min, ss.Range.Max)
 	if ss.Plot != nil {
 		ss.Plot.UpdatePlot()
 	}
 }
 
-func (ss *Sim) ConfigTable(dt *etable.Table) {
+func (ss *Sim) ConfigTable(dt *table.Table) {
 	dt.SetMetaData("name", "Data")
 	dt.SetMetaData("read-only", "true")
 	dt.SetMetaData("precision", strconv.Itoa(LogPrec))
 
-	sch := etable.Schema{
-		{"Val", etensor.FLOAT64, nil, nil},
-	}
-	dt.SetFromSchema(sch, 0)
+	dt.AddFloat64Column("Val")
 }
 
-func (ss *Sim) ConfigPlot(plt *eplot.Plot2D, dt *etable.Table) *eplot.Plot2D {
+func (ss *Sim) ConfigPlot(plt *plotview.PlotView, dt *table.Table) *plotview.PlotView {
 	plt.Params.Title = "Rand Dist Histogram"
-	plt.Params.XAxisCol = "Value"
-	plt.Params.Type = eplot.Bar
-	plt.Params.XAxisRot = 45
+	plt.Params.XAxisColumn = "Value"
+	plt.Params.Type = plotview.Bar
+	plt.Params.XAxisRotation = 45
 	plt.SetTable(dt)
 	// order of params: on, fixMin, min, fixMax, max
-	plt.SetColParams("Value", eplot.Off, eplot.FloatMin, 0, eplot.FloatMax, 0)
-	plt.SetColParams("Count", eplot.On, eplot.FixMin, 0, eplot.FloatMax, 0)
+	plt.SetColParams("Value", plotview.Off, plotview.FloatMin, 0, plotview.FloatMax, 0)
+	plt.SetColParams("Count", plotview.On, plotview.FixMin, 0, plotview.FloatMax, 0)
 	return plt
 }
 
@@ -130,7 +127,7 @@ func (ss *Sim) ConfigGUI() *core.Body {
 	tv := core.NewTabs(split, "tv")
 
 	pt := tv.NewTab("Histogram")
-	plt := eplot.NewPlot2D(pt)
+	plt := plotview.NewPlotView(pt)
 	ss.Plot = ss.ConfigPlot(plt, ss.Hist)
 
 	split.SetSplits(.3, .7)

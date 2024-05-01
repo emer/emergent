@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
 // difTol is the numerical difference tolerance for comparing vs. target values
@@ -91,7 +91,7 @@ func TestPopCode2D(t *testing.T) {
 	CmprFloats(valsX, corValues, "valsX for 11 units", t)
 	CmprFloats(valsY, corValues, "valsY for 11 units", t)
 
-	var pat etensor.Float32
+	var pat tensor.Float32
 	pat.SetShape([]int{11, 11}, nil, nil)
 	pc.Encode(&pat, math32.Vec2(0.3, 0.9), Set)
 	// fmt.Printf("pat for 0.5: %v\n", pat)
@@ -117,7 +117,7 @@ func TestPopCode2DMulti(t *testing.T) {
 	pc := TwoD{}
 	pc.Defaults()
 
-	var pat etensor.Float32
+	var pat tensor.Float32
 	// note: usually you'd use a larger pattern size for multiple values
 	pat.SetShape([]int{11, 11}, nil, nil)
 	pc.Encode(&pat, math32.Vec2(0.1, 0.9), Set)
@@ -137,7 +137,7 @@ func TestPopCode2DMulti(t *testing.T) {
 	// fmt.Printf("decode pat for 0.1, 0.9; 0.9, 0.1: %v\n", vals)
 	for _, valv := range vals {
 		for d := 0; d < 2; d++ {
-			val := valv.Dim(math32.Dims(d))
+			val := valv.DimSize(math32.Dims(d))
 			if val > 0.5 {
 				if math32.Abs(val-0.9) > difTolMulti {
 					t.Errorf("did not decode properly: val: %v != 0.9", val)
@@ -202,7 +202,7 @@ func TestTwoDWrap(t *testing.T) {
 	pc.Sigma.Set(0.15, 0.15)
 	pc.Clip = false
 
-	var pat etensor.Float32
+	var pat tensor.Float32
 	pat.SetShape([]int{21, 21}, nil, nil)
 	tangs := []float32{-179, -90, 0, 90, 179}
 	for _, ang := range tangs {

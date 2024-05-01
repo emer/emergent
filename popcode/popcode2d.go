@@ -10,7 +10,7 @@ import (
 	"sort"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
 // popcode.TwoD provides encoding and decoding of population
@@ -78,7 +78,7 @@ func (pc *TwoD) SetRange(min, max, sigma float32) {
 // If add == false (use Set const for clarity), values are set to pattern
 // else if add == true (Add), then values are added to any existing,
 // for encoding additional values in same pattern.
-func (pc *TwoD) Encode(pat etensor.Tensor, val math32.Vector2, add bool) error {
+func (pc *TwoD) Encode(pat tensor.Tensor, val math32.Vector2, add bool) error {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Encode: pattern must have 2 dimensions")
 		log.Println(err)
@@ -119,12 +119,12 @@ func (pc *TwoD) Encode(pat etensor.Tensor, val math32.Vector2, add bool) error {
 }
 
 // EncodeImpl is the implementation of encoding -- e.g., used twice for Wrap
-func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val math32.Vector2, add bool) error {
+func (pc *TwoD) EncodeImpl(pat tensor.Tensor, val math32.Vector2, add bool) error {
 	rng := pc.Max.Sub(pc.Min)
 
 	gnrm := math32.Vector2Scalar(1).Div(rng.Mul(pc.Sigma))
-	ny := pat.Dim(0)
-	nx := pat.Dim(1)
+	ny := pat.DimSize(0)
+	nx := pat.DimSize(1)
 	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 	for yi := 0; yi < ny; yi++ {
@@ -149,7 +149,7 @@ func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val math32.Vector2, add bool) err
 			}
 			idx := []int{yi, xi}
 			if add {
-				val := float64(act) + pat.FloatValue(idx)
+				val := float64(act) + pat.Float(idx)
 				pat.SetFloat(idx, val)
 			} else {
 				pat.SetFloat(idx, float64(act))
@@ -162,15 +162,15 @@ func (pc *TwoD) EncodeImpl(pat etensor.Tensor, val math32.Vector2, add bool) err
 // Decode decodes 2D value from a pattern of activation
 // as the activation-weighted-average of the unit's preferred
 // tuning values.
-func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vector2, error) {
+func (pc *TwoD) Decode(pat tensor.Tensor) (math32.Vector2, error) {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Decode: pattern must have 2 dimensions")
 		log.Println(err)
 		return math32.Vector2{}, err
 	}
 	if pc.WrapX || pc.WrapY {
-		ny := pat.Dim(0)
-		nx := pat.Dim(1)
+		ny := pat.DimSize(0)
+		nx := pat.DimSize(1)
 		ys := make([]float32, ny)
 		xs := make([]float32, nx)
 		ydiv := 1.0 / (float32(nx) * pc.Sigma.X)
@@ -178,7 +178,7 @@ func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vector2, error) {
 		for yi := 0; yi < ny; yi++ {
 			for xi := 0; xi < nx; xi++ {
 				idx := []int{yi, xi}
-				act := float32(pat.FloatValue(idx))
+				act := float32(pat.Float(idx))
 				if act < pc.Thr {
 					act = 0
 				}
@@ -253,18 +253,18 @@ func (pc *TwoD) Decode(pat etensor.Tensor) (math32.Vector2, error) {
 }
 
 // DecodeImpl does direct decoding of x, y simultaneously -- for non-wrap
-func (pc *TwoD) DecodeImpl(pat etensor.Tensor) (math32.Vector2, error) {
+func (pc *TwoD) DecodeImpl(pat tensor.Tensor) (math32.Vector2, error) {
 	avg := math32.Vector2{}
 	rng := pc.Max.Sub(pc.Min)
-	ny := pat.Dim(0)
-	nx := pat.Dim(1)
+	ny := pat.DimSize(0)
+	nx := pat.DimSize(1)
 	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 	sum := float32(0)
 	for yi := 0; yi < ny; yi++ {
 		for xi := 0; xi < nx; xi++ {
 			idx := []int{yi, xi}
-			act := float32(pat.FloatValue(idx))
+			act := float32(pat.Float(idx))
 			if act < pc.Thr {
 				act = 0
 			}
@@ -312,15 +312,15 @@ func (pc *TwoD) Values(valsX, valsY *[]float32, nx, ny int) {
 // accumulate (0 = localist, single points, 1 = +/- 1 points on
 // either side in a square around central point, etc)
 // Allocates a temporary slice of size pat, and sorts that: relatively expensive
-func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vector2, error) {
+func (pc *TwoD) DecodeNPeaks(pat tensor.Tensor, nvals, width int) ([]math32.Vector2, error) {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD DecodeNPeaks: pattern must have 2 dimensions")
 		log.Println(err)
 		return nil, err
 	}
 	rng := pc.Max.Sub(pc.Min)
-	ny := pat.Dim(0)
-	nx := pat.Dim(1)
+	ny := pat.DimSize(0)
+	nx := pat.DimSize(1)
 	nf := math32.Vec2(float32(nx-1), float32(ny-1))
 	incr := rng.Div(nf)
 
@@ -346,7 +346,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vec
 						continue
 					}
 					idx := []int{y, x}
-					act := float32(pat.FloatValue(idx))
+					act := float32(pat.Float(idx))
 					sum += act
 					ns++
 				}
@@ -380,7 +380,7 @@ func (pc *TwoD) DecodeNPeaks(pat etensor.Tensor, nvals, width int) ([]math32.Vec
 					continue
 				}
 				idx := []int{y, x}
-				act := float32(pat.FloatValue(idx))
+				act := float32(pat.Float(idx))
 				if act < pc.Thr {
 					act = 0
 				}

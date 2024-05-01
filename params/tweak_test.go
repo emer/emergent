@@ -7,7 +7,7 @@ package params
 import (
 	"testing"
 
-	"cogentcore.org/core/reflectx"
+	"cogentcore.org/core/base/reflectx"
 	"github.com/andreyvit/diff"
 )
 

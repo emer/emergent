@@ -8,8 +8,8 @@ import (
 	"math"
 	"sort"
 
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // PoolUnifRnd implements random pattern of connectivity between pools within layers.
@@ -31,7 +31,7 @@ func (ur *PoolUnifRnd) Name() string {
 	return "PoolUnifRnd"
 }
 
-func (ur *PoolUnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ur *PoolUnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if send.NumDims() == 4 && recv.NumDims() == 4 {
 		return ur.ConnectPoolsRnd(send, recv, same)
 	}
@@ -39,17 +39,17 @@ func (ur *PoolUnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, rec
 }
 
 // ConnectPoolsRnd is when both recv and send have pools
-func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if ur.PCon >= 1 {
 		return ur.ConnectPools(send, recv, same)
 	}
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	// rNtot := recv.Len()
-	sNp := send.Dim(0) * send.Dim(1)
-	rNp := recv.Dim(0) * recv.Dim(1)
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNp := send.DimSize(0) * send.DimSize(1)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 	rnv := recvn.Values
 	snv := sendn.Values
 	npl := rNp
@@ -121,7 +121,7 @@ func (ur *PoolUnifRnd) ConnectPoolsRnd(send, recv *etensor.Shape, same bool) (se
 }
 
 // ConnectRnd is a copy of UnifRnd.Connect with initial if statement modified
-func (ur *PoolUnifRnd) ConnectRnd(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ur *PoolUnifRnd) ConnectRnd(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if ur.PCon >= 1 {
 		switch {
 		case send.NumDims() == 2 && recv.NumDims() == 4:

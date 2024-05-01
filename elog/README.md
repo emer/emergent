@@ -8,7 +8,7 @@ The `elog.Item` provides a full definition of each distinct item that is logged 
 
 The Items are written to the table *in the order added*, so you can take advantage of previously computed item values based on the actual ordering of item code.  For example, intermediate values can be stored / retrieved from Stats, or from other items on a log, e.g., using `Context.LogItemFloat` function.
 
-The Items are then processed in `CreateTables()` to create a set of `etable.Table` tables to hold the data.
+The Items are then processed in `CreateTables()` to create a set of `table.Table` tables to hold the data.
 
 The `elog.Logs` struct holds all the relevant data and functions for managing the logging process.
 
@@ -137,7 +137,7 @@ func (ss *Sim) LogRunStats() {
     spl := split.GroupBy(ix, []string{"Params"})
     split.Desc(spl, "FirstZero")
     split.Desc(spl, "PctCor")
-    ss.Logs.MiscTables["RunStats"] = spl.AggsToTable(etable.AddAggName)
+    ss.Logs.MiscTables["RunStats"] = spl.AggsToTable(table.AddAggName)
 }
 ```
 
@@ -167,7 +167,7 @@ Then they are easily logged -- just showing different Scope expressions here:
 ```Go
     ss.Logs.AddItem(&elog.Item{
         Name: "Run",
-        Type: etensor.INT64,
+        Type: reflect.Int,
         Plot: false,
         Write: elog.WriteMap{
             etime.Scope(etime.AllModes, etime.AllTimes): func(ctx *elog.Context) {
@@ -178,7 +178,7 @@ Then they are easily logged -- just showing different Scope expressions here:
 ```Go
     ss.Logs.AddItem(&elog.Item{
         Name: "Epoch",
-        Type: etensor.INT64,
+        Type: reflect.Int,
         Plot: false,
         Write: elog.WriteMap{
             etime.Scopes([]etime.Modes{etime.AllModes}, []etime.Times{etime.Epoch, etime.Trial}): func(ctx *elog.Context) {
@@ -189,7 +189,7 @@ Then they are easily logged -- just showing different Scope expressions here:
 ```Go
     ss.Logs.AddItem(&elog.Item{
         Name: "Trial",
-        Type: etensor.INT64,
+        Type: reflect.Int,
         Write: elog.WriteMap{
             etime.Scope(etime.AllModes, etime.Trial): func(ctx *elog.Context) {
                 ctx.SetStatInt("Trial")
@@ -203,7 +203,7 @@ Overall summary performance statistics have multiple Write functions for differe
 ```Go
     ss.Logs.AddItem(&elog.Item{
         Name: "UnitErr",
-        Type: etensor.FLOAT64,
+        Type: reflect.Float64,
         Plot: false,
         Write: elog.WriteMap{
             etime.Scope(etime.AllModes, etime.Trial): func(ctx *elog.Context) {
@@ -228,7 +228,7 @@ It is often convenient to have just one log file with both training and testing 
         tstnm := "Tst" + st
         ss.Logs.AddItem(&elog.Item{
             Name: tstnm,
-            Type: etensor.FLOAT64,
+            Type: reflect.Float64,
             Plot: false,
             Write: elog.WriteMap{
                 etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
@@ -248,7 +248,7 @@ Iterate over layers of interest (use `LayersByClass` function). It is *essential
         clnm := lnm
         ss.Logs.AddItem(&elog.Item{
             Name:   clnm + "_ActAvg",
-            Type:   etensor.FLOAT64,
+            Type:   reflect.Float64,
             Plot:   false,
             FixMax: false,
             Range:  minmax.F64{Max: 1},
@@ -266,7 +266,7 @@ Here's how to log a projection variable:
 ```Go
     ss.Logs.AddItem(&elog.Item{
         Name:  clnm + "_FF_AvgMaxG",
-        Type:  etensor.FLOAT64,
+        Type:  reflect.Float64,
         Plot:  false,
         Range: minmax.F64{Max: 1},
         Write: elog.WriteMap{
@@ -290,7 +290,7 @@ A log column can be a tensor of any shape -- the `SetLayerTensor` method on the 
         cly := ss.Net.LayerByName(clnm)
         ss.Logs.AddItem(&elog.Item{
             Name:      clnm + "_Act",
-            Type:      etensor.FLOAT64,
+            Type:      reflect.Float64,
             CellShape: cly.Shape().Shp,
             FixMax:    true,
             Range:     minmax.F64{Max: 1},
@@ -323,7 +323,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
         cly := ss.Net.LayerByName(clnm)
         ss.Logs.AddItem(&elog.Item{
             Name:      clnm + "_ActM",
-            Type:      etensor.FLOAT64,
+            Type:      reflect.Float64,
             CellShape: cly.Shape().Shp,
             FixMax:    true,
             Range:     minmax.F64{Max: 1},
@@ -333,7 +333,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
                 }}})
         ss.Logs.AddItem(&elog.Item{
             Name: clnm + "_PCA_NStrong",
-            Type: etensor.FLOAT64,
+            Type: reflect.Float64,
             Plot: false,
             Write: elog.WriteMap{
                 etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
@@ -348,12 +348,12 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
 
 ## Error by Input Category
 
-This item creates a tensor column that records the average error for each category of input stimulus (e.g., for images from object categories), using the `split.GroupBy` function for `etable`.  The `IndexView` function (see also `NamedIndexView`) automatically manages the `etable.IndexView` indexed view onto a log table, which is used for all aggregation and further analysis of data, so that you can efficiently analyze filtered subsets of the original data.
+This item creates a tensor column that records the average error for each category of input stimulus (e.g., for images from object categories), using the `split.GroupBy` function for `table`.  The `IndexView` function (see also `NamedIndexView`) automatically manages the `table.IndexView` indexed view onto a log table, which is used for all aggregation and further analysis of data, so that you can efficiently analyze filtered subsets of the original data.
 
 ```Go
     ss.Logs.AddItem(&elog.Item{
         Name:      "CatErr",
-        Type:      etensor.FLOAT64,
+        Type:      reflect.Float64,
         CellShape: []int{20},
         DimNames:  []string{"Cat"},
         Plot:      true,
@@ -364,9 +364,9 @@ This item creates a tensor column that records the average error for each catego
                 ix := ctx.Logs.IndexView(etime.Test, etime.Trial)
                 spl := split.GroupBy(ix, []string{"Cat"})
                 split.AggTry(spl, "Err", agg.AggMean)
-                cats := spl.AggsToTable(etable.ColNameOnly)
+                cats := spl.AggsToTable(table.ColumnNameOnly)
                 ss.Logs.MiscTables[ctx.Item.Name] = cats
-                ctx.SetTensor(cats.Cols[1])
+                ctx.SetTensor(cats.Columns[1])
             }}})
 ```
 
@@ -404,7 +404,7 @@ First, initialize the ActRFs in the `ConfigLogs` function, using strings that sp
 To add tabs in the gui to visualize the resulting RFs, add this in your `ConfigGUI` (note also adding a tab to visualize the input Image that is being presented to the network):
 
 ```Go
-    tg := ss.GUI.TabView.AddNewTab(etview.KiT_TensorGrid, "Image").(*etview.TensorGrid)
+    tg := ss.GUI.TabView.AddNewTab(tensorview.KiT_TensorGrid, "Image").(*tensorview.TensorGrid)
     tg.SetStretchMax()
     ss.GUI.SetGrid("Image", tg)
     tg.SetTensor(&ss.TrainEnv.Vis.ImgTsr)

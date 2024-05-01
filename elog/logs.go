@@ -13,12 +13,12 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/empi"
 	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etable/v2/etable"
 )
 
 // LogPrec is precision for saving float values in logs
@@ -39,7 +39,7 @@ type Logs struct {
 	Tables map[etime.ScopeKey]*LogTable
 
 	// holds additional tables not computed from items -- e.g., aggregation results, intermediate computations, etc
-	MiscTables map[string]*etable.Table
+	MiscTables map[string]*table.Table
 
 	// A list of the items that should be logged. Each item should describe one column that you want to log, and how.  Order in list determines order in logs.
 	Items []*Item `view:"-"`
@@ -99,7 +99,7 @@ func (lg *Logs) SetContext(stats *estats.Stats, net emer.Network) {
 }
 
 // Table returns the table for given mode, time
-func (lg *Logs) Table(mode etime.Modes, time etime.Times) *etable.Table {
+func (lg *Logs) Table(mode etime.Modes, time etime.Times) *table.Table {
 	sk := etime.Scope(mode, time)
 	tb, ok := lg.Tables[sk]
 	if !ok {
@@ -110,7 +110,7 @@ func (lg *Logs) Table(mode etime.Modes, time etime.Times) *etable.Table {
 }
 
 // TableScope returns the table for given etime.ScopeKey
-func (lg *Logs) TableScope(sk etime.ScopeKey) *etable.Table {
+func (lg *Logs) TableScope(sk etime.ScopeKey) *table.Table {
 	tb, ok := lg.Tables[sk]
 	if !ok {
 		// log.Printf("Table for scope not found: %s\n", sk)
@@ -121,12 +121,12 @@ func (lg *Logs) TableScope(sk etime.ScopeKey) *etable.Table {
 
 // MiscTable gets a miscellaneous table, e.g., for misc analysis.
 // If it doesn't exist, one is created.
-func (lg *Logs) MiscTable(name string) *etable.Table {
+func (lg *Logs) MiscTable(name string) *table.Table {
 	dt, has := lg.MiscTables[name]
 	if has {
 		return dt
 	}
-	dt = &etable.Table{}
+	dt = &table.Table{}
 	lg.MiscTables[name] = dt
 	return dt
 }
@@ -135,7 +135,7 @@ func (lg *Logs) MiscTable(name string) *etable.Table {
 // This is used for data aggregation functions over the entire table.
 // It should not be altered (don't Filter!) and always shows the whole table.
 // See NamedIndexView for custom index views.
-func (lg *Logs) IndexView(mode etime.Modes, time etime.Times) *etable.IndexView {
+func (lg *Logs) IndexView(mode etime.Modes, time etime.Times) *table.IndexView {
 	return lg.IndexViewScope(etime.Scope(mode, time))
 }
 
@@ -143,7 +143,7 @@ func (lg *Logs) IndexView(mode etime.Modes, time etime.Times) *etable.IndexView 
 // This is used for data aggregation functions over the entire table.
 // This view should not be altered and always shows the whole table.
 // See NamedIndexView for custom index views.
-func (lg *Logs) IndexViewScope(sk etime.ScopeKey) *etable.IndexView {
+func (lg *Logs) IndexViewScope(sk etime.ScopeKey) *table.IndexView {
 	lt := lg.Tables[sk]
 	return lt.GetIndexView()
 }
@@ -154,7 +154,7 @@ func (lg *Logs) IndexViewScope(sk etime.ScopeKey) *etable.IndexView {
 // it automatically shows a view of the entire table and returns true for 2nd arg.
 // You can then filter, sort, etc as needed.  Subsequent calls within same row Write will
 // return the last filtered view, and false for 2nd arg -- can then just reuse view.
-func (lg *Logs) NamedIndexView(mode etime.Modes, time etime.Times, name string) (*etable.IndexView, bool) {
+func (lg *Logs) NamedIndexView(mode etime.Modes, time etime.Times, name string) (*table.IndexView, bool) {
 	return lg.NamedIndexViewScope(etime.Scope(mode, time), name)
 }
 
@@ -164,7 +164,7 @@ func (lg *Logs) NamedIndexView(mode etime.Modes, time etime.Times, name string) 
 // it automatically shows a view of the entire table and returns true for 2nd arg.
 // You can then filter, sort, etc as needed.  Subsequent calls within same row Write will
 // return the last filtered view, and false for 2nd arg -- can then just reuse view.
-func (lg *Logs) NamedIndexViewScope(sk etime.ScopeKey, name string) (*etable.IndexView, bool) {
+func (lg *Logs) NamedIndexViewScope(sk etime.ScopeKey, name string) (*table.IndexView, bool) {
 	lt := lg.Tables[sk]
 	return lt.NamedIndexView(name)
 }
@@ -236,7 +236,7 @@ func (lg *Logs) CreateTables() error {
 	}
 	lg.Tables = tables
 	lg.TableOrder = etime.SortScopes(tableOrder)
-	lg.MiscTables = make(map[string]*etable.Table)
+	lg.MiscTables = make(map[string]*table.Table)
 
 	return err
 }
@@ -244,7 +244,7 @@ func (lg *Logs) CreateTables() error {
 // Log performs logging for given mode, time.
 // Adds a new row and Writes all the items.
 // and saves data to file if open.
-func (lg *Logs) Log(mode etime.Modes, time etime.Times) *etable.Table {
+func (lg *Logs) Log(mode etime.Modes, time etime.Times) *table.Table {
 	sk := etime.Scope(mode, time)
 	lt := lg.Tables[sk]
 	return lg.LogRow(mode, time, lt.Table.Rows)
@@ -253,14 +253,14 @@ func (lg *Logs) Log(mode etime.Modes, time etime.Times) *etable.Table {
 // LogScope performs logging for given etime.ScopeKey
 // Adds a new row and Writes all the items.
 // and saves data to file if open.
-func (lg *Logs) LogScope(sk etime.ScopeKey) *etable.Table {
+func (lg *Logs) LogScope(sk etime.ScopeKey) *table.Table {
 	lt := lg.Tables[sk]
 	return lg.LogRowScope(sk, lt.Table.Rows, 0)
 }
 
 // LogRow performs logging for given mode, time, at given row.
 // Saves data to file if open.
-func (lg *Logs) LogRow(mode etime.Modes, time etime.Times, row int) *etable.Table {
+func (lg *Logs) LogRow(mode etime.Modes, time etime.Times, row int) *table.Table {
 	return lg.LogRowScope(etime.Scope(mode, time), row, 0)
 }
 
@@ -268,7 +268,7 @@ func (lg *Logs) LogRow(mode etime.Modes, time etime.Times, row int) *etable.Tabl
 // using given data parallel index di, which adds to the row and all network
 // access routines use this index for accessing network data.
 // Saves data to file if open.
-func (lg *Logs) LogRowDi(mode etime.Modes, time etime.Times, row int, di int) *etable.Table {
+func (lg *Logs) LogRowDi(mode etime.Modes, time etime.Times, row int, di int) *table.Table {
 	return lg.LogRowScope(etime.Scope(mode, time), row, di)
 }
 
@@ -276,7 +276,7 @@ func (lg *Logs) LogRowDi(mode etime.Modes, time etime.Times, row int, di int) *e
 // Saves data to file if open.
 // di is a data parallel index, for networks capable of processing input patterns in parallel.
 // effective row is row + di
-func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int, di int) *etable.Table {
+func (lg *Logs) LogRowScope(sk etime.ScopeKey, row int, di int) *table.Table {
 	lt := lg.Tables[sk]
 	dt := lt.Table
 	lg.Context.Di = di
@@ -321,7 +321,7 @@ func (lg *Logs) MPIGatherTableRows(mode etime.Modes, time etime.Times, comm *mpi
 	skm := string(sk + "MPI")
 	mt, has := lg.MiscTables[skm]
 	if !has {
-		mt = &etable.Table{}
+		mt = &table.Table{}
 	}
 	empi.GatherTableRows(mt, dt, comm)
 	lt.Table = mt
@@ -386,10 +386,10 @@ func (lg *Logs) WriteLastRowToFile(lt *LogTable) {
 	}
 	dt := lt.Table
 	if !lt.WroteHeaders {
-		dt.WriteCSVHeaders(lt.File, etable.Tab)
+		dt.WriteCSVHeaders(lt.File, table.Tab)
 		lt.WroteHeaders = true
 	}
-	dt.WriteCSVRow(lt.File, dt.Rows-1, etable.Tab)
+	dt.WriteCSVRow(lt.File, dt.Rows-1, table.Tab)
 }
 
 // ProcessItems is called in CreateTables, after all items have been added.
@@ -459,19 +459,17 @@ func (lg *Logs) ItemBindAllScopes(item *Item) {
 }
 
 // NewTable returns a new table configured for given mode, time scope
-func (lg *Logs) NewTable(mode, time string) *etable.Table {
-	dt := &etable.Table{}
+func (lg *Logs) NewTable(mode, time string) *table.Table {
+	dt := &table.Table{}
 	dt.SetMetaData("name", mode+time+"Log")
 	dt.SetMetaData("desc", "Record of performance over "+time+" for "+mode)
 	dt.SetMetaData("read-only", "true")
 	dt.SetMetaData("precision", strconv.Itoa(LogPrec))
-	sch := etable.Schema{}
 	for _, val := range lg.Items {
 		// Write is the definive record for which timescales are logged.
 		if _, ok := val.WriteFunc(mode, time); ok {
-			sch = append(sch, etable.Column{val.Name, val.Type, val.CellShape, val.DimNames})
+			dt.AddTensorColumnOfType(val.Type, val.Name, val.CellShape, val.DimNames...)
 		}
 	}
-	dt.SetFromSchema(sch, 0)
 	return dt
 }

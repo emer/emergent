@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
 // RFs manages multiple named RF's -- each one must be initialized first
@@ -44,7 +44,7 @@ func (af *RFs) RFByNameTry(name string) (*RF, error) {
 }
 
 // AddRF adds a new RF, calling Init on it using given act, src tensors
-func (af *RFs) AddRF(name string, act, src etensor.Tensor) *RF {
+func (af *RFs) AddRF(name string, act, src tensor.Tensor) *RF {
 	if af.NameMap == nil {
 		af.NameMap = make(map[string]int)
 	}
@@ -57,7 +57,7 @@ func (af *RFs) AddRF(name string, act, src etensor.Tensor) *RF {
 }
 
 // Add adds a new act sample to the accumulated data for given named rf
-func (af *RFs) Add(name string, act, src etensor.Tensor, thr float32) error {
+func (af *RFs) Add(name string, act, src tensor.Tensor, thr float32) error {
 	rf, err := af.RFByNameTry(name)
 	if err != nil {
 		log.Println(err)

@@ -4,7 +4,7 @@
 
 package econfig
 
-import "cogentcore.org/core/reflectx"
+import "cogentcore.org/core/base/reflectx"
 
 // SetFromDefaults sets Config values from field tag `def:` values.
 // Parsing errors are automatically logged.

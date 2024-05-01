@@ -8,7 +8,7 @@ import (
 	"io/fs"
 	"strings"
 
-	"cogentcore.org/core/iox/tomlx"
+	"cogentcore.org/core/base/iox/tomlx"
 	"github.com/emer/emergent/v2/empi/mpi"
 )
 

@@ -8,17 +8,17 @@ import (
 	"math"
 	"testing"
 
-	"github.com/emer/etable/v2/agg"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/core/tensor/table"
 )
 
 func TestGaussianGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := etable.Schema{
-		{"Val", etensor.FLOAT32, nil, nil},
+	sch := table.Schema{
+		{"Val", reflect.Float32, nil, nil},
 	}
-	dt := &etable.Table{}
+	dt := &table.Table{}
 	dt.SetFromSchema(sch, nsamp)
 
 	mean := 0.5
@@ -27,15 +27,15 @@ func TestGaussianGen(t *testing.T) {
 
 	for i := 0; i < nsamp; i++ {
 		vl := GaussianGen(mean, sig, -1)
-		dt.SetCellFloat("Val", i, vl)
+		dt.SetFloat("Val", i, vl)
 	}
-	ix := etable.NewIndexView(dt)
+	ix := table.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", etable.Equals, etable.UseCase)[0]
-	// minRow := desc.RowsByString("Agg", "Min", etable.Equals, etable.UseCase)[0]
-	// maxRow := desc.RowsByString("Agg", "Max", etable.Equals, etable.UseCase)[0]
+	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
+	// minRow := desc.RowsByString("Agg", "Min", table.Equals, table.UseCase)[0]
+	// maxRow := desc.RowsByString("Agg", "Max", table.Equals, table.UseCase)[0]
 
 	actMean := desc.CellFloat("Val", meanRow)
 	actStd := desc.CellFloat("Val", stdRow)
@@ -47,16 +47,16 @@ func TestGaussianGen(t *testing.T) {
 		t.Errorf("Gaussian: stdev %g\t out of tolerance vs target: %g\n", actStd, sig)
 	}
 	// b := bytes.NewBuffer(nil)
-	// desc.WriteCSV(b, etable.Tab, etable.Headers)
+	// desc.WriteCSV(b, table.Tab, table.Headers)
 	// fmt.Printf("%s\n", string(b.Bytes()))
 }
 
 func TestBinomialGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := etable.Schema{
-		{"Val", etensor.FLOAT32, nil, nil},
+	sch := table.Schema{
+		{"Val", reflect.Float32, nil, nil},
 	}
-	dt := &etable.Table{}
+	dt := &table.Table{}
 	dt.SetFromSchema(sch, nsamp)
 
 	n := 1.0
@@ -65,15 +65,15 @@ func TestBinomialGen(t *testing.T) {
 
 	for i := 0; i < nsamp; i++ {
 		vl := BinomialGen(n, p, -1)
-		dt.SetCellFloat("Val", i, vl)
+		dt.SetFloat("Val", i, vl)
 	}
-	ix := etable.NewIndexView(dt)
+	ix := table.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", etable.Equals, etable.UseCase)[0]
-	minRow := desc.RowsByString("Agg", "Min", etable.Equals, etable.UseCase)[0]
-	maxRow := desc.RowsByString("Agg", "Max", etable.Equals, etable.UseCase)[0]
+	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
+	minRow := desc.RowsByString("Agg", "Min", table.Equals, table.UseCase)[0]
+	maxRow := desc.RowsByString("Agg", "Max", table.Equals, table.UseCase)[0]
 
 	actMean := desc.CellFloat("Val", meanRow)
 	actStd := desc.CellFloat("Val", stdRow)
@@ -95,16 +95,16 @@ func TestBinomialGen(t *testing.T) {
 		t.Errorf("Binomial: max %g\t should not be > 1\n", actMax)
 	}
 	// b := bytes.NewBuffer(nil)
-	// desc.WriteCSV(b, etable.Tab, etable.Headers)
+	// desc.WriteCSV(b, table.Tab, table.Headers)
 	// fmt.Printf("%s\n", string(b.Bytes()))
 }
 
 func TestPoissonGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := etable.Schema{
-		{"Val", etensor.FLOAT32, nil, nil},
+	sch := table.Schema{
+		{"Val", reflect.Float32, nil, nil},
 	}
-	dt := &etable.Table{}
+	dt := &table.Table{}
 	dt.SetFromSchema(sch, nsamp)
 
 	lambda := 10.0
@@ -112,15 +112,15 @@ func TestPoissonGen(t *testing.T) {
 
 	for i := 0; i < nsamp; i++ {
 		vl := PoissonGen(lambda, -1)
-		dt.SetCellFloat("Val", i, vl)
+		dt.SetFloat("Val", i, vl)
 	}
-	ix := etable.NewIndexView(dt)
+	ix := table.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", etable.Equals, etable.UseCase)[0]
-	minRow := desc.RowsByString("Agg", "Min", etable.Equals, etable.UseCase)[0]
-	// maxRow := desc.RowsByString("Agg", "Max", etable.Equals, etable.UseCase)[0]
+	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
+	minRow := desc.RowsByString("Agg", "Min", table.Equals, table.UseCase)[0]
+	// maxRow := desc.RowsByString("Agg", "Max", table.Equals, table.UseCase)[0]
 
 	actMean := desc.CellFloat("Val", meanRow)
 	actStd := desc.CellFloat("Val", stdRow)
@@ -142,16 +142,16 @@ func TestPoissonGen(t *testing.T) {
 	// 	t.Errorf("Poisson: max %g\t should not be > 1\n", actMax)
 	// }
 	// b := bytes.NewBuffer(nil)
-	// desc.WriteCSV(b, etable.Tab, etable.Headers)
+	// desc.WriteCSV(b, table.Tab, table.Headers)
 	// fmt.Printf("%s\n", string(b.Bytes()))
 }
 
 func TestGammaGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := etable.Schema{
-		{"Val", etensor.FLOAT32, nil, nil},
+	sch := table.Schema{
+		{"Val", reflect.Float32, nil, nil},
 	}
-	dt := &etable.Table{}
+	dt := &table.Table{}
 	dt.SetFromSchema(sch, nsamp)
 
 	alpha := 0.5
@@ -160,13 +160,13 @@ func TestGammaGen(t *testing.T) {
 
 	for i := 0; i < nsamp; i++ {
 		vl := GammaGen(alpha, beta, -1)
-		dt.SetCellFloat("Val", i, vl)
+		dt.SetFloat("Val", i, vl)
 	}
-	ix := etable.NewIndexView(dt)
+	ix := table.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", etable.Equals, etable.UseCase)[0]
+	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
 
 	actMean := desc.CellFloat("Val", meanRow)
 	actStd := desc.CellFloat("Val", stdRow)
@@ -180,16 +180,16 @@ func TestGammaGen(t *testing.T) {
 		t.Errorf("Gamma: stdev %g\t out of tolerance vs target: %g\n", actStd, sig)
 	}
 	// b := bytes.NewBuffer(nil)
-	// desc.WriteCSV(b, etable.Tab, etable.Headers)
+	// desc.WriteCSV(b, table.Tab, table.Headers)
 	// fmt.Printf("%s\n", string(b.Bytes()))
 }
 
 func TestBetaGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := etable.Schema{
-		{"Val", etensor.FLOAT32, nil, nil},
+	sch := table.Schema{
+		{"Val", reflect.Float32, nil, nil},
 	}
-	dt := &etable.Table{}
+	dt := &table.Table{}
 	dt.SetFromSchema(sch, nsamp)
 
 	alpha := 0.5
@@ -198,13 +198,13 @@ func TestBetaGen(t *testing.T) {
 
 	for i := 0; i < nsamp; i++ {
 		vl := BetaGen(alpha, beta, -1)
-		dt.SetCellFloat("Val", i, vl)
+		dt.SetFloat("Val", i, vl)
 	}
-	ix := etable.NewIndexView(dt)
+	ix := table.NewIndexView(dt)
 	desc := agg.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", etable.Equals, etable.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", etable.Equals, etable.UseCase)[0]
+	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
 
 	actMean := desc.CellFloat("Val", meanRow)
 	actStd := desc.CellFloat("Val", stdRow)
@@ -219,6 +219,6 @@ func TestBetaGen(t *testing.T) {
 		t.Errorf("Beta: stdev %g\t out of tolerance vs target: %g\n", actStd, sig)
 	}
 	// b := bytes.NewBuffer(nil)
-	// desc.WriteCSV(b, etable.Tab, etable.Headers)
+	// desc.WriteCSV(b, table.Tab, table.Headers)
 	// fmt.Printf("%s\n", string(b.Bytes()))
 }

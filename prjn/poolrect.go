@@ -6,9 +6,9 @@ package prjn
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/evec"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // PoolRect implements a rectangular pattern of connectivity between
@@ -61,25 +61,25 @@ func (cr *PoolRect) Name() string {
 	return "PoolRect"
 }
 
-func (cr *PoolRect) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (cr *PoolRect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy := send.Dim(0)
-	sNx := send.Dim(1)
-	rNy := recv.Dim(0)
-	rNx := recv.Dim(1)
+	sNy := send.DimSize(0)
+	sNx := send.DimSize(1)
+	rNy := recv.DimSize(0)
+	rNx := recv.DimSize(1)
 
 	sNn := 1
 	rNn := 1
 
 	if send.NumDims() == 4 {
-		sNn = send.Dim(2) * send.Dim(3)
+		sNn = send.DimSize(2) * send.DimSize(3)
 	} else { // 2D
 		sNn = sNy * sNx
 		sNy = 1
 		sNx = 1
 	}
 	if recv.NumDims() == 4 {
-		rNn = recv.Dim(2) * recv.Dim(3)
+		rNn = recv.DimSize(2) * recv.DimSize(3)
 	} else { // 2D
 		rNn = rNy * rNx
 		rNy = 1

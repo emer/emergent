@@ -4,9 +4,7 @@
 
 package prjn
 
-import (
-	"github.com/emer/etable/v2/etensor"
-)
+import "cogentcore.org/core/tensor"
 
 // Full implements full all-to-all pattern of connectivity between two layers
 type Full struct {
@@ -23,7 +21,7 @@ func (fp *Full) Name() string {
 	return "Full"
 }
 
-func (fp *Full) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (fp *Full) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()

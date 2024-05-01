@@ -9,14 +9,14 @@ import (
 	"log"
 	"math/rand"
 
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/empi"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // MPIFixedTable is an MPI-enabled version of the FixedTable, which is
-// a basic Env that manages patterns from an etable.Table, with
+// a basic Env that manages patterns from an table.Table, with
 // either sequential or permuted random ordering, and uses standard Trial / Epoch
 // TimeScale counters to record progress and iterations through the table.
 // It also records the outer loop of Run as provided by the model.
@@ -35,7 +35,7 @@ type MPIFixedTable struct {
 	Dsc string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *etable.IndexView
+	Table *table.IndexView
 
 	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order
 	Sequential bool
@@ -78,7 +78,7 @@ func (ft *MPIFixedTable) Validate() error {
 	if ft.Table == nil || ft.Table.Table == nil {
 		return fmt.Errorf("MPIFixedTable: %v has no Table set", ft.Nm)
 	}
-	if ft.Table.Table.NumCols() == 0 {
+	if ft.Table.Table.NumColumns() == 0 {
 		return fmt.Errorf("MPIFixedTable: %v Table has no columns -- Outputs will be invalid", ft.Nm)
 	}
 	return nil
@@ -128,19 +128,19 @@ func (ft *MPIFixedTable) Row() int {
 }
 
 func (ft *MPIFixedTable) SetTrialName() {
-	if nms := ft.Table.Table.ColByName(ft.NameCol); nms != nil {
+	if nms := ft.Table.Table.ColumnByName(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.StringValue1D(rw))
+			ft.TrialName.Set(nms.String1D(rw))
 		}
 	}
 }
 
 func (ft *MPIFixedTable) SetGroupName() {
-	if nms := ft.Table.Table.ColByName(ft.GroupCol); nms != nil {
+	if nms := ft.Table.Table.ColumnByName(ft.GroupCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.StringValue1D(rw))
+			ft.GroupName.Set(nms.String1D(rw))
 		}
 	}
 }
@@ -175,15 +175,16 @@ func (ft *MPIFixedTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
 }
 
 func (ft *MPIFixedTable) States() Elements {
-	els := Elements{}
-	els.FromSchema(ft.Table.Table.Schema())
-	return els
+	// els := Elements{}
+	// els.FromSchema(ft.Table.Table.Schema())
+	// return els
+	return nil
 }
 
-func (ft *MPIFixedTable) State(element string) etensor.Tensor {
-	et, err := ft.Table.Table.CellTensorTry(element, ft.Row())
-	if err != nil {
-		log.Println(err)
+func (ft *MPIFixedTable) State(element string) tensor.Tensor {
+	et := ft.Table.Table.Tensor(element, ft.Row())
+	if et == nil {
+		log.Println("MPIFixedTable.State -- could not find element:", element)
 	}
 	return et
 }
@@ -192,7 +193,7 @@ func (ft *MPIFixedTable) Actions() Elements {
 	return nil
 }
 
-func (ft *MPIFixedTable) Action(element string, input etensor.Tensor) {
+func (ft *MPIFixedTable) Action(element string, input tensor.Tensor) {
 	// nop
 }
 

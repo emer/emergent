@@ -12,8 +12,8 @@ import (
 
 func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
 	rs := lm.Lay.RepShape()
-	nuz := rs.Dim(0)
-	nux := rs.Dim(1)
+	nuz := rs.DimSize(0)
+	nux := rs.DimSize(1)
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
 	segs := 1
@@ -26,10 +26,10 @@ func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
 
 func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 	rs := lm.Lay.RepShape()
-	npz := rs.Dim(0) // p = pool
-	npx := rs.Dim(1)
-	nuz := rs.Dim(2) // u = unit
-	nux := rs.Dim(3)
+	npz := rs.DimSize(0) // p = pool
+	npx := rs.DimSize(1)
+	nuz := rs.DimSize(2) // u = unit
+	nux := rs.DimSize(3)
 
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
@@ -44,14 +44,14 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 
 func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
-	nuz := rs.Dim(0)
-	nux := rs.Dim(1)
+	nuz := rs.DimSize(0)
+	nux := rs.DimSize(1)
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
-	fnoz := float32(lm.Shape.Dim(0))
-	fnox := float32(lm.Shape.Dim(1))
+	fnoz := float32(lm.Shape.DimSize(0))
+	fnox := float32(lm.Shape.DimSize(1))
 	fnuz := float32(nuz)
 	fnux := float32(nux)
 	fnz := float32(nz)
@@ -127,14 +127,14 @@ func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
-	nuz := rs.Dim(0)
-	nux := rs.Dim(1)
+	nuz := rs.DimSize(0)
+	nux := rs.DimSize(1)
 	nx := nuz*nux + nuz - 1
 	nz := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
-	fnoz := float32(lm.Shape.Dim(0))
-	fnox := float32(lm.Shape.Dim(1))
+	fnoz := float32(lm.Shape.DimSize(0))
+	fnox := float32(lm.Shape.DimSize(1))
 	fnuz := float32(nuz)
 	fnux := float32(nux)
 	fnz := float32(nz)
@@ -210,17 +210,17 @@ func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
-	npz := rs.Dim(0) // p = pool
-	npx := rs.Dim(1)
-	nuz := rs.Dim(2) // u = unit
-	nux := rs.Dim(3)
+	npz := rs.DimSize(0) // p = pool
+	npx := rs.DimSize(1)
+	nuz := rs.DimSize(2) // u = unit
+	nux := rs.DimSize(3)
 
 	nz := nuz*nux + nuz - 1
 	nx := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
-	fnpoz := float32(lm.Shape.Dim(0))
-	fnpox := float32(lm.Shape.Dim(1))
+	fnpoz := float32(lm.Shape.DimSize(0))
+	fnpox := float32(lm.Shape.DimSize(1))
 	fnpz := float32(npz)
 	fnpx := float32(npx)
 	fnuz := float32(nuz)
@@ -314,17 +314,17 @@ func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 
 func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
-	npz := rs.Dim(0) // p = pool
-	npx := rs.Dim(1)
-	nuz := rs.Dim(2) // u = unit
-	nux := rs.Dim(3)
+	npz := rs.DimSize(0) // p = pool
+	npx := rs.DimSize(1)
+	nuz := rs.DimSize(2) // u = unit
+	nux := rs.DimSize(3)
 
 	nx := nuz*nux + nuz - 1
 	nz := lm.View.Params.Raster.Max + 1
 	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
 
-	fnpoz := float32(lm.Shape.Dim(0))
-	fnpox := float32(lm.Shape.Dim(1))
+	fnpoz := float32(lm.Shape.DimSize(0))
+	fnpox := float32(lm.Shape.DimSize(1))
 	fnpz := float32(npz)
 	fnpx := float32(npx)
 	fnuz := float32(nuz)

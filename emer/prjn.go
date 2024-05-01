@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"cogentcore.org/core/reflectx"
+	"cogentcore.org/core/base/reflectx"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/prjn"
 	"github.com/emer/emergent/v2/weights"

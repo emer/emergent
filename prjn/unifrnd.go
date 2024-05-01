@@ -9,8 +9,8 @@ import (
 	"math/rand"
 	"sort"
 
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // UnifRnd implements uniform random pattern of connectivity between two layers
@@ -54,7 +54,7 @@ func (ur *UnifRnd) InitRand() {
 	ur.Rand = erand.NewSysRand(ur.RndSeed)
 }
 
-func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ur *UnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if ur.PCon >= 1 {
 		return ur.ConnectFull(send, recv, same)
 	}
@@ -135,7 +135,7 @@ func (ur *UnifRnd) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *
 }
 
 // ConnectRecip does reciprocal connectvity
-func (ur *UnifRnd) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ur *UnifRnd) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	slen := recv.Len() // swapped
 	rlen := send.Len()
@@ -199,7 +199,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, re
 	return
 }
 
-func (ur *UnifRnd) ConnectFull(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ur *UnifRnd) ConnectFull(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()

@@ -5,10 +5,10 @@
 package elog
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etable/v2/etensor"
 )
 
 func TestScopeKeyStringing(t *testing.T) {
@@ -29,7 +29,7 @@ func TestScopeKeyStringing(t *testing.T) {
 func TestItem(t *testing.T) {
 	item := Item{
 		Name: "Testo",
-		Type: etensor.STRING,
+		Type: reflect.String,
 		Write: WriteMap{"Train|Test&Epoch|Cycle": func(ctx *Context) {
 			// DO NOTHING
 		}},

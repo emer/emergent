@@ -4,9 +4,9 @@
 
 package env
 
-//go:generate core generate -add-types
+import "cogentcore.org/core/tensor"
 
-import "github.com/emer/etable/v2/etensor"
+//go:generate core generate -add-types
 
 // Env defines an interface for environments, which determine the nature and
 // sequence of States that can be used as inputs to a model, and the Env
@@ -17,7 +17,7 @@ import "github.com/emer/etable/v2/etensor"
 // intervals.
 //
 // State is comprised of one or more Elements, each of which consists of an
-// etensor.Tensor chunk of values that can be obtained by the model.
+// tensor.Tensor chunk of values that can be obtained by the model.
 // Likewise, Actions can also have Elements.  The Step method is the main
 // interface for advancing the Env state.  Counters should be queried
 // after calling Step to see if any relevant values have changed, to trigger
@@ -89,12 +89,12 @@ type Env interface {
 	// If no output is available on that element, then nil is returned.
 	// The returned tensor must be treated as read-only as it likely points to original
 	// source data -- please make a copy before modifying (e.g., Clone() methdod)
-	State(element string) etensor.Tensor
+	State(element string) tensor.Tensor
 
 	// Action sends tensor data about e.g., responses from model back to act
 	// on the environment and influence its subsequent evolution.
 	// The nature and timing of this input is paradigm dependent.
-	Action(element string, input etensor.Tensor)
+	Action(element string, input tensor.Tensor)
 }
 
 // EnvDesc is an interface that defines methods that describe an Env.
@@ -106,13 +106,13 @@ type EnvDesc interface {
 	// will just expect particular sets of counters, but this can be
 	// useful for sanity checking that a suitable env has been selected.
 	// See SchemaFromScales function that takes this list of time
-	// scales and returns an etable.Schema for Table columns to record
+	// scales and returns an table.Schema for Table columns to record
 	// these counters in a log.
 	Counters() []TimeScales
 
 	// States returns a list of Elements of tensor outputs that this env
 	// generates, specifying the unique Name and Shape of the data.
-	// This information can be derived directly from an etable.Schema
+	// This information can be derived directly from an table.Schema
 	// and used for configuring model input / output pathways to fit
 	// with those provided by the environment.  Depending on the
 	// env paradigm, all elements may not be always available at every

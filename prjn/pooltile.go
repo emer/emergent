@@ -9,11 +9,11 @@ import (
 	"log"
 
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/math32/minmax"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
 	"github.com/emer/emergent/v2/evec"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/minmax"
 )
 
 // PoolTile implements tiled 2D connectivity between pools within layers, where
@@ -91,31 +91,31 @@ func (pt *PoolTile) Name() string {
 	return "PoolTile"
 }
 
-func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (pt *PoolTile) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if pt.Recip {
 		return pt.ConnectRecip(send, recv, same)
 	}
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
-	sNpY := send.Dim(0)
-	sNpX := send.Dim(1)
-	rNpY := recv.Dim(0)
-	rNpX := recv.Dim(1)
+	sNpY := send.DimSize(0)
+	sNpX := send.DimSize(1)
+	rNpY := recv.DimSize(0)
+	rNpX := recv.DimSize(1)
 	sNu := 1
 	rNu := 1
 	if send.NumDims() == 4 {
-		sNu = send.Dim(2) * send.Dim(3)
+		sNu = send.DimSize(2) * send.DimSize(3)
 	} else {
 		sNpY = 1
 		sNpX = 1
-		sNu = send.Dim(0) * send.Dim(1)
+		sNu = send.DimSize(0) * send.DimSize(1)
 	}
 	if recv.NumDims() == 4 {
-		rNu = recv.Dim(2) * recv.Dim(3)
+		rNu = recv.DimSize(2) * recv.DimSize(3)
 	} else {
 		rNpY = 1
 		rNpX = 1
-		rNu = recv.Dim(0) * recv.Dim(1)
+		rNu = recv.DimSize(0) * recv.DimSize(1)
 	}
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -158,29 +158,29 @@ func (pt *PoolTile) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn 
 	return
 }
 
-func (pt *PoolTile) ConnectRecip(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (pt *PoolTile) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	// all these variables are swapped: s from recv, r from send
 	rNtot := send.Len()
-	sNpY := recv.Dim(0)
-	sNpX := recv.Dim(1)
-	rNpY := send.Dim(0)
-	rNpX := send.Dim(1)
+	sNpY := recv.DimSize(0)
+	sNpX := recv.DimSize(1)
+	rNpY := send.DimSize(0)
+	rNpX := send.DimSize(1)
 	sNu := 1
 	rNu := 1
 	if recv.NumDims() == 4 {
-		sNu = recv.Dim(2) * recv.Dim(3)
+		sNu = recv.DimSize(2) * recv.DimSize(3)
 	} else {
 		sNpY = 1
 		sNpX = 1
-		sNu = recv.Dim(0) * recv.Dim(1)
+		sNu = recv.DimSize(0) * recv.DimSize(1)
 	}
 	if send.NumDims() == 4 {
-		rNu = send.Dim(2) * send.Dim(3)
+		rNu = send.DimSize(2) * send.DimSize(3)
 	} else {
 		rNpY = 1
 		rNpX = 1
-		rNu = send.Dim(0) * send.Dim(1)
+		rNu = send.DimSize(0) * send.DimSize(1)
 	}
 	snv := recvn.Values
 	rnv := sendn.Values
@@ -230,7 +230,7 @@ func (pt *PoolTile) HasTopoWts() bool {
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D or 4D is for receptive field Size by units within pool size for
 // sending layer.
-func (pt *PoolTile) TopoWts(send, recv *etensor.Shape, wts *etensor.Float32) error {
+func (pt *PoolTile) TopoWts(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.GaussFull.On || pt.GaussInPool.On {
 		if send.NumDims() == 2 {
 			return pt.TopoWtsGauss2D(send, recv, wts)
@@ -306,23 +306,23 @@ func (pt *PoolTile) GaussOff() {
 // wts is shaped with first 2 outer-most dims as Y, X of units within layer / pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D is for sending layer size (2D = sender)
-func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float32) error {
+func (pt *PoolTile) TopoWtsGauss2D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.GaussFull.Sigma == 0 {
 		pt.GaussFull.Defaults()
 	}
 	if pt.GaussInPool.Sigma == 0 {
 		pt.GaussInPool.Defaults()
 	}
-	sNuY := send.Dim(0)
-	sNuX := send.Dim(1)
-	rNuY := recv.Dim(0) // ok if recv is 2D
-	rNuX := recv.Dim(1)
+	sNuY := send.DimSize(0)
+	sNuX := send.DimSize(1)
+	rNuY := recv.DimSize(0) // ok if recv is 2D
+	rNuX := recv.DimSize(1)
 	if recv.NumDims() == 4 {
-		rNuY = recv.Dim(2)
-		rNuX = recv.Dim(3)
+		rNuY = recv.DimSize(2)
+		rNuX = recv.DimSize(3)
 	}
 	wshp := []int{rNuY, rNuX, sNuY, sNuX}
-	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "szY", "szX"})
+	wts.SetShape(wshp, "rNuY", "rNuX", "szY", "szX")
 
 	fsz := math32.Vec2(float32(sNuX-1), float32(sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                           // half rf
@@ -395,23 +395,23 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *etensor.Shape, wts *etensor.Float
 // of recv layer (these are units over which topography is defined)
 // and remaing 4D is for receptive field Size by units within pool size for
 // sending layer.
-func (pt *PoolTile) TopoWtsGauss4D(send, recv *etensor.Shape, wts *etensor.Float32) error {
+func (pt *PoolTile) TopoWtsGauss4D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.GaussFull.Sigma == 0 {
 		pt.GaussFull.Defaults()
 	}
 	if pt.GaussInPool.Sigma == 0 {
 		pt.GaussInPool.Defaults()
 	}
-	sNuY := send.Dim(2)
-	sNuX := send.Dim(3)
-	rNuY := recv.Dim(0) // ok if recv is 2D
-	rNuX := recv.Dim(1)
+	sNuY := send.DimSize(2)
+	sNuX := send.DimSize(3)
+	rNuY := recv.DimSize(0) // ok if recv is 2D
+	rNuX := recv.DimSize(1)
 	if recv.NumDims() == 4 {
-		rNuY = recv.Dim(2)
-		rNuX = recv.Dim(3)
+		rNuY = recv.DimSize(2)
+		rNuX = recv.DimSize(3)
 	}
 	wshp := []int{rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX}
-	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX"})
+	wts.SetShape(wshp, "rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX")
 
 	fsz := math32.Vec2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                                               // half rf
@@ -516,23 +516,23 @@ func (gt *SigmoidTopo) ShouldShow(field string) bool {
 // wts is shaped with first 2 outer-most dims as Y, X of units within pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D is for sending layer (2D = sender).
-func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.Float32) error {
+func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.SigFull.Gain == 0 {
 		pt.SigFull.Defaults()
 	}
 	if pt.SigInPool.Gain == 0 {
 		pt.SigInPool.Defaults()
 	}
-	sNuY := send.Dim(0)
-	sNuX := send.Dim(1)
-	rNuY := recv.Dim(0) // ok if recv is 2D
-	rNuX := recv.Dim(1)
+	sNuY := send.DimSize(0)
+	sNuX := send.DimSize(1)
+	rNuY := recv.DimSize(0) // ok if recv is 2D
+	rNuX := recv.DimSize(1)
 	if recv.NumDims() == 4 {
-		rNuY = recv.Dim(2)
-		rNuX = recv.Dim(3)
+		rNuY = recv.DimSize(2)
+		rNuX = recv.DimSize(3)
 	}
 	wshp := []int{rNuY, rNuX, sNuY, sNuX}
-	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "sNuY", "sNuX"})
+	wts.SetShape(wshp, "rNuY", "rNuX", "sNuY", "sNuX")
 
 	fsz := math32.Vec2(float32(sNuX-1), float32(sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                           // half rf
@@ -607,23 +607,23 @@ func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *etensor.Shape, wts *etensor.Flo
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D is for receptive field Size by units within pool size for
 // sending layer.
-func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *etensor.Shape, wts *etensor.Float32) error {
+func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.SigFull.Gain == 0 {
 		pt.SigFull.Defaults()
 	}
 	if pt.SigInPool.Gain == 0 {
 		pt.SigInPool.Defaults()
 	}
-	sNuY := send.Dim(2)
-	sNuX := send.Dim(3)
-	rNuY := recv.Dim(0) // ok if recv is 2D
-	rNuX := recv.Dim(1)
+	sNuY := send.DimSize(2)
+	sNuX := send.DimSize(3)
+	rNuY := recv.DimSize(0) // ok if recv is 2D
+	rNuX := recv.DimSize(1)
 	if recv.NumDims() == 4 {
-		rNuY = recv.Dim(2)
-		rNuX = recv.Dim(3)
+		rNuY = recv.DimSize(2)
+		rNuX = recv.DimSize(3)
 	}
 	wshp := []int{rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX}
-	wts.SetShape(wshp, nil, []string{"rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX"})
+	wts.SetShape(wshp, "rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX")
 
 	fsz := math32.Vec2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                                               // half rf

@@ -5,8 +5,8 @@
 package estats
 
 import (
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // ConfigRasters configures spike rasters for given maximum number of cycles
@@ -20,12 +20,12 @@ func (st *Stats) ConfigRasters(net emer.Network, maxCyc int, layers []string) {
 		if nu == 0 {
 			nu = ly.Shape().Len()
 		}
-		sr.SetShape([]int{nu, maxCyc}, nil, []string{"Nrn", "Cyc"})
+		sr.SetShape([]int{nu, maxCyc}, "Nrn", "Cyc")
 	}
 }
 
 // SetRasterCol sets column of given raster from data
-func (st *Stats) SetRasterCol(sr, tsr *etensor.Float32, col int) {
+func (st *Stats) SetRasterCol(sr, tsr *tensor.Float32, col int) {
 	for ni, v := range tsr.Values {
 		sr.Set([]int{ni, col}, v)
 	}
@@ -38,7 +38,7 @@ func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string, di int) {
 	for _, lnm := range st.Rasters {
 		tsr := st.SetLayerRepTensor(net, lnm, varNm, di)
 		sr := st.F32Tensor("Raster_" + lnm)
-		if sr.Dim(1) <= cyc {
+		if sr.DimSize(1) <= cyc {
 			continue
 		}
 		st.SetRasterCol(sr, tsr, cyc)

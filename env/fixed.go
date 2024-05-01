@@ -9,12 +9,12 @@ import (
 	"log"
 	"math/rand"
 
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
 )
 
-// FixedTable is a basic Env that manages patterns from an etable.Table, with
+// FixedTable is a basic Env that manages patterns from an table.Table, with
 // either sequential or permuted random ordering, and uses standard Trial / Epoch
 // TimeScale counters to record progress and iterations through the table.
 // It also records the outer loop of Run as provided by the model.
@@ -29,7 +29,7 @@ type FixedTable struct {
 	Dsc string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *etable.IndexView
+	Table *table.IndexView
 
 	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order
 	Sequential bool
@@ -66,7 +66,7 @@ func (ft *FixedTable) Validate() error {
 	if ft.Table == nil || ft.Table.Table == nil {
 		return fmt.Errorf("env.FixedTable: %v has no Table set", ft.Nm)
 	}
-	if ft.Table.Table.NumCols() == 0 {
+	if ft.Table.Table.NumColumns() == 0 {
 		return fmt.Errorf("env.FixedTable: %v Table has no columns -- Outputs will be invalid", ft.Nm)
 	}
 	return nil
@@ -95,7 +95,7 @@ func (ft *FixedTable) Init(run int) {
 // then a Run counter is added, otherwise just Epoch and Trial.
 // NameCol and GroupCol are initialized to "Name" and "Group"
 // so set these to something else after this if needed.
-func (ft *FixedTable) Config(tbl *etable.IndexView) {
+func (ft *FixedTable) Config(tbl *table.IndexView) {
 	ft.Table = tbl
 	ft.Init(0)
 }
@@ -125,19 +125,19 @@ func (ft *FixedTable) Row() int {
 }
 
 func (ft *FixedTable) SetTrialName() {
-	if nms := ft.Table.Table.ColByName(ft.NameCol); nms != nil {
+	if nms := ft.Table.Table.ColumnByName(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.StringValue1D(rw))
+			ft.TrialName.Set(nms.String1D(rw))
 		}
 	}
 }
 
 func (ft *FixedTable) SetGroupName() {
-	if nms := ft.Table.Table.ColByName(ft.GroupCol); nms != nil {
+	if nms := ft.Table.Table.ColumnByName(ft.GroupCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.StringValue1D(rw))
+			ft.GroupName.Set(nms.String1D(rw))
 		}
 	}
 }
@@ -166,15 +166,15 @@ func (ft *FixedTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
 	return -1, -1, false
 }
 
-func (ft *FixedTable) State(element string) etensor.Tensor {
-	et, err := ft.Table.Table.CellTensorTry(element, ft.Row())
-	if err != nil {
-		log.Println(err)
+func (ft *FixedTable) State(element string) tensor.Tensor {
+	et := ft.Table.Table.Tensor(element, ft.Row())
+	if et == nil {
+		log.Println("FixedTable.State -- could not find element:", element)
 	}
 	return et
 }
 
-func (ft *FixedTable) Action(element string, input etensor.Tensor) {
+func (ft *FixedTable) Action(element string, input tensor.Tensor) {
 	// nop
 }
 
@@ -189,9 +189,10 @@ func (ft *FixedTable) Counters() []TimeScales {
 }
 
 func (ft *FixedTable) States() Elements {
-	els := Elements{}
-	els.FromSchema(ft.Table.Table.Schema())
-	return els
+	// els := Elements{}
+	// els.FromSchema(ft.Table.Table.Schema())
+	// return els
+	return nil
 }
 
 func (ft *FixedTable) Actions() Elements {

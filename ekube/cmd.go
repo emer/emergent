@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"cogentcore.org/core/exec"
+	"cogentcore.org/core/base/exec"
 )
 
 // Build builds a Docker image for the emergent model in the current directory.

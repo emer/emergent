@@ -13,8 +13,8 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/iox/tomlx"
-	"cogentcore.org/core/reflectx"
+	"cogentcore.org/core/base/iox/tomlx"
+	"cogentcore.org/core/base/reflectx"
 	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/iancoleman/strcase"
 )

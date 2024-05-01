@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"strconv"
 
+	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/views"
-	"github.com/emer/etable/v2/minmax"
 )
 
 // NVarCols is the default number of variable columns in the NetView

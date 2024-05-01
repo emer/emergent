@@ -16,9 +16,9 @@ import (
 	"sort"
 
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/empi/mpi"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // SoftMax is a softmax decoder, which is the best choice for a 1-hot classification
@@ -50,16 +50,16 @@ type SoftMax struct {
 	Target int
 
 	// for holding layer values
-	ValuesTsrs map[string]*etensor.Float32 `view:"-"`
+	ValuesTsrs map[string]*tensor.Float32 `view:"-"`
 
 	// synaptic weights: outer loop is units, inner loop is inputs
-	Weights etensor.Float32
+	Weights tensor.Float32
 
 	// mpi communicator -- MPI users must set this to their comm -- do direct assignment
 	Comm *mpi.Comm `view:"-"`
 
 	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
-	MPIDWts etensor.Float32
+	MPIDWts tensor.Float32
 }
 
 // SoftMaxUnit has variables for softmax decoder unit
@@ -93,7 +93,7 @@ func (sm *SoftMax) Init(ncats, ninputs int) {
 	sm.Units = make([]SoftMaxUnit, ncats)
 	sm.Sorted = make([]int, ncats)
 	sm.Inputs = make([]float32, sm.NInputs)
-	sm.Weights.SetShape([]int{sm.NCats, sm.NInputs}, nil, []string{"Cats", "Inputs"})
+	sm.Weights.SetShape([]int{sm.NCats, sm.NInputs}, "Cats", "Inputs")
 	for i := range sm.Weights.Values {
 		sm.Weights.Values[i] = .1
 	}
@@ -125,13 +125,13 @@ func (sm *SoftMax) TrainMPI(targ int) {
 }
 
 // ValuesTsr gets value tensor of given name, creating if not yet made
-func (sm *SoftMax) ValuesTsr(name string) *etensor.Float32 {
+func (sm *SoftMax) ValuesTsr(name string) *tensor.Float32 {
 	if sm.ValuesTsrs == nil {
-		sm.ValuesTsrs = make(map[string]*etensor.Float32)
+		sm.ValuesTsrs = make(map[string]*tensor.Float32)
 	}
 	tsr, ok := sm.ValuesTsrs[name]
 	if !ok {
-		tsr = &etensor.Float32{}
+		tsr = &tensor.Float32{}
 		sm.ValuesTsrs[name] = tsr
 	}
 	return tsr

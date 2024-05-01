@@ -7,23 +7,23 @@ package elog
 import (
 	"os"
 
-	"github.com/emer/etable/v2/etable"
+	"cogentcore.org/core/tensor/table"
 )
 
 // LogTable contains all the data for one log table
 type LogTable struct {
 
 	// Actual data stored.
-	Table *etable.Table
+	Table *table.Table
 
-	// arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxisCol, LegendCol
+	// arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxisColumn, LegendCol
 	Meta map[string]string
 
 	// Index View of the table -- automatically updated when a new row of data is logged to the table.
-	IndexView *etable.IndexView `view:"-"`
+	IndexView *table.IndexView `view:"-"`
 
 	// named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIndexView funtion for more details.
-	NamedViews map[string]*etable.IndexView `view:"-"`
+	NamedViews map[string]*table.IndexView `view:"-"`
 
 	// File to store the log into.
 	File *os.File `view:"-"`
@@ -33,19 +33,19 @@ type LogTable struct {
 }
 
 // NewLogTable returns a new LogTable entry for given table, initializing values
-func NewLogTable(table *etable.Table) *LogTable {
-	lt := &LogTable{Table: table}
+func NewLogTable(dt *table.Table) *LogTable {
+	lt := &LogTable{Table: dt}
 	lt.Meta = make(map[string]string)
-	lt.NamedViews = make(map[string]*etable.IndexView)
+	lt.NamedViews = make(map[string]*table.IndexView)
 	return lt
 }
 
 // GetIndexView returns the index view for the whole table.
 // It is reset to nil after log row is written, and if nil
 // then it is initialized to reflect current rows.
-func (lt *LogTable) GetIndexView() *etable.IndexView {
+func (lt *LogTable) GetIndexView() *table.IndexView {
 	if lt.IndexView == nil {
-		lt.IndexView = etable.NewIndexView(lt.Table)
+		lt.IndexView = table.NewIndexView(lt.Table)
 	}
 	return lt.IndexView
 }
@@ -56,11 +56,11 @@ func (lt *LogTable) GetIndexView() *etable.IndexView {
 // It is reset to nil after log row is written, and if nil
 // then it is initialized to reflect current rows as a starting point (returning true).
 // Thus, the bool return value can be used for re-using cached indexes.
-func (lt *LogTable) NamedIndexView(name string) (*etable.IndexView, bool) {
+func (lt *LogTable) NamedIndexView(name string) (*table.IndexView, bool) {
 	ix, has := lt.NamedViews[name]
 	isnew := false
 	if !has || ix == nil {
-		ix = etable.NewIndexView(lt.Table)
+		ix = table.NewIndexView(lt.Table)
 		lt.NamedViews[name] = ix
 		isnew = true
 	}

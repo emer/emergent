@@ -4,7 +4,7 @@
 
 package chem
 
-import "github.com/emer/etable/v2/etable"
+import "cogentcore.org/core/tensor/table"
 
 // The Stater interface defines the functions implemented for State
 // structures containing chem state variables.
@@ -21,8 +21,8 @@ type Stater interface {
 	Integrate(d Stater)
 
 	// Log records relevant state variables in given table at given row
-	Log(dt *etable.Table, row int)
+	Log(dt *table.Table, row int)
 
-	// ConfigLog configures the table Schema to add column(s) for what is logged
-	ConfigLog(sch *etable.Schema)
+	// ConfigLog configures the table to add column(s) for what is logged
+	ConfigLog(dt *table.Table)
 }

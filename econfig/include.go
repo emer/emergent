@@ -11,8 +11,8 @@ import (
 	"errors"
 	"reflect"
 
-	"cogentcore.org/core/iox/tomlx"
-	"cogentcore.org/core/reflectx"
+	"cogentcore.org/core/base/iox/tomlx"
+	"cogentcore.org/core/base/reflectx"
 )
 
 // Includeser enables processing of Includes []string field with files to include in Config objects.

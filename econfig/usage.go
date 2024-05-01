@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"cogentcore.org/core/reflectx"
+	"cogentcore.org/core/base/reflectx"
 )
 
 // Usage returns the usage string for args based on given Config object

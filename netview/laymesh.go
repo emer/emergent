@@ -6,10 +6,10 @@ package netview
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/vgpu/vshape"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // LayMesh is a xyz.Mesh that represents a layer -- it is dynamically updated using the
@@ -24,7 +24,7 @@ type LayMesh struct {
 	Lay emer.Layer
 
 	// current shape that has been constructed -- if same, just update
-	Shape etensor.Shape
+	Shape tensor.Shape
 
 	// netview that we're in
 	View *NetView
@@ -66,8 +66,8 @@ func (lm *LayMesh) Sizes() (nVtx, nIndex int, hasColor bool) {
 }
 
 func (lm *LayMesh) Size2D() (nVtx, nIndex int) {
-	nz := lm.Shape.Dim(0)
-	nx := lm.Shape.Dim(1)
+	nz := lm.Shape.DimSize(0)
+	nx := lm.Shape.DimSize(1)
 	segs := 1
 
 	vtxSz, idxSz := vshape.PlaneN(segs, segs)
@@ -77,10 +77,10 @@ func (lm *LayMesh) Size2D() (nVtx, nIndex int) {
 }
 
 func (lm *LayMesh) Size4D() (nVtx, nIndex int) {
-	npz := lm.Shape.Dim(0) // p = pool
-	npx := lm.Shape.Dim(1)
-	nuz := lm.Shape.Dim(2) // u = unit
-	nux := lm.Shape.Dim(3)
+	npz := lm.Shape.DimSize(0) // p = pool
+	npx := lm.Shape.DimSize(1)
+	nuz := lm.Shape.DimSize(2) // u = unit
+	nux := lm.Shape.DimSize(3)
 
 	segs := 1
 
@@ -156,8 +156,8 @@ func (lm *LayMesh) Update(sc *xyz.Scene, vtxAry, normAry, texAry, clrAry math32.
 var MinUnitHeight = float32(1.0e-6)
 
 func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	nz := lm.Shape.Dim(0)
-	nx := lm.Shape.Dim(1)
+	nz := lm.Shape.DimSize(0)
+	nx := lm.Shape.DimSize(1)
 
 	fnz := float32(nz)
 	fnx := float32(nx)
@@ -208,10 +208,10 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 }
 
 func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	npz := lm.Shape.Dim(0) // p = pool
-	npx := lm.Shape.Dim(1)
-	nuz := lm.Shape.Dim(2) // u = unit
-	nux := lm.Shape.Dim(3)
+	npz := lm.Shape.DimSize(0) // p = pool
+	npx := lm.Shape.DimSize(1)
+	nuz := lm.Shape.DimSize(2) // u = unit
+	nux := lm.Shape.DimSize(3)
 
 	fnpz := float32(npz)
 	fnpx := float32(npx)

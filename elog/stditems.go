@@ -6,14 +6,14 @@ package elog
 
 import (
 	"fmt"
+	"reflect"
 
+	"cogentcore.org/core/math32/minmax"
+	"cogentcore.org/core/tensor/stats/split"
+	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etable/v2/agg"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/minmax"
-	"github.com/emer/etable/v2/split"
 )
 
 // AddCounterItems adds given Int counters from Stats,
@@ -27,7 +27,7 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 		}
 		itm := lg.AddItem(&Item{
 			Name: ctrName,
-			Type: etensor.INT64,
+			Type: reflect.Int,
 			Write: WriteMap{
 				etime.Scope(etime.AllModes, tm): func(ctx *Context) {
 					ctx.SetStatInt(ctrName)
@@ -51,18 +51,18 @@ func (lg *Logs) AddStdAggs(itm *Item, mode etime.Modes, times []etime.Times) {
 		if tm == etime.Run || tm == etime.Condition {
 			itm.Write[etime.Scope(mode, tm)] = func(ctx *Context) {
 				ix := ctx.LastNRows(ctx.Mode, times[i+1], 5) // cached
-				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				ctx.SetFloat64(stats.MeanColumn(ix, ctx.Item.Name)[0])
 			}
 		} else {
 			itm.Write[etime.Scope(mode, times[i])] = func(ctx *Context) {
-				ctx.SetAgg(ctx.Mode, times[i+1], agg.AggMean)
+				ctx.SetAgg(ctx.Mode, times[i+1], stats.Mean)
 			}
 		}
 	}
 }
 
 // AddStatAggItem adds a Float64 stat that is aggregated
-// with agg.Mean across the given time scales,
+// with stats.MeanColumn across the given time scales,
 // ordered from higher to lower, e.g., Run, Epoch, Trial.
 // The statName is the source statistic in stats at the lowest level,
 // and is also used for the log item name.
@@ -72,10 +72,10 @@ func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 	ntimes := len(times)
 	itm := lg.AddItem(&Item{
 		Name:   statName,
-		Type:   etensor.FLOAT64,
+		Type:   reflect.Float64,
 		FixMin: true,
 		// FixMax: true,
-		Range: minmax.F64{Max: 1},
+		Range: minmax.F32{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[ntimes-1]): func(ctx *Context) {
 				ctx.SetFloat64(ctx.Stats.Float(statName))
@@ -99,8 +99,8 @@ func (lg *Logs) AddStatFloatNoAggItem(mode etime.Modes, etm etime.Times, stats .
 		} else {
 			lg.AddItem(&Item{
 				Name:  stName,
-				Type:  etensor.FLOAT64,
-				Range: minmax.F64{Min: -1},
+				Type:  reflect.Float64,
+				Range: minmax.F32{Min: -1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
 						ctx.SetStatFloat(stName)
@@ -124,8 +124,8 @@ func (lg *Logs) AddStatIntNoAggItem(mode etime.Modes, etm etime.Times, stats ...
 		} else {
 			lg.AddItem(&Item{
 				Name:  stName,
-				Type:  etensor.INT,
-				Range: minmax.F64{Min: -1},
+				Type:  reflect.Int,
+				Range: minmax.F32{Min: -1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
 						ctx.SetStatInt(stName)
@@ -148,7 +148,7 @@ func (lg *Logs) AddStatStringItem(mode etime.Modes, etm etime.Times, stats ...st
 		} else {
 			lg.AddItem(&Item{
 				Name: stName,
-				Type: etensor.STRING,
+				Type: reflect.String,
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
 						ctx.SetStatString(stName)
@@ -176,23 +176,23 @@ func (lg *Logs) InitErrStats() {
 func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 	lg.AddItem(&Item{
 		Name:   "Err",
-		Type:   etensor.FLOAT64,
+		Type:   reflect.Float64,
 		FixMin: true,
 		FixMax: true,
-		Range:  minmax.F64{Max: 1},
+		Range:  minmax.F32{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[2]): func(ctx *Context) {
 				ctx.SetStatFloat(statName)
 			}}})
 	lg.AddItem(&Item{
 		Name:   "PctErr",
-		Type:   etensor.FLOAT64,
+		Type:   reflect.Float64,
 		FixMin: true,
 		FixMax: true,
-		Range:  minmax.F64{Max: 1},
+		Range:  minmax.F32{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[1]): func(ctx *Context) {
-				pcterr := ctx.SetAggItem(ctx.Mode, times[2], "Err", agg.AggMean)[0]
+				pcterr := ctx.SetAggItem(ctx.Mode, times[2], "Err", stats.Mean)[0]
 				epc := ctx.Stats.Int("Epoch")
 				if ctx.Stats.Int("FirstZero") < 0 && pcterr == 0 {
 					ctx.Stats.SetInt("FirstZero", epc)
@@ -205,29 +205,29 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 					ctx.Stats.SetInt("NZero", 0)
 				}
 			}, etime.Scope(etime.Test, times[1]): func(ctx *Context) {
-				ctx.SetAggItem(ctx.Mode, times[2], "Err", agg.AggMean)
+				ctx.SetAggItem(ctx.Mode, times[2], "Err", stats.Mean)
 			}, etime.Scope(etime.AllModes, times[0]): func(ctx *Context) {
 				ix := ctx.LastNRows(ctx.Mode, times[1], 5) // cached
-				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				ctx.SetFloat64(stats.MeanColumn(ix, ctx.Item.Name)[0])
 			}}})
 	lg.AddItem(&Item{
 		Name:   "PctCor",
-		Type:   etensor.FLOAT64,
+		Type:   reflect.Float64,
 		FixMin: true,
 		FixMax: true,
-		Range:  minmax.F64{Max: 1},
+		Range:  minmax.F32{Max: 1},
 		Write: WriteMap{
 			etime.Scope(etime.AllModes, times[1]): func(ctx *Context) {
 				ctx.SetFloat64(1 - ctx.ItemFloatScope(ctx.Scope, "PctErr"))
 			}, etime.Scope(etime.AllModes, times[0]): func(ctx *Context) {
 				ix := ctx.LastNRows(ctx.Mode, times[1], 5) // cached
-				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				ctx.SetFloat64(stats.MeanColumn(ix, ctx.Item.Name)[0])
 			}}})
 
 	lg.AddItem(&Item{
 		Name:  "FirstZero",
-		Type:  etensor.FLOAT64,
-		Range: minmax.F64{Min: -1},
+		Type:  reflect.Float64,
+		Range: minmax.F32{Min: -1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[0]): func(ctx *Context) {
 				ctx.SetStatInt("FirstZero")
@@ -235,8 +235,8 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 
 	lg.AddItem(&Item{
 		Name:  "LastZero",
-		Type:  etensor.FLOAT64,
-		Range: minmax.F64{Min: -1},
+		Type:  reflect.Float64,
+		Range: minmax.F32{Min: -1},
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[0]): func(ctx *Context) {
 				ctx.SetStatInt("LastZero")
@@ -251,7 +251,7 @@ func (lg *Logs) AddErrStatAggItems(statName string, times ...etime.Times) {
 func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) *Item {
 	return lg.AddItem(&Item{
 		Name: itemName,
-		Type: etensor.FLOAT64,
+		Type: reflect.Float64,
 		Write: WriteMap{
 			etime.Scope(etime.Train, times[1]): func(ctx *Context) {
 				nm := ctx.Item.Name
@@ -267,7 +267,7 @@ func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) *Item {
 				tmr.ResetStart()
 			}, etime.Scope(etime.AllModes, times[0]): func(ctx *Context) {
 				ix := ctx.LastNRows(ctx.Mode, times[1], 5)
-				ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
+				ctx.SetFloat64(stats.MeanColumn(ix, ctx.Item.Name)[0])
 			}}})
 }
 
@@ -280,9 +280,9 @@ func (lg *Logs) RunStats(stats ...string) {
 
 	spl := split.GroupBy(ix, []string{"RunName"})
 	for _, st := range stats {
-		split.Desc(spl, st)
+		split.DescColumn(spl, st)
 	}
-	lg.MiscTables["RunStats"] = spl.AggsToTable(etable.AddAggName)
+	lg.MiscTables["RunStats"] = spl.AggsToTable(table.AddAggName)
 }
 
 // AddLayerTensorItems adds tensor recording items for given variable,
@@ -304,10 +304,10 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 		} else {
 			lg.AddItem(&Item{
 				Name:      itmNm,
-				Type:      etensor.FLOAT32,
-				CellShape: cly.RepShape().Shp,
+				Type:      reflect.Float32,
+				CellShape: cly.RepShape().Sizes,
 				FixMin:    true,
-				Range:     minmax.F64{Max: 1},
+				Range:     minmax.F32{Max: 1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
 						ctx.SetLayerRepTensor(clnm, varNm)
@@ -326,7 +326,7 @@ func (lg *Logs) AddCopyFromFloatItems(toMode etime.Modes, toTimes []etime.Times,
 		tonm := prefix + st
 		itm := lg.AddItem(&Item{
 			Name: tonm,
-			Type: etensor.FLOAT64,
+			Type: reflect.Float64,
 			Write: WriteMap{
 				etime.Scope(toMode, toTimes[0]): func(ctx *Context) {
 					ctx.SetFloat64(ctx.ItemFloat(fmMode, fmTime, stnm))
@@ -334,7 +334,7 @@ func (lg *Logs) AddCopyFromFloatItems(toMode etime.Modes, toTimes []etime.Times,
 		for i := 1; i < len(toTimes); i++ {
 			i := i
 			itm.Write[etime.Scope(toMode, toTimes[i])] = func(ctx *Context) {
-				ctx.SetAgg(ctx.Mode, toTimes[i-1], agg.AggMean)
+				ctx.SetAgg(ctx.Mode, toTimes[i-1], stats.Mean)
 			}
 		}
 	}
@@ -377,7 +377,7 @@ func (lg *Logs) SetFloatMaxItems(itemNames ...string) {
 }
 
 // SetFixMaxItems sets the FixMax flag and Range Max val for given items
-func (lg *Logs) SetFixMaxItems(max float64, itemNames ...string) {
+func (lg *Logs) SetFixMaxItems(max float32, itemNames ...string) {
 	for _, nm := range itemNames {
 		itm, has := lg.ItemByName(nm)
 		if !has {
@@ -390,7 +390,7 @@ func (lg *Logs) SetFixMaxItems(max float64, itemNames ...string) {
 }
 
 // SetFixMinItems sets the FixMin flag and Range Min val for given items
-func (lg *Logs) SetFixMinItems(min float64, itemNames ...string) {
+func (lg *Logs) SetFixMinItems(min float32, itemNames ...string) {
 	for _, nm := range itemNames {
 		itm, has := lg.ItemByName(nm)
 		if !has {
@@ -406,7 +406,7 @@ func (lg *Logs) SetFixMinItems(min float64, itemNames ...string) {
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
 // NamedIndexView functions.
-func (lg *Logs) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.IndexView {
+func (lg *Logs) LastNRows(mode etime.Modes, time etime.Times, n int) *table.IndexView {
 	return lg.LastNRowsScope(etime.Scope(mode, time), n)
 }
 
@@ -414,7 +414,7 @@ func (lg *Logs) LastNRows(mode etime.Modes, time etime.Times, n int) *etable.Ind
 // n rows of the table (only valid rows, if less than n).
 // This index view is available later with the "LastNRows" name via
 // NamedIndexView functions.
-func (lg *Logs) LastNRowsScope(sk etime.ScopeKey, n int) *etable.IndexView {
+func (lg *Logs) LastNRowsScope(sk etime.ScopeKey, n int) *table.IndexView {
 	ix, isnew := lg.NamedIndexViewScope(sk, "LastNRows")
 	if !isnew {
 		return ix

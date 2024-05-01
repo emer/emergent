@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
-func CheckAllN(ns *etensor.Int32, trg int, t *testing.T) {
+func CheckAllN(ns *tensor.Int32, trg int, t *testing.T) {
 	sz := ns.Len()
 	for i := 0; i < sz; i++ {
 		n := int(ns.Value1D(i))
@@ -22,8 +22,8 @@ func CheckAllN(ns *etensor.Int32, trg int, t *testing.T) {
 }
 
 func TestFull(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{3, 4}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{3, 4}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -37,7 +37,7 @@ func TestFull(t *testing.T) {
 }
 
 func TestFullSelf(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
 
 	sNtot := send.Len()
 
@@ -51,8 +51,8 @@ func TestFullSelf(t *testing.T) {
 }
 
 func TestOneToOne(t *testing.T) {
-	send := etensor.NewShape([]int{3, 4}, nil, nil)
-	recv := etensor.NewShape([]int{3, 4}, nil, nil)
+	send := tensor.NewShape([]int{3, 4}, nil, nil)
+	recv := tensor.NewShape([]int{3, 4}, nil, nil)
 
 	pj := NewOneToOne()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
@@ -63,11 +63,11 @@ func TestOneToOne(t *testing.T) {
 }
 
 func TestPoolOneToOne(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
+	send := tensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
 
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 
 	pj := NewPoolOneToOne()
 	// pj.NCons = 4
@@ -81,10 +81,10 @@ func TestPoolOneToOne(t *testing.T) {
 }
 
 func TestPoolOneToOneRecv(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
 
-	rNu := recv.Dim(2) * recv.Dim(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 
 	pj := NewPoolOneToOne()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
@@ -95,10 +95,10 @@ func TestPoolOneToOneRecv(t *testing.T) {
 }
 
 func TestPoolOneToOneSend(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+	send := tensor.NewShape([]int{2, 3, 1, 2}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3}, nil, nil)
 
-	sNu := send.Dim(2) * send.Dim(3)
+	sNu := send.DimSize(2) * send.DimSize(3)
 
 	pj := NewPoolOneToOne()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
@@ -109,11 +109,11 @@ func TestPoolOneToOneSend(t *testing.T) {
 }
 
 func TestPoolTile(t *testing.T) {
-	send := etensor.NewShape([]int{4, 4, 1, 2}, nil, nil)
-	recv := etensor.NewShape([]int{2, 2, 1, 3}, nil, nil)
+	send := tensor.NewShape([]int{4, 4, 1, 2}, nil, nil)
+	recv := tensor.NewShape([]int{2, 2, 1, 3}, nil, nil)
 
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 
 	pj := NewPoolTile()
 	pj.Size.Set(2, 2)
@@ -125,19 +125,19 @@ func TestPoolTile(t *testing.T) {
 	CheckAllN(sendn, rNu, t)
 	CheckAllN(recvn, pj.Size.X*pj.Size.Y*sNu, t)
 
-	// send = etensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
-	// recv = etensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
-	// wts := &etensor.Float32{}
+	// send = tensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
+	// recv = tensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
+	// wts := &tensor.Float32{}
 	// pj.TopoWts(send, recv, wts)
 	// fmt.Printf("topo wts\n%v\n", wts)
 }
 
 func TestPoolTileRecip(t *testing.T) {
-	send := etensor.NewShape([]int{4, 4, 1, 2}, nil, nil)
-	recv := etensor.NewShape([]int{2, 2, 1, 3}, nil, nil)
+	send := tensor.NewShape([]int{4, 4, 1, 2}, nil, nil)
+	recv := tensor.NewShape([]int{2, 2, 1, 3}, nil, nil)
 
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 
 	pj := NewPoolTile()
 	pj.Size.Set(2, 2)
@@ -150,19 +150,19 @@ func TestPoolTileRecip(t *testing.T) {
 	CheckAllN(sendn, pj.Size.X*pj.Size.Y*sNu, t)
 	CheckAllN(recvn, rNu, t)
 
-	// send = etensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
-	// recv = etensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
-	// wts := &etensor.Float32{}
+	// send = tensor.NewShape([]int{4, 4, 3, 3}, nil, nil)
+	// recv = tensor.NewShape([]int{2, 2, 2, 2}, nil, nil)
+	// wts := &tensor.Float32{}
 	// pj.TopoWts(send, recv, wts)
 	// fmt.Printf("topo wts\n%v\n", wts)
 }
 
 func TestPoolTile2(t *testing.T) {
-	send := etensor.NewShape([]int{5, 4, 1, 2}, nil, nil)
-	recv := etensor.NewShape([]int{5, 4, 2, 1}, nil, nil)
+	send := tensor.NewShape([]int{5, 4, 1, 2}, nil, nil)
+	recv := tensor.NewShape([]int{5, 4, 2, 1}, nil, nil)
 
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 
 	pj := NewPoolTile()
 	pj.Size.Set(3, 3)
@@ -176,11 +176,11 @@ func TestPoolTile2(t *testing.T) {
 }
 
 func TestPoolTileRecip2(t *testing.T) {
-	send := etensor.NewShape([]int{5, 4, 1, 2}, nil, nil)
-	recv := etensor.NewShape([]int{5, 4, 2, 1}, nil, nil)
+	send := tensor.NewShape([]int{5, 4, 1, 2}, nil, nil)
+	recv := tensor.NewShape([]int{5, 4, 2, 1}, nil, nil)
 
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 
 	pj := NewPoolTile()
 	pj.Size.Set(3, 3)
@@ -195,8 +195,8 @@ func TestPoolTileRecip2(t *testing.T) {
 }
 
 func TestUnifRnd(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{3, 4}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{3, 4}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -231,8 +231,8 @@ func TestUnifRnd(t *testing.T) {
 }
 
 func TestUnifRndLg(t *testing.T) {
-	send := etensor.NewShape([]int{20, 30}, nil, nil)
-	recv := etensor.NewShape([]int{30, 40}, nil, nil)
+	send := tensor.NewShape([]int{20, 30}, nil, nil)
+	recv := tensor.NewShape([]int{30, 40}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -257,8 +257,8 @@ func TestUnifRndLg(t *testing.T) {
 }
 
 func TestUnifRndSelf(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -285,8 +285,8 @@ func TestUnifRndSelf(t *testing.T) {
 }
 
 func TestPoolUnifRnd(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3, 3, 4}, nil, nil)
+	send := tensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3, 3, 4}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -321,8 +321,8 @@ func TestPoolUnifRnd(t *testing.T) {
 }
 
 func TestPoolUnifRndLg(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3, 20, 30}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3, 30, 40}, nil, nil)
+	send := tensor.NewShape([]int{2, 3, 20, 30}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3, 30, 40}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -347,8 +347,8 @@ func TestPoolUnifRndLg(t *testing.T) {
 }
 
 func TestPoolUnifRndSelf(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
+	send := tensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3, 2, 3}, nil, nil)
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -375,11 +375,11 @@ func TestPoolUnifRndSelf(t *testing.T) {
 }
 
 func TestPoolSameUnit(t *testing.T) {
-	send := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+	send := tensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
 
-	sNp := send.Dim(0) * send.Dim(1)
-	rNp := recv.Dim(0) * recv.Dim(1)
+	sNp := send.DimSize(0) * send.DimSize(1)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
 
 	pj := NewPoolSameUnit()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
@@ -390,10 +390,10 @@ func TestPoolSameUnit(t *testing.T) {
 }
 
 func TestPoolSameUnitRecv(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
 
-	rNp := recv.Dim(0) * recv.Dim(1)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
 	pj := NewPoolSameUnit()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	fmt.Printf("pool same unit recv 2x3 1x2, send 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
@@ -403,10 +403,10 @@ func TestPoolSameUnitRecv(t *testing.T) {
 }
 
 func TestPoolSameUnitSend(t *testing.T) {
-	send := etensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+	send := tensor.NewShape([]int{1, 2, 2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3}, nil, nil)
 
-	sNp := send.Dim(0) * send.Dim(1)
+	sNp := send.DimSize(0) * send.DimSize(1)
 
 	pj := NewPoolSameUnit()
 	sendn, recvn, cons := pj.Connect(send, recv, false)
@@ -417,8 +417,8 @@ func TestPoolSameUnitSend(t *testing.T) {
 }
 
 func TestRect(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3}, nil, nil)
+	send := tensor.NewShape([]int{2, 3}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3}, nil, nil)
 
 	pj := NewRect()
 	pj.Size.Set(2, 1)
@@ -432,8 +432,8 @@ func TestRect(t *testing.T) {
 }
 
 func TestPoolRect(t *testing.T) {
-	send := etensor.NewShape([]int{2, 3, 2, 2}, nil, nil)
-	recv := etensor.NewShape([]int{2, 3, 2, 2}, nil, nil)
+	send := tensor.NewShape([]int{2, 3, 2, 2}, nil, nil)
+	recv := tensor.NewShape([]int{2, 3, 2, 2}, nil, nil)
 
 	pj := NewPoolRect()
 	pj.Size.Set(2, 1)

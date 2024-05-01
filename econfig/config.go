@@ -11,7 +11,7 @@ import (
 	"os"
 	"reflect"
 
-	"cogentcore.org/core/gox/dirs"
+	"cogentcore.org/core/base/dirs"
 	"github.com/emer/emergent/v2/empi/mpi"
 )
 

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // InitActRFs initializes a set of activation-based receptive field (ActRF)
@@ -35,7 +35,7 @@ func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error
 
 		lvt := st.SetLayerRepTensor(net, lnm, varnm, 0)
 		tnm := sp[1]
-		var tvt *etensor.Float32
+		var tvt *tensor.Float32
 		_, err = net.LayerByNameTry(tnm)
 		if err == nil {
 			tvt = st.SetLayerRepTensor(net, tnm, varnm, 0)
@@ -71,7 +71,7 @@ func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32, di in
 		}
 		lvt := st.SetLayerRepTensor(net, lnm, varnm, di)
 		tnm := sp[1]
-		var tvt *etensor.Float32
+		var tvt *tensor.Float32
 		_, err = net.LayerByNameTry(tnm)
 		if err == nil {
 			tvt = st.SetLayerRepTensor(net, tnm, varnm, di)

@@ -17,7 +17,6 @@ import (
 	"strings"
 	"sync"
 
-	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
 	"cogentcore.org/core/core"
@@ -25,13 +24,14 @@ import (
 	"cogentcore.org/core/events/key"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/styles"
+	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etable/v2/minmax"
 )
 
 // NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
@@ -280,7 +280,7 @@ func (nv *NetView) ConfigNetView() {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
 		})
-		core.NewLabel(nv, "counters").SetText(strings.Repeat(" ", 200))
+		core.NewText(nv, "counters").SetText(strings.Repeat(" ", 200))
 		vb := core.NewToolbar(nv, "vbar")
 
 		vlay := core.NewFrame(nlay, "vars")
@@ -328,8 +328,8 @@ func (nv *NetView) NetLay() *core.Layout {
 	return nv.ChildByName("net", 1).(*core.Layout)
 }
 
-func (nv *NetView) Counters() *core.Label {
-	return nv.ChildByName("counters", 2).(*core.Label)
+func (nv *NetView) Counters() *core.Text {
+	return nv.ChildByName("counters", 2).(*core.Text)
 }
 
 func (nv *NetView) Viewbar() *core.Toolbar {
@@ -360,7 +360,7 @@ func (nv *NetView) SetCounters(ctrs string) {
 // UpdateRecNo updates the record number viewing
 func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
-	rlbl := vbar.ChildByName("rec", 10).(*core.Label)
+	rlbl := vbar.ChildByName("rec", 10).(*core.Text)
 	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo)).Update()
 }
 
@@ -883,7 +883,7 @@ func (nv *NetView) ConfigToolbar(tb *core.Toolbar) {
 	})
 	core.NewSeparator(tb)
 	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
-	core.NewLabel(tb).SetText("Di:").SetTooltip(ditp)
+	core.NewText(tb).SetText("Di:").SetTooltip(ditp)
 	dis := core.NewSpinner(tb).SetTooltip(ditp).SetMin(0).SetStep(1).SetValue(float32(nv.Di))
 	dis.OnChange(func(e events.Event) {
 		maxData := nv.Net.MaxParallelData()
@@ -1007,7 +1007,7 @@ func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
 			nv.UpdateView()
 		})
 	core.NewSeparator(tb)
-	core.NewLabel(tb).SetText("Rot:").SetTooltip("rotate display")
+	core.NewText(tb).SetText("Rot:").SetTooltip("rotate display")
 	core.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
@@ -1042,7 +1042,7 @@ func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
 		})
 	core.NewSeparator(tb)
 
-	core.NewLabel(tb).SetText("Pan:").SetTooltip("pan display")
+	core.NewText(tb).SetText("Pan:").SetTooltip("pan display")
 	core.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
 		Style(func(s *styles.Style) {
 			s.SetAbilities(true, abilities.RepeatClickable)
@@ -1077,7 +1077,7 @@ func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
 		})
 	core.NewSeparator(tb)
 
-	core.NewLabel(tb).SetText("Save:")
+	core.NewText(tb).SetText("Save:")
 	for i := 1; i <= 4; i++ {
 		i := i
 		nm := fmt.Sprintf("%d", i)
@@ -1100,10 +1100,10 @@ func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
 	}
 	core.NewSeparator(tb)
 
-	core.NewLabel(tb).SetText("Time:").
+	core.NewText(tb).SetText("Time:").
 		SetTooltip("states are recorded over time -- last N can be reviewed using these buttons")
 
-	core.NewLabel(tb, "rec").SetText(fmt.Sprintf("%4d ", nv.RecNo)).
+	core.NewText(tb, "rec").SetText(fmt.Sprintf("%4d ", nv.RecNo)).
 		SetTooltip("current view record: -1 means latest, 0 = earliest")
 	core.NewButton(tb).SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
 		OnClick(func(e events.Event) {

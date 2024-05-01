@@ -8,20 +8,20 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/stretchr/testify/assert"
 )
 
 // TestLayer implements a Layer
 type TestLayer struct {
-	tensors map[string]etensor.Tensor
+	tensors map[string]tensor.Tensor
 }
 
 func (tl *TestLayer) Name() string {
 	return "TestLayer"
 }
 
-func (tl *TestLayer) UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) error {
+func (tl *TestLayer) UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error {
 	src, ok := tl.tensors[varNm]
 	if !ok {
 		return fmt.Errorf("bad key: %s", varNm)
@@ -31,9 +31,9 @@ func (tl *TestLayer) UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) 
 	return nil
 }
 
-func (tl *TestLayer) Shape() *etensor.Shape {
+func (tl *TestLayer) Shape() *tensor.Shape {
 	for _, v := range tl.tensors {
-		return v.ShapeObj()
+		return v.Shape()
 	}
 	return nil
 }
@@ -94,50 +94,50 @@ func TestLinearLogistic(t *testing.T) {
 
 func TestInputPool1D(t *testing.T) {
 	dec := Linear{}
-	shape := etensor.NewShape([]int{1, 5, 6, 6}, nil, nil)
+	shape := tensor.NewShape([]int{1, 5, 6, 6}, nil, nil)
 	vals := make([]float32, shape.Len())
 	for i := range vals {
 		vals[i] = float32(i)
 	}
-	tensor := etensor.NewFloat32Shape(shape, vals)
-	layer := TestLayer{tensors: map[string]etensor.Tensor{"var0": tensor}}
+	tensor := tensor.NewFloat32Shape(shape, vals)
+	layer := TestLayer{tensors: map[string]tensor.Tensor{"var0": tensor}}
 	dec.InitPool(2, &layer, 0, IdentityFunc)
 	dec.Input("var0", 0)
-	expected := tensor.SubSpace([]int{0, 0}).(*etensor.Float32).Values
+	expected := tensor.SubSpace([]int{0, 0}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 1, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{0, 1}).(*etensor.Float32).Values
+	expected = tensor.SubSpace([]int{0, 1}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 }
 
 func TestInputPool2D(t *testing.T) {
 	dec := Linear{}
-	shape := etensor.NewShape([]int{2, 5, 6, 6}, nil, nil)
+	shape := tensor.NewShape([]int{2, 5, 6, 6}, nil, nil)
 	vals := make([]float32, shape.Len())
 	for i := range vals {
 		vals[i] = float32(i)
 	}
-	tensor := etensor.NewFloat32Shape(shape, vals)
-	layer := TestLayer{tensors: map[string]etensor.Tensor{"var0": tensor}}
+	tensor := tensor.NewFloat32Shape(shape, vals)
+	layer := TestLayer{tensors: map[string]tensor.Tensor{"var0": tensor}}
 	dec.InitPool(2, &layer, 0, IdentityFunc)
 	dec.Input("var0", 0)
-	expected := tensor.SubSpace([]int{0, 0}).(*etensor.Float32).Values
+	expected := tensor.SubSpace([]int{0, 0}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 1, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{0, 1}).(*etensor.Float32).Values
+	expected = tensor.SubSpace([]int{0, 1}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 5, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{1, 0}).(*etensor.Float32).Values
+	expected = tensor.SubSpace([]int{1, 0}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 9, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{1, 4}).(*etensor.Float32).Values
+	expected = tensor.SubSpace([]int{1, 4}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 }

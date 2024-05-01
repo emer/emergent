@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/empi/mpi"
-	"github.com/emer/etable/v2/etensor"
 )
 
 type ActivationFunc func(float32) float32
@@ -40,10 +40,10 @@ type Linear struct {
 	Inputs []float32
 
 	// for holding layer values
-	ValuesTsrs map[string]*etensor.Float32 `view:"-"`
+	ValuesTsrs map[string]*tensor.Float32 `view:"-"`
 
 	// synaptic weights: outer loop is units, inner loop is inputs
-	Weights etensor.Float32
+	Weights tensor.Float32
 
 	// activation function
 	ActivationFn ActivationFunc
@@ -55,14 +55,14 @@ type Linear struct {
 	Comm *mpi.Comm `view:"-"`
 
 	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
-	MPIDWts etensor.Float32
+	MPIDWts tensor.Float32
 }
 
 // Layer is the subset of emer.Layer that is used by this code
 type Layer interface {
 	Name() string
-	UnitValuesTensor(tsr etensor.Tensor, varNm string, di int) error
-	Shape() *etensor.Shape
+	UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error
+	Shape() *tensor.Shape
 }
 
 func IdentityFunc(x float32) float32 { return x }
@@ -100,7 +100,7 @@ func (dec *Linear) InitPool(nOutputs int, layer Layer, poolIndex int, activation
 	dec.Layers = []Layer{layer}
 	shape := layer.Shape()
 	// TODO: assert that it's a 4D layer
-	nIn := shape.Dim(2) * shape.Dim(3)
+	nIn := shape.DimSize(2) * shape.DimSize(3)
 	dec.Init(nOutputs, nIn, poolIndex, activationFn)
 }
 
@@ -111,7 +111,7 @@ func (dec *Linear) Init(nOutputs, nInputs int, poolIndex int, activationFn Activ
 	dec.NOutputs = nOutputs
 	dec.Units = make([]LinearUnit, dec.NOutputs)
 	dec.Inputs = make([]float32, dec.NInputs)
-	dec.Weights.SetShape([]int{dec.NOutputs, dec.NInputs}, nil, []string{"Outputs", "Inputs"})
+	dec.Weights.SetShape([]int{dec.NOutputs, dec.NInputs}, "Outputs", "Inputs")
 	for i := range dec.Weights.Values {
 		dec.Weights.Values[i] = 0.1
 	}
@@ -183,13 +183,13 @@ func (dec *Linear) SetTargets(targs []float32) error {
 }
 
 // ValuesTsr gets value tensor of given name, creating if not yet made
-func (dec *Linear) ValuesTsr(name string) *etensor.Float32 {
+func (dec *Linear) ValuesTsr(name string) *tensor.Float32 {
 	if dec.ValuesTsrs == nil {
-		dec.ValuesTsrs = make(map[string]*etensor.Float32)
+		dec.ValuesTsrs = make(map[string]*tensor.Float32)
 	}
 	tsr, ok := dec.ValuesTsrs[name]
 	if !ok {
-		tsr = &etensor.Float32{}
+		tsr = &tensor.Float32{}
 		dec.ValuesTsrs[name] = tsr
 	}
 	return tsr
@@ -205,9 +205,9 @@ func (dec *Linear) Input(varNm string, di int) {
 		ly.UnitValuesTensor(tsr, varNm, di)
 		if dec.PoolIndex >= 0 {
 			shape := ly.Shape()
-			y := dec.PoolIndex / shape.Dim(1)
-			x := dec.PoolIndex % shape.Dim(1)
-			tsr = tsr.SubSpace([]int{y, x}).(*etensor.Float32)
+			y := dec.PoolIndex / shape.DimSize(1)
+			x := dec.PoolIndex % shape.DimSize(1)
+			tsr = tsr.SubSpace([]int{y, x}).(*tensor.Float32)
 		}
 		for j, v := range tsr.Values {
 			dec.Inputs[off+j] = v

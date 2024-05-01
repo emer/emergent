@@ -8,8 +8,6 @@ package env
 
 import (
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // TimeScales are the different time scales associated with overall simulation running, and
@@ -87,16 +85,16 @@ const (
 	TimeScalesN = TimeScales(etime.TimesN)
 )
 
-// SchemaFromScales returns an etable.Schema suitable for creating an
-// etable.Table to record the given list of time scales.  Can then add
+// SchemaFromScales returns an table.Schema suitable for creating an
+// table.Table to record the given list of time scales.  Can then add
 // to this schema anything else that might be needed, before using it
 // to create a Table.
-func SchemaFromScales(ts []TimeScales) etable.Schema {
-	sc := make(etable.Schema, len(ts))
-	for i, t := range ts {
-		sc[i].Name = t.String()
-		sc[i].Type = etensor.INT64
-		sc[i].CellShape = nil
-	}
-	return sc
-}
+// func SchemaFromScales(ts []TimeScales) table.Schema {
+// 	sc := make(table.Schema, len(ts))
+// 	for i, t := range ts {
+// 		sc[i].Name = t.String()
+// 		sc[i].Type = reflect.Int
+// 		sc[i].CellShape = nil
+// 	}
+// 	return sc
+// }

@@ -8,12 +8,12 @@ package egui
 
 import (
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/plot/plotview"
+	"cogentcore.org/core/tensor/tensorview"
 	"cogentcore.org/core/views"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
-	"github.com/emer/etable/v2/eplot"
-	"github.com/emer/etable/v2/etview"
-	_ "github.com/emer/gosl/v2/slboolview" // include to get gui views
+	// _ "github.com/emer/gosl/v2/slboolview" // include to get gui views
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface
@@ -32,13 +32,13 @@ type GUI struct {
 	StopNow bool `view:"-"`
 
 	// plots by scope
-	Plots map[etime.ScopeKey]*eplot.Plot2D
+	Plots map[etime.ScopeKey]*plotview.PlotView
 
 	// plots by scope
-	TableViews map[etime.ScopeKey]*etview.TableView
+	TableViews map[etime.ScopeKey]*tensorview.TableView
 
 	// tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access
-	Grids map[string]*etview.TensorGrid
+	Grids map[string]*tensorview.TensorGrid
 
 	// the view update for managing updates of netview
 	ViewUpdate *netview.ViewUpdate `view:"-"`

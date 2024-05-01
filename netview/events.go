@@ -12,7 +12,7 @@ import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyzview"
+	"cogentcore.org/core/xyz/xyzview"
 	"github.com/emer/emergent/v2/emer"
 )
 

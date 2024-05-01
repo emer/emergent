@@ -4,9 +4,7 @@
 
 package prjn
 
-import (
-	"github.com/emer/etable/v2/etensor"
-)
+import "cogentcore.org/core/tensor"
 
 // PoolOneToOne implements one-to-one connectivity between pools within layers.
 // Pools are the outer-most two dimensions of a 4D layer shape.
@@ -34,7 +32,7 @@ func (ot *PoolOneToOne) Name() string {
 	return "PoolOneToOne"
 }
 
-func (ot *PoolOneToOne) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolOneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	switch {
 	case send.NumDims() == 4 && recv.NumDims() == 4:
 		return ot.ConnectPools(send, recv, same)
@@ -49,14 +47,14 @@ func (ot *PoolOneToOne) Connect(send, recv *etensor.Shape, same bool) (sendn, re
 }
 
 // ConnectPools is when both recv and send have pools
-func (ot *PoolOneToOne) ConnectPools(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolOneToOne) ConnectPools(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	// rNtot := recv.Len()
-	sNp := send.Dim(0) * send.Dim(1)
-	rNp := recv.Dim(0) * recv.Dim(1)
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNp := send.DimSize(0) * send.DimSize(1)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 	rnv := recvn.Values
 	snv := sendn.Values
 	npl := rNp
@@ -84,11 +82,11 @@ func (ot *PoolOneToOne) ConnectPools(send, recv *etensor.Shape, same bool) (send
 }
 
 // ConnectRecvPool is when recv has pools but send doesn't
-func (ot *PoolOneToOne) ConnectRecvPool(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolOneToOne) ConnectRecvPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
-	rNp := recv.Dim(0) * recv.Dim(1)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 	rnv := recvn.Values
 	snv := sendn.Values
 	npl := rNp
@@ -132,12 +130,12 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *etensor.Shape, same bool) (s
 }
 
 // ConnectSendPool is when send has pools but recv doesn't
-func (ot *PoolOneToOne) ConnectSendPool(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolOneToOne) ConnectSendPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	rNtot := recv.Len()
-	sNp := send.Dim(0) * send.Dim(1)
-	sNu := send.Dim(2) * send.Dim(3)
+	sNp := send.DimSize(0) * send.DimSize(1)
+	sNu := send.DimSize(2) * send.DimSize(3)
 	rnv := recvn.Values
 	snv := sendn.Values
 	npl := sNp
@@ -181,7 +179,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *etensor.Shape, same bool) (s
 }
 
 // copy of OneToOne.Connect
-func (ot *PoolOneToOne) ConnectOneToOne(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolOneToOne) ConnectOneToOne(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	rNtot := recv.Len()

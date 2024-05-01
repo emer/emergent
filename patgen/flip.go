@@ -5,20 +5,20 @@
 package patgen
 
 import (
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // FlipBits turns nOff bits that are currently On to Off and
 // nOn bits that are currently Off to On, using permuted lists.
-func FlipBits(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
+func FlipBits(tsr tensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 	ln := tsr.Len()
 	if ln == 0 {
 		return
 	}
 	var ons, offs []int
 	for i := 0; i < ln; i++ {
-		vl := tsr.FloatValue1D(i)
+		vl := tsr.Float1D(i)
 		if vl == offVal {
 			offs = append(offs, i)
 		} else {
@@ -44,7 +44,7 @@ func FlipBits(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 // FlipBitsRows turns nOff bits that are currently On to Off and
 // nOn bits that are currently Off to On, using permuted lists.
 // Iterates over the outer-most tensor dimension as rows.
-func FlipBitsRows(tsr etensor.Tensor, nOff, nOn int, onVal, offVal float64) {
+func FlipBitsRows(tsr tensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 	rows, _ := tsr.RowCellSize()
 	for i := 0; i < rows; i++ {
 		trow := tsr.SubSpace([]int{i})

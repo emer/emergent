@@ -11,15 +11,15 @@ import (
 	"math"
 
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/metric"
 	"github.com/emer/emergent/v2/erand"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/metric"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
 // remainder are offVal values, using a permuted order of tensor elements (i.e.,
 // randomly shuffled or permuted).
-func PermutedBinary(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
+func PermutedBinary(tsr tensor.Tensor, nOn int, onVal, offVal float64) {
 	ln := tsr.Len()
 	if ln == 0 {
 		return
@@ -34,10 +34,10 @@ func PermutedBinary(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 	}
 }
 
-// PermutedBinaryRows treats the tensor as a column of rows as in a etable.Table
+// PermutedBinaryRows treats the tensor as a column of rows as in a table.Table
 // and sets each row to contain nOn onVal values and the remainder are offVal values,
 // using a permuted order of tensor elements (i.e., randomly shuffled or permuted).
-func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
+func PermutedBinaryRows(tsr tensor.Tensor, nOn int, onVal, offVal float64) {
 	rows, cells := tsr.RowCellSize()
 	if rows == 0 || cells == 0 {
 		return
@@ -60,14 +60,14 @@ func PermutedBinaryRows(tsr etensor.Tensor, nOn int, onVal, offVal float64) {
 // PermutedBinaryMinDiff -- for large, long-running cases.
 var MinDiffPrintIters = false
 
-// PermutedBinaryMinDiff treats the tensor as a column of rows as in a etable.Table
+// PermutedBinaryMinDiff treats the tensor as a column of rows as in a table.Table
 // and sets each row to contain nOn onVal values and the remainder are offVal values,
 // using a permuted order of tensor elements (i.e., randomly shuffled or permuted).
 // This version ensures that all patterns have at least a given minimum distance from each other,
 // expressed using minDiff = number of bits that must be different (can't be > nOn).
 // If the mindiff constraint cannot be met within a reasonable number of iterations,
 // then an error is returned.
-func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32, minDiff int) error {
+func PermutedBinaryMinDiff(tsr *tensor.Float32, nOn int, onVal, offVal float32, minDiff int) error {
 	rows, cells := tsr.RowCellSize()
 	if rows == 0 || cells == 0 {
 		return errors.New("empty tensor")
@@ -97,9 +97,9 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 		nbad := 0
 		mxnun := 0
 		for r1 := 0; r1 < rows; r1++ {
-			r1v := tsr.SubSpace([]int{r1}).(*etensor.Float32)
+			r1v := tsr.SubSpace([]int{r1}).(*tensor.Float32)
 			for r2 := r1 + 1; r2 < rows; r2++ {
-				r2v := tsr.SubSpace([]int{r2}).(*etensor.Float32)
+				r2v := tsr.SubSpace([]int{r2}).(*tensor.Float32)
 				dst := metric.Hamming32(r1v.Values, r2v.Values)
 				df := int(math.Round(float64(.5 * dst)))
 				if df < minDiff {
@@ -129,16 +129,16 @@ func PermutedBinaryMinDiff(tsr *etensor.Float32, nOn int, onVal, offVal float32,
 
 // RowVsPrevDist32 returns the minimum and maximum distance between the given row
 // in tensor and all previous rows.  Row must be >= 1 and < total rows.
-// (outer-most dimension is row, as in columns of etable.Table).
-func RowVsPrevDist32(tsr *etensor.Float32, row int, fun metric.Func32) (min, max float32) {
+// (outer-most dimension is row, as in columns of table.Table).
+func RowVsPrevDist32(tsr *tensor.Float32, row int, fun metric.Func32) (min, max float32) {
 	if row < 1 {
 		return
 	}
 	min = float32(math.MaxFloat32)
 	max = float32(-math.MaxFloat32)
-	lrow := tsr.SubSpace([]int{row}).(*etensor.Float32)
+	lrow := tsr.SubSpace([]int{row}).(*tensor.Float32)
 	for i := 0; i <= row-1; i++ {
-		crow := tsr.SubSpace([]int{i}).(*etensor.Float32)
+		crow := tsr.SubSpace([]int{i}).(*tensor.Float32)
 		dst := fun(lrow.Values, crow.Values)
 		min = math32.Min(min, dst)
 		max = math32.Max(max, dst)

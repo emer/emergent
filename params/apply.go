@@ -12,8 +12,8 @@ import (
 	"reflect"
 	"strings"
 
+	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/reflectx"
 )
 
 // PathAfterType returns the portion of a path string after the initial

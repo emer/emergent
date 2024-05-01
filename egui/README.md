@@ -91,7 +91,7 @@ Here's an `ActiveRunning` case:
 ## Tensor Grid (e.g., of an Image)
 
 ```Go
-	tg := ss.GUI.TabView.AddNewTab(etview.KiT_TensorGrid, "Image").(*etview.TensorGrid)
+	tg := ss.GUI.TabView.AddNewTab(tensorview.KiT_TensorGrid, "Image").(*tensorview.TensorGrid)
 	tg.SetStretchMax()
 	ss.GUI.SetGrid("Image", tg)
 	tg.SetTensor(&ss.TrainEnv.Img.Tsr)

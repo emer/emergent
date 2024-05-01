@@ -5,9 +5,10 @@
 package elog
 
 import (
+	"reflect"
+
+	"cogentcore.org/core/math32/minmax"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/minmax"
 )
 
 const (
@@ -27,8 +28,8 @@ type Item struct {
 	// name of column -- must be unique for a table
 	Name string
 
-	// data type, using etensor types which are isomorphic with arrow.Type
-	Type etensor.Type
+	// data type, using tensor types which are isomorphic with arrow.Type
+	Type reflect.Kind
 
 	// shape of a single cell in the column (i.e., without the row dimension) -- for scalars this is nil -- tensor column will add the outer row dimension to this shape
 	CellShape []int
@@ -43,7 +44,7 @@ type Item struct {
 	Plot bool
 
 	// The minimum and maximum values, for plotting
-	Range minmax.F64
+	Range minmax.F32
 
 	// Whether to fix the minimum in the display
 	FixMin bool

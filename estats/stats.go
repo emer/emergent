@@ -9,14 +9,14 @@ package estats
 import (
 	"fmt"
 
+	"cogentcore.org/core/plot/plotview"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/pca"
+	"cogentcore.org/core/tensor/stats/simat"
 	"github.com/emer/emergent/v2/actrf"
 	"github.com/emer/emergent/v2/confusion"
 	"github.com/emer/emergent/v2/decoder"
 	"github.com/emer/emergent/v2/timer"
-	"github.com/emer/etable/v2/eplot"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/pca"
-	"github.com/emer/etable/v2/simat"
 )
 
 // Stats provides maps for storing statistics as named scalar and tensor values.
@@ -27,13 +27,13 @@ type Stats struct {
 	Ints    map[string]int
 
 	// float32 tensors used for grabbing values from layers
-	F32Tensors map[string]*etensor.Float32
+	F32Tensors map[string]*tensor.Float32
 
 	// float64 tensors as needed for other computations
-	F64Tensors map[string]*etensor.Float64
+	F64Tensors map[string]*tensor.Float64
 
 	// int tensors as needed for other computations
-	IntTensors map[string]*etensor.Int
+	IntTensors map[string]*tensor.Int
 
 	// confusion matrix
 	Confusion confusion.Matrix `view:"no-inline"`
@@ -42,7 +42,7 @@ type Stats struct {
 	SimMats map[string]*simat.SimMat
 
 	// analysis plots -- created by analysis routines
-	Plots map[string]*eplot.Plot2D
+	Plots map[string]*plotview.PlotView
 
 	// one PCA object can be reused for all PCA computations
 	PCA pca.PCA
@@ -71,11 +71,11 @@ func (st *Stats) Init() {
 	st.Floats = make(map[string]float64)
 	st.Strings = make(map[string]string)
 	st.Ints = make(map[string]int)
-	st.F32Tensors = make(map[string]*etensor.Float32)
-	st.F64Tensors = make(map[string]*etensor.Float64)
-	st.IntTensors = make(map[string]*etensor.Int)
+	st.F32Tensors = make(map[string]*tensor.Float32)
+	st.F64Tensors = make(map[string]*tensor.Float64)
+	st.IntTensors = make(map[string]*tensor.Int)
 	st.SimMats = make(map[string]*simat.SimMat)
-	st.Plots = make(map[string]*eplot.Plot2D)
+	st.Plots = make(map[string]*plotview.PlotView)
 	st.LinDecoders = make(map[string]*decoder.Linear)
 	st.SoftMaxDecoders = make(map[string]*decoder.SoftMax)
 	st.Timers = make(map[string]*timer.Time)
@@ -197,30 +197,30 @@ func (st *Stats) Int(name string) int {
 }
 
 // F32Tensor returns a float32 tensor of given name, creating if not yet made
-func (st *Stats) F32Tensor(name string) *etensor.Float32 {
+func (st *Stats) F32Tensor(name string) *tensor.Float32 {
 	tsr, has := st.F32Tensors[name]
 	if !has {
-		tsr = &etensor.Float32{}
+		tsr = &tensor.Float32{}
 		st.F32Tensors[name] = tsr
 	}
 	return tsr
 }
 
 // F64Tensor returns a float64 tensor of given name, creating if not yet made
-func (st *Stats) F64Tensor(name string) *etensor.Float64 {
+func (st *Stats) F64Tensor(name string) *tensor.Float64 {
 	tsr, has := st.F64Tensors[name]
 	if !has {
-		tsr = &etensor.Float64{}
+		tsr = &tensor.Float64{}
 		st.F64Tensors[name] = tsr
 	}
 	return tsr
 }
 
 // IntTensor returns a int tensor of given name, creating if not yet made
-func (st *Stats) IntTensor(name string) *etensor.Int {
+func (st *Stats) IntTensor(name string) *tensor.Int {
 	tsr, has := st.IntTensors[name]
 	if !has {
-		tsr = &etensor.Int{}
+		tsr = &tensor.Int{}
 		st.IntTensors[name] = tsr
 	}
 	return tsr
@@ -228,19 +228,19 @@ func (st *Stats) IntTensor(name string) *etensor.Int {
 
 // SetF32Tensor sets a float32 tensor of given name.
 // Just does: st.F32Tensors[name] = tsr
-func (st *Stats) SetF32Tensor(name string, tsr *etensor.Float32) {
+func (st *Stats) SetF32Tensor(name string, tsr *tensor.Float32) {
 	st.F32Tensors[name] = tsr
 }
 
 // SetF64Tensor sets a float64 tensor of given name.
 // Just does: st.F64Tensors[name] = tsr
-func (st *Stats) SetF64Tensor(name string, tsr *etensor.Float64) {
+func (st *Stats) SetF64Tensor(name string, tsr *tensor.Float64) {
 	st.F64Tensors[name] = tsr
 }
 
 // SetIntTensor sets a int tensor of given name.
 // Just does: st.IntTensors[name] = tsr
-func (st *Stats) SetIntTensor(name string, tsr *etensor.Int) {
+func (st *Stats) SetIntTensor(name string, tsr *tensor.Int) {
 	st.IntTensors[name] = tsr
 }
 
@@ -320,10 +320,10 @@ func (st *Stats) IntDi(name string, di int) int {
 
 // F32TensorDi returns a float32 tensor of given name, creating if not yet made
 // Data parallel index version appends _di to name
-func (st *Stats) F32TensorDi(name string, di int) *etensor.Float32 {
+func (st *Stats) F32TensorDi(name string, di int) *tensor.Float32 {
 	tsr, has := st.F32Tensors[DiName(name, di)]
 	if !has {
-		tsr = &etensor.Float32{}
+		tsr = &tensor.Float32{}
 		st.F32Tensors[DiName(name, di)] = tsr
 	}
 	return tsr
@@ -331,10 +331,10 @@ func (st *Stats) F32TensorDi(name string, di int) *etensor.Float32 {
 
 // F64TensorDi returns a float64 tensor of given name, creating if not yet made
 // Data parallel index version appends _di to name
-func (st *Stats) F64TensorDi(name string, di int) *etensor.Float64 {
+func (st *Stats) F64TensorDi(name string, di int) *tensor.Float64 {
 	tsr, has := st.F64Tensors[DiName(name, di)]
 	if !has {
-		tsr = &etensor.Float64{}
+		tsr = &tensor.Float64{}
 		st.F64Tensors[DiName(name, di)] = tsr
 	}
 	return tsr
@@ -342,10 +342,10 @@ func (st *Stats) F64TensorDi(name string, di int) *etensor.Float64 {
 
 // IntTensorDi returns a int tensor of given name, creating if not yet made
 // Data parallel index version appends _di to name
-func (st *Stats) IntTensorDi(name string, di int) *etensor.Int {
+func (st *Stats) IntTensorDi(name string, di int) *tensor.Int {
 	tsr, has := st.IntTensors[DiName(name, di)]
 	if !has {
-		tsr = &etensor.Int{}
+		tsr = &tensor.Int{}
 		st.IntTensors[DiName(name, di)] = tsr
 	}
 	return tsr
@@ -354,21 +354,21 @@ func (st *Stats) IntTensorDi(name string, di int) *etensor.Int {
 // SetF32TensorDi sets a float32 tensor of given name.
 // Just does: st.F32Tensors[DiName(name, di)] = tsr
 // Data parallel index version appends _di to name
-func (st *Stats) SetF32TensorDi(name string, di int, tsr *etensor.Float32) {
+func (st *Stats) SetF32TensorDi(name string, di int, tsr *tensor.Float32) {
 	st.F32Tensors[DiName(name, di)] = tsr
 }
 
 // SetF64TensorDi sets a float64 tensor of given name.
 // Just does: st.F64Tensors[DiName(name, di)] = tsr
 // Data parallel index version appends _di to name
-func (st *Stats) SetF64TensorDi(name string, di int, tsr *etensor.Float64) {
+func (st *Stats) SetF64TensorDi(name string, di int, tsr *tensor.Float64) {
 	st.F64Tensors[DiName(name, di)] = tsr
 }
 
 // SetIntTensorDi sets a int tensor of given name.
 // Just does: st.IntTensors[DiName(name, di)] = tsr
 // Data parallel index version appends _di to name
-func (st *Stats) SetIntTensorDi(name string, di int, tsr *etensor.Int) {
+func (st *Stats) SetIntTensorDi(name string, di int, tsr *tensor.Int) {
 	st.IntTensors[DiName(name, di)] = tsr
 }
 
@@ -385,11 +385,11 @@ func (st *Stats) SimMat(name string) *simat.SimMat {
 	return sm
 }
 
-// Plot returns an eplot.Plot2D of given name, creating if not yet made
-func (st *Stats) Plot(name string) *eplot.Plot2D {
+// Plot returns an plotview.PlotView of given name, creating if not yet made
+func (st *Stats) Plot(name string) *plotview.PlotView {
 	pl, has := st.Plots[name]
 	if !has {
-		pl = &eplot.Plot2D{}
+		pl = &plotview.PlotView{}
 		pl.InitName(pl, name) // any Ki obj needs this
 		st.Plots[name] = pl
 	}

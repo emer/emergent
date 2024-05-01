@@ -4,9 +4,7 @@
 
 package prjn
 
-import (
-	"github.com/emer/etable/v2/etensor"
-)
+import "cogentcore.org/core/tensor"
 
 // PoolSameUnit connects a given unit to the unit at the same index
 // across all the pools in a layer.
@@ -30,7 +28,7 @@ func (ot *PoolSameUnit) Name() string {
 	return "PoolSameUnit"
 }
 
-func (ot *PoolSameUnit) Connect(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolSameUnit) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	switch {
 	case send.NumDims() == 4 && recv.NumDims() == 4:
 		return ot.ConnectPools(send, recv, same)
@@ -45,13 +43,13 @@ func (ot *PoolSameUnit) Connect(send, recv *etensor.Shape, same bool) (sendn, re
 }
 
 // ConnectPools is when both recv and send have pools
-func (ot *PoolSameUnit) ConnectPools(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolSameUnit) ConnectPools(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
-	sNp := send.Dim(0) * send.Dim(1)
-	rNp := recv.Dim(0) * recv.Dim(1)
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	sNp := send.DimSize(0) * send.DimSize(1)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 	rnv := recvn.Values
 	snv := sendn.Values
 	for rpi := 0; rpi < rNp; rpi++ {
@@ -76,12 +74,12 @@ func (ot *PoolSameUnit) ConnectPools(send, recv *etensor.Shape, same bool) (send
 }
 
 // ConnectRecvPool is when recv has pools but send doesn't
-func (ot *PoolSameUnit) ConnectRecvPool(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolSameUnit) ConnectRecvPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
-	rNp := recv.Dim(0) * recv.Dim(1)
-	sNu := send.Dim(0) * send.Dim(1)
-	rNu := recv.Dim(2) * recv.Dim(3)
+	rNp := recv.DimSize(0) * recv.DimSize(1)
+	sNu := send.DimSize(0) * send.DimSize(1)
+	rNu := recv.DimSize(2) * recv.DimSize(3)
 	rnv := recvn.Values
 	snv := sendn.Values
 	for rpi := 0; rpi < rNp; rpi++ {
@@ -101,12 +99,12 @@ func (ot *PoolSameUnit) ConnectRecvPool(send, recv *etensor.Shape, same bool) (s
 }
 
 // ConnectSendPool is when send has pools but recv doesn't
-func (ot *PoolSameUnit) ConnectSendPool(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolSameUnit) ConnectSendPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
-	sNp := send.Dim(0) * send.Dim(1)
-	sNu := send.Dim(2) * send.Dim(3)
-	rNu := recv.Dim(0) * recv.Dim(1)
+	sNp := send.DimSize(0) * send.DimSize(1)
+	sNu := send.DimSize(2) * send.DimSize(3)
+	rNu := recv.DimSize(0) * recv.DimSize(1)
 	rnv := recvn.Values
 	snv := sendn.Values
 	for rui := 0; rui < rNu; rui++ {
@@ -126,11 +124,11 @@ func (ot *PoolSameUnit) ConnectSendPool(send, recv *etensor.Shape, same bool) (s
 }
 
 // copy of OneToOne.Connect
-func (ot *PoolSameUnit) ConnectOneToOne(send, recv *etensor.Shape, same bool) (sendn, recvn *etensor.Int32, cons *etensor.Bits) {
+func (ot *PoolSameUnit) ConnectOneToOne(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
-	sNu := send.Dim(0) * send.Dim(1)
-	rNu := recv.Dim(0) * recv.Dim(1)
+	sNu := send.DimSize(0) * send.DimSize(1)
+	rNu := recv.DimSize(0) * recv.DimSize(1)
 	rnv := recvn.Values
 	snv := sendn.Values
 	for rui := 0; rui < rNu; rui++ {
