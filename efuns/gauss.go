@@ -16,7 +16,7 @@ import (
 // using given sigma standard deviation, without normalizing area under gaussian
 // (i.e., max value is 1 at dist = 0)
 func GaussVecDistNoNorm(a, b math32.Vector2, sigma float32) float32 {
-	dsq := a.DistToSquared(b)
+	dsq := a.DistanceToSquared(b)
 	return math32.FastExp((-0.5 * dsq) / (sigma * sigma))
 }
 
