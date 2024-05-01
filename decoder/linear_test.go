@@ -94,50 +94,58 @@ func TestLinearLogistic(t *testing.T) {
 
 func TestInputPool1D(t *testing.T) {
 	dec := Linear{}
-	shape := tensor.NewShape([]int{1, 5, 6, 6}, nil, nil)
+	shape := tensor.NewShape([]int{1, 5, 6, 6})
 	vals := make([]float32, shape.Len())
 	for i := range vals {
 		vals[i] = float32(i)
 	}
-	tensor := tensor.NewFloat32Shape(shape, vals)
-	layer := TestLayer{tensors: map[string]tensor.Tensor{"var0": tensor}}
+	tsr := tensor.NewFloat32(shape.Sizes)
+	tsr.SetNumRows(1)
+	for i := range tsr.Values {
+		tsr.Values[i] = vals[i]
+	}
+	layer := TestLayer{tensors: map[string]tensor.Tensor{"var0": tsr}}
 	dec.InitPool(2, &layer, 0, IdentityFunc)
 	dec.Input("var0", 0)
-	expected := tensor.SubSpace([]int{0, 0}).(*tensor.Float32).Values
+	expected := tsr.SubSpace([]int{0, 0}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 1, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{0, 1}).(*tensor.Float32).Values
+	expected = tsr.SubSpace([]int{0, 1}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 }
 
 func TestInputPool2D(t *testing.T) {
 	dec := Linear{}
-	shape := tensor.NewShape([]int{2, 5, 6, 6}, nil, nil)
+	shape := tensor.NewShape([]int{2, 5, 6, 6})
 	vals := make([]float32, shape.Len())
 	for i := range vals {
 		vals[i] = float32(i)
 	}
-	tensor := tensor.NewFloat32Shape(shape, vals)
-	layer := TestLayer{tensors: map[string]tensor.Tensor{"var0": tensor}}
+	tsr := tensor.NewFloat32(shape.Sizes)
+	for i := range tsr.Values {
+		tsr.Values[i] = vals[i]
+	}
+
+	layer := TestLayer{tensors: map[string]tensor.Tensor{"var0": tsr}}
 	dec.InitPool(2, &layer, 0, IdentityFunc)
 	dec.Input("var0", 0)
-	expected := tensor.SubSpace([]int{0, 0}).(*tensor.Float32).Values
+	expected := tsr.SubSpace([]int{0, 0}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 1, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{0, 1}).(*tensor.Float32).Values
+	expected = tsr.SubSpace([]int{0, 1}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 5, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{1, 0}).(*tensor.Float32).Values
+	expected = tsr.SubSpace([]int{1, 0}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 
 	dec.InitPool(2, &layer, 9, IdentityFunc)
 	dec.Input("var0", 0)
-	expected = tensor.SubSpace([]int{1, 4}).(*tensor.Float32).Values
+	expected = tsr.SubSpace([]int{1, 4}).(*tensor.Float32).Values
 	assert.Equal(t, expected, dec.Inputs)
 }

@@ -2,14 +2,16 @@ package patgen
 
 import (
 	"fmt"
-	"reflect"
+	"slices"
 	"testing"
 
 	"cogentcore.org/core/tensor/table"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/maps"
 )
 
 func TestVocab(t *testing.T) {
-	fmt.Println("Testing starts")
+	NewRand(10)
 	m := make(Vocab)
 	AddVocabEmpty(m, "empty", 6, 3, 3)
 	AddVocabPermutedBinary(m, "A", 6, 3, 3, 0.3, 0.5)
@@ -20,35 +22,231 @@ func TestVocab(t *testing.T) {
 	VocabShuffle(m, []string{"B'"})
 	AddVocabClone(m, "B''", "B'")
 
-	fmt.Println("map")
-	fmt.Println(reflect.ValueOf(m).MapKeys())
+	keys := maps.Keys(m)
+	slices.Sort(keys)
+	exmap := `[A A' AB-C B B' B'' ctxt1 empty]`
+	// fmt.Println("map")
+	// fmt.Println(reflect.ValueOf(m).MapKeys())
+	assert.Equal(t, exmap, fmt.Sprintf("%v", keys))
 
-	fmt.Println("empty")
-	fmt.Println(m["empty"].String())
+	exempty := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       0       0 
+[0 1]:       0       0       0 
+[0 2]:       0       0       0 
+[1 0]:       0       0       0 
+[1 1]:       0       0       0 
+[1 2]:       0       0       0 
+[2 0]:       0       0       0 
+[2 1]:       0       0       0 
+[2 2]:       0       0       0 
+[3 0]:       0       0       0 
+[3 1]:       0       0       0 
+[3 2]:       0       0       0 
+[4 0]:       0       0       0 
+[4 1]:       0       0       0 
+[4 2]:       0       0       0 
+[5 0]:       0       0       0 
+[5 1]:       0       0       0 
+[5 2]:       0       0       0 
+`
+	// fmt.Println("empty")
+	// fmt.Println(m["empty"].String())
+	assert.Equal(t, exempty, m["empty"].String())
 
-	fmt.Println("A")
-	fmt.Println(m["A"].String())
+	exa := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       0       0 
+[1 1]:       1       0       1 
+[1 2]:       0       1       0 
+[2 0]:       1       0       1 
+[2 1]:       0       0       0 
+[2 2]:       0       1       0 
+[3 0]:       0       1       0 
+[3 1]:       0       1       0 
+[3 2]:       0       0       1 
+[4 0]:       0       0       0 
+[4 1]:       0       1       0 
+[4 2]:       1       1       0 
+[5 0]:       0       0       0 
+[5 1]:       1       0       0 
+[5 2]:       1       0       1 
+`
 
-	fmt.Println("B")
-	fmt.Println(m["B"].String())
+	// fmt.Println("A")
+	// fmt.Println(m["A"].String())
+	assert.Equal(t, exa, m["A"].String())
 
-	fmt.Println("ctxt1")
-	fmt.Println(m["ctxt1"].String())
+	exb := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       0       1 
+[1 1]:       0       1       0 
+[1 2]:       1       0       0 
+[2 0]:       0       0       1 
+[2 1]:       0       1       0 
+[2 2]:       1       0       0 
+[3 0]:       0       1       0 
+[3 1]:       0       1       0 
+[3 2]:       1       0       0 
+[4 0]:       0       1       0 
+[4 1]:       0       1       0 
+[4 2]:       1       0       0 
+[5 0]:       0       1       1 
+[5 1]:       0       0       0 
+[5 2]:       1       0       0 
+`
 
-	fmt.Println("AB-C")
-	fmt.Println(m["AB-C"].String())
+	// fmt.Println("B")
+	// fmt.Println(m["B"].String())
+	assert.Equal(t, exb, m["B"].String())
 
-	fmt.Println("A'")
-	fmt.Println(m["A'"].String())
+	exctxt := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       1       1 
+[1 1]:       0       0       0 
+[1 2]:       1       0       0 
+[2 0]:       0       1       1 
+[2 1]:       0       0       0 
+[2 2]:       1       0       0 
+[3 0]:       0       1       1 
+[3 1]:       0       0       0 
+[3 2]:       1       0       0 
+[4 0]:       0       1       1 
+[4 1]:       0       0       0 
+[4 2]:       1       0       0 
+[5 0]:       0       1       1 
+[5 1]:       0       0       0 
+[5 2]:       1       0       0 
+`
 
-	fmt.Println("B'")
-	fmt.Println(m["B'"].String())
+	// fmt.Println("ctxt1")
+	// fmt.Println(m["ctxt1"].String())
+	assert.Equal(t, exctxt, m["ctxt1"].String())
 
-	fmt.Println("B''")
-	fmt.Println(m["B''"].String())
+	exabc := `Tensor: [row: 12, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       0       0 
+[1 1]:       1       0       1 
+[1 2]:       0       1       0 
+[2 0]:       1       0       1 
+[2 1]:       0       0       0 
+[2 2]:       0       1       0 
+[3 0]:       0       1       0 
+[3 1]:       0       1       0 
+[3 2]:       0       0       1 
+[4 0]:       0       0       0 
+[4 1]:       0       1       0 
+[4 2]:       1       1       0 
+[5 0]:       0       0       0 
+[5 1]:       1       0       0 
+[5 2]:       1       0       1 
+[6 0]:       0       1       1 
+[6 1]:       0       0       0 
+[6 2]:       1       0       0 
+[7 0]:       0       0       1 
+[7 1]:       0       1       0 
+[7 2]:       1       0       0 
+[8 0]:       0       0       1 
+[8 1]:       0       1       0 
+[8 2]:       1       0       0 
+[9 0]:       0       1       0 
+[9 1]:       0       1       0 
+[9 2]:       1       0       0 
+[10 0]:       0       1       0 
+[10 1]:       0       1       0 
+[10 2]:       1       0       0 
+[11 0]:       0       1       1 
+[11 1]:       0       0       0 
+[11 2]:       1       0       0 
+`
+	// fmt.Println("AB-C")
+	// fmt.Println(m["AB-C"].String())
+	assert.Equal(t, exabc, m["AB-C"].String())
+
+	exap := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       0       0 
+[1 1]:       1       0       1 
+[1 2]:       0       1       0 
+[2 0]:       1       0       1 
+[2 1]:       0       0       0 
+[2 2]:       0       1       0 
+[3 0]:       0       1       0 
+[3 1]:       0       1       0 
+[3 2]:       0       0       1 
+[4 0]:       0       0       0 
+[4 1]:       0       1       0 
+[4 2]:       1       1       0 
+[5 0]:       0       0       0 
+[5 1]:       1       0       0 
+[5 2]:       1       0       1 
+`
+
+	// fmt.Println("A'")
+	// fmt.Println(m["A'"].String())
+	assert.Equal(t, exap, m["A'"].String())
+
+	exbp := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       1       0 
+[1 1]:       0       1       0 
+[1 2]:       1       0       0 
+[2 0]:       0       0       1 
+[2 1]:       0       1       0 
+[2 2]:       1       0       0 
+[3 0]:       0       0       1 
+[3 1]:       0       1       0 
+[3 2]:       1       0       0 
+[4 0]:       0       1       1 
+[4 1]:       0       0       0 
+[4 2]:       1       0       0 
+[5 0]:       0       1       0 
+[5 1]:       0       1       0 
+[5 2]:       1       0       0 
+`
+
+	// fmt.Println("B'")
+	// fmt.Println(m["B'"].String())
+	assert.Equal(t, exbp, m["B'"].String())
+
+	exbpp := `Tensor: [row: 6, Y: 3, X: 3]
+[0 0]:       0       1       1 
+[0 1]:       0       0       0 
+[0 2]:       1       0       0 
+[1 0]:       0       1       0 
+[1 1]:       0       1       0 
+[1 2]:       1       0       0 
+[2 0]:       0       0       1 
+[2 1]:       0       1       0 
+[2 2]:       1       0       0 
+[3 0]:       0       0       1 
+[3 1]:       0       1       0 
+[3 2]:       1       0       0 
+[4 0]:       0       1       1 
+[4 1]:       0       0       0 
+[4 2]:       1       0       0 
+[5 0]:       0       1       0 
+[5 1]:       0       1       0 
+[5 2]:       1       0       0 
+`
+
+	// fmt.Println("B''")
+	// fmt.Println(m["B''"].String())
+	assert.Equal(t, exbpp, m["B''"].String())
 
 	// config pats
-	dt := table.NewTable("TrainAB")
+	dt := table.NewTable(0, "TrainAB")
 	InitPats(dt, "TrainAB", "describe", "Input", "ECout", 6, 3, 2, 3, 3)
 	MixPats(dt, m, "Input", []string{"A", "B", "ctxt1", "ctxt1", "empty", "B'"})
 	MixPats(dt, m, "ECout", []string{"A", "B", "ctxt1", "ctxt1", "empty", "B'"})
@@ -56,11 +254,129 @@ func TestVocab(t *testing.T) {
 	// try shuffle
 	Shuffle(dt, []int{0, 1, 2, 3, 4, 5}, []string{"Input", "ECout"}, false)
 
-	fmt.Println("Input Pats")
-	fmt.Println(dt.ColumnByName("Input").Shape().Sizes)
-	fmt.Println(dt.ColumnByName("Input").T())
+	exip := `Tensor: [Row: 6, ySize: 3, xSize: 2, poolY: 3, poolX: 3]
+[0 0 0]:       0       0       0       0       1       0 
+[0 0 1]:       0       1       0       0       1       0 
+[0 0 2]:       1       1       0       1       0       0 
+[0 1 0]:       0       1       1       0       1       1 
+[0 1 1]:       0       0       0       0       0       0 
+[0 1 2]:       1       0       0       1       0       0 
+[0 2 0]:       0       0       0       0       1       1 
+[0 2 1]:       0       0       0       0       0       0 
+[0 2 2]:       0       0       0       1       0       0 
+[1 0 0]:       0       1       0       0       1       0 
+[1 0 1]:       0       1       0       0       1       0 
+[1 0 2]:       0       0       1       1       0       0 
+[1 1 0]:       0       1       1       0       1       1 
+[1 1 1]:       0       0       0       0       0       0 
+[1 1 2]:       1       0       0       1       0       0 
+[1 2 0]:       0       0       0       0       0       1 
+[1 2 1]:       0       0       0       0       1       0 
+[1 2 2]:       0       0       0       1       0       0 
+[2 0 0]:       1       0       1       0       0       1 
+[2 0 1]:       0       0       0       0       1       0 
+[2 0 2]:       0       1       0       1       0       0 
+[2 1 0]:       0       1       1       0       1       1 
+[2 1 1]:       0       0       0       0       0       0 
+[2 1 2]:       1       0       0       1       0       0 
+[2 2 0]:       0       0       0       0       0       1 
+[2 2 1]:       0       0       0       0       1       0 
+[2 2 2]:       0       0       0       1       0       0 
+[3 0 0]:       0       0       0       0       0       1 
+[3 0 1]:       1       0       1       0       1       0 
+[3 0 2]:       0       1       0       1       0       0 
+[3 1 0]:       0       1       1       0       1       1 
+[3 1 1]:       0       0       0       0       0       0 
+[3 1 2]:       1       0       0       1       0       0 
+[3 2 0]:       0       0       0       0       1       0 
+[3 2 1]:       0       0       0       0       1       0 
+[3 2 2]:       0       0       0       1       0       0 
+[4 0 0]:       0       0       0       0       1       1 
+[4 0 1]:       1       0       0       0       0       0 
+[4 0 2]:       1       0       1       1       0       0 
+[4 1 0]:       0       1       1       0       1       1 
+[4 1 1]:       0       0       0       0       0       0 
+[4 1 2]:       1       0       0       1       0       0 
+[4 2 0]:       0       0       0       0       1       0 
+[4 2 1]:       0       0       0       0       1       0 
+[4 2 2]:       0       0       0       1       0       0 
+[5 0 0]:       0       1       1       0       1       1 
+[5 0 1]:       0       0       0       0       0       0 
+[5 0 2]:       1       0       0       1       0       0 
+[5 1 0]:       0       1       1       0       1       1 
+[5 1 1]:       0       0       0       0       0       0 
+[5 1 2]:       1       0       0       1       0       0 
+[5 2 0]:       0       0       0       0       1       1 
+[5 2 1]:       0       0       0       0       0       0 
+[5 2 2]:       0       0       0       1       0       0 
+`
+	// fmt.Println("Input Pats")
+	// fmt.Println(dt.ColumnByName("Input").Shape().Sizes)
+	// fmt.Println(dt.ColumnByName("Input").String())
+	assert.Equal(t, []int{6, 3, 2, 3, 3}, dt.ColumnByName("Input").Shape().Sizes)
+	assert.Equal(t, exip, dt.ColumnByName("Input").String())
 
-	fmt.Println("ECout Pats")
-	fmt.Println(dt.ColumnByName("ECout").Shape().Sizes)
-	fmt.Println(dt.ColumnByName("ECout").T())
+	exop := `Tensor: [Row: 6, ySize: 3, xSize: 2, poolY: 3, poolX: 3]
+[0 0 0]:       0       0       0       0       1       0 
+[0 0 1]:       0       1       0       0       1       0 
+[0 0 2]:       1       1       0       1       0       0 
+[0 1 0]:       0       1       1       0       1       1 
+[0 1 1]:       0       0       0       0       0       0 
+[0 1 2]:       1       0       0       1       0       0 
+[0 2 0]:       0       0       0       0       1       1 
+[0 2 1]:       0       0       0       0       0       0 
+[0 2 2]:       0       0       0       1       0       0 
+[1 0 0]:       0       1       0       0       1       0 
+[1 0 1]:       0       1       0       0       1       0 
+[1 0 2]:       0       0       1       1       0       0 
+[1 1 0]:       0       1       1       0       1       1 
+[1 1 1]:       0       0       0       0       0       0 
+[1 1 2]:       1       0       0       1       0       0 
+[1 2 0]:       0       0       0       0       0       1 
+[1 2 1]:       0       0       0       0       1       0 
+[1 2 2]:       0       0       0       1       0       0 
+[2 0 0]:       1       0       1       0       0       1 
+[2 0 1]:       0       0       0       0       1       0 
+[2 0 2]:       0       1       0       1       0       0 
+[2 1 0]:       0       1       1       0       1       1 
+[2 1 1]:       0       0       0       0       0       0 
+[2 1 2]:       1       0       0       1       0       0 
+[2 2 0]:       0       0       0       0       0       1 
+[2 2 1]:       0       0       0       0       1       0 
+[2 2 2]:       0       0       0       1       0       0 
+[3 0 0]:       0       0       0       0       0       1 
+[3 0 1]:       1       0       1       0       1       0 
+[3 0 2]:       0       1       0       1       0       0 
+[3 1 0]:       0       1       1       0       1       1 
+[3 1 1]:       0       0       0       0       0       0 
+[3 1 2]:       1       0       0       1       0       0 
+[3 2 0]:       0       0       0       0       1       0 
+[3 2 1]:       0       0       0       0       1       0 
+[3 2 2]:       0       0       0       1       0       0 
+[4 0 0]:       0       0       0       0       1       1 
+[4 0 1]:       1       0       0       0       0       0 
+[4 0 2]:       1       0       1       1       0       0 
+[4 1 0]:       0       1       1       0       1       1 
+[4 1 1]:       0       0       0       0       0       0 
+[4 1 2]:       1       0       0       1       0       0 
+[4 2 0]:       0       0       0       0       1       0 
+[4 2 1]:       0       0       0       0       1       0 
+[4 2 2]:       0       0       0       1       0       0 
+[5 0 0]:       0       1       1       0       1       1 
+[5 0 1]:       0       0       0       0       0       0 
+[5 0 2]:       1       0       0       1       0       0 
+[5 1 0]:       0       1       1       0       1       1 
+[5 1 1]:       0       0       0       0       0       0 
+[5 1 2]:       1       0       0       1       0       0 
+[5 2 0]:       0       0       0       0       1       1 
+[5 2 1]:       0       0       0       0       0       0 
+[5 2 2]:       0       0       0       1       0       0 
+`
+
+	// fmt.Println("ECout Pats")
+	// fmt.Println(dt.ColumnByName("ECout").Shape().Sizes)
+	// fmt.Println(dt.ColumnByName("ECout").String())
+
+	assert.Equal(t, []int{6, 3, 2, 3, 3}, dt.ColumnByName("ECout").Shape().Sizes)
+	assert.Equal(t, exop, dt.ColumnByName("ECout").String())
 }

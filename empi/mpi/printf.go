@@ -38,7 +38,7 @@ func Println(fs ...any) {
 	if WorldRank() > 0 {
 		AllPrintln(fs...)
 	} else {
-		fmt.Println(fs)
+		fmt.Println(fs...)
 	}
 }
 

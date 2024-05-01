@@ -8,18 +8,15 @@ import (
 	"math"
 	"testing"
 
-	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
 )
 
 func TestGaussianGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := table.Schema{
-		{"Val", reflect.Float32, nil, nil},
-	}
 	dt := &table.Table{}
-	dt.SetFromSchema(sch, nsamp)
+	dt.AddFloat32Column("Val")
+	dt.SetNumRows(nsamp)
 
 	mean := 0.5
 	sig := 0.25
@@ -30,15 +27,15 @@ func TestGaussianGen(t *testing.T) {
 		dt.SetFloat("Val", i, vl)
 	}
 	ix := table.NewIndexView(dt)
-	desc := agg.DescAll(ix)
+	desc := stats.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
-	// minRow := desc.RowsByString("Agg", "Min", table.Equals, table.UseCase)[0]
-	// maxRow := desc.RowsByString("Agg", "Max", table.Equals, table.UseCase)[0]
+	meanRow := desc.RowsByString("Stat", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Stat", "Std", table.Equals, table.UseCase)[0]
+	// minRow := desc.RowsByString("Stat", "Min", table.Equals, table.UseCase)[0]
+	// maxRow := desc.RowsByString("Stat", "Max", table.Equals, table.UseCase)[0]
 
-	actMean := desc.CellFloat("Val", meanRow)
-	actStd := desc.CellFloat("Val", stdRow)
+	actMean := desc.Float("Val", meanRow)
+	actStd := desc.Float("Val", stdRow)
 
 	if math.Abs(actMean-mean) > tol {
 		t.Errorf("Gaussian: mean %g\t out of tolerance vs target: %g\n", actMean, mean)
@@ -53,11 +50,9 @@ func TestGaussianGen(t *testing.T) {
 
 func TestBinomialGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := table.Schema{
-		{"Val", reflect.Float32, nil, nil},
-	}
 	dt := &table.Table{}
-	dt.SetFromSchema(sch, nsamp)
+	dt.AddFloat32Column("Val")
+	dt.SetNumRows(nsamp)
 
 	n := 1.0
 	p := 0.5
@@ -68,17 +63,17 @@ func TestBinomialGen(t *testing.T) {
 		dt.SetFloat("Val", i, vl)
 	}
 	ix := table.NewIndexView(dt)
-	desc := agg.DescAll(ix)
+	desc := stats.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
-	minRow := desc.RowsByString("Agg", "Min", table.Equals, table.UseCase)[0]
-	maxRow := desc.RowsByString("Agg", "Max", table.Equals, table.UseCase)[0]
+	meanRow := desc.RowsByString("Stat", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Stat", "Std", table.Equals, table.UseCase)[0]
+	minRow := desc.RowsByString("Stat", "Min", table.Equals, table.UseCase)[0]
+	maxRow := desc.RowsByString("Stat", "Max", table.Equals, table.UseCase)[0]
 
-	actMean := desc.CellFloat("Val", meanRow)
-	actStd := desc.CellFloat("Val", stdRow)
-	actMin := desc.CellFloat("Val", minRow)
-	actMax := desc.CellFloat("Val", maxRow)
+	actMean := desc.Float("Val", meanRow)
+	actStd := desc.Float("Val", stdRow)
+	actMin := desc.Float("Val", minRow)
+	actMax := desc.Float("Val", maxRow)
 
 	mean := n * p
 	if math.Abs(actMean-mean) > tol {
@@ -101,11 +96,9 @@ func TestBinomialGen(t *testing.T) {
 
 func TestPoissonGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := table.Schema{
-		{"Val", reflect.Float32, nil, nil},
-	}
 	dt := &table.Table{}
-	dt.SetFromSchema(sch, nsamp)
+	dt.AddFloat32Column("Val")
+	dt.SetNumRows(nsamp)
 
 	lambda := 10.0
 	tol := 1e-2
@@ -115,17 +108,17 @@ func TestPoissonGen(t *testing.T) {
 		dt.SetFloat("Val", i, vl)
 	}
 	ix := table.NewIndexView(dt)
-	desc := agg.DescAll(ix)
+	desc := stats.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
-	minRow := desc.RowsByString("Agg", "Min", table.Equals, table.UseCase)[0]
-	// maxRow := desc.RowsByString("Agg", "Max", table.Equals, table.UseCase)[0]
+	meanRow := desc.RowsByString("Stat", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Stat", "Std", table.Equals, table.UseCase)[0]
+	minRow := desc.RowsByString("Stat", "Min", table.Equals, table.UseCase)[0]
+	// maxRow := desc.RowsByString("Stat", "Max", table.Equals, table.UseCase)[0]
 
-	actMean := desc.CellFloat("Val", meanRow)
-	actStd := desc.CellFloat("Val", stdRow)
-	actMin := desc.CellFloat("Val", minRow)
-	// actMax := desc.CellFloat("Val", maxRow)
+	actMean := desc.Float("Val", meanRow)
+	actStd := desc.Float("Val", stdRow)
+	actMin := desc.Float("Val", minRow)
+	// actMax := desc.Float("Val", maxRow)
 
 	mean := lambda
 	if math.Abs(actMean-mean) > tol {
@@ -148,11 +141,9 @@ func TestPoissonGen(t *testing.T) {
 
 func TestGammaGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := table.Schema{
-		{"Val", reflect.Float32, nil, nil},
-	}
 	dt := &table.Table{}
-	dt.SetFromSchema(sch, nsamp)
+	dt.AddFloat32Column("Val")
+	dt.SetNumRows(nsamp)
 
 	alpha := 0.5
 	beta := 0.8
@@ -163,13 +154,13 @@ func TestGammaGen(t *testing.T) {
 		dt.SetFloat("Val", i, vl)
 	}
 	ix := table.NewIndexView(dt)
-	desc := agg.DescAll(ix)
+	desc := stats.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
+	meanRow := desc.RowsByString("Stat", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Stat", "Std", table.Equals, table.UseCase)[0]
 
-	actMean := desc.CellFloat("Val", meanRow)
-	actStd := desc.CellFloat("Val", stdRow)
+	actMean := desc.Float("Val", meanRow)
+	actStd := desc.Float("Val", stdRow)
 
 	mean := alpha / beta
 	if math.Abs(actMean-mean) > tol {
@@ -186,11 +177,9 @@ func TestGammaGen(t *testing.T) {
 
 func TestBetaGen(t *testing.T) {
 	nsamp := int(1e6)
-	sch := table.Schema{
-		{"Val", reflect.Float32, nil, nil},
-	}
 	dt := &table.Table{}
-	dt.SetFromSchema(sch, nsamp)
+	dt.AddFloat32Column("Val")
+	dt.SetNumRows(nsamp)
 
 	alpha := 0.5
 	beta := 0.8
@@ -201,13 +190,13 @@ func TestBetaGen(t *testing.T) {
 		dt.SetFloat("Val", i, vl)
 	}
 	ix := table.NewIndexView(dt)
-	desc := agg.DescAll(ix)
+	desc := stats.DescAll(ix)
 
-	meanRow := desc.RowsByString("Agg", "Mean", table.Equals, table.UseCase)[0]
-	stdRow := desc.RowsByString("Agg", "Std", table.Equals, table.UseCase)[0]
+	meanRow := desc.RowsByString("Stat", "Mean", table.Equals, table.UseCase)[0]
+	stdRow := desc.RowsByString("Stat", "Std", table.Equals, table.UseCase)[0]
 
-	actMean := desc.CellFloat("Val", meanRow)
-	actStd := desc.CellFloat("Val", stdRow)
+	actMean := desc.Float("Val", meanRow)
+	actStd := desc.Float("Val", stdRow)
 
 	mean := alpha / (alpha + beta)
 	if math.Abs(actMean-mean) > tol {
