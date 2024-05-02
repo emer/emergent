@@ -135,7 +135,7 @@ func (pc *TwoD) EncodeImpl(pat tensor.Tensor, val math32.Vector2, add bool) erro
 			switch pc.Code {
 			case GaussBump:
 				dist := trg.Sub(val).Mul(gnrm)
-				act = math32.Exp(-dist.LengthSq())
+				act = math32.Exp(-dist.LengthSquared())
 			case Localist:
 				dist := trg.Sub(val)
 				dist.X = math32.Abs(dist.X)

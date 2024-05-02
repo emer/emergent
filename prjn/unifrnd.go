@@ -50,7 +50,9 @@ func (ur *UnifRnd) InitRand() {
 		ur.Rand.Seed(ur.RndSeed)
 		return
 	}
-	ur.RndSeed = int64(rand.Uint64())
+	if ur.RndSeed == 0 {
+		ur.RndSeed = int64(rand.Uint64())
+	}
 	ur.Rand = erand.NewSysRand(ur.RndSeed)
 }
 

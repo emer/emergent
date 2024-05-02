@@ -96,7 +96,7 @@ func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *te
 						sp.X = edge.WrapMinDist(sp.X, float32(sNx), sctr.X)
 						sp.Y = edge.WrapMinDist(sp.Y, float32(sNy), sctr.Y)
 					}
-					d := int(math32.Round(sp.DistTo(sctr)))
+					d := int(math32.Round(sp.DistanceTo(sctr)))
 					if d <= cr.Radius {
 						ri := tensor.Prjn2DIndex(recv, false, ry, rx)
 						si := tensor.Prjn2DIndex(send, false, sy, sx)
