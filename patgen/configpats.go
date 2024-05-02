@@ -14,6 +14,7 @@ import (
 
 // InitPats initiates patterns to be used in MixPats
 func InitPats(dt *table.Table, name, desc, inputName, outputName string, listSize, ySize, xSize, poolY, poolX int) {
+	dt.DeleteAll()
 	dt.SetMetaData("name", name)
 	dt.SetMetaData("desc", desc)
 	dt.AddStringColumn("Name")

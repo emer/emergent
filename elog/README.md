@@ -209,7 +209,7 @@ Overall summary performance statistics have multiple Write functions for differe
             etime.Scope(etime.AllModes, etime.Trial): func(ctx *elog.Context) {
                 ctx.SetStatFloat("TrlUnitErr")
             }, etime.Scope(etime.AllModes, etime.Epoch): func(ctx *elog.Context) {
-                ctx.SetAgg(ctx.Mode, etime.Trial, agg.AggMean)
+                ctx.SetAgg(ctx.Mode, etime.Trial, stats.Mean)
             }, etime.Scope(etime.AllModes, etime.Run): func(ctx *elog.Context) {
                 ix := ctx.LastNRows(ctx.Mode, etime.Epoch, 5)
                 ctx.SetFloat64(agg.Mean(ix, ctx.Item.Name)[0])
@@ -251,7 +251,7 @@ Iterate over layers of interest (use `LayersByClass` function). It is *essential
             Type:   reflect.Float64,
             Plot:   false,
             FixMax: false,
-            Range:  minmax.F64{Max: 1},
+            Range:  minmax.F32{Max: 1},
             Write: elog.WriteMap{
                 etime.Scope(etime.Train, etime.Epoch): func(ctx *elog.Context) {
                     ly := ctx.Layer(clnm).(axon.AxonLayer).AsAxon()
@@ -268,13 +268,13 @@ Here's how to log a projection variable:
         Name:  clnm + "_FF_AvgMaxG",
         Type:  reflect.Float64,
         Plot:  false,
-        Range: minmax.F64{Max: 1},
+        Range: minmax.F32{Max: 1},
         Write: elog.WriteMap{
             etime.Scope(etime.Train, etime.Trial): func(ctx *elog.Context) {
                 ffpj := cly.RecvPrjn(0).(*axon.Prjn)
                 ctx.SetFloat32(ffpj.GScale.AvgMax)
             }, etime.Scope(etime.AllModes, etime.Epoch): func(ctx *elog.Context) {
-                ctx.SetAgg(ctx.Mode, etime.Trial, agg.AggMean)
+                ctx.SetAgg(ctx.Mode, etime.Trial, stats.Mean)
             }}})
 ```
 
@@ -293,7 +293,7 @@ A log column can be a tensor of any shape -- the `SetLayerTensor` method on the 
             Type:      reflect.Float64,
             CellShape: cly.Shape().Shp,
             FixMax:    true,
-            Range:     minmax.F64{Max: 1},
+            Range:     minmax.F32{Max: 1},
             Write: elog.WriteMap{
                 etime.Scope(etime.Test, etime.Trial): func(ctx *elog.Context) {
                     ctx.SetLayerTensor(clnm, "Act")
@@ -326,7 +326,7 @@ Here's how you record the data and log the resulting stats, using the `Analyze` 
             Type:      reflect.Float64,
             CellShape: cly.Shape().Shp,
             FixMax:    true,
-            Range:     minmax.F64{Max: 1},
+            Range:     minmax.F32{Max: 1},
             Write: elog.WriteMap{
                 etime.Scope(etime.Analyze, etime.Trial): func(ctx *elog.Context) {
                     ctx.SetLayerTensor(clnm, "ActM")
@@ -357,13 +357,13 @@ This item creates a tensor column that records the average error for each catego
         CellShape: []int{20},
         DimNames:  []string{"Cat"},
         Plot:      true,
-        Range:     minmax.F64{Min: 0},
+        Range:     minmax.F32{Min: 0},
         TensorIndex: -1, // plot all values
         Write: elog.WriteMap{
             etime.Scope(etime.Test, etime.Epoch): func(ctx *elog.Context) {
                 ix := ctx.Logs.IndexView(etime.Test, etime.Trial)
                 spl := split.GroupBy(ix, []string{"Cat"})
-                split.AggTry(spl, "Err", agg.AggMean)
+                split.AggTry(spl, "Err", stats.Mean)
                 cats := spl.AggsToTable(table.ColumnNameOnly)
                 ss.Logs.MiscTables[ctx.Item.Name] = cats
                 ctx.SetTensor(cats.Columns[1])
