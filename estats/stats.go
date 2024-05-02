@@ -9,6 +9,7 @@ package estats
 import (
 	"fmt"
 
+	"cogentcore.org/core/base/timer"
 	"cogentcore.org/core/plot/plotview"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/pca"
@@ -16,7 +17,6 @@ import (
 	"github.com/emer/emergent/v2/actrf"
 	"github.com/emer/emergent/v2/confusion"
 	"github.com/emer/emergent/v2/decoder"
-	"github.com/emer/emergent/v2/timer"
 )
 
 // Stats provides maps for storing statistics as named scalar and tensor values.

@@ -7,6 +7,7 @@ package elog
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/tensor/stats/split"
@@ -258,7 +259,7 @@ func (lg *Logs) AddPerTrlMSec(itemName string, times ...etime.Times) *Item {
 				tmr := ctx.Stats.StopTimer(nm)
 				trls := ctx.Logs.Table(ctx.Mode, times[2])
 				tmr.N = trls.Rows
-				pertrl := tmr.AvgMSecs()
+				pertrl := float64(tmr.Avg()) / float64(time.Millisecond)
 				if ctx.Row == 0 {
 					pertrl = 0 // first one is always inaccruate
 				}
