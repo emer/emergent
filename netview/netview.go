@@ -690,7 +690,6 @@ func (nv *NetView) ViewConfig() {
 // ViewDefaults are the default 3D view params
 func (nv *NetView) ViewDefaults() {
 	se := nv.SceneXYZ()
-	se.Defaults()
 	se.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1

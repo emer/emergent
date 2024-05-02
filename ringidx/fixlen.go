@@ -4,7 +4,7 @@
 
 package ringidx
 
-//gosl: start ringidx
+//gosl:start ringidx
 
 // FIx is a fixed-length ring index structure -- does not grow
 // or shrink dynamically.
@@ -39,4 +39,4 @@ func (fi *FIx) Shift(n uint32) {
 	fi.Zi = uint32(fi.Index(n))
 }
 
-//gosl: end ringidx
+//gosl:end ringidx

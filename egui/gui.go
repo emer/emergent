@@ -13,7 +13,7 @@ import (
 	"cogentcore.org/core/views"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
-	// _ "github.com/emer/gosl/v2/slboolview" // include to get gui views
+	// _ "cogentcore.org/core/vgpu/gosl/slboolview" // include to get gui views
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface
