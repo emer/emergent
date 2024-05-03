@@ -118,19 +118,13 @@ The following all work together to provide a convenient layer of abstraction for
 
 * [efuns](efuns) has misc special functions such as Gaussian and Sigmoid.
 
-* [randx](randx) has misc random-number generation support functionality, including `randx.RandParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
-
 * [esg](esg) is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
-
-* [evec](evec) has `Vector2i` which uses plain `int` X, Y fields, whereas the `math32` package uses `int32` which are needed for graphics but int is more convenient in models.
 
 * [popcode](popcode) supports the encoding and decoding of population codes -- distributed representations of numeric quantities across a population of neurons.  This is the `ScalarVal` functionality from C++ emergent, but now completely independent of any specific algorithm so it can be used anywhere.
 
 * [ringidx](ringidx) provides a wrap-around ring index for efficient use of a fixed buffer that overwrites the oldest items without any copying.
 
 * [stepper](stepper) provides dynamic stepping control at multiple levels -- used in `pvlv` model (contributed by Randy Gobbel).  This functionality is now available in [looper](looper) in a more robust and integrated form.
-
-* [timer](timer) is a simple interval timing struct, used for benchmarking / profiling etc.
 
 # Repositories
 
