@@ -26,7 +26,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 
 * Is a replacement for `ecmd` and includes the helper methods for saving log files etc.
 
-* A `map[string]any` type can be used for deferred raw params to be applied later (`Network`, `Env` etc).  Example: `Network = {'.PFCLayer:Layer.Inhib.Layer.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' =  '0.01'}` where the key expression contains the [params](../params) selector : path to variable.
+* A `map[string]any` type can be used for deferred raw params to be applied later (`Network`, `Env` etc).  Example: `Network = {'.PFCLayer:Layer.Inhib.Layer.Gi' = '2.4', '#VSPatchPath:Path.Learn.LRate' =  '0.01'}` where the key expression contains the [params](../params) selector : path to variable.
 
 * Supports full set of `Open` (file), `OpenFS` (takes fs.FS arg, e.g., for embedded), `Read` (bytes) methods for loading config files.  The overall `Config()` version uses `OpenWithIncludes` which processes includes -- others are just for single files.  Also supports `Write` and `Save` methods for saving from current state.
 
@@ -47,7 +47,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 ```toml
 [Params.Network]
   "#Output:Layer.Inhib.Layer.Gi" = 0.7
-  "Prjn:Prjn.Learn.LRate.Base" = 0.05
+  "Path:Path.Learn.LRate.Base" = 0.05
 ```
 
 * Field tag `default:"value"`, used in the [Cogent Core](https://cogentcore.org/core) GUI, sets the initial default value and is shown for the `-h` or `--help` usage info.

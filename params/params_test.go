@@ -14,11 +14,11 @@ import (
 var paramSets = Sets{
 	"Base": {Desc: "these are the best params", Sheets: Sheets{
 		"Network": &Sheet{
-			{Sel: "Prjn", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
+			{Sel: "Path", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
 				Params: Params{
-					"Prjn.Learn.Norm.On":     "true",
-					"Prjn.Learn.Momentum.On": "true",
-					"Prjn.Learn.WtBal.On":    "false",
+					"Path.Learn.Norm.On":     "true",
+					"Path.Learn.Momentum.On": "true",
+					"Path.Learn.WtBal.On":    "false",
 				}},
 			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
 				Params: Params{
@@ -32,9 +32,9 @@ var paramSets = Sets{
 				Params: Params{
 					"Layer.Inhib.Layer.Gi": "1.4",
 				}},
-			{Sel: ".Back", Desc: "top-down back-projections MUST have lower relative weight scale, otherwise network hallucinates",
+			{Sel: ".Back", Desc: "top-down back-pathways MUST have lower relative weight scale, otherwise network hallucinates",
 				Params: Params{
-					"Prjn.WtScale.Rel": "0.2",
+					"Path.WtScale.Rel": "0.2",
 				}},
 		},
 		"Sim": &Sheet{ // sim params apply to sim object
@@ -62,18 +62,18 @@ var paramSets = Sets{
 	}},
 	"NoMomentum": {Desc: "no momentum or normalization", Sheets: Sheets{
 		"Network": &Sheet{
-			{Sel: "Prjn", Desc: "no norm or momentum",
+			{Sel: "Path", Desc: "no norm or momentum",
 				Params: Params{
-					"Prjn.Learn.Norm.On":     "false",
-					"Prjn.Learn.Momentum.On": "false",
+					"Path.Learn.Norm.On":     "false",
+					"Path.Learn.Momentum.On": "false",
 				}},
 		},
 	}},
 	"WtBalOn": {Desc: "try with weight bal on", Sheets: Sheets{
 		"Network": &Sheet{
-			{Sel: "Prjn", Desc: "weight bal on",
+			{Sel: "Path", Desc: "weight bal on",
 				Params: Params{
-					"Prjn.Learn.WtBal.On": "true",
+					"Path.Learn.WtBal.On": "true",
 				}},
 		},
 	}},
@@ -82,11 +82,11 @@ var paramSets = Sets{
 var trgCode = `params.Sets{
 	{Desc: "these are the best params", Sheets: params.Sheets{
 		"Network": &params.Sheet{
-			{Sel: "Prjn", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
+			{Sel: "Path", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
 				Params: params.Params{
-					"Prjn.Learn.Momentum.On": "true",
-					"Prjn.Learn.Norm.On": "true",
-					"Prjn.Learn.WtBal.On": "false",
+					"Path.Learn.Momentum.On": "true",
+					"Path.Learn.Norm.On": "true",
+					"Path.Learn.WtBal.On": "false",
 				}},
 			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
 				Params: params.Params{
@@ -98,9 +98,9 @@ var trgCode = `params.Sets{
 				Params: params.Params{
 					"Layer.Inhib.Layer.Gi": "1.4",
 				}},
-			{Sel: ".Back", Desc: "top-down back-projections MUST have lower relative weight scale, otherwise network hallucinates",
+			{Sel: ".Back", Desc: "top-down back-pathways MUST have lower relative weight scale, otherwise network hallucinates",
 				Params: params.Params{
-					"Prjn.WtScale.Rel": "0.2",
+					"Path.WtScale.Rel": "0.2",
 				}},
 		},
 		"Sim": &params.Sheet{
@@ -128,18 +128,18 @@ var trgCode = `params.Sets{
 	}},
 	{Desc: "no momentum or normalization", Sheets: params.Sheets{
 		"Network": &params.Sheet{
-			{Sel: "Prjn", Desc: "no norm or momentum",
+			{Sel: "Path", Desc: "no norm or momentum",
 				Params: params.Params{
-					"Prjn.Learn.Momentum.On": "false",
-					"Prjn.Learn.Norm.On": "false",
+					"Path.Learn.Momentum.On": "false",
+					"Path.Learn.Norm.On": "false",
 				}},
 		},
 	}},
 	{Desc: "try with weight bal on", Sheets: params.Sheets{
 		"Network": &params.Sheet{
-			{Sel: "Prjn", Desc: "weight bal on",
+			{Sel: "Path", Desc: "weight bal on",
 				Params: params.Params{
-					"Prjn.Learn.WtBal.On": "true",
+					"Path.Learn.WtBal.On": "true",
 				}},
 		},
 	}},
@@ -160,7 +160,7 @@ func TestParamSetsWriteGo(t *testing.T) {
 }
 
 func TestParamSetsSet(t *testing.T) {
-	cval, err := paramSets.ParamValue("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err := paramSets.ParamValue("Base", "Network", "Path", "Path.Learn.WtBal.On")
 	if err != nil {
 		t.Error(err)
 	}
@@ -168,34 +168,34 @@ func TestParamSetsSet(t *testing.T) {
 	if cval != "false" {
 		t.Errorf("value should have been false: %s\n", cval)
 	}
-	err = paramSets.SetString("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", "true")
+	err = paramSets.SetString("Base", "Network", "Path", "Path.Learn.WtBal.On", "true")
 	if err != nil {
 		t.Error(err)
 	}
-	cval, err = paramSets.ParamValue("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Network", "Path", "Path.Learn.WtBal.On")
 	// fmt.Printf("new value: %s\n", cval)
 	if cval != "true" {
 		t.Errorf("value should have been true: %s\n", cval)
 	}
-	err = paramSets.SetFloat("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On", 5.1)
+	err = paramSets.SetFloat("Base", "Network", "Path", "Path.Learn.WtBal.On", 5.1)
 	if err != nil {
 		t.Error(err)
 	}
-	cval, err = paramSets.ParamValue("Base", "Network", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Network", "Path", "Path.Learn.WtBal.On")
 	// fmt.Printf("new value: %s\n", cval)
 	if cval != "5.1" {
 		t.Errorf("value should have been 5.1: %s\n", cval)
 	}
-	cval, err = paramSets.ParamValue("Basre", "Network2", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Basre", "Network2", "Path", "Path.Learn.WtBal.On")
 	if err == nil {
 		t.Errorf("Should have had an error")
 	}
 	// fmt.Printf("error: %s\n", err)
-	cval, err = paramSets.ParamValue("Base", "Network2", "Prjn", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Network2", "Path", "Path.Learn.WtBal.On")
 	if err == nil {
 		t.Errorf("Should have had an error")
 	}
-	cval, err = paramSets.ParamValue("Base", "Network", "Prjns", "Prjn.Learn.WtBal.On")
+	cval, err = paramSets.ParamValue("Base", "Network", "Paths", "Path.Learn.WtBal.On")
 	if err == nil {
 		t.Errorf("Should have had an error")
 	}

@@ -261,7 +261,7 @@ Iterate over layers of interest (use `LayersByClass` function). It is *essential
     }
 ```
 
-Here's how to log a projection variable:
+Here's how to log a pathway variable:
 
 ```Go
     ss.Logs.AddItem(&elog.Item{
@@ -271,7 +271,7 @@ Here's how to log a projection variable:
         Range: minmax.F32{Max: 1},
         Write: elog.WriteMap{
             etime.Scope(etime.Train, etime.Trial): func(ctx *elog.Context) {
-                ffpj := cly.RecvPrjn(0).(*axon.Prjn)
+                ffpj := cly.RecvPath(0).(*axon.Path)
                 ctx.SetFloat32(ffpj.GScale.AvgMax)
             }, etime.Scope(etime.AllModes, etime.Epoch): func(ctx *elog.Context) {
                 ctx.SetAgg(ctx.Mode, etime.Trial, stats.Mean)

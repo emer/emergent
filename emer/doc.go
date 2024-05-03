@@ -5,7 +5,7 @@
 /*
 Package emer provides minimal interfaces for the basic structural elements of neural networks
 including:
-* emer.Network, emer.Layer, emer.Unit, emer.Prjn (projection that interconnects layers)
+* emer.Network, emer.Layer, emer.Unit, emer.Path (pathway that interconnects layers)
 
 These interfaces are intended to be just sufficient to support visualization and generic
 analysis kinds of functions, but explicitly avoid exposing ANY of the algorithmic aspects,

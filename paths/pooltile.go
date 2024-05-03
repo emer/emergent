@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ import (
 // must specifically apply these to the receptive fields.
 type PoolTile struct {
 
-	// reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-projection or topo prjn when sending layer is larger than recv
+	// reciprocal topographic connectivity -- logic runs with recv <-> send -- produces symmetric back-pathway or topo path when sending layer is larger than recv
 	Recip bool
 
 	// size of receptive field tile, in terms of pools on the sending layer

@@ -30,8 +30,8 @@ func TestSaveWts(t *testing.T) {
 		un[i] = rand.Float32()
 	}
 	l1.Units["TrgAvg"] = un
-	l1.Prjns = make([]Prjn, 1)
-	pj := &l1.Prjns[0]
+	l1.Paths = make([]Path, 1)
+	pj := &l1.Paths[0]
 	pj.From = "Input"
 	pj.SetMetaData("GScale", "0.333")
 	pj.Rs = make([]Recv, 3)

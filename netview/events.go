@@ -72,8 +72,8 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		return
 	}
 	nv := sw.NetView
-	nv.Data.PrjnUnIndex = unIndex
-	nv.Data.PrjnLay = lay.Name()
+	nv.Data.PathUnIndex = unIndex
+	nv.Data.PathLay = lay.Name()
 	nv.UpdateView()
 	e.SetHandled()
 }

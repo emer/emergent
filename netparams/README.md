@@ -19,7 +19,7 @@ Sets {
         },
         Sel: ".Back" {
             Params: {
-                "Prjn.PrjnScale.Rel": "0.2",
+                "Path.PathScale.Rel": "0.2",
                 ...
             }
         }
@@ -44,9 +44,9 @@ Each `params.Sheet` consists of a collection of params.Sel elements which finall
 
 * `#Name` = a specific named object.
 
-The order of application within a given Sheet is also critical -- typically put the most general Type params first, then `.Class`, then the most specific `#Name` cases, to achieve within a given Sheet the same logic of establishing Base params for all types and then more specific overrides for special cases (e.g., an overall learning rate that appplies across all projections, but maybe a faster or slower one for a .Class or specific #Name'd projection).
+The order of application within a given Sheet is also critical -- typically put the most general Type params first, then `.Class`, then the most specific `#Name` cases, to achieve within a given Sheet the same logic of establishing Base params for all types and then more specific overrides for special cases (e.g., an overall learning rate that appplies across all pathways, but maybe a faster or slower one for a .Class or specific #Name'd pathway).
 
-There is a params.Styler interface with methods that any Go type can implement to provide these different labels.  The emer.Network, .Layer, and .Prjn interfaces each implement this interface.
+There is a params.Styler interface with methods that any Go type can implement to provide these different labels.  The emer.Network, .Layer, and .Path interfaces each implement this interface.
 
 Parameter values are stored as strings, which can represent any value.
 

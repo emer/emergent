@@ -151,7 +151,7 @@ func (nv *NetView) Record(counters string, rastCtr int) {
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
-	nv.Data.PrjnType = nv.Params.PrjnType
+	nv.Data.PathType = nv.Params.PathType
 	nv.Data.Record(nv.LastCtrs, rastCtr, nv.Params.Raster.Max)
 	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
 }
@@ -446,7 +446,7 @@ func (nv *NetView) RecTrackLatest() bool {
 	return true
 }
 
-// NetVarsList returns the list of layer and prjn variables for given network.
+// NetVarsList returns the list of layer and path variables for given network.
 // layEven ensures that the number of layer variables is an even number if true
 // (used for display but not storage).
 func (nv *NetView) NetVarsList(net emer.Network, layEven bool) (nvars, synvars []string) {
@@ -489,13 +489,13 @@ func (nv *NetView) VarsListUpdate() {
 	}
 
 	unprops := nv.Net.UnitVarProps()
-	prjnprops := nv.Net.SynVarProps()
+	pathprops := nv.Net.SynVarProps()
 	for _, nm := range nv.Vars {
 		vp := &VarParams{Var: nm}
 		vp.Defaults()
 		var vtag string
 		if strings.HasPrefix(nm, "r.") || strings.HasPrefix(nm, "s.") {
-			vtag = prjnprops[nm[2:]]
+			vtag = pathprops[nm[2:]]
 		} else {
 			vtag = unprops[nm]
 		}
@@ -584,13 +584,13 @@ func (nv *NetView) VarsConfig() {
 		return
 	}
 	unprops := nv.Net.UnitVarProps()
-	prjnprops := nv.Net.SynVarProps()
+	pathprops := nv.Net.SynVarProps()
 	for _, vn := range nv.Vars {
 		vn := vn
 		vb := core.NewButton(vl).SetText(vn).SetType(core.ButtonAction)
 		pstr := ""
 		if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
-			pstr = prjnprops[vn[2:]]
+			pstr = pathprops[vn[2:]]
 		} else {
 			pstr = unprops[vn]
 		}
@@ -771,7 +771,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	}
 	if !hasval {
 		scaled = 0
-		if lay.Name() == nv.Data.PrjnLay && idx1d == nv.Data.PrjnUnIndex {
+		if lay.Name() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
 			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor
@@ -872,7 +872,7 @@ func (nv *NetView) ConfigToolbar(tb *core.Toolbar) {
 		views.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
 		views.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
 		views.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
-		views.NewFuncButton(m, nv.ShowKeyPrjnParams).SetIcon(icons.Info)
+		views.NewFuncButton(m, nv.ShowKeyPathParams).SetIcon(icons.Info)
 	})
 	core.NewButton(tb).SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
 		views.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
@@ -1195,10 +1195,10 @@ func (nv *NetView) ShowKeyLayerParams() string { //types:add
 	return nds
 }
 
-// ShowKeyPrjnParams shows a dialog with a listing for all Recv projections in the network,
-// of the most important projection-level params (specific to each algorithm)
-func (nv *NetView) ShowKeyPrjnParams() string { //types:add
-	nds := nv.Net.KeyPrjnParams()
-	texteditor.TextDialog(nv, "Key Prjn Params: "+nv.Nm, nds)
+// ShowKeyPathParams shows a dialog with a listing for all Recv pathways in the network,
+// of the most important pathway-level params (specific to each algorithm)
+func (nv *NetView) ShowKeyPathParams() string { //types:add
+	nds := nv.Net.KeyPathParams()
+	texteditor.TextDialog(nv, "Key Path Params: "+nv.Nm, nds)
 	return nds
 }

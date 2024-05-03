@@ -25,7 +25,7 @@ type Layer struct {
 	Layer    string
 	MetaData map[string]string    // for optional layer-level params, metadata such as ActMAvg, ActPAvg
 	Units    map[string][]float32 // for unit-level adapting parameters
-	Prjns    []Prjn               // receiving projections
+	Paths    []Path               // receiving pathways
 }
 
 func (ly *Layer) SetMetaData(key, val string) {
@@ -35,15 +35,15 @@ func (ly *Layer) SetMetaData(key, val string) {
 	ly.MetaData[key] = val
 }
 
-// Prjn is temp structure for holding decoded weights, one for each projection
-type Prjn struct {
+// Path is temp structure for holding decoded weights, one for each pathway
+type Path struct {
 	From       string
-	MetaData   map[string]string    // used for optional prjn-level params, metadata such as GScale
-	MetaValues map[string][]float32 // optional values at the projection level
+	MetaData   map[string]string    // used for optional path-level params, metadata such as GScale
+	MetaValues map[string][]float32 // optional values at the pathway level
 	Rs         []Recv
 }
 
-func (pj *Prjn) SetMetaData(key, val string) {
+func (pj *Path) SetMetaData(key, val string) {
 	if pj.MetaData == nil {
 		pj.MetaData = make(map[string]string)
 	}

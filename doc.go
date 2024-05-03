@@ -10,7 +10,7 @@ This top-level of the repository has no functional code -- everything is organiz
 into the following sub-repositories:
 
 * emer: defines the primary structural interfaces for emergent, at the level of
-Network, Layer, and Prjn (projection).  These contain no algorithm-specific code
+Network, Layer, and Path (pathway).  These contain no algorithm-specific code
 and are only about the overall structure of a network, sufficient to support general
 purpose tools such as the 3D NetView.  It also houses widely used support classes used
 in algorithm-specific code, including things like MinMax and AvgMax, and also the
@@ -23,14 +23,14 @@ and easier support for making permuted random lists, etc.
 
 * netview provides the NetView interactive 3D network viewer, implemented in the Cogent Core 3D framework.
 
-* prjn is a separate package for defining patterns of connectivity between layers
+* path is a separate package for defining patterns of connectivity between layers
 (i.e., the ProjectionSpecs from C++ emergent).  This is done using a fully independent
 structure that *only* knows about the shapes of the two layers, and it returns a fully general
-bitmap representation of the pattern of connectivity between them.  The leabra.Prjn code
+bitmap representation of the pattern of connectivity between them.  The leabra.Path code
 then uses these patterns to do all the nitty-gritty of connecting up neurons.
-This makes the projection code *much* simpler compared to the ProjectionSpec in C++ emergent,
+This makes the pathway code *much* simpler compared to the ProjectionSpec in C++ emergent,
 which was involved in both creating the pattern and also all the complexity of setting up the
-actual connections themselves.  This should be the *last* time any of those projection patterns
+actual connections themselves.  This should be the *last* time any of those pathway patterns
 need to be written (having re-written this code too many times in the C++ version as the details
 of memory allocations changed).
 

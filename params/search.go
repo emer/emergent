@@ -10,7 +10,7 @@ type SearchValues struct {
 	// name of object with the parameter
 	Name string
 
-	// type of object with the parameter. This is a Base type name (e.g., Layer, Prjn),
+	// type of object with the parameter. This is a Base type name (e.g., Layer, Path),
 	// that is at the start of the path in Network params.
 	Type string
 

@@ -13,8 +13,8 @@ import (
 
 // Params is a name-value map for parameter values that can be applied
 // to any numeric type in any object.
-// The name must be a dot-separated path to a specific parameter, e.g., Prjn.Learn.Lrate
-// The first part of the path is the overall target object type, e.g., "Prjn" or "Layer",
+// The name must be a dot-separated path to a specific parameter, e.g., Path.Learn.Lrate
+// The first part of the path is the overall target object type, e.g., "Path" or "Layer",
 // which is used for determining if the parameter applies to a given object type.
 //
 // All of the params in one map must apply to the same target type because

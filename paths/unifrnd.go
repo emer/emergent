@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import (
 	"math"
@@ -17,17 +17,17 @@ import (
 // using a permuted (shuffled) list for without-replacement randomness,
 // and maintains its own local random number source and seed
 // which are initialized if Rand == nil -- usually best to keep this
-// specific to each instance of a projection so it is fully reproducible
+// specific to each instance of a pathway so it is fully reproducible
 // and doesn't interfere with other random number streams.
 type UnifRnd struct {
 
 	// probability of connection (0-1)
 	PCon float32 `min:"0" max:"1"`
 
-	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 
-	// reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down projection -- ESSENTIAL to use same RndSeed between two prjns to ensure symmetry
+	// reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down pathway -- ESSENTIAL to use same RndSeed between two paths to ensure symmetry
 	Recip bool
 
 	// random number source -- is created with its own separate source if nil

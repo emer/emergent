@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import (
 	"cogentcore.org/core/math32"
@@ -35,7 +35,7 @@ type Circle struct {
 	// if true, connectivity wraps around edges
 	Wrap bool
 
-	// if true, this prjn should set gaussian topographic weights, according to following parameters
+	// if true, this path should set gaussian topographic weights, according to following parameters
 	TopoWts bool
 
 	// gaussian sigma (width) as a proportion of the radius of the circle
@@ -44,7 +44,7 @@ type Circle struct {
 	// maximum weight value for GaussWts function -- multiplies values
 	MaxWt float32
 
-	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 }
 
@@ -68,8 +68,8 @@ func (cr *Circle) Name() string {
 
 func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy, sNx, _, _ := tensor.Prjn2DShape(send, false)
-	rNy, rNx, _, _ := tensor.Prjn2DShape(recv, false)
+	sNy, sNx, _, _ := tensor.Projection2DShape(send, false)
+	rNy, rNx, _, _ := tensor.Projection2DShape(recv, false)
 
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -98,8 +98,8 @@ func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *te
 					}
 					d := int(math32.Round(sp.DistanceTo(sctr)))
 					if d <= cr.Radius {
-						ri := tensor.Prjn2DIndex(recv, false, ry, rx)
-						si := tensor.Prjn2DIndex(send, false, sy, sx)
+						ri := tensor.Projection2DIndex(recv, false, ry, rx)
+						si := tensor.Projection2DIndex(send, false, sy, sx)
 						off := ri*sNtot + si
 						if !cr.SelfCon && same && ri == si {
 							continue
@@ -117,10 +117,10 @@ func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *te
 
 // GaussWts returns gaussian weight value for given unit indexes in
 // given send and recv layers according to Gaussian Sigma and MaxWt.
-// Can be used for a Prjn.SetScalesFunc or SetWtsFunc
+// Can be used for a Path.SetScalesFunc or SetWtsFunc
 func (cr *Circle) GaussWts(si, ri int, send, recv *tensor.Shape) float32 {
-	sNy, sNx, _, _ := tensor.Prjn2DShape(send, false)
-	rNy, rNx, _, _ := tensor.Prjn2DShape(recv, false)
+	sNy, sNx, _, _ := tensor.Projection2DShape(send, false)
+	rNy, rNx, _, _ := tensor.Projection2DShape(recv, false)
 
 	ry := ri / rNx // todo: this is not right for 4d!
 	rx := ri % rNx

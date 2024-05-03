@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import (
 	"cogentcore.org/core/math32"
@@ -35,7 +35,7 @@ type PoolRect struct {
 	// if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped
 	Wrap bool
 
-	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 
 	// starting pool position in receiving layer -- if > 0 then pools below this starting point remain unconnected

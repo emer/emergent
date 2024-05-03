@@ -10,7 +10,7 @@ package econfig
 type TestEnum int32 //enums:enum
 
 // note: we need to add the Layer extension to avoid naming
-// conflicts between layer, projection and other things.
+// conflicts between layer, pathway and other things.
 
 const (
 	TestValue1 TestEnum = iota

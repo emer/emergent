@@ -43,9 +43,9 @@ type Network interface {
 	// Layer names must be unique and a map is used so this is a fast operation
 	LayerByNameTry(name string) (Layer, error)
 
-	// PrjnByNameTry returns prjn of given name, returns error if not found.
-	// Prjn names are SendToRecv, and are looked up by parsing the name
-	PrjnByNameTry(name string) (Prjn, error)
+	// PathByNameTry returns path of given name, returns error if not found.
+	// Path names are SendToRecv, and are looked up by parsing the name
+	PathByNameTry(name string) (Path, error)
 
 	// Defaults sets default parameter values for everything in the Network
 	Defaults()
@@ -54,7 +54,7 @@ type Network interface {
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// ApplyParams applies given parameter style Sheet to layers and prjns in this network.
+	// ApplyParams applies given parameter style Sheet to layers and paths in this network.
 	// Calls UpdateParams on anything set to ensure derived parameters are all updated.
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
@@ -72,9 +72,9 @@ type Network interface {
 	// of the most important layer-level params (specific to each algorithm).
 	KeyLayerParams() string
 
-	// KeyPrjnParams returns a listing for all Recv projections in the network,
-	// of the most important projection-level params (specific to each algorithm).
-	KeyPrjnParams() string
+	// KeyPathParams returns a listing for all Recv pathways in the network,
+	// of the most important pathway-level params (specific to each algorithm).
+	KeyPathParams() string
 
 	// UnitVarNames returns a list of variable names available on the units in this network.
 	// This list determines what is shown in the NetView (and the order of vars list).
@@ -97,7 +97,7 @@ type Network interface {
 
 	// SynVarNames returns the names of all the variables on the synapses in this network.
 	// This list determines what is shown in the NetView (and the order of vars list).
-	// Not all projections need to support all variables, but must safely return math32.NaN() for
+	// Not all pathways need to support all variables, but must safely return math32.NaN() for
 	// unsupported ones.
 	// This is typically a global list so do not modify!
 	SynVarNames() []string

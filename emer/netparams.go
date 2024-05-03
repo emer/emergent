@@ -33,7 +33,7 @@ type NetParams struct {
 	// the network to apply parameters to
 	Network Network `view:"-"`
 
-	// list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used
+	// list of hyper parameters compiled from the network parameters, using the layers and pathways from the network, so that the same styling logic as for regular parameters can be used
 	NetHypers params.Flex `view:"-"`
 
 	// print out messages for each parameter that is set

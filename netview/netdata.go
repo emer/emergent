@@ -36,14 +36,14 @@ type NetData struct { //types:add
 	// copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
 	NoSynData bool
 
-	// name of the layer with unit for viewing projections (connection / synapse-level values)
-	PrjnLay string
+	// name of the layer with unit for viewing pathways (connection / synapse-level values)
+	PathLay string
 
-	// 1D index of unit within PrjnLay for for viewing projections
-	PrjnUnIndex int
+	// 1D index of unit within PathLay for for viewing pathways
+	PathUnIndex int
 
-	// copied from NetView Params: if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc
-	PrjnType string `edit:"-"`
+	// copied from NetView Params: if non-empty, this is the type pathway to show when there are multiple pathways from the same layer -- e.g., Inhib, Lateral, Forward, etc
+	PathType string `edit:"-"`
 
 	// the list of unit variables saved
 	UnVars []string
@@ -149,23 +149,23 @@ makeData:
 			ld := &LayData{LayName: nm, NUnits: lay.Shape().Len()}
 			nd.LayData[nm] = ld
 			if nd.NoSynData {
-				ld.FreePrjns()
+				ld.FreePaths()
 			} else {
-				ld.AllocSendPrjns(lay)
+				ld.AllocSendPaths(lay)
 			}
 		}
 		if !nd.NoSynData {
 			for li := 0; li < nlay; li++ {
 				rlay := nd.Net.Layer(li)
 				rld := nd.LayData[rlay.Name()]
-				rld.RecvPrjns = make([]*PrjnData, rlay.NRecvPrjns())
-				for ri := 0; ri < rlay.NRecvPrjns(); ri++ {
-					rpj := rlay.RecvPrjn(ri)
+				rld.RecvPaths = make([]*PathData, rlay.NRecvPaths())
+				for ri := 0; ri < rlay.NRecvPaths(); ri++ {
+					rpj := rlay.RecvPath(ri)
 					slay := rpj.SendLay()
 					sld := nd.LayData[slay.Name()]
-					for _, spj := range sld.SendPrjns {
-						if spj.Prjn == rpj {
-							rld.RecvPrjns[ri] = spj // link
+					for _, spj := range sld.SendPaths {
+						if spj.Path == rpj {
+							rld.RecvPaths[ri] = spj // link
 						}
 					}
 				}
@@ -176,9 +176,9 @@ makeData:
 			lay := nd.Net.Layer(li)
 			ld := nd.LayData[lay.Name()]
 			if nd.NoSynData {
-				ld.FreePrjns()
+				ld.FreePaths()
 			} else {
-				ld.AllocSendPrjns(lay)
+				ld.AllocSendPaths(lay)
 			}
 		}
 	}
@@ -347,8 +347,8 @@ func (nd *NetData) RecordSyns() {
 		lay := nd.Net.Layer(li)
 		laynm := lay.Name()
 		ld := nd.LayData[laynm]
-		for si := 0; si < lay.NSendPrjns(); si++ {
-			spd := ld.SendPrjns[si]
+		for si := 0; si < lay.NSendPaths(); si++ {
+			spd := ld.SendPaths[si]
 			spd.RecordData(nd)
 		}
 	}
@@ -436,21 +436,21 @@ func (nd *NetData) UnitValueIndex(laynm string, vnm string, uidx1d int, ridx int
 }
 
 // RecvUnitVal returns the value for given layer, variable name, unit index,
-// for receiving projection variable, based on recorded synaptic projection data.
+// for receiving pathway variable, based on recorded synaptic pathway data.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
 func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32, bool) {
 	ld, ok := nd.LayData[laynm]
-	if nd.NoSynData || !ok || nd.PrjnLay == "" {
+	if nd.NoSynData || !ok || nd.PathLay == "" {
 		return 0, false
 	}
-	recvLay := nd.Net.LayerByName(nd.PrjnLay)
+	recvLay := nd.Net.LayerByName(nd.PathLay)
 	if recvLay == nil {
 		return 0, false
 	}
-	var pj emer.Prjn
+	var pj emer.Path
 	var err error
-	if nd.PrjnType != "" {
-		pj, err = recvLay.SendNameTypeTry(laynm, nd.PrjnType)
+	if nd.PathType != "" {
+		pj, err = recvLay.SendNameTypeTry(laynm, nd.PathType)
 		if pj == nil {
 			pj, err = recvLay.SendNameTry(laynm)
 		}
@@ -460,9 +460,9 @@ func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if pj == nil {
 		return 0, false
 	}
-	var spd *PrjnData
-	for _, pd := range ld.SendPrjns {
-		if pd.Prjn == pj {
+	var spd *PathData
+	for _, pd := range ld.SendPaths {
+		if pd.Path == pj {
 			spd = pd
 			break
 		}
@@ -474,7 +474,7 @@ func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if err != nil {
 		return 0, false
 	}
-	synIndex := pj.SynIndex(uidx1d, nd.PrjnUnIndex)
+	synIndex := pj.SynIndex(uidx1d, nd.PathUnIndex)
 	if synIndex < 0 {
 		return 0, false
 	}
@@ -484,21 +484,21 @@ func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32,
 }
 
 // SendUnitVal returns the value for given layer, variable name, unit index,
-// for sending projection variable, based on recorded synaptic projection data.
+// for sending pathway variable, based on recorded synaptic pathway data.
 // Returns false if value unavailable for any reason (including recorded as such as NaN).
 func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32, bool) {
 	ld, ok := nd.LayData[laynm]
-	if nd.NoSynData || !ok || nd.PrjnLay == "" {
+	if nd.NoSynData || !ok || nd.PathLay == "" {
 		return 0, false
 	}
-	sendLay := nd.Net.LayerByName(nd.PrjnLay)
+	sendLay := nd.Net.LayerByName(nd.PathLay)
 	if sendLay == nil {
 		return 0, false
 	}
-	var pj emer.Prjn
+	var pj emer.Path
 	var err error
-	if nd.PrjnType != "" {
-		pj, err = sendLay.RecvNameTypeTry(laynm, nd.PrjnType)
+	if nd.PathType != "" {
+		pj, err = sendLay.RecvNameTypeTry(laynm, nd.PathType)
 		if pj == nil {
 			pj, err = sendLay.RecvNameTry(laynm)
 		}
@@ -508,9 +508,9 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if pj == nil {
 		return 0, false
 	}
-	var rpd *PrjnData
-	for _, pd := range ld.RecvPrjns {
-		if pd.Prjn == pj {
+	var rpd *PathData
+	for _, pd := range ld.RecvPaths {
+		if pd.Path == pj {
 			rpd = pd
 			break
 		}
@@ -522,7 +522,7 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if err != nil {
 		return 0, false
 	}
-	synIndex := pj.SynIndex(nd.PrjnUnIndex, uidx1d)
+	synIndex := pj.SynIndex(nd.PathUnIndex, uidx1d)
 	if synIndex < 0 {
 		return 0, false
 	}
@@ -626,12 +626,12 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // Useful for replaying detailed trace for units of interest.
 func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotview.PlotView) { //types:add
 	nd := &nv.Data
-	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
+	if nd.PathLay == "" || nd.PathUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
 		return nil, nil
 	}
 
-	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
+	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
 	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
 	plt := plotview.NewPlotView(b)
@@ -663,18 +663,18 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotview.PlotView) { //typ
 // SelectedUnitTable returns a table with all of the data for the
 // currently-selected unit, and data parallel index.
 func (nd *NetData) SelectedUnitTable(di int) *table.Table {
-	if nd.PrjnLay == "" || nd.PrjnUnIndex < 0 {
+	if nd.PathLay == "" || nd.PathUnIndex < 0 {
 		fmt.Printf("NetView:SelectedUnitTable -- no unit selected\n")
 		return nil
 	}
 
-	ld, ok := nd.LayData[nd.PrjnLay]
+	ld, ok := nd.LayData[nd.PathLay]
 	if !ok {
 		fmt.Printf("NetView:SelectedUnitTable -- layer name incorrect\n")
 		return nil
 	}
 
-	selnm := nd.PrjnLay + fmt.Sprintf("[%d]", nd.PrjnUnIndex)
+	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
 	dt := &table.Table{}
 	dt.SetMetaData("name", "NetView: "+selnm)
@@ -685,7 +685,7 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 	vlen := len(nd.UnVars)
 	nu := ld.NUnits
 	nvu := vlen * nd.MaxData * nu
-	uidx1d := nd.PrjnUnIndex
+	uidx1d := nd.PathUnIndex
 
 	dt.AddIntColumn("Rec")
 	for _, vnm := range nd.UnVars {

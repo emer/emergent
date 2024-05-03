@@ -31,7 +31,7 @@ type Params struct {
 	// map of objects to apply parameters to -- the key is the name of the Sheet for each object, e.g.,
 	Objects map[string]any `view:"-" Network", "Sim" are typically used"`
 
-	// list of hyper parameters compiled from the network parameters, using the layers and projections from the network, so that the same styling logic as for regular parameters can be used
+	// list of hyper parameters compiled from the network parameters, using the layers and pathways from the network, so that the same styling logic as for regular parameters can be used
 	NetHypers params.Flex `view:"-"`
 
 	// print out messages for each parameter that is set
@@ -286,7 +286,7 @@ func (pr *Params) SetObjectSet(objName, setName string) error {
 }
 
 // NetworkHyperParams returns the compiled hyper parameters from given Sheet
-// for each layer and projection in the network -- applies the standard css
+// for each layer and pathway in the network -- applies the standard css
 // styling logic for the hyper parameters.
 func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 	hypers := params.Flex{}
@@ -297,15 +297,15 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 		// typ := ly.Type().String()
 		hypers[nm] = &params.FlexVal{Nm: nm, Type: "Layer", Cls: ly.Class(), Obj: params.Hypers{}}
 	}
-	// separate projections
+	// separate pathways
 	for li := 0; li < nl; li++ {
 		ly := net.Layer(li)
-		np := ly.NRecvPrjns()
+		np := ly.NRecvPaths()
 		for pi := 0; pi < np; pi++ {
-			pj := ly.RecvPrjn(pi)
+			pj := ly.RecvPath(pi)
 			nm := pj.Name()
 			// typ := pj.Type().String()
-			hypers[nm] = &params.FlexVal{Nm: nm, Type: "Prjn", Cls: pj.Class(), Obj: params.Hypers{}}
+			hypers[nm] = &params.FlexVal{Nm: nm, Type: "Path", Cls: pj.Class(), Obj: params.Hypers{}}
 		}
 	}
 	for nm, vl := range hypers {
@@ -319,8 +319,8 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 	return hypers
 }
 
-// SetFloatParam sets given float32 param value to layer or projection
-// (typ = Layer or Prjn) of given name, at given path (which can start
+// SetFloatParam sets given float32 param value to layer or pathway
+// (typ = Layer or Path) of given name, at given path (which can start
 // with the typ name).
 // Returns an error (and logs it automatically) for any failure.
 func SetFloatParam(net Network, name, typ, path string, val float32) error {
@@ -338,8 +338,8 @@ func SetFloatParam(net Network, name, typ, path string, val float32) error {
 			slog.Error(err.Error())
 			return err
 		}
-	case "Prjn":
-		pj, err := net.PrjnByNameTry(name)
+	case "Path":
+		pj, err := net.PathByNameTry(name)
 		if err != nil {
 			slog.Error(err.Error())
 			return err

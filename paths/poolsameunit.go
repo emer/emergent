@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import "cogentcore.org/core/tensor"
 
@@ -16,7 +16,7 @@ import "cogentcore.org/core/tensor"
 // If neither is 4D, then it is equivalent to OneToOne.
 type PoolSameUnit struct {
 
-	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 }
 

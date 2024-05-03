@@ -45,7 +45,7 @@ type Layer interface {
 	IsOff() bool
 
 	// SetOff sets the "off" (lesioned) status of layer. Also sets the Off state of all
-	// projections from this layer to other layers.
+	// pathways from this layer to other layers.
 	SetOff(off bool)
 
 	// Shape returns the organization of units in the layer, in terms of an array of dimensions.
@@ -193,62 +193,62 @@ type Layer interface {
 	// di is a data parallel index di, for networks capable of processing input patterns in parallel.
 	UnitValue(varNm string, idx []int, di int) float32
 
-	// NRecvPrjns returns the number of receiving projections
-	NRecvPrjns() int
+	// NRecvPaths returns the number of receiving pathways
+	NRecvPaths() int
 
-	// RecvPrjn returns a specific receiving projection
-	RecvPrjn(idx int) Prjn
+	// RecvPath returns a specific receiving pathway
+	RecvPath(idx int) Path
 
-	// NSendPrjns returns the number of sending projections
-	NSendPrjns() int
+	// NSendPaths returns the number of sending pathways
+	NSendPaths() int
 
-	// SendPrjn returns a specific sending projection
-	SendPrjn(idx int) Prjn
+	// SendPath returns a specific sending pathway
+	SendPath(idx int) Path
 
-	// SendNameTry looks for a projection connected to this layer whose sender layer has a given name
-	SendNameTry(sender string) (Prjn, error)
+	// SendNameTry looks for a pathway connected to this layer whose sender layer has a given name
+	SendNameTry(sender string) (Path, error)
 
-	// SendNameTypeTry looks for a projection connected to this layer whose sender layer has a given name and type
-	SendNameTypeTry(sender, typ string) (Prjn, error)
+	// SendNameTypeTry looks for a pathway connected to this layer whose sender layer has a given name and type
+	SendNameTypeTry(sender, typ string) (Path, error)
 
-	// RecvNameTry looks for a projection connected to this layer whose receiver layer has a given name
-	RecvNameTry(recv string) (Prjn, error)
+	// RecvNameTry looks for a pathway connected to this layer whose receiver layer has a given name
+	RecvNameTry(recv string) (Path, error)
 
-	// RecvNameTypeTry looks for a projection connected to this layer whose receiver layer has a given name and type
-	RecvNameTypeTry(recv, typ string) (Prjn, error)
+	// RecvNameTypeTry looks for a pathway connected to this layer whose receiver layer has a given name and type
+	RecvNameTypeTry(recv, typ string) (Path, error)
 
-	// RecvPrjnValues fills in values of given synapse variable name,
-	// for projection from given sending layer and neuron 1D index,
+	// RecvPathValues fills in values of given synapse variable name,
+	// for pathway from given sending layer and neuron 1D index,
 	// for all receiving neurons in this layer,
 	// into given float32 slice (only resized if not big enough).
-	// prjnType is the string representation of the prjn type -- used if non-empty,
-	// useful when there are multiple projections between two layers.
+	// pathType is the string representation of the path type -- used if non-empty,
+	// useful when there are multiple pathways between two layers.
 	// Returns error on invalid var name.
 	// If the receiving neuron is not connected to the given sending layer or neuron
 	// then the value is set to math32.NaN().
-	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
-	RecvPrjnValues(vals *[]float32, varNm string, sendLay Layer, sendIndex1D int, prjnType string) error
+	// Returns error on invalid var name or lack of recv path (vals always set to nan on path err).
+	RecvPathValues(vals *[]float32, varNm string, sendLay Layer, sendIndex1D int, pathType string) error
 
-	// SendPrjnValues fills in values of given synapse variable name,
-	// for projection into given receiving layer and neuron 1D index,
+	// SendPathValues fills in values of given synapse variable name,
+	// for pathway into given receiving layer and neuron 1D index,
 	// for all sending neurons in this layer,
 	// into given float32 slice (only resized if not big enough).
-	// prjnType is the string representation of the prjn type -- used if non-empty,
-	// useful when there are multiple projections between two layers.
+	// pathType is the string representation of the path type -- used if non-empty,
+	// useful when there are multiple pathways between two layers.
 	// Returns error on invalid var name.
 	// If the sending neuron is not connected to the given receiving layer or neuron
 	// then the value is set to math32.NaN().
-	// Returns error on invalid var name or lack of recv prjn (vals always set to nan on prjn err).
-	SendPrjnValues(vals *[]float32, varNm string, recvLay Layer, recvIndex1D int, prjnType string) error
+	// Returns error on invalid var name or lack of recv path (vals always set to nan on path err).
+	SendPathValues(vals *[]float32, varNm string, recvLay Layer, recvIndex1D int, pathType string) error
 
-	// Defaults sets default parameter values for all Layer and recv projection parameters
+	// Defaults sets default parameter values for all Layer and recv pathway parameters
 	Defaults()
 
-	// UpdateParams() updates parameter values for all Layer and recv projection parameters,
+	// UpdateParams() updates parameter values for all Layer and recv pathway parameters,
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// ApplyParams applies given parameter style Sheet to this layer and its recv projections.
+	// ApplyParams applies given parameter style Sheet to this layer and its recv pathways.
 	// Calls UpdateParams on anything set to ensure derived parameters are all updated.
 	// If setMsg is true, then a message is printed to confirm each parameter that is set.
 	// it always prints a message if a parameter fails to be set.
@@ -280,7 +280,7 @@ type Layer interface {
 	// SetWts sets the weights for this layer from weights.Layer decoded values
 	SetWts(lw *weights.Layer) error
 
-	// Build constructs the layer and projection state based on the layer shapes
+	// Build constructs the layer and pathway state based on the layer shapes
 	// and patterns of interconnectivity
 	Build() error
 
@@ -386,42 +386,42 @@ const (
 
 // we keep these here to make it easier for other packages to implement the emer.Layer interface
 // by just calling these methods
-func SendNameTry(l Layer, sender string) (Prjn, error) {
-	for pi := 0; pi < l.NRecvPrjns(); pi++ {
-		pj := l.RecvPrjn(pi)
+func SendNameTry(l Layer, sender string) (Path, error) {
+	for pi := 0; pi < l.NRecvPaths(); pi++ {
+		pj := l.RecvPath(pi)
 		if pj.SendLay().Name() == sender {
 			return pj, nil
 		}
 	}
-	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+	return nil, fmt.Errorf("sending layer: %v not found in list of pathways", sender)
 }
 
-func RecvNameTry(l Layer, recv string) (Prjn, error) {
-	for pi := 0; pi < l.NSendPrjns(); pi++ {
-		pj := l.SendPrjn(pi)
+func RecvNameTry(l Layer, recv string) (Path, error) {
+	for pi := 0; pi < l.NSendPaths(); pi++ {
+		pj := l.SendPath(pi)
 		if pj.RecvLay().Name() == recv {
 			return pj, nil
 		}
 	}
-	return nil, fmt.Errorf("receiving layer: %v not found in list of projections", recv)
+	return nil, fmt.Errorf("receiving layer: %v not found in list of pathways", recv)
 }
 
-func SendNameTypeTry(l Layer, sender, typ string) (Prjn, error) {
-	for pi := 0; pi < l.NRecvPrjns(); pi++ {
-		pj := l.RecvPrjn(pi)
-		if pj.SendLay().Name() == sender && pj.PrjnTypeName() == typ {
+func SendNameTypeTry(l Layer, sender, typ string) (Path, error) {
+	for pi := 0; pi < l.NRecvPaths(); pi++ {
+		pj := l.RecvPath(pi)
+		if pj.SendLay().Name() == sender && pj.PathTypeName() == typ {
 			return pj, nil
 		}
 	}
-	return nil, fmt.Errorf("sending layer: %v not found in list of projections", sender)
+	return nil, fmt.Errorf("sending layer: %v not found in list of pathways", sender)
 }
 
-func RecvNameTypeTry(l Layer, recv, typ string) (Prjn, error) {
-	for pi := 0; pi < l.NSendPrjns(); pi++ {
-		pj := l.SendPrjn(pi)
-		if pj.RecvLay().Name() == recv && pj.PrjnTypeName() == typ {
+func RecvNameTypeTry(l Layer, recv, typ string) (Path, error) {
+	for pi := 0; pi < l.NSendPaths(); pi++ {
+		pj := l.SendPath(pi)
+		if pj.RecvLay().Name() == recv && pj.PathTypeName() == typ {
 			return pj, nil
 		}
 	}
-	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of projections", recv, typ)
+	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of pathways", recv, typ)
 }

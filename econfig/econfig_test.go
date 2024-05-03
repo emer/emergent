@@ -145,7 +145,7 @@ func TestArgs(t *testing.T) {
 	cfg := &TestConfig{}
 	SetFromDefaults(cfg)
 	// note: cannot use "-Includes=testcfg.toml",
-	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPrjn:Prjn.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "-Slice=[3.2, 2.4, 1.9]", "leftover1", "leftover2"}
+	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPath:Path.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "-Slice=[3.2, 2.4, 1.9]", "leftover1", "leftover2"}
 	allArgs := make(map[string]reflect.Value)
 	FieldArgNames(cfg, allArgs)
 	leftovers, err := ParseArgs(cfg, args, allArgs, true)

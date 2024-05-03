@@ -42,9 +42,9 @@ func LayReadJSON(r io.Reader) (*Layer, error) {
 	return lw, nil
 }
 
-// PrjnReadJSON reads weights for prjn in a JSON format into Prjn structure
-func PrjnReadJSON(r io.Reader) (*Prjn, error) {
-	pw := &Prjn{}
+// PathReadJSON reads weights for path in a JSON format into Path structure
+func PathReadJSON(r io.Reader) (*Path, error) {
+	pw := &Path{}
 	dec := json.NewDecoder(r)
 	err := dec.Decode(pw) // this is way to do it on reader instead of bytes
 	if err == io.EOF {

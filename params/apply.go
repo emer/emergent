@@ -248,7 +248,7 @@ func (ps *Sheet) Apply(obj any, setMsg bool) (bool, error) {
 // SelMatchReset resets the Sel.NMatch counter used to find cases where no Sel
 // matched any target objects.  Call at start of application process, which
 // may be at an outer-loop of Apply calls (e.g., for a Network, Apply is called
-// for each Layer and Prjn), so this must be called separately.
+// for each Layer and Path), so this must be called separately.
 // See SelNoMatchWarn for warning call at end.
 func (ps *Sheet) SelMatchReset(setName string) {
 	for _, sl := range *ps {

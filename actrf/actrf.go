@@ -56,8 +56,8 @@ func (af *RF) Init(name string, act, src tensor.Tensor) {
 // does nothing if shape is already correct.
 // return shape ints
 func (af *RF) InitShape(act, src tensor.Tensor) []int {
-	aNy, aNx, _, _ := tensor.Prjn2DShape(act.Shape(), false)
-	sNy, sNx, _, _ := tensor.Prjn2DShape(src.Shape(), false)
+	aNy, aNx, _, _ := tensor.Projection2DShape(act.Shape(), false)
+	sNy, sNx, _, _ := tensor.Projection2DShape(src.Shape(), false)
 	oshp := []int{aNy, aNx, sNy, sNx}
 	if tensor.EqualInts(af.RF.Shp.Sizes, oshp) {
 		return oshp
@@ -102,14 +102,14 @@ func (af *RF) Add(act, src tensor.Tensor, thr float32) {
 	aNy, aNx, sNy, sNx := shp[0], shp[1], shp[2], shp[3]
 	for sy := 0; sy < sNy; sy++ {
 		for sx := 0; sx < sNx; sx++ {
-			tv := float32(tensor.Prjn2DValue(src, false, sy, sx))
+			tv := float32(tensor.Projection2DValue(src, false, sy, sx))
 			if tv < thr {
 				continue
 			}
 			af.SumSrc.AddScalar([]int{sy, sx}, float64(tv))
 			for ay := 0; ay < aNy; ay++ {
 				for ax := 0; ax < aNx; ax++ {
-					av := float32(tensor.Prjn2DValue(act, false, ay, ax))
+					av := float32(tensor.Projection2DValue(act, false, ay, ax))
 					af.SumProd.AddScalar([]int{ay, ax, sy, sx}, float64(av*tv))
 				}
 			}

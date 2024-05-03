@@ -21,42 +21,42 @@ type LayData struct {
 	// the full data, in that order
 	Data []float32
 
-	// receiving projection data -- shared with SendPrjns
-	RecvPrjns []*PrjnData
+	// receiving pathway data -- shared with SendPaths
+	RecvPaths []*PathData
 
-	// sending projection data -- shared with RecvPrjns
-	SendPrjns []*PrjnData
+	// sending pathway data -- shared with RecvPaths
+	SendPaths []*PathData
 }
 
-// AllocSendPrjns allocates Sending projections for given layer.
+// AllocSendPaths allocates Sending pathways for given layer.
 // does nothing if already allocated.
-func (ld *LayData) AllocSendPrjns(ly emer.Layer) {
-	nsp := ly.NSendPrjns()
-	if len(ld.SendPrjns) == nsp {
-		for si := 0; si < ly.NSendPrjns(); si++ {
-			pj := ly.SendPrjn(si)
-			spd := ld.SendPrjns[si]
-			spd.Prjn = pj
+func (ld *LayData) AllocSendPaths(ly emer.Layer) {
+	nsp := ly.NSendPaths()
+	if len(ld.SendPaths) == nsp {
+		for si := 0; si < ly.NSendPaths(); si++ {
+			pj := ly.SendPath(si)
+			spd := ld.SendPaths[si]
+			spd.Path = pj
 		}
 		return
 	}
-	ld.SendPrjns = make([]*PrjnData, nsp)
-	for si := 0; si < ly.NSendPrjns(); si++ {
-		pj := ly.SendPrjn(si)
-		pd := &PrjnData{Send: pj.SendLay().Name(), Recv: pj.RecvLay().Name(), Prjn: pj}
-		ld.SendPrjns[si] = pd
+	ld.SendPaths = make([]*PathData, nsp)
+	for si := 0; si < ly.NSendPaths(); si++ {
+		pj := ly.SendPath(si)
+		pd := &PathData{Send: pj.SendLay().Name(), Recv: pj.RecvLay().Name(), Path: pj}
+		ld.SendPaths[si] = pd
 		pd.Alloc()
 	}
 }
 
-// FreePrjns nils prjn data -- for NoSynDat
-func (ld *LayData) FreePrjns() {
-	ld.RecvPrjns = nil
-	ld.SendPrjns = nil
+// FreePaths nils path data -- for NoSynDat
+func (ld *LayData) FreePaths() {
+	ld.RecvPaths = nil
+	ld.SendPaths = nil
 }
 
-// PrjnData holds display state for a projection
-type PrjnData struct {
+// PathData holds display state for a pathway
+type PathData struct {
 
 	// name of sending layer
 	Send string
@@ -64,8 +64,8 @@ type PrjnData struct {
 	// name of recv layer
 	Recv string
 
-	// source projection
-	Prjn emer.Prjn
+	// source pathway
+	Path emer.Path
 
 	// synaptic data, by variable in SynVars and number of data points
 	SynData []float32
@@ -73,8 +73,8 @@ type PrjnData struct {
 
 // Alloc allocates SynData to hold number of variables * nsyn synapses.
 // If already has capacity, nothing happens.
-func (pd *PrjnData) Alloc() {
-	pj := pd.Prjn
+func (pd *PathData) Alloc() {
+	pj := pd.Path
 	nvar := pj.SynVarNum()
 	nsyn := pj.Syn1DNum()
 	nt := nvar * nsyn
@@ -85,10 +85,10 @@ func (pd *PrjnData) Alloc() {
 	}
 }
 
-// RecordData records synaptic data from given prjn.
+// RecordData records synaptic data from given paths.
 // must use sender or recv based depending on natural ordering.
-func (pd *PrjnData) RecordData(nd *NetData) {
-	pj := pd.Prjn
+func (pd *PathData) RecordData(nd *NetData) {
+	pj := pd.Path
 	vnms := pj.SynVarNames()
 	nvar := pj.SynVarNum()
 	nsyn := pj.Syn1DNum()

@@ -19,7 +19,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 	nw := &Network{}
 	var (
 		lw       *Layer
-		pw       *Prjn
+		pw       *Path
 		rw       *Recv
 		ri       int
 		pi       int
@@ -74,10 +74,10 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 				errlist = append(errlist, err)
 			}
 			fm := strings.TrimPrefix(css[1], "From:")
-			if len(lw.Prjns) < pi+1 {
-				lw.Prjns = append(lw.Prjns, Prjn{From: fm})
+			if len(lw.Paths) < pi+1 {
+				lw.Paths = append(lw.Paths, Path{From: fm})
 			}
-			pw = &lw.Prjns[pi]
+			pw = &lw.Paths[pi]
 			continue
 		case strings.HasPrefix(bs, "<Cn "):
 			us := strings.TrimSuffix(strings.TrimPrefix(bs, "<Cn "), ">")

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import "cogentcore.org/core/tensor"
 
 // Full implements full all-to-all pattern of connectivity between two layers
 type Full struct {
 
-	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 }
 

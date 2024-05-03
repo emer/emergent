@@ -10,8 +10,8 @@ which then shows you the patterns of source activity for which a given unit was
 active.
 
 The RF's are computed and stored in 4D tensors, where the outer 2D are the
-2D projection of the activation tensor (e.g., the activations of units in
-a layer), and the inner 2D are the 2D projection of the source tensor.
+2D pathway of the activation tensor (e.g., the activations of units in
+a layer), and the inner 2D are the 2D pathway of the source tensor.
 
 This results in a nice standard RF plot that can be visualized in a tensor
 grid view.

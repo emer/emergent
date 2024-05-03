@@ -242,7 +242,7 @@ type softMaxForSerialization struct {
 	Weights []float32 `json:"weights"`
 }
 
-// Save saves the decoder weights to given file path.
+// Save saves the decoder weights to given file paths.
 // If path ends in .gz, it will be gzipped.
 func (sm *SoftMax) Save(path string) error {
 	file, err := os.Create(path)
@@ -265,7 +265,7 @@ func (sm *SoftMax) Save(path string) error {
 	return encoder.Encode(softMaxForSerialization{Weights: sm.Weights.Values})
 }
 
-// Load loads the decoder weights from given file path.
+// Load loads the decoder weights from given file paths.
 // If the shape of the decoder does not match the shape of the saved weights,
 // an error will be returned.
 func (sm *SoftMax) Load(path string) error {

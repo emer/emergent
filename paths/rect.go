@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package prjn
+package paths
 
 import (
 	"cogentcore.org/core/math32"
@@ -14,7 +14,7 @@ import (
 // Rect implements a rectangular pattern of connectivity between two layers
 // where the lower-left corner moves in proportion to receiver position with offset
 // and multiplier factors (with wrap-around optionally).
-// 4D layers are automatically flattened to 2D for this projection.
+// 4D layers are automatically flattened to 2D for this pathway.
 type Rect struct {
 
 	// size of rectangle in sending layer that each receiving unit receives from
@@ -35,7 +35,7 @@ type Rect struct {
 	// if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped
 	Wrap bool
 
-	// if true, and connecting layer to itself (self projection), then make a self-connection from unit to itself
+	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 
 	// make the reciprocal of the specified connections -- i.e., symmetric for swapping recv and send
@@ -77,8 +77,8 @@ func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 		return cr.ConnectRecip(send, recv, same)
 	}
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy, sNx, _, _ := tensor.Prjn2DShape(send, false)
-	rNy, rNx, _, _ := tensor.Prjn2DShape(recv, false)
+	sNy, sNx, _, _ := tensor.Projection2DShape(send, false)
+	rNy, rNx, _, _ := tensor.Projection2DShape(recv, false)
 
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -109,7 +109,7 @@ func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 
 	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
-			ri := tensor.Prjn2DIndex(recv, false, ry, rx)
+			ri := tensor.Projection2DIndex(recv, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
@@ -128,7 +128,7 @@ func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 					if clipx {
 						continue
 					}
-					si := tensor.Prjn2DIndex(send, false, sy, sx)
+					si := tensor.Projection2DIndex(send, false, sy, sx)
 					off := ri*sNtot + si
 					if !cr.SelfCon && same && ri == si {
 						continue
@@ -145,8 +145,8 @@ func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 
 func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
-	sNy, sNx, _, _ := tensor.Prjn2DShape(recv, false) // swapped!
-	rNy, rNx, _, _ := tensor.Prjn2DShape(send, false)
+	sNy, sNx, _, _ := tensor.Projection2DShape(recv, false) // swapped!
+	rNy, rNx, _, _ := tensor.Projection2DShape(send, false)
 
 	rnv := recvn.Values
 	snv := sendn.Values
@@ -177,7 +177,7 @@ func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn 
 
 	for ry := cr.RecvStart.Y; ry < rNyEff+cr.RecvStart.Y; ry++ {
 		for rx := cr.RecvStart.X; rx < rNxEff+cr.RecvStart.X; rx++ {
-			ri := tensor.Prjn2DIndex(send, false, ry, rx)
+			ri := tensor.Projection2DIndex(send, false, ry, rx)
 			sst := cr.Start
 			if cr.RoundScale {
 				sst.X += int(math32.Round(float32(rx-cr.RecvStart.X) * sc.X))
@@ -196,7 +196,7 @@ func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn 
 					if clipx {
 						continue
 					}
-					si := tensor.Prjn2DIndex(recv, false, sy, sx)
+					si := tensor.Projection2DIndex(recv, false, sy, sx)
 					off := si*sNtot + ri
 					if !cr.SelfCon && same && ri == si {
 						continue

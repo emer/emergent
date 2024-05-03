@@ -56,8 +56,8 @@ type Params struct { //types:add
 	// do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
 	NoSynData bool
 
-	// if non-empty, this is the type projection to show when there are multiple projections from the same layer -- e.g., Inhib, Lateral, Forward, etc
-	PrjnType string
+	// if non-empty, this is the type pathway to show when there are multiple pathways from the same layer -- e.g., Inhib, Lateral, Forward, etc
+	PathType string
 
 	// maximum number of records to store to enable rewinding through prior states
 	MaxRecs int `min:"1"`
