@@ -5,8 +5,8 @@
 package patgen
 
 import (
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/erand"
 )
 
 // Shuffle shuffles rows in specified columns in the table independently
@@ -16,7 +16,7 @@ func Shuffle(dt *table.Table, rows []int, colNames []string, colIndependent bool
 		for _, colNm := range colNames {
 			sfrows := make([]int, len(rows))
 			copy(sfrows, rows)
-			erand.PermuteInts(sfrows, RandSource)
+			randx.PermuteInts(sfrows, RandSource)
 			for i, row := range rows {
 				dt.Tensor(colNm, row).CopyFrom(cl.Tensor(colNm, sfrows[i]))
 			}
@@ -24,7 +24,7 @@ func Shuffle(dt *table.Table, rows []int, colNames []string, colIndependent bool
 	} else { // shuffle together
 		sfrows := make([]int, len(rows))
 		copy(sfrows, rows)
-		erand.PermuteInts(sfrows, RandSource)
+		randx.PermuteInts(sfrows, RandSource)
 		for _, colNm := range colNames {
 			for i, row := range rows {
 				dt.Tensor(colNm, row).CopyFrom(cl.Tensor(colNm, sfrows[i]))

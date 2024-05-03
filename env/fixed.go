@@ -9,9 +9,9 @@ import (
 	"log"
 	"math/rand"
 
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/erand"
 )
 
 // FixedTable is a basic Env that manages patterns from an table.Table, with
@@ -110,9 +110,9 @@ func (ft *FixedTable) NewOrder() {
 }
 
 // PermuteOrder permutes the existing order table to get a new random sequence of inputs
-// just calls: erand.PermuteInts(ft.Order)
+// just calls: randx.PermuteInts(ft.Order)
 func (ft *FixedTable) PermuteOrder() {
-	erand.PermuteInts(ft.Order)
+	randx.PermuteInts(ft.Order)
 }
 
 // Row returns the current row number in table, based on Sequential / perumuted Order and

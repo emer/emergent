@@ -12,7 +12,7 @@ import (
 	"reflect"
 
 	"cogentcore.org/core/base/dirs"
-	"github.com/emer/emergent/v2/empi/mpi"
+	"cogentcore.org/core/base/mpi"
 )
 
 var (

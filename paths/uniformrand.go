@@ -9,17 +9,17 @@ import (
 	"math/rand"
 	"sort"
 
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
-	"github.com/emer/emergent/v2/erand"
 )
 
-// UnifRnd implements uniform random pattern of connectivity between two layers
+// UniformRand implements uniform random pattern of connectivity between two layers
 // using a permuted (shuffled) list for without-replacement randomness,
 // and maintains its own local random number source and seed
 // which are initialized if Rand == nil -- usually best to keep this
 // specific to each instance of a pathway so it is fully reproducible
 // and doesn't interfere with other random number streams.
-type UnifRnd struct {
+type UniformRand struct {
 
 	// probability of connection (0-1)
 	PCon float32 `min:"0" max:"1"`
@@ -27,36 +27,36 @@ type UnifRnd struct {
 	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
 	SelfCon bool
 
-	// reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down pathway -- ESSENTIAL to use same RndSeed between two paths to ensure symmetry
+	// reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down pathway -- ESSENTIAL to use same RandSeed between two paths to ensure symmetry
 	Recip bool
 
 	// random number source -- is created with its own separate source if nil
-	Rand erand.Rand `view:"-"`
+	Rand randx.Rand `view:"-"`
 
 	// the current random seed -- will be initialized to a new random number from the global random stream when Rand is created.
-	RndSeed int64 `view:"-"`
+	RandSeed int64 `view:"-"`
 }
 
-func NewUnifRnd() *UnifRnd {
-	return &UnifRnd{PCon: 0.5}
+func NewUniformRand() *UniformRand {
+	return &UniformRand{PCon: 0.5}
 }
 
-func (ur *UnifRnd) Name() string {
-	return "UnifRnd"
+func (ur *UniformRand) Name() string {
+	return "UniformRand"
 }
 
-func (ur *UnifRnd) InitRand() {
+func (ur *UniformRand) InitRand() {
 	if ur.Rand != nil {
-		ur.Rand.Seed(ur.RndSeed)
+		ur.Rand.Seed(ur.RandSeed)
 		return
 	}
-	if ur.RndSeed == 0 {
-		ur.RndSeed = int64(rand.Uint64())
+	if ur.RandSeed == 0 {
+		ur.RandSeed = int64(rand.Uint64())
 	}
-	ur.Rand = erand.NewSysRand(ur.RndSeed)
+	ur.Rand = randx.NewSysRand(ur.RandSeed)
 }
 
-func (ur *UnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *UniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	if ur.PCon >= 1 {
 		return ur.ConnectFull(send, recv, same)
 	}
@@ -99,7 +99,7 @@ func (ur *UnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *t
 		sordlen--
 	}
 
-	sorder := ur.Rand.Perm(sordlen, -1)
+	sorder := ur.Rand.Perm(sordlen)
 	slist := make([]int, nsend)
 	for ri := 0; ri < rlen; ri++ {
 		if noself { // need to exclude ri
@@ -110,7 +110,7 @@ func (ur *UnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *t
 					ix++
 				}
 			}
-			erand.PermuteInts(sorder, ur.Rand)
+			randx.PermuteInts(sorder, ur.Rand)
 		}
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
@@ -118,7 +118,7 @@ func (ur *UnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *t
 			off := ri*slen + slist[si]
 			cons.Values.Set(off, true)
 		}
-		erand.PermuteInts(sorder, ur.Rand)
+		randx.PermuteInts(sorder, ur.Rand)
 	}
 
 	// 	set send n's empirically
@@ -137,7 +137,7 @@ func (ur *UnifRnd) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *t
 }
 
 // ConnectRecip does reciprocal connectvity
-func (ur *UnifRnd) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *UniformRand) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	slen := recv.Len() // swapped
 	rlen := send.Len()
@@ -164,7 +164,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, rec
 		sordlen--
 	}
 
-	sorder := ur.Rand.Perm(sordlen, -1)
+	sorder := ur.Rand.Perm(sordlen)
 	slist := make([]int, nsend)
 	for ri := 0; ri < rlen; ri++ {
 		if noself { // need to exclude ri
@@ -175,7 +175,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, rec
 					ix++
 				}
 			}
-			erand.PermuteInts(sorder, ur.Rand)
+			randx.PermuteInts(sorder, ur.Rand)
 		}
 		copy(slist, sorder)
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
@@ -183,7 +183,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, rec
 			off := slist[si]*slenR + ri
 			cons.Values.Set(off, true)
 		}
-		erand.PermuteInts(sorder, ur.Rand)
+		randx.PermuteInts(sorder, ur.Rand)
 	}
 
 	// set send n's empirically
@@ -201,7 +201,7 @@ func (ur *UnifRnd) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, rec
 	return
 }
 
-func (ur *UnifRnd) ConnectFull(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *UniformRand) ConnectFull(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()

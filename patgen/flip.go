@@ -5,8 +5,8 @@
 package patgen
 
 import (
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
-	"github.com/emer/emergent/v2/erand"
 )
 
 // FlipBits turns nOff bits that are currently On to Off and
@@ -25,8 +25,8 @@ func FlipBits(tsr tensor.Tensor, nOff, nOn int, onVal, offVal float64) {
 			ons = append(ons, i)
 		}
 	}
-	erand.PermuteInts(ons, RandSource)
-	erand.PermuteInts(offs, RandSource)
+	randx.PermuteInts(ons, RandSource)
+	randx.PermuteInts(offs, RandSource)
 	if nOff > len(ons) {
 		nOff = len(ons)
 	}

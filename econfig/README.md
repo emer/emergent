@@ -59,7 +59,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/econfig)
 The [Cogent Core](https://cogentcore.org/core) GUI processes `default:"value"` struct tags to highlight values that are not at their defaults.  econfig uses these same tags to auto-initialize fields as well, ensuring that the tag and the actual initial value are the same.  The value for strings or numbers is just the string representation.  For more complex types, here ar some examples:
 
 * `struct`: specify using standard Go literal expression as a string, with single-quotes `'` used instead of double-quotes around strings, such as the name of the fields:
-    + `evec.Vector2i`: `default:"{'X':10,'Y':10}"`
+    + `vecint.Vector2i`: `default:"{'X':10,'Y':10}"`
 
 * `slice`: comma-separated list of values in square braces -- use `'` for internal string boundaries:
     + `[]float32`: `default:"[1, 2.14, 3.14]"`
@@ -80,10 +80,10 @@ type ParamConfig struct {
 	Network map[string]any
 
 	// size of hidden layer -- can use emer.LaySize for 4D layers
-	Hidden1Size evec.Vector2i `default:"{'X':10,'Y':10}" nest:"+"`
+	Hidden1Size vecint.Vector2i `default:"{'X':10,'Y':10}" nest:"+"`
 
 	// size of hidden layer -- can use emer.LaySize for 4D layers
-	Hidden2Size evec.Vector2i `default:"{'X':10,'Y':10}" nest:"+"`
+	Hidden2Size vecint.Vector2i `default:"{'X':10,'Y':10}" nest:"+"`
 
 	// Extra Param Sheet name(s) to use (space separated if multiple) -- must be valid name as listed in compiled-in params or loaded params
 	Sheet string

@@ -11,7 +11,7 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/emer/emergent/v2/erand"
+	"cogentcore.org/core/base/randx"
 )
 
 // RuleTypes are different types of rules (i.e., how the items are selected)
@@ -83,7 +83,7 @@ func (rl *Rule) Gen(rls *Rules) {
 		fmt.Printf("Fired Rule: %v\n", rl.Name)
 	}
 	if rl.RepeatP > 0 && rl.PrevIndex >= 0 {
-		rpt := erand.BoolP32(rl.RepeatP, -1)
+		rpt := randx.BoolP32(rl.RepeatP)
 		if rpt {
 			if rls.Trace {
 				fmt.Printf("Selected item: %v due to RepeatP = %v\n", rl.PrevIndex, rl.RepeatP)
@@ -164,7 +164,7 @@ func (rl *Rule) Gen(rls *Rules) {
 			rl.CurIndex = 0
 		}
 		if rl.CurIndex >= no {
-			erand.PermuteInts(rl.Order)
+			randx.PermuteInts(rl.Order)
 			rl.CurIndex = 0
 		}
 		opt := rl.Order[rl.CurIndex]

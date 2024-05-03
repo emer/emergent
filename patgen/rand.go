@@ -4,7 +4,7 @@
 
 package patgen
 
-import "github.com/emer/emergent/v2/erand"
+import "cogentcore.org/core/base/randx"
 
 var (
 	// RandSource is a random source to use for all random numbers used in patgen
@@ -12,8 +12,8 @@ var (
 	// If initialized, e.g., by calling NewRand(seed), then a separate stream of
 	// random numbers will be generated for all patgen calls, and the
 	// seed is saved as RandSeed -- it can be reinstated by calling RestoreSeed.
-	// Can also set RandSource to another existing erand.Rand source to use it.
-	RandSource = &erand.SysRand{}
+	// Can also set RandSource to another existing randx.Rand source to use it.
+	RandSource = &randx.SysRand{}
 
 	// Random seed last set by NewRand or SetRandSeed.
 	RandSeed int64
@@ -22,7 +22,7 @@ var (
 // NewRand sets RandSource to a new separate random number stream
 // using given seed, which is saved as RandSeed -- see RestoreSeed.
 func NewRand(seed int64) {
-	RandSource = erand.NewSysRand(seed)
+	RandSource = randx.NewSysRand(seed)
 	RandSeed = seed
 }
 

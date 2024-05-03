@@ -9,10 +9,10 @@ import (
 	"log"
 	"math/rand"
 
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/empi"
-	"github.com/emer/emergent/v2/erand"
+	"cogentcore.org/core/tensor/tensormpi"
 )
 
 // MPIFixedTable is an MPI-enabled version of the FixedTable, which is
@@ -108,14 +108,14 @@ func (ft *MPIFixedTable) NewOrder() {
 	ft.Order = rand.Perm(np) // always start with new one so random order is identical
 	// and always maintain Order so random number usage is same regardless, and if
 	// user switches between Sequential and random at any point, it all works..
-	ft.TrialSt, ft.TrialEd, _ = empi.AllocN(np)
+	ft.TrialSt, ft.TrialEd, _ = tensormpi.AllocN(np)
 	ft.Trial.Max = ft.TrialEd
 }
 
 // PermuteOrder permutes the existing order table to get a new random sequence of inputs
-// just calls: erand.PermuteInts(ft.Order)
+// just calls: randx.PermuteInts(ft.Order)
 func (ft *MPIFixedTable) PermuteOrder() {
-	erand.PermuteInts(ft.Order)
+	randx.PermuteInts(ft.Order)
 }
 
 // Row returns the current row number in table, based on Sequential / perumuted Order and

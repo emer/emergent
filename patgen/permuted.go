@@ -10,10 +10,10 @@ import (
 	"log"
 	"math"
 
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/metric"
-	"github.com/emer/emergent/v2/erand"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the
@@ -24,7 +24,7 @@ func PermutedBinary(tsr tensor.Tensor, nOn int, onVal, offVal float64) {
 	if ln == 0 {
 		return
 	}
-	pord := RandSource.Perm(ln, -1)
+	pord := RandSource.Perm(ln)
 	for i := 0; i < ln; i++ {
 		if i < nOn {
 			tsr.SetFloat1D(pord[i], onVal)
@@ -42,7 +42,7 @@ func PermutedBinaryRows(tsr tensor.Tensor, nOn int, onVal, offVal float64) {
 	if rows == 0 || cells == 0 {
 		return
 	}
-	pord := RandSource.Perm(cells, -1)
+	pord := RandSource.Perm(cells)
 	for rw := 0; rw < rows; rw++ {
 		stidx := rw * cells
 		for i := 0; i < cells; i++ {
@@ -52,7 +52,7 @@ func PermutedBinaryRows(tsr tensor.Tensor, nOn int, onVal, offVal float64) {
 				tsr.SetFloat1D(stidx+pord[i], offVal)
 			}
 		}
-		erand.PermuteInts(pord, RandSource)
+		randx.PermuteInts(pord, RandSource)
 	}
 }
 
@@ -72,7 +72,7 @@ func PermutedBinaryMinDiff(tsr *tensor.Float32, nOn int, onVal, offVal float32, 
 	if rows == 0 || cells == 0 {
 		return errors.New("empty tensor")
 	}
-	pord := RandSource.Perm(cells, -1)
+	pord := RandSource.Perm(cells)
 	iters := 100
 	nunder := make([]int, rows) // per row
 	fails := 0
@@ -89,7 +89,7 @@ func PermutedBinaryMinDiff(tsr *tensor.Float32, nOn int, onVal, offVal float32, 
 					tsr.Values[stidx+pord[i]] = offVal
 				}
 			}
-			erand.PermuteInts(pord, RandSource)
+			randx.PermuteInts(pord, RandSource)
 		}
 		for i := range nunder {
 			nunder[i] = 0

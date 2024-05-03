@@ -6,10 +6,10 @@ package paths
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/math32/vecint"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
-	"github.com/emer/emergent/v2/evec"
 )
 
 // Circle implements a circular pattern of connectivity between two layers
@@ -24,7 +24,7 @@ type Circle struct {
 	Radius int
 
 	// starting offset in sending layer, for computing the corresponding sending center relative to given recv unit position
-	Start evec.Vector2i
+	Start vecint.Vector2i
 
 	// scaling to apply to receiving unit position to compute sending center as function of recv unit position
 	Scale math32.Vector2

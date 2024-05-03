@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/iox/tomlx"
+	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/base/reflectx"
-	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/iancoleman/strcase"
 )
 

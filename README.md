@@ -118,7 +118,7 @@ The following all work together to provide a convenient layer of abstraction for
 
 * [efuns](efuns) has misc special functions such as Gaussian and Sigmoid.
 
-* [erand](erand) has misc random-number generation support functionality, including `erand.RndParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
+* [randx](randx) has misc random-number generation support functionality, including `randx.RandParams` for parameterizing the type of random noise to add to a model, and easier support for making permuted random lists, etc.
 
 * [esg](esg) is the *emergent stochastic / sentence generator* -- parses simple grammars that generate random events (sentences) -- can be a good starting point for generating more complex environments.
 

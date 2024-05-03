@@ -153,7 +153,7 @@ func VocabShuffle(mp Vocab, shufflePools []string) {
 		rows := tsr.Shape().Sizes[0]
 		poolY := tsr.Shape().Sizes[1]
 		poolX := tsr.Shape().Sizes[2]
-		sRows := RandSource.Perm(rows, -1)
+		sRows := RandSource.Perm(rows)
 		sTsr := tensor.NewFloat32([]int{rows, poolY, poolX}, "row", "Y", "X")
 		for iRow, sRow := range sRows {
 			sTsr.SubSpace([]int{iRow}).CopyFrom(tsr.SubSpace([]int{sRow}))

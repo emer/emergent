@@ -6,9 +6,9 @@ package paths
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/math32/vecint"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
-	"github.com/emer/emergent/v2/evec"
 )
 
 // PoolRect implements a rectangular pattern of connectivity between
@@ -18,10 +18,10 @@ import (
 type PoolRect struct {
 
 	// size of rectangle (of pools) in sending layer that each receiving unit receives from
-	Size evec.Vector2i
+	Size vecint.Vector2i
 
 	// starting pool offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv pool position
-	Start evec.Vector2i
+	Start vecint.Vector2i
 
 	// scaling to apply to receiving pool osition to compute corresponding position in sending layer of the lower-left corner of rectangle
 	Scale math32.Vector2
@@ -39,10 +39,10 @@ type PoolRect struct {
 	SelfCon bool
 
 	// starting pool position in receiving layer -- if > 0 then pools below this starting point remain unconnected
-	RecvStart evec.Vector2i
+	RecvStart vecint.Vector2i
 
 	// number of pools in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected
-	RecvN evec.Vector2i
+	RecvN vecint.Vector2i
 }
 
 func NewPoolRect() *PoolRect {

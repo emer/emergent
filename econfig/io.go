@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/iox/tomlx"
-	"github.com/emer/emergent/v2/empi/mpi"
+	"cogentcore.org/core/base/mpi"
 )
 
 // OpenWithIncludes reads config from given config file,

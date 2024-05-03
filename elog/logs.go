@@ -13,10 +13,10 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/core/tensor/tensormpi"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/emergent/v2/empi"
-	"github.com/emer/emergent/v2/empi/mpi"
 	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
 )
@@ -308,7 +308,7 @@ func (lg *Logs) ResetLog(mode etime.Modes, time etime.Times) {
 	lt.ResetIndexViews()
 }
 
-// MPIGatherTableRows calls empi.GatherTableRows on the given log table
+// MPIGatherTableRows calls tensormpi.GatherTableRows on the given log table
 // using an "MPI" suffixed MiscTable that is then switched out with the main table,
 // so that any subsequent aggregation etc operates as usual on the full set of data.
 // IMPORTANT: this switch means that the number of rows in the table MUST be reset
@@ -323,7 +323,7 @@ func (lg *Logs) MPIGatherTableRows(mode etime.Modes, time etime.Times, comm *mpi
 	if !has {
 		mt = &table.Table{}
 	}
-	empi.GatherTableRows(mt, dt, comm)
+	tensormpi.GatherTableRows(mt, dt, comm)
 	lt.Table = mt
 	lg.MiscTables[skm] = dt // note: actual underlying tables are always being swapped
 	lt.ResetIndexViews()

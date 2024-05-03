@@ -15,10 +15,10 @@ import (
 	"path/filepath"
 	"sort"
 
+	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/emergent/v2/empi/mpi"
 )
 
 // SoftMax is a softmax decoder, which is the best choice for a 1-hot classification

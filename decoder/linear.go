@@ -9,9 +9,9 @@ package decoder
 import (
 	"fmt"
 
+	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
-	"github.com/emer/emergent/v2/empi/mpi"
 )
 
 type ActivationFunc func(float32) float32

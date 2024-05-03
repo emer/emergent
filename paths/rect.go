@@ -6,9 +6,9 @@ package paths
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/math32/vecint"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
-	"github.com/emer/emergent/v2/evec"
 )
 
 // Rect implements a rectangular pattern of connectivity between two layers
@@ -18,10 +18,10 @@ import (
 type Rect struct {
 
 	// size of rectangle in sending layer that each receiving unit receives from
-	Size evec.Vector2i
+	Size vecint.Vector2i
 
 	// starting offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv unit position
-	Start evec.Vector2i
+	Start vecint.Vector2i
 
 	// scaling to apply to receiving unit position to compute corresponding position in sending layer of the lower-left corner of rectangle
 	Scale math32.Vector2
@@ -42,10 +42,10 @@ type Rect struct {
 	Recip bool
 
 	// starting position in receiving layer -- if > 0 then units below this starting point remain unconnected
-	RecvStart evec.Vector2i
+	RecvStart vecint.Vector2i
 
 	// number of units in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected
-	RecvN evec.Vector2i
+	RecvN vecint.Vector2i
 }
 
 func NewRect() *Rect {

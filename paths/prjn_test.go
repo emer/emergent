@@ -409,15 +409,15 @@ func TestPoolTileRecip2(t *testing.T) {
 	CheckAllN(recvn, pj.Size.X*pj.Size.Y*rNu, t)
 }
 
-func TestUnifRnd(t *testing.T) {
+func TestUniformRand(t *testing.T) {
 	send := tensor.NewShape([]int{2, 3})
 	recv := tensor.NewShape([]int{3, 4})
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
 
-	pj := NewUnifRnd()
-	pj.RndSeed = 10
+	pj := NewUniformRand()
+	pj.RandSeed = 10
 	pj.PCon = 0.5
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	// fmt.Printf("unif rnd recv: 3x4 send: 2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
@@ -456,8 +456,8 @@ func TestUnifRnd(t *testing.T) {
 	assert.Equal(t, nrMin, 3)
 
 	// now test recip
-	rpj := NewUnifRnd()
-	rpj.RndSeed = 10
+	rpj := NewUniformRand()
+	rpj.RandSeed = 10
 	rpj.PCon = 0.5
 	rpj.Recip = true
 	sendn, recvn, cons = rpj.Connect(send, recv, false)
@@ -479,16 +479,16 @@ func TestUnifRnd(t *testing.T) {
 	assert.Equal(t, ex2, string(ConsStringFull(send, recv, cons)))
 }
 
-func TestUnifRndLg(t *testing.T) {
+func TestUniformRandLg(t *testing.T) {
 	send := tensor.NewShape([]int{20, 30})
 	recv := tensor.NewShape([]int{30, 40})
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
 
-	pj := NewUnifRnd()
+	pj := NewUniformRand()
 	pj.PCon = 0.05
-	pj.RndSeed = 10
+	pj.RandSeed = 10
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 
 	_ = recvn
@@ -511,15 +511,15 @@ func TestUnifRndLg(t *testing.T) {
 
 }
 
-func TestUnifRndSelf(t *testing.T) {
+func TestUniformRandSelf(t *testing.T) {
 	send := tensor.NewShape([]int{2, 3})
 	recv := tensor.NewShape([]int{2, 3})
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
 
-	pj := NewUnifRnd()
-	pj.RndSeed = 10
+	pj := NewUniformRand()
+	pj.RandSeed = 10
 	pj.PCon = 0.5
 	pj.SelfCon = false
 	sendn, recvn, cons := pj.Connect(send, recv, true)
@@ -553,15 +553,15 @@ func TestUnifRndSelf(t *testing.T) {
 	assert.Equal(t, nrMin, 1)
 }
 
-func TestPoolUnifRnd(t *testing.T) {
+func TestPoolUniformRand(t *testing.T) {
 	send := tensor.NewShape([]int{2, 3, 2, 3})
 	recv := tensor.NewShape([]int{2, 3, 3, 4})
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
 
-	pj := NewPoolUnifRnd()
-	pj.RndSeed = 10
+	pj := NewPoolUniformRand()
+	pj.RandSeed = 10
 	pj.PCon = 0.5
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 	// fmt.Printf("unif rnd recv: 2x3x3x4 send: 2x3x2x3\n%s\n", string(ConsStringFull(send, recv, cons)))
@@ -660,7 +660,7 @@ func TestPoolUnifRnd(t *testing.T) {
 	assert.Equal(t, nrMin, 1)
 
 	// now test recip
-	// rpj := NewUnifRnd()
+	// rpj := NewUniformRand()
 	// rpj.PCon = 0.5
 	// rpj.Recip = true
 	// sendn, recvn, cons = rpj.Connect(send, recv, false)
@@ -669,16 +669,16 @@ func TestPoolUnifRnd(t *testing.T) {
 	// _ = recvn
 }
 
-func TestPoolUnifRndLg(t *testing.T) {
+func TestPoolUniformRandLg(t *testing.T) {
 	send := tensor.NewShape([]int{2, 3, 20, 30})
 	recv := tensor.NewShape([]int{2, 3, 30, 40})
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
 
-	pj := NewPoolUnifRnd()
+	pj := NewPoolUniformRand()
 	pj.PCon = 0.05
-	pj.RndSeed = 10
+	pj.RandSeed = 10
 	sendn, recvn, cons := pj.Connect(send, recv, false)
 
 	_ = recvn
@@ -700,16 +700,16 @@ func TestPoolUnifRndLg(t *testing.T) {
 	assert.Equal(t, nrMin, 33)
 }
 
-func TestPoolUnifRndSelf(t *testing.T) {
+func TestPoolUniformRandSelf(t *testing.T) {
 	send := tensor.NewShape([]int{2, 3, 2, 3})
 	recv := tensor.NewShape([]int{2, 3, 2, 3})
 
 	sNtot := send.Len()
 	rNtot := recv.Len()
 
-	pj := NewPoolUnifRnd()
+	pj := NewPoolUniformRand()
 	pj.PCon = 0.5
-	pj.RndSeed = 10
+	pj.RandSeed = 10
 	pj.SelfCon = false
 	sendn, recvn, cons := pj.Connect(send, recv, true)
 	// fmt.Printf("unif rnd self: 2x3x2x3\n%s\n", string(ConsStringFull(send, recv, cons)))

@@ -17,8 +17,8 @@ in algorithm-specific code, including things like MinMax and AvgMax, and also th
 parameter-styling infrastructure (emer.Params, emer.ParamStyle, emer.ParamSet and
 emer.ParamSets).
 
-* erand has misc random-number generation support functionality, including
-erand.RndParams for parameterizing the type of random noise to add to a model,
+* randx has misc random-number generation support functionality, including
+randx.RandParams for parameterizing the type of random noise to add to a model,
 and easier support for making permuted random lists, etc.
 
 * netview provides the NetView interactive 3D network viewer, implemented in the Cogent Core 3D framework.

@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/emer/emergent/v2/empi/mpi"
+	"cogentcore.org/core/base/mpi"
 	"github.com/emer/emergent/v2/netparams"
 	"github.com/emer/emergent/v2/params"
 )

@@ -9,9 +9,9 @@ import (
 	"log"
 	"math"
 
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/erand"
 )
 
 // FreqTable is an Env that manages patterns from an table.Table with frequency
@@ -34,11 +34,11 @@ type FreqTable struct {
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
 	Table *table.IndexView
 
-	// number of samples to use in constructing the list of items to present according to frequency -- number per epoch ~ NSamples * Freq -- see RndSamp option
+	// number of samples to use in constructing the list of items to present according to frequency -- number per epoch ~ NSamples * Freq -- see RandSamp option
 	NSamples float64
 
 	// if true, use random sampling of items NSamples times according to given Freq probability value -- otherwise just directly add NSamples * Freq items to the list
-	RndSamp bool
+	RandSamp bool
 
 	// present items from the table in sequential order (i.e., according to the indexed view on the Table)?  otherwise permuted random order.  All repetitions of given item will be sequential if Sequential
 	Sequential bool
@@ -126,10 +126,10 @@ func (ft *FreqTable) Sample() {
 	for ri := 0; ri < np; ri++ {
 		ti := ft.Table.Indexes[ri]
 		frq := frqs.Float1D(ti)
-		if ft.RndSamp {
+		if ft.RandSamp {
 			n := int(ft.NSamples)
 			for i := 0; i < n; i++ {
-				if erand.BoolP(frq, -1) {
+				if randx.BoolP(frq) {
 					ft.Order = append(ft.Order, ri)
 				}
 			}
@@ -141,7 +141,7 @@ func (ft *FreqTable) Sample() {
 		}
 	}
 	if !ft.Sequential {
-		erand.PermuteInts(ft.Order)
+		randx.PermuteInts(ft.Order)
 	}
 }
 

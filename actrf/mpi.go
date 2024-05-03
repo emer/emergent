@@ -5,8 +5,8 @@
 package actrf
 
 import (
-	"github.com/emer/emergent/v2/empi"
-	"github.com/emer/emergent/v2/empi/mpi"
+	"cogentcore.org/core/base/mpi"
+	"cogentcore.org/core/tensor/tensormpi"
 )
 
 // MPISum aggregates RF Sum data across all processors in given mpi communicator.
@@ -15,9 +15,9 @@ func (af *RF) MPISum(comm *mpi.Comm) {
 	if mpi.WorldSize() == 1 {
 		return
 	}
-	empi.ReduceTensor(&af.MPITmp, &af.SumProd, comm, mpi.OpSum)
+	tensormpi.ReduceTensor(&af.MPITmp, &af.SumProd, comm, mpi.OpSum)
 	af.SumProd.CopyFrom(&af.MPITmp)
-	empi.ReduceTensor(&af.MPITmp, &af.SumSrc, comm, mpi.OpSum)
+	tensormpi.ReduceTensor(&af.MPITmp, &af.SumSrc, comm, mpi.OpSum)
 	af.SumSrc.CopyFrom(&af.MPITmp)
 }
 

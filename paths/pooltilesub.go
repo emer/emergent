@@ -10,10 +10,10 @@ import (
 
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/math32/minmax"
+	"cogentcore.org/core/math32/vecint"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
-	"github.com/emer/emergent/v2/evec"
 )
 
 // PoolTileSub implements tiled 2D connectivity between pools within layers, where
@@ -33,16 +33,16 @@ type PoolTileSub struct {
 	Recip bool
 
 	// size of receptive field tile, in terms of pools on the sending layer
-	Size evec.Vector2i
+	Size vecint.Vector2i
 
 	// how many pools to skip in tiling over sending layer -- typically 1/2 of Size
-	Skip evec.Vector2i
+	Skip vecint.Vector2i
 
 	// starting pool offset for lower-left corner of first receptive field in sending layer
-	Start evec.Vector2i
+	Start vecint.Vector2i
 
 	// number of sub-pools within each pool
-	Subs evec.Vector2i
+	Subs vecint.Vector2i
 
 	// sending layer has sub-pools
 	SendSubs bool
