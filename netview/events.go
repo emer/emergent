@@ -6,8 +6,8 @@ package netview
 
 import (
 	"fmt"
+	"image"
 
-	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/views"
@@ -30,19 +30,10 @@ func (sw *Scene) OnInit() {
 
 func (sw *Scene) HandleEvents() {
 	sw.On(events.MouseDown, func(e events.Event) {
-		pos := sw.Geom.ContentBBox.Min
-		e.SetLocalOff(e.LocalOff().Add(pos))
 		sw.MouseDownEvent(e)
 		sw.NeedsRender()
 	})
-	sw.On(events.LongHoverStart, func(e events.Event) {
-		pos := sw.Geom.ContentBBox.Min
-		e.SetLocalOff(e.LocalOff().Add(pos))
-		sw.LongHoverEvent(e)
-	})
 	sw.On(events.Scroll, func(e events.Event) {
-		pos := sw.Geom.ContentBBox.Min
-		e.SetLocalOff(e.LocalOff().Add(pos))
 		sw.SceneXYZ().MouseScrollEvent(e.(*events.MouseScroll))
 		sw.NeedsRender()
 	})
@@ -67,7 +58,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		}
 	}
 
-	lay, _, _, unIndex := sw.LayerUnitAtPoint(e)
+	lay, _, _, unIndex := sw.LayerUnitAtPoint(e.Pos())
 	if lay == nil {
 		return
 	}
@@ -78,42 +69,45 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 	e.SetHandled()
 }
 
-func (sw *Scene) LongHoverEvent(e events.Event) {
-	lay, lx, ly, _ := sw.LayerUnitAtPoint(e)
+func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
+	if pos == image.Pt(-1, -1) {
+		return "_", image.Point{}
+	}
+
+	lay, lx, ly, _ := sw.LayerUnitAtPoint(pos)
 	if lay == nil {
-		return
+		return "", pos
 	}
 	nv := sw.NetView
 
-	sval := ""
+	tt := ""
 	if lay.Is2D() {
 		idx := []int{ly, lx}
 		val, _, _, hasval := nv.UnitValue(lay, idx)
 		if !hasval {
-			sval = fmt.Sprintf("[%d,%d]=n/a\n", lx, ly)
+			tt = fmt.Sprintf("[%d,%d]=n/a\n", lx, ly)
 		} else {
-			sval = fmt.Sprintf("[%d,%d]=%g\n", lx, ly, val)
+			tt = fmt.Sprintf("[%d,%d]=%g\n", lx, ly, val)
 		}
 	} else if lay.Is4D() {
 		idx, ok := lay.Index4DFrom2D(lx, ly)
 		if !ok {
-			return
+			return "", pos
 		}
 		val, _, _, hasval := nv.UnitValue(lay, idx)
 		if !hasval {
-			sval = fmt.Sprintf("[%d,%d][%d,%d]=n/a\n", idx[1], idx[0], idx[3], idx[2])
+			tt = fmt.Sprintf("[%d,%d][%d,%d]=n/a\n", idx[1], idx[0], idx[3], idx[2])
 		} else {
-			sval = fmt.Sprintf("[%d,%d][%d,%d]=%g\n", idx[1], idx[0], idx[3], idx[2], val)
+			tt = fmt.Sprintf("[%d,%d][%d,%d]=%g\n", idx[1], idx[0], idx[3], idx[2], val)
 		}
 	} else {
-		return // not supported
+		return "", pos // not supported
 	}
-	core.NewTooltipTextAt(sw, sval, e.WindowPos(), lay.Size().ToPoint()).Run()
-	e.SetHandled()
+	return tt, pos
 }
 
-func (sw *Scene) LayerUnitAtPoint(e events.Event) (lay emer.Layer, lx, ly, unIndex int) {
-	pos := e.Pos()
+func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIndex int) {
+	pos = pos.Sub(sw.Geom.ContentBBox.Min)
 	sc := sw.SceneXYZ()
 	laysGp := sc.ChildByName("Layers", 0)
 	if laysGp == nil {
