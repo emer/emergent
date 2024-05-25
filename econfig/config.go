@@ -53,6 +53,8 @@ var (
 //
 // Also processes -help or -h and prints usage and quits immediately.
 func Config(cfg any, defaultFile ...string) ([]string, error) {
+	ConfigFile = ""
+
 	var errs []error
 	err := SetFromDefaults(cfg)
 	if err != nil {
