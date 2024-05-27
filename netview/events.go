@@ -45,7 +45,8 @@ func (sw *Scene) HandleEvents() {
 }
 
 func (sw *Scene) MouseDownEvent(e events.Event) {
-	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), e.Pos())
+	pos := e.Pos().Sub(sw.Geom.ContentBBox.Min)
+	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), pos)
 	for _, n := range ns {
 		ln, ok := n.(*LayName)
 		if ok {
