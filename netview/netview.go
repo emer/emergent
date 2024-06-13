@@ -941,7 +941,7 @@ func (nv *NetView) ConfigToolbar(tb *core.Toolbar) {
 	cmap := nv.ColorMapVal.AsWidget()
 	cmap.AsWidget().SetTooltip("Color map for translating values into colors -- click to select alternative.").
 		Style(func(s *styles.Style) {
-			s.Min.X.Em(20)
+			s.Min.X.Em(10)
 			s.Min.Y.Em(1.2)
 			s.Grow.Set(0, 1)
 		})

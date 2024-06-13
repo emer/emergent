@@ -141,7 +141,7 @@ func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotview.PlotVi
 
 // AddTableView adds a table view of given log,
 // typically particularly useful for Debug logs.
-func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) {
+func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) *tensorview.TableView {
 	if gui.TableViews == nil {
 		gui.TableViews = make(map[etime.ScopeKey]*tensorview.TableView)
 	}
@@ -150,13 +150,15 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 	lt, ok := lg.Tables[key]
 	if !ok {
 		log.Printf("ERROR: in egui.AddTableView, log: %s not found\n", key)
-		return
+		return nil
 	}
 
 	tt := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
 	tv := tensorview.NewTableView(tt)
 	gui.TableViews[key] = tv
+	tv.SetReadOnly(true)
 	tv.SetTable(lt.Table)
+	return tv
 }
 
 // TableView returns TableView for mode, time scope

@@ -45,7 +45,7 @@ func (lg *Logs) AddCounterItems(ctrs ...etime.Times) {
 
 // AddStdAggs adds standard aggregation items for times up to the penultimate
 // time step provided, for given stat item that was created for the final timescale.
-func (lg *Logs) AddStdAggs(itm *Item, mode etime.Modes, times []etime.Times) {
+func (lg *Logs) AddStdAggs(itm *Item, mode etime.Modes, times ...etime.Times) {
 	ntimes := len(times)
 	for i := ntimes - 2; i >= 0; i-- {
 		tm := times[i]
@@ -81,7 +81,7 @@ func (lg *Logs) AddStatAggItem(statName string, times ...etime.Times) *Item {
 			etime.Scope(etime.AllModes, times[ntimes-1]): func(ctx *Context) {
 				ctx.SetFloat64(ctx.Stats.Float(statName))
 			}}})
-	lg.AddStdAggs(itm, etime.AllModes, times)
+	lg.AddStdAggs(itm, etime.AllModes, times...)
 	return itm
 }
 
