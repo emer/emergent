@@ -5,7 +5,7 @@
 [![CI](https://github.com/emer/emergent/actions/workflows/ci.yml/badge.svg)](https://github.com/emer/emergent/actions/workflows/ci.yml)
 [![Codecov](https://codecov.io/gh/emer/emergent/branch/master/graph/badge.svg?token=Hw5cInAxY3)](https://codecov.io/gh/emer/emergent)
 
-The *emergent* neural network simulation software framework provides a toolkit in the Go programming language (golang) for developing neural network models across multiple levels of complexity, from biologically-detailed spiking networks in the [axon](https://github.com/emer/axon) package, to PyTorch abstract deep networks in the [eTorch](https://github.com/emer/etorch) package.  It builds on the [Cogent Core](https://cogentcore.org) GUI framework to provide dynamic graphical interfaces for visualizing and manipulating networks and data, making the models uniquely accessible for teaching (e.g., see the [Computational Cognitive Neuroscience](https://github.com/CompCogNeuro/sims)) and supporting the development of complex dynamical models for research.
+The *emergent* neural network simulation framework provides a toolkit in the Go programming language (golang) for developing neural network models across multiple levels of complexity, from biologically-detailed spiking networks in the [axon](https://github.com/emer/axon) package, to PyTorch abstract deep networks in the [eTorch](https://github.com/emer/etorch) package.  It builds on the [Cogent Core](https://cogentcore.org) GUI framework to provide dynamic graphical interfaces for visualizing and manipulating networks and data, making the models uniquely accessible for teaching (e.g., see the [Computational Cognitive Neuroscience](https://github.com/CompCogNeuro/sims) simulations) and supporting the development of complex dynamical models for research.
 
 See [Wiki Install](https://github.com/emer/emergent/wiki/Install) for installation instructions (note: Go 1.22 required), and the [Wiki Rationale](https://github.com/emer/emergent/wiki/Rationale) and [History](https://github.com/emer/emergent/wiki/History) pages for a more detailed rationale for this version of emergent, and a history of emergent (and its predecessors).
 
@@ -16,6 +16,8 @@ Furthermore, the _Go shader language_ [gosl](https://github.com/cogentcore/core/
 See the [ra25 example](https://github.com/emer/axon/tree/main/ra25/README.md) in the [axon](https://github.com/emer/axon) package for a complete working example (intended to be a good starting point for creating your own models), and any of the 26 models in the [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) repository which also provide good starting points, using the [leabra](https://github.com/emer/leabra) framework. 
 
 # Current Status / News
+
+* June 2024: Major changes ongoing in coordination with the [Cogent Core](https://cogentcore.org) framework development over the prior year, replacing the previous [GoKi](https://github.com/goki) GUI framework.  Many packages have migrated to Cogent Core, which is a much cleaner major rewrite, which should be stable and released in beta status soon.  [axon](https://github.com/emer/axon) is staying updated but everything else should use the [v1](https://github.com/emer/emergent/tree/v1) branch. [Leabra](https://github.com/emer/leabra) and [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) will be updated after the dust settles, hopefully in time for Fall 2024 classes.
 
 * Nov 2020: Full Python conversions of CCN sims complete, and [eTorch](https://github.com/emer/etorch) for viewing and interacting with PyTorch models.
 
@@ -97,9 +99,9 @@ The following all work together to provide a convenient layer of abstraction for
 
 * [ringidx](ringidx) provides a wrap-around ring index for efficient use of a fixed buffer that overwrites the oldest items without any copying.
 
-# Repositories
+# Other Packages
 
-Here are the other repositories from [Cogent Core](https://github.com/cogentcore/core) and within `emer` that provide infrastructure and other optional elements for simulations:
+Here are the other packages from [Cogent Core](https://github.com/cogentcore/core) and within `emer` that provide infrastructure and other optional elements for simulations:
 
 * [tensor](https://github.com/cogentcore/core/tree/main/tensor) in Cogent Core provides critical data management infrastructure in the form of n-dimensional `Tensor` data types, and the  [table.Table](https://github.com/cogentcore/core/tree/main/tensor/table), which is a collection of tensors and provides the same functionality as `pandas` or `xarray` in Python.  There are packages for standard data analysis tools like similarity / distance matricies, PCA, cluster plots, etc.  The [plot](https://github.com/cogentcore/core/tree/main/plot) package supports interactive plotting of data.
 
