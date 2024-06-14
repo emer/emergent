@@ -22,13 +22,13 @@ type GUI struct {
 	CycleUpdateInterval int
 
 	// true if the GUI is configured and running
-	Active bool `view:"-"`
+	Active bool `display:"-"`
 
 	// true if sim is running
-	IsRunning bool `view:"-"`
+	IsRunning bool `display:"-"`
 
 	// flag to stop running
-	StopNow bool `view:"-"`
+	StopNow bool `display:"-"`
 
 	// plots by scope
 	Plots map[etime.ScopeKey]*plotcore.PlotEditor
@@ -40,19 +40,19 @@ type GUI struct {
 	Grids map[string]*tensorcore.TensorGrid
 
 	// the view update for managing updates of netview
-	ViewUpdate *netview.ViewUpdate `view:"-"`
+	ViewUpdate *netview.ViewUpdate `display:"-"`
 
 	// net data for recording in nogui mode, if !nil
-	NetData *netview.NetData `view:"-"`
+	NetData *netview.NetData `display:"-"`
 
 	// displays Sim fields on left
-	StructView *core.Form `view:"-"`
+	StructView *core.Form `display:"-"`
 
 	// tabs for different view elements: plots, rasters
-	Tabs *core.Tabs `view:"-"`
+	Tabs *core.Tabs `display:"-"`
 
 	// Body is the content of the sim window
-	Body *core.Body `view:"-"`
+	Body *core.Body `display:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
@@ -61,7 +61,7 @@ type GUI struct {
 func (gui *GUI) UpdateWindow() {
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
-		tb.ApplyStyleUpdate()
+		tb.Restyle()
 	}
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really neccesary
@@ -75,7 +75,7 @@ func (gui *GUI) GoUpdateWindow() {
 
 	tb := gui.Body.GetTopAppBar()
 	if tb != nil {
-		tb.ApplyStyleUpdate()
+		tb.Restyle()
 	}
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really neccesary
@@ -101,13 +101,15 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
 	// gui.Body.App().About = about
-	split := core.NewSplits(gui.Body, "split")
+	split := core.NewSplits(gui.Body)
+	split.Name = "split"
 	gui.StructView = core.NewForm(split).SetStruct(sim)
 	gui.StructView.Name = "sv"
-	if tb, ok := sim.(core.Toolbarer); ok {
-		gui.Body.AddAppBar(tb.ConfigToolbar)
+	if tb, ok := sim.(core.ToolbarMaker); ok {
+		gui.Body.AddAppBar(tb.MakeToolbar)
 	}
-	gui.Tabs = core.NewTabs(split, "tv")
+	gui.Tabs = core.NewTabs(split)
+	gui.Tabs.Name = "tv"
 	split.SetSplits(.2, .8)
 }
 

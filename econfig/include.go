@@ -54,7 +54,7 @@ func includesStackImpl(clone Includeser, includes []string) ([]string, error) {
 	var errs []error
 	for _, inc := range incs {
 		*clone.IncludesPtr() = nil
-		err := tomlx.OpenFromPaths(clone, inc, IncludePaths)
+		err := tomlx.OpenFromPaths(clone, inc, IncludePaths...)
 		if err == nil {
 			includes, err = includesStackImpl(clone, includes)
 			if err != nil {
@@ -88,7 +88,7 @@ func includeStackImpl(clone Includer, includes []string) ([]string, error) {
 	includes = append(includes, inc)
 	var errs []error
 	*clone.IncludePtr() = ""
-	err := tomlx.OpenFromPaths(clone, inc, IncludePaths)
+	err := tomlx.OpenFromPaths(clone, inc, IncludePaths...)
 	if err == nil {
 		includes, err = includeStackImpl(clone, includes)
 		if err != nil {

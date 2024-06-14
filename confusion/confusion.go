@@ -21,25 +21,25 @@ import (
 type Matrix struct { //git:add
 
 	// normalized probability of confusion: Row = ground truth class, Col = actual response for that class.
-	Prob tensor.Float64 `view:"no-inline"`
+	Prob tensor.Float64 `display:"no-inline"`
 
 	// incremental sums
-	Sum tensor.Float64 `view:"no-inline"`
+	Sum tensor.Float64 `display:"no-inline"`
 
 	// counts per ground truth (rows)
-	N tensor.Float64 `view:"no-inline"`
+	N tensor.Float64 `display:"no-inline"`
 
 	// visualization using SimMat
-	Vis simat.SimMat `view:"no-inline"`
+	Vis simat.SimMat `display:"no-inline"`
 
 	// true pos/neg, false pos/neg for each class, generated from the confusion matrix
-	TFPN tensor.Float64 `view:"no-inline"`
+	TFPN tensor.Float64 `display:"no-inline"`
 
 	// precision, recall and F1 score by class
-	ClassScores tensor.Float64 `view:"no-inline"`
+	ClassScores tensor.Float64 `display:"no-inline"`
 
 	// micro F1, macro F1 and weighted F1 scores for entire matrix ignoring class
-	MatrixScores tensor.Float64 `view:"no-inline"`
+	MatrixScores tensor.Float64 `display:"no-inline"`
 }
 
 // Init initializes the Matrix for given number of classes,

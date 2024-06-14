@@ -47,13 +47,13 @@ type FreqTable struct {
 	Order []int
 
 	// current run of model as provided during Init
-	Run Ctr `view:"inline"`
+	Run Ctr `display:"inline"`
 
 	// number of times through entire set of patterns
-	Epoch Ctr `view:"inline"`
+	Epoch Ctr `display:"inline"`
 
 	// current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
-	Trial Ctr `view:"inline"`
+	Trial Ctr `display:"inline"`
 
 	// if Table has a Name column, this is the contents of that
 	TrialName CurPrvString

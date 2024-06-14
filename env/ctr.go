@@ -13,16 +13,16 @@ type Ctr struct {
 	Cur int
 
 	// previous counter value, prior to last Incr() call (init to -1)
-	Prv int `view:"-"`
+	Prv int `display:"-"`
 
 	// did this change on the last Step() call or not?
-	Chg bool `view:"-"`
+	Chg bool `display:"-"`
 
 	// where relevant, this is a fixed maximum counter value, above which the counter will reset back to 0 -- only used if > 0
 	Max int
 
 	// the unit of time scale represented by this counter (just FYI)
-	Scale TimeScales `view:"-"`
+	Scale TimeScales `display:"-"`
 }
 
 // Init initializes counter -- Cur = 0, Prv = -1

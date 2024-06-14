@@ -60,7 +60,7 @@ type NetView struct {
 	VarParams map[string]*VarParams
 
 	// current var params -- only valid during Update of display
-	CurVarParams *VarParams `json:"-" xml:"-" view:"-"`
+	CurVarParams *VarParams `json:"-" xml:"-" display:"-"`
 
 	// parameters controlling how the view is rendered
 	Params Params
@@ -81,7 +81,7 @@ type NetView struct {
 	Data NetData
 
 	// mutex on data access
-	DataMu sync.RWMutex `view:"-" copier:"-" json:"-" xml:"-"`
+	DataMu sync.RWMutex `display:"-" copier:"-" json:"-" xml:"-"`
 }
 
 func (nv *NetView) Init() {
@@ -96,9 +96,9 @@ func (nv *NetView) Init() {
 	})
 
 	core.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
-		nv.ConfigToolbar(w)
+		w.Maker(nv.MakeToolbar)
 	})
-	core.AddChildAt(nv, "nframe", func(w *core.Frame) {
+	core.AddChildAt(nv, "netframe", func(w *core.Frame) {
 		w.Styler(func(s *styles.Style) {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
@@ -115,18 +115,18 @@ func (nv *NetView) Init() {
 		})
 		core.AddChildAt(w, "scene", func(w *Scene) {
 			w.NetView = nv
-			nv.ViewConfig()
+			se := w.Scene.XYZ
+			nv.ViewDefaults(se)
+			laysGp := xyz.NewGroup(se)
+			laysGp.Name = "Layers"
 		})
 	})
 	core.AddChildAt(nv, "counters", func(w *core.Text) {
 		w.SetText("Counters: " + strings.Repeat(" ", 200))
 	})
 	core.AddChildAt(nv, "vbar", func(w *core.Toolbar) {
-		nv.ConfigViewbar(w)
+		w.Maker(nv.MakeViewbar)
 	})
-
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
-	nv.ReconfigMeshes()
 }
 
 // SetNet sets the network to view and updates view
@@ -135,7 +135,6 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
-	nv.Update()
 }
 
 // SetVar sets the variable to view and updates the display
@@ -283,10 +282,7 @@ func (nv *NetView) UpdateImpl() {
 	}
 
 	se := nv.SceneXYZ()
-	// laysGp := se.ChildByName("Layers", 0).AsTree()
-	// if laysGp == nil || laysGp.NumChildren() != nv.Net.NLayers() {
-	// 	nv.ConfigNetView()
-	// }
+	nv.ConfigLayers()
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
 	nv.UpdateRecNo()
 	nv.DataMu.Unlock()
@@ -348,8 +344,8 @@ func (nv *NetView) Toolbar() *core.Toolbar {
 	return nv.ChildByName("tbar", 0).(*core.Toolbar)
 }
 
-func (nv *NetView) NetLay() *core.Frame {
-	return nv.ChildByName("net", 1).(*core.Frame)
+func (nv *NetView) NetFrame() *core.Frame {
+	return nv.ChildByName("netframe", 1).(*core.Frame)
 }
 
 func (nv *NetView) Counters() *core.Text {
@@ -361,16 +357,15 @@ func (nv *NetView) Viewbar() *core.Toolbar {
 }
 
 func (nv *NetView) SceneWidget() *Scene {
-	return nv.NetLay().ChildByName("scene", 1).(*Scene)
+	return nv.NetFrame().ChildByName("scene", 1).(*Scene)
 }
 
 func (nv *NetView) SceneXYZ() *xyz.Scene {
 	return nv.SceneWidget().Scene.XYZ
-
 }
 
-func (nv *NetView) VarsLay() *core.Frame {
-	return nv.NetLay().ChildByName("vars", 0).(*core.Frame)
+func (nv *NetView) VarsFrame() *core.Frame {
+	return nv.NetFrame().ChildByName("vars", 0).(*core.Frame)
 }
 
 // SetCounters sets the counters widget view display at bottom of netview
@@ -384,8 +379,10 @@ func (nv *NetView) SetCounters(ctrs string) {
 // UpdateRecNo updates the record number viewing
 func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
-	rlbl := vbar.ChildByName("rec", 10).(*core.Text)
-	rlbl.SetText(fmt.Sprintf("%4d ", nv.RecNo)).Update()
+	rlbl := vbar.ChildByName("rec", 10)
+	if rlbl != nil {
+		rlbl.(*core.Text).SetText(fmt.Sprintf("%4d ", nv.RecNo)).Update()
+	}
 }
 
 // RecFullBkwd move view record to start of history.
@@ -533,7 +530,7 @@ func (nv *NetView) VarsListUpdate() {
 // VarsUpdate updates the selection status of the variables
 // and the view range state too
 func (nv *NetView) VarsUpdate() {
-	vl := nv.VarsLay()
+	vl := nv.VarsFrame()
 	for _, vbi := range vl.Children {
 		vb := vbi.(*core.Button)
 		vb.SetSelected(vb.Text == nv.Var)
@@ -624,30 +621,19 @@ func (nv *NetView) makeVars(p *core.Plan) {
 	}
 }
 
-// ViewConfig configures the 3D view
-func (nv *NetView) ViewConfig() {
+// ConfigLayers configures the layers
+func (nv *NetView) ConfigLayers() {
 	sw := nv.SceneWidget()
-
 	se := sw.Scene.XYZ
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		se.DeleteChildren()
 		se.Meshes.Reset()
 		return
 	}
-	if se.Lights.Len() == 0 {
-		nv.ViewDefaults()
-	}
 	// todo:
 	// vs.BgColor = core.Prefs.Colors.Background // reset in case user changes
 	nlay := nv.Net.NLayers()
-	laysGpi := se.ChildByName("Layers", 0)
-	var laysGp *xyz.Group
-	if laysGpi == nil {
-		laysGp = xyz.NewGroup(se)
-		laysGp.Name = "Layers"
-	} else {
-		laysGp = laysGpi.(*xyz.Group)
-	}
+	laysGp := se.ChildByName("Layers", 0).(*xyz.Group)
 	layConfig := tree.TypePlan{}
 	for li := 0; li < nlay; li++ {
 		lay := nv.Net.Layer(li)
@@ -663,7 +649,9 @@ func (nv *NetView) ViewConfig() {
 	gpConfig.Add(LayObjType, "layer")
 	gpConfig.Add(LayNameType, "name")
 
-	tree.Update(laysGp, layConfig)
+	if !tree.Update(laysGp, layConfig) {
+		return
+	}
 
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
@@ -709,8 +697,7 @@ func (nv *NetView) ViewConfig() {
 }
 
 // ViewDefaults are the default 3D view params
-func (nv *NetView) ViewDefaults() {
-	se := nv.SceneXYZ()
+func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	se.Camera.Pose.Pos.Set(0, 1.5, 2.5) // more "top down" view shows more of layers
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1
@@ -876,321 +863,387 @@ func (nv *NetView) LayerByName(lay string) *xyz.Group {
 	return ly.(*xyz.Group)
 }
 
-func (nv *NetView) ConfigToolbar(tb *core.Toolbar) {
-	core.NewFuncButton(tb, nv.Update).SetText("Init").SetIcon(icons.Update)
-	core.NewFuncButton(tb, nv.Current).SetIcon(icons.Update)
-	core.NewButton(tb).SetText("Config").SetIcon(icons.Settings).
-		SetTooltip("set parameters that control display (font size etc)").
-		OnClick(func(e events.Event) {
-			core.FormDialog(nv, &nv.Params, nv.Name+" Params", true)
+func (nv *NetView) MakeToolbar(p *core.Plan) {
+	core.Add(p, func(w *core.FuncButton) {
+		w.SetFunc(nv.Update).SetText("Init").SetIcon(icons.Update)
+	})
+	core.Add(p, func(w *core.FuncButton) {
+		w.SetFunc(nv.Current).SetIcon(icons.Update)
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetText("Config").SetIcon(icons.Settings).
+			SetTooltip("set parameters that control display (font size etc)").
+			OnClick(func(e events.Event) {
+				FormDialog(nv, &nv.Params, nv.Name+" Params")
+			})
+	})
+	core.Add(p, func(w *core.Separator) {})
+	core.Add(p, func(w *core.Separator) {})
+	core.Add(p, func(w *core.Button) {
+		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
+			fb := core.NewFuncButton(m, nv.SaveWeights)
+			fb.SetIcon(icons.Save)
+			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
+			fb = core.NewFuncButton(m, nv.OpenWeights)
+			fb.SetIcon(icons.Open)
+			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
 		})
-	core.NewSeparator(tb)
-	core.NewButton(tb).SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
-		fb := core.NewFuncButton(m, nv.SaveWeights)
-		fb.SetIcon(icons.Save)
-		fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
-		fb = core.NewFuncButton(m, nv.OpenWeights)
-		fb.SetIcon(icons.Open)
-		fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
 	})
-	core.NewButton(tb).SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene) {
-		core.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
-		core.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
-		core.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
-		core.NewFuncButton(m, nv.ShowKeyPathParams).SetIcon(icons.Info)
+	core.Add(p, func(w *core.Button) {
+		w.SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene) {
+			core.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
+			core.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
+			core.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
+			core.NewFuncButton(m, nv.ShowKeyPathParams).SetIcon(icons.Info)
+		})
 	})
-	core.NewButton(tb).SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
-		core.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
-		core.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
-		core.NewSeparator(m)
-		core.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
+	core.Add(p, func(w *core.Button) {
+		w.SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
+			core.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
+			core.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
+			core.NewSeparator(m)
+			core.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
+		})
 	})
-	core.NewSeparator(tb)
+	core.Add(p, func(w *core.Separator) {})
 	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
-	core.NewText(tb).SetText("Di:").SetTooltip(ditp)
-	dis := core.NewSpinner(tb)
-	dis.SetMin(0).SetStep(1).SetValue(float32(nv.Di)).SetTooltip(ditp)
-	dis.OnChange(func(e events.Event) {
-		maxData := nv.Net.MaxParallelData()
-		md := int(dis.Value)
-		if md < maxData && md >= 0 {
-			nv.Di = md
-		}
-		dis.SetValue(float32(nv.Di))
-		nv.UpdateView()
+	core.Add(p, func(w *core.Text) {
+		w.SetText("Di:").SetTooltip(ditp)
 	})
-	core.NewSeparator(tb)
-	rchk := core.NewSwitch(tb)
-	rchk.SetText("Raster").SetChecked(nv.Params.Raster.On).
-		SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)")
-	rchk.OnChange(func(e events.Event) {
-		nv.Params.Raster.On = rchk.IsChecked()
-		nv.ReconfigMeshes()
-		nv.UpdateView()
-	})
-	xchk := core.NewSwitch(tb)
-	xchk.SetText("X").SetType(core.SwitchCheckbox).SetChecked(nv.Params.Raster.XAxis).
-		SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
-		OnChange(func(e events.Event) {
-			nv.Params.Raster.XAxis = xchk.IsChecked()
+	core.Add(p, func(w *core.Spinner) {
+		w.SetMin(0).SetStep(1).SetValue(float32(nv.Di)).SetTooltip(ditp)
+		w.OnChange(func(e events.Event) {
+			maxData := nv.Net.MaxParallelData()
+			md := int(w.Value)
+			if md < maxData && md >= 0 {
+				nv.Di = md
+			}
+			w.SetValue(float32(nv.Di))
 			nv.UpdateView()
 		})
+	})
 
+	core.Add(p, func(w *core.Separator) {})
+
+	core.Add(p, func(w *core.Switch) {
+		w.SetText("Raster").SetChecked(nv.Params.Raster.On).
+			SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)").
+			OnChange(func(e events.Event) {
+				nv.Params.Raster.On = w.IsChecked()
+				nv.ReconfigMeshes()
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Switch) {
+		w.SetText("X").SetType(core.SwitchCheckbox).SetChecked(nv.Params.Raster.XAxis).
+			SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
+			OnChange(func(e events.Event) {
+				nv.Params.Raster.XAxis = w.IsChecked()
+				nv.UpdateView()
+			})
+	})
 	vp, ok := nv.VarParams[nv.Var]
 	if !ok {
 		vp = &VarParams{}
 		vp.Defaults()
 	}
 
-	core.NewSeparator(tb)
-	mnsw := core.NewSwitch(tb)
-	mnsw.Name = "mnsw"
-	mnsw.SetText("Min").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMin).
-		SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").OnChange(func(e events.Event) {
-		vp := nv.VarParams[nv.Var]
-		vp.Range.FixMin = mnsw.IsChecked()
-		nv.VarScaleUpdate(nv.Var) // todo: before update?
-		nv.UpdateView()
-	})
-	mnsp := core.NewSpinner(tb)
-	mnsp.Name = "mnsp"
-	mnsp.SetValue(vp.Range.Min).
-		OnChange(func(e events.Event) {
+	core.Add(p, func(w *core.Separator) {})
+	core.AddAt(p, "mnsw", func(w *core.Switch) {
+		w.SetText("Min").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMin).
+			SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").OnChange(func(e events.Event) {
 			vp := nv.VarParams[nv.Var]
-			vp.Range.SetMin(mnsp.Value)
-			if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
-				vp.Range.SetMax(-vp.Range.Min)
-			}
-			nv.VarScaleUpdate(nv.Var)
+			vp.Range.FixMin = w.IsChecked()
+			nv.VarScaleUpdate(nv.Var) // todo: before update?
 			nv.UpdateView()
 		})
-
-	cmb := core.NewColorMapButton(tb)
-	nv.ColorMapButton = cmb
-	cmb.MapName = string(nv.Params.ColorMap)
-	cmb.Name = "cmap"
-	cmb.SetTooltip("Color map for translating values into colors -- click to select alternative.").
-		Styler(func(s *styles.Style) {
-			s.Min.X.Em(10)
-			s.Min.Y.Em(1.2)
-			s.Grow.Set(0, 1)
-		}).OnChange(func(e events.Event) {
-		cmap, ok := colormap.AvailableMaps[string(nv.ColorMapButton.MapName)]
-		if ok {
-			nv.ColorMap = cmap
-		}
-		nv.UpdateView()
 	})
-
-	mxsw := core.NewSwitch(tb)
-	mxsw.Name = "mxsw"
-	mxsw.SetText("Max").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMax).
-		SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
-		OnChange(func(e events.Event) {
-			vp := nv.VarParams[nv.Var]
-			vp.Range.FixMax = mxsw.IsChecked()
-			nv.VarScaleUpdate(nv.Var)
-			nv.UpdateView()
-		})
-	mxsp := core.NewSpinner(tb)
-	mxsp.Name = "mxsp"
-	mxsp.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
-		vp := nv.VarParams[nv.Var]
-		vp.Range.SetMax(mxsp.Value)
-		if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
-			vp.Range.SetMin(-vp.Range.Max)
-		}
-		nv.VarScaleUpdate(nv.Var)
-		nv.UpdateView()
-	})
-	zcsw := core.NewSwitch(tb)
-	zcsw.Name = "zcsw"
-	zcsw.SetText("ZeroCtr").SetChecked(vp.ZeroCtr).
-		SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
-		OnChange(func(e events.Event) {
-			vp := nv.VarParams[nv.Var]
-			vp.ZeroCtr = zcsw.IsChecked()
-			nv.VarScaleUpdate(nv.Var)
-			nv.UpdateView()
-		})
-}
-
-func (nv *NetView) ConfigViewbar(tb *core.Toolbar) {
-	core.NewButton(tb).SetIcon(icons.Update).SetTooltip("reset to default initial display").
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().SetCamera("default")
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.ZoomIn).SetTooltip("zoom in").
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Zoom(-.05)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.ZoomOut).SetTooltip("zoom out").
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Zoom(.05)
-			nv.UpdateView()
-		})
-	core.NewSeparator(tb)
-	core.NewText(tb).SetText("Rot:").SetTooltip("rotate display")
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Orbit(5, 0)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Orbit(0, 5)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Orbit(0, -5)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Orbit(-5, 0)
-			nv.UpdateView()
-		})
-	core.NewSeparator(tb)
-
-	core.NewText(tb).SetText("Pan:").SetTooltip("pan display")
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowLeft).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Pan(-.2, 0)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowUp).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Pan(0, .2)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowDown).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Pan(0, -.2)
-			nv.UpdateView()
-		})
-	core.NewButton(tb).SetIcon(icons.KeyboardArrowRight).
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			nv.SceneXYZ().Camera.Pan(.2, 0)
-			nv.UpdateView()
-		})
-	core.NewSeparator(tb)
-
-	core.NewText(tb).SetText("Save:")
-	for i := 1; i <= 4; i++ {
-		i := i
-		nm := fmt.Sprintf("%d", i)
-		core.NewButton(tb).SetText(nm).
-			SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
-			OnClick(func(e events.Event) {
-				sc := nv.SceneXYZ()
-				cam := nm
-				if e.HasAllModifiers(e.Modifiers(), key.Shift) {
-					sc.SaveCamera(cam)
-				} else {
-					err := sc.SetCamera(cam)
-					if err != nil {
-						sc.SaveCamera(cam)
-					}
+	core.AddAt(p, "mnsp", func(w *core.Spinner) {
+		w.SetValue(vp.Range.Min).
+			OnChange(func(e events.Event) {
+				vp := nv.VarParams[nv.Var]
+				vp.Range.SetMin(w.Value)
+				if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
+					vp.Range.SetMax(-vp.Range.Min)
 				}
-				fmt.Printf("Camera %s: %v\n", cam, sc.Camera.GenGoSet(""))
+				nv.VarScaleUpdate(nv.Var)
 				nv.UpdateView()
 			})
+	})
+
+	core.AddAt(p, "cmap", func(w *core.ColorMapButton) {
+		nv.ColorMapButton = w
+		w.MapName = string(nv.Params.ColorMap)
+		w.SetTooltip("Color map for translating values into colors -- click to select alternative.").
+			Styler(func(s *styles.Style) {
+				s.Min.X.Em(10)
+				s.Min.Y.Em(1.2)
+				s.Grow.Set(0, 1)
+			}).OnChange(func(e events.Event) {
+			cmap, ok := colormap.AvailableMaps[string(nv.ColorMapButton.MapName)]
+			if ok {
+				nv.ColorMap = cmap
+			}
+			nv.UpdateView()
+		})
+	})
+
+	core.AddAt(p, "mxsw", func(w *core.Switch) {
+		w.SetText("Max").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMax).
+			SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
+			OnChange(func(e events.Event) {
+				vp := nv.VarParams[nv.Var]
+				vp.Range.FixMax = w.IsChecked()
+				nv.VarScaleUpdate(nv.Var)
+				nv.UpdateView()
+			})
+	})
+
+	core.AddAt(p, "mxsp", func(w *core.Spinner) {
+		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
+			vp := nv.VarParams[nv.Var]
+			vp.Range.SetMax(w.Value)
+			if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
+				vp.Range.SetMin(-vp.Range.Max)
+			}
+			nv.VarScaleUpdate(nv.Var)
+			nv.UpdateView()
+		})
+	})
+
+	core.AddAt(p, "zcsw", func(w *core.Switch) {
+		w.SetText("ZeroCtr").SetChecked(vp.ZeroCtr).
+			SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
+			OnChange(func(e events.Event) {
+				vp := nv.VarParams[nv.Var]
+				vp.ZeroCtr = w.IsChecked()
+				nv.VarScaleUpdate(nv.Var)
+				nv.UpdateView()
+			})
+	})
+}
+
+func (nv *NetView) MakeViewbar(p *core.Plan) {
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.Update).SetTooltip("reset to default initial display").
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().SetCamera("default")
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.ZoomIn).SetTooltip("zoom in").
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Zoom(-.05)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.ZoomOut).SetTooltip("zoom out").
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Zoom(.05)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Separator) {})
+	core.Add(p, func(w *core.Text) {
+		w.SetText("Rot:").SetTooltip("rotate display")
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowLeft).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Orbit(5, 0)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowUp).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Orbit(0, 5)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowDown).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Orbit(0, -5)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowRight).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Orbit(-5, 0)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Separator) {})
+
+	core.Add(p, func(w *core.Text) {
+		w.SetText("Pan:").SetTooltip("pan display")
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowLeft).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Pan(-.2, 0)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowUp).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Pan(0, .2)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowDown).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Pan(0, -.2)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.KeyboardArrowRight).
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				nv.SceneXYZ().Camera.Pan(.2, 0)
+				nv.UpdateView()
+			})
+	})
+	core.Add(p, func(w *core.Separator) {})
+
+	core.Add(p, func(w *core.Text) { w.SetText("Save:") })
+
+	for i := 1; i <= 4; i++ {
+		nm := fmt.Sprintf("%d", i)
+		core.AddAt(p, "saved-"+nm, func(w *core.Button) {
+			w.SetText(nm).
+				SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
+				OnClick(func(e events.Event) {
+					sc := nv.SceneXYZ()
+					cam := nm
+					if e.HasAllModifiers(e.Modifiers(), key.Shift) {
+						sc.SaveCamera(cam)
+					} else {
+						err := sc.SetCamera(cam)
+						if err != nil {
+							sc.SaveCamera(cam)
+						}
+					}
+					fmt.Printf("Camera %s: %v\n", cam, sc.Camera.GenGoSet(""))
+					nv.UpdateView()
+				})
+		})
 	}
-	core.NewSeparator(tb)
+	core.Add(p, func(w *core.Separator) {})
 
-	core.NewText(tb).SetText("Time:").
-		SetTooltip("states are recorded over time -- last N can be reviewed using these buttons")
+	core.Add(p, func(w *core.Text) {
+		w.SetText("Time:").
+			SetTooltip("states are recorded over time -- last N can be reviewed using these buttons")
+	})
 
-	rec := core.NewText(tb).SetText(fmt.Sprintf("%4d ", nv.RecNo))
-	rec.Name = "rec"
-	rec.SetTooltip("current view record: -1 means latest, 0 = earliest")
-	core.NewButton(tb).SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
-		OnClick(func(e events.Event) {
-			if nv.RecFullBkwd() {
-				nv.UpdateView()
-			}
-		})
-	core.NewButton(tb).SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			if nv.RecFastBkwd() {
-				nv.UpdateView()
-			}
-		})
-	core.NewButton(tb).SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			if nv.RecBkwd() {
-				nv.UpdateView()
-			}
-		})
-	core.NewButton(tb).SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
-		OnClick(func(e events.Event) {
-			if nv.RecTrackLatest() {
-				nv.UpdateView()
-			}
-		})
-	core.NewButton(tb).SetIcon(icons.SkipNext).SetTooltip("move later by 1").
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			if nv.RecFwd() {
-				nv.UpdateView()
-			}
-		})
-	core.NewButton(tb).SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
-		Styler(func(s *styles.Style) {
-			s.SetAbilities(true, abilities.RepeatClickable)
-		}).
-		OnClick(func(e events.Event) {
-			if nv.RecFastFwd() {
-				nv.UpdateView()
-			}
-		})
-	core.NewButton(tb).SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
-		OnClick(func(e events.Event) {
-			if nv.RecTrackLatest() {
-				nv.UpdateView()
-			}
-		})
+	core.AddAt(p, "rec", func(w *core.Text) {
+		w.SetText(fmt.Sprintf("%4d ", nv.RecNo)).
+			SetTooltip("current view record: -1 means latest, 0 = earliest")
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
+			OnClick(func(e events.Event) {
+				if nv.RecFullBkwd() {
+					nv.UpdateView()
+				}
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				if nv.RecFastBkwd() {
+					nv.UpdateView()
+				}
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				if nv.RecBkwd() {
+					nv.UpdateView()
+				}
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
+			OnClick(func(e events.Event) {
+				if nv.RecTrackLatest() {
+					nv.UpdateView()
+				}
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.SkipNext).SetTooltip("move later by 1").
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				if nv.RecFwd() {
+					nv.UpdateView()
+				}
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
+			Styler(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			}).
+			OnClick(func(e events.Event) {
+				if nv.RecFastFwd() {
+					nv.UpdateView()
+				}
+			})
+	})
+	core.Add(p, func(w *core.Button) {
+		w.SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
+			OnClick(func(e events.Event) {
+				if nv.RecTrackLatest() {
+					nv.UpdateView()
+				}
+			})
+	})
 }
 
 // SaveWeights saves the network weights.

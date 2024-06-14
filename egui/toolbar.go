@@ -21,15 +21,17 @@ type ToolbarItem struct {
 }
 
 // AddToolbarItem adds a toolbar item but also checks when it be active in the UI
-func (gui *GUI) AddToolbarItem(tb *core.Toolbar, item ToolbarItem) {
-	itm := core.NewButton(tb).SetText(item.Label).SetIcon(item.Icon).
-		SetTooltip(item.Tooltip).OnClick(func(e events.Event) {
-		item.Func()
+func (gui *GUI) AddToolbarItem(p *core.Plan, item ToolbarItem) {
+	core.AddAt(p, item.Label, func(w *core.Button) {
+		w.SetText(item.Label).SetIcon(item.Icon).
+			SetTooltip(item.Tooltip).OnClick(func(e events.Event) {
+			item.Func()
+		})
+		switch item.Active {
+		case ActiveStopped:
+			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
+		case ActiveRunning:
+			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(gui.IsRunning) })
+		}
 	})
-	switch item.Active {
-	case ActiveStopped:
-		itm.StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
-	case ActiveRunning:
-		itm.StyleFirst(func(s *styles.Style) { s.SetEnabled(gui.IsRunning) })
-	}
 }

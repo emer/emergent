@@ -52,7 +52,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		if ok {
 			lay := ln.NetView.Net.LayerByName(ln.Text)
 			if lay != nil {
-				core.FormDialog(sw, lay, "Layer: "+lay.Name(), true)
+				FormDialog(sw, lay, "Layer: "+lay.Name())
 			}
 			e.SetHandled()
 			return
@@ -167,4 +167,15 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 	}
 	lay = nil
 	return
+}
+
+// FormDialog opens a dialog in a new, separate window
+// for viewing / editing the given struct object, in the context of given ctx widget
+func FormDialog(ctx core.Widget, stru any, title string) {
+	d := core.NewBody().AddTitle(title)
+	core.NewForm(d).SetStruct(stru)
+	if tb, ok := stru.(core.ToolbarMaker); ok {
+		d.AddAppBar(tb.MakeToolbar)
+	}
+	d.NewFullDialog(ctx).SetNewWindow(true).Run()
 }

@@ -50,13 +50,13 @@ type SoftMax struct {
 	Target int
 
 	// for holding layer values
-	ValuesTsrs map[string]*tensor.Float32 `view:"-"`
+	ValuesTsrs map[string]*tensor.Float32 `display:"-"`
 
 	// synaptic weights: outer loop is units, inner loop is inputs
 	Weights tensor.Float32
 
 	// mpi communicator -- MPI users must set this to their comm -- do direct assignment
-	Comm *mpi.Comm `view:"-"`
+	Comm *mpi.Comm `display:"-"`
 
 	// delta weight changes: only for MPI mode -- outer loop is units, inner loop is inputs
 	MPIDWts tensor.Float32

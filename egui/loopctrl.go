@@ -16,8 +16,8 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(tb *core.Toolbar, loops *looper.Manager, modes []etime.Modes) {
-	gui.AddToolbarItem(tb, ToolbarItem{Label: "Stop",
+func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime.Modes) {
+	gui.AddToolbarItem(p, ToolbarItem{Label: "Stop",
 		Icon:    icons.Stop,
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
@@ -30,21 +30,22 @@ func (gui *GUI) AddLooperCtrl(tb *core.Toolbar, loops *looper.Manager, modes []e
 
 	for _, m := range modes {
 		mode := m
-		core.NewButton(tb).SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
-			SetTooltip("Run the " + mode.String() + " process").
-			StyleFirst(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
-			OnClick(func(e events.Event) {
-				if !gui.IsRunning {
-					gui.IsRunning = true
-					tb.ApplyStyleUpdate()
-					go func() {
-						loops.Run(mode)
-						gui.Stopped()
-					}()
-				}
-			})
+		core.AddAt(p, mode.String()+"-run", func(w *core.Button) {
+			w.SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
+				SetTooltip("Run the " + mode.String() + " process").
+				FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
+				OnClick(func(e events.Event) {
+					if !gui.IsRunning {
+						gui.IsRunning = true
+						// tb.Restyle() // todo: need obj on plan
+						go func() {
+							loops.Run(mode)
+							gui.Stopped()
+						}()
+					}
+				})
+		})
 
-		//stepLevel := evalLoops.Step.Default
 		stepN := make(map[string]int)
 		steps := loops.Stacks[mode].Order
 		stringToEnumTime := make(map[string]etime.Times)
@@ -52,43 +53,51 @@ func (gui *GUI) AddLooperCtrl(tb *core.Toolbar, loops *looper.Manager, modes []e
 			stepN[st.String()] = 1
 			stringToEnumTime[st.String()] = st
 		}
-		core.NewButton(tb).SetText("Step").SetIcon(icons.SkipNext).
-			SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
-			StyleFirst(func(s *styles.Style) {
-				s.SetEnabled(!gui.IsRunning)
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				if !gui.IsRunning {
-					gui.IsRunning = true
-					tb.ApplyStyleUpdate()
-					go func() {
-						stack := loops.Stacks[mode]
-						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
-						gui.Stopped()
-					}()
-				}
-			})
 
-		scb := core.NewChooser(tb, "step")
-		stepStrs := []string{}
-		for _, s := range steps {
-			stepStrs = append(stepStrs, s.String())
-		}
-		scb.SetStrings(stepStrs...)
-		stack := loops.Stacks[mode]
-		scb.SetCurrentValue(stack.StepLevel.String())
-
-		sb := core.NewSpinner(tb, "step-n").SetTooltip("number of iterations per step").
-			SetStep(1).SetMin(1).SetValue(1)
-		sb.OnChange(func(e events.Event) {
-			stepN[scb.CurrentItem.Value.(string)] = int(sb.Value)
+		core.AddAt(p, mode.String()+"-step", func(w *core.Button) {
+			w.SetText("Step").SetIcon(icons.SkipNext).
+				SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
+				FirstStyler(func(s *styles.Style) {
+					s.SetEnabled(!gui.IsRunning)
+					s.SetAbilities(true, abilities.RepeatClickable)
+				}).
+				OnClick(func(e events.Event) {
+					if !gui.IsRunning {
+						gui.IsRunning = true
+						// tb.Restyle()
+						go func() {
+							stack := loops.Stacks[mode]
+							loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
+							gui.Stopped()
+						}()
+					}
+				})
 		})
 
-		scb.OnChange(func(e events.Event) {
+		var chs *core.Chooser
+		core.AddAt(p, mode.String()+"-level", func(w *core.Chooser) {
+			chs = w
+			stepStrs := []string{}
+			for _, s := range steps {
+				stepStrs = append(stepStrs, s.String())
+			}
+			w.SetStrings(stepStrs...)
 			stack := loops.Stacks[mode]
-			stack.StepLevel = stringToEnumTime[scb.CurrentItem.Value.(string)]
-			sb.Value = float32(stepN[stack.StepLevel.String()])
+			w.SetCurrentValue(stack.StepLevel.String())
+		})
+
+		core.AddAt(p, mode.String()+"-n", func(w *core.Spinner) {
+			w.SetStep(1).SetMin(1).SetValue(1)
+			w.SetTooltip("number of iterations per step").
+				OnChange(func(e events.Event) {
+					stepN[chs.CurrentItem.Value.(string)] = int(w.Value)
+				})
+
+			w.OnChange(func(e events.Event) {
+				stack := loops.Stacks[mode]
+				stack.StepLevel = stringToEnumTime[chs.CurrentItem.Value.(string)]
+				w.Value = float32(stepN[stack.StepLevel.String()])
+			})
 		})
 	}
 }

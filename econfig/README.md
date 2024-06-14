@@ -70,7 +70,7 @@ The [Cogent Core](https://cogentcore.org/core) GUI processes `default:"value"` s
 
 # Standard Config Example
 
-Here's the `Config` struct from [axon/examples/ra25](https://github.com/emer/axon), which can provide a useful starting point.  It uses Params, Run and Log sub-structs to better organize things.  For sims with extensive Env config, that should be added as a separate sub-struct as well.  The `view:"add-fields"` struct tag shows all of the fields in one big dialog in the GUI -- if you want separate ones, omit that.
+Here's the `Config` struct from [axon/examples/ra25](https://github.com/emer/axon), which can provide a useful starting point.  It uses Params, Run and Log sub-structs to better organize things.  For sims with extensive Env config, that should be added as a separate sub-struct as well.  The `display:"add-fields"` struct tag shows all of the fields in one big dialog in the GUI -- if you want separate ones, omit that.
 
 ```Go
 // ParamConfig has config parameters related to sim params
@@ -179,13 +179,13 @@ type Config struct {
 	Debug bool
 
 	// parameter related configuration options
-	Params ParamConfig `view:"add-fields"`
+	Params ParamConfig `display:"add-fields"`
 
 	// sim running related configuration options
-	Run RunConfig `view:"add-fields"`
+	Run RunConfig `display:"add-fields"`
 
 	// data logging related configuration options
-	Log LogConfig `view:"add-fields"`
+	Log LogConfig `display:"add-fields"`
 }
 
 func (cfg *Config) IncludesPtr() *[]string { return &cfg.Includes }

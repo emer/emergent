@@ -31,10 +31,10 @@ type UniformRand struct {
 	Recip bool
 
 	// random number source -- is created with its own separate source if nil
-	Rand randx.Rand `view:"-"`
+	Rand randx.Rand `display:"-"`
 
 	// the current random seed -- will be initialized to a new random number from the global random stream when Rand is created.
-	RandSeed int64 `view:"-"`
+	RandSeed int64 `display:"-"`
 }
 
 func NewUniformRand() *UniformRand {

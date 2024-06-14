@@ -42,22 +42,22 @@ type Logs struct {
 	MiscTables map[string]*table.Table
 
 	// A list of the items that should be logged. Each item should describe one column that you want to log, and how.  Order in list determines order in logs.
-	Items []*Item `view:"-"`
+	Items []*Item `display:"-"`
 
 	// context information passed to logging Write functions -- has all the information needed to compute and write log values -- is updated for each item in turn
-	Context Context `view:"-"`
+	Context Context `display:"-"`
 
 	// All the eval modes that appear in any of the items of this log.
-	Modes map[string]bool `view:"-"`
+	Modes map[string]bool `display:"-"`
 
 	// All the timescales that appear in any of the items of this log.
-	Times map[string]bool `view:"-"`
+	Times map[string]bool `display:"-"`
 
 	// map of item indexes by name, for rapid access to items if they need to be modified after adding.
-	ItemIndexMap map[string]int `view:"-"`
+	ItemIndexMap map[string]int `display:"-"`
 
 	// sorted order of table scopes
-	TableOrder []etime.ScopeKey `view:"-"`
+	TableOrder []etime.ScopeKey `display:"-"`
 }
 
 // AddItem adds an item to the list.  The items are stored in the order

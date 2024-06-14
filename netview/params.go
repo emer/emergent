@@ -51,7 +51,7 @@ func (nv *RasterParams) Defaults() {
 type Params struct { //types:add
 
 	// raster plot parameters
-	Raster RasterParams `view:"inline"`
+	Raster RasterParams `display:"inline"`
 
 	// do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
 	NoSynData bool
@@ -78,7 +78,7 @@ type Params struct { //types:add
 	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`
 
 	// our netview, for update method
-	NetView *NetView `copier:"-" json:"-" xml:"-" view:"-"`
+	NetView *NetView `copier:"-" json:"-" xml:"-" display:"-"`
 
 	// the number of records to jump for fast forward/backward
 	NFastSteps int
@@ -126,10 +126,10 @@ type VarParams struct { //types:add
 	ZeroCtr bool
 
 	// range to display
-	Range minmax.Range32 `view:"inline"`
+	Range minmax.Range32 `display:"inline"`
 
 	// if not using fixed range, this is the actual range of data
-	MinMax minmax.F32 `view:"inline"`
+	MinMax minmax.F32 `display:"inline"`
 }
 
 // Defaults sets default values if otherwise not set

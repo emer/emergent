@@ -25,22 +25,22 @@ type RF struct {
 	Name string
 
 	// computed receptive field, as SumProd / SumSrc -- only after Avg has been called
-	RF tensor.Float32 `view:"no-inline"`
+	RF tensor.Float32 `display:"no-inline"`
 
 	// unit normalized version of RF per source (inner 2D dimensions) -- good for display
-	NormRF tensor.Float32 `view:"no-inline"`
+	NormRF tensor.Float32 `display:"no-inline"`
 
 	// normalized version of SumSrc -- sum of each point in the source -- good for viewing the completeness and uniformity of the sampling of the source space
-	NormSrc tensor.Float32 `view:"no-inline"`
+	NormSrc tensor.Float32 `display:"no-inline"`
 
 	// sum of the products of act * src
-	SumProd tensor.Float32 `view:"no-inline"`
+	SumProd tensor.Float32 `display:"no-inline"`
 
 	// sum of the sources (denomenator)
-	SumSrc tensor.Float32 `view:"no-inline"`
+	SumSrc tensor.Float32 `display:"no-inline"`
 
 	// temporary destination sum for MPI -- only used when MPISum called
-	MPITmp tensor.Float32 `view:"no-inline"`
+	MPITmp tensor.Float32 `display:"no-inline"`
 }
 
 // Init initializes this RF based on name and shapes of given

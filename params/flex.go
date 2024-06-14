@@ -31,7 +31,7 @@ type FlexVal struct {
 	Obj any
 
 	// History of params applied
-	History HistoryImpl `tableview:"-"`
+	History HistoryImpl `tabledisplay:"-"`
 }
 
 func (fv *FlexVal) TypeName() string {

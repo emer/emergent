@@ -34,12 +34,12 @@ func (gui *GUI) SetGrid(name string, tg *tensorcore.TensorGrid) {
 
 // ConfigRasterGrid configures a raster grid for given layer name.
 // Uses Raster_laynm and given Tensor that has the raster data.
-func (gui *GUI) ConfigRasterGrid(lay *core.Layout, laynm string, rast *tensor.Float32) *tensorcore.TensorGrid {
+func (gui *GUI) ConfigRasterGrid(lay *core.Frame, laynm string, rast *tensor.Float32) *tensorcore.TensorGrid {
 	tg := gui.Grid(laynm)
 	tg.SetName(laynm + "Raster")
-	core.NewText(lay, laynm, laynm+":")
+	core.NewText(lay).SetText(laynm + ":")
 	lay.AddChild(tg)
-	core.NewSpace(lay, laynm+"_spc")
+	core.NewSpace(lay)
 	rast.SetMetaData("grid-fill", "1")
 	tg.SetTensor(rast)
 	return tg

@@ -20,7 +20,7 @@ import (
 type Params struct {
 
 	// full collection of param sets to use
-	Params params.Sets `view:"no-inline"`
+	Params params.Sets `display:"no-inline"`
 
 	// optional additional set(s) of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Set names!)
 	ExtraSets string
@@ -29,10 +29,10 @@ type Params struct {
 	Tag string
 
 	// map of objects to apply parameters to -- the key is the name of the Sheet for each object, e.g.,
-	Objects map[string]any `view:"-" Network", "Sim" are typically used"`
+	Objects map[string]any `display:"-" Network", "Sim" are typically used"`
 
 	// list of hyper parameters compiled from the network parameters, using the layers and pathways from the network, so that the same styling logic as for regular parameters can be used
-	NetHypers params.Flex `view:"-"`
+	NetHypers params.Flex `display:"-"`
 
 	// print out messages for each parameter that is set
 	SetMsg bool

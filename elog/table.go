@@ -20,16 +20,16 @@ type LogTable struct {
 	Meta map[string]string
 
 	// Index View of the table -- automatically updated when a new row of data is logged to the table.
-	IndexView *table.IndexView `view:"-"`
+	IndexView *table.IndexView `display:"-"`
 
 	// named index views onto the table that can be saved and used across multiple items -- these are reset to nil after a new row is written -- see NamedIndexView funtion for more details.
-	NamedViews map[string]*table.IndexView `view:"-"`
+	NamedViews map[string]*table.IndexView `display:"-"`
 
 	// File to store the log into.
-	File *os.File `view:"-"`
+	File *os.File `display:"-"`
 
 	// true if headers for File have already been written
-	WroteHeaders bool `view:"-"`
+	WroteHeaders bool `display:"-"`
 }
 
 // NewLogTable returns a new LogTable entry for given table, initializing values

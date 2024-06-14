@@ -34,7 +34,6 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 
 		plt := gui.NewPlotTab(key, mode+" "+time+" Plot")
 		plt.SetTable(lt.Table)
-		plt.UpdatePlot()
 		plt.Params.FromMetaMap(lt.Meta)
 
 		ConfigPlotFromLog(title, plt, lg, key)
@@ -70,7 +69,6 @@ func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, ke
 	}
 	plt.ColumnsFromMetaMap(lt.Table.MetaData)
 	plt.ColumnsFromMetaMap(lt.Meta)
-	plt.Update()
 }
 
 // Plot returns plot for mode, time scope
@@ -154,7 +152,7 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 	}
 
 	tt := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
-	tv := tensorcore.NewTableView(tt)
+	tv := tensorcore.NewTable(tt)
 	gui.TableViews[key] = tv
 	tv.SetReadOnly(true)
 	tv.SetTable(lt.Table)

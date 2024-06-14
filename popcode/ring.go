@@ -19,10 +19,10 @@ type Ring struct {
 	OneD
 
 	// low-end encoding vector
-	LowVec []float32 `view:"-"`
+	LowVec []float32 `display:"-"`
 
 	// high-end encoding vector
-	HighVec []float32 `view:"-"`
+	HighVec []float32 `display:"-"`
 }
 
 // AllocVecs allocates internal LowVec, HighVec storage,

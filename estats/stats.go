@@ -36,7 +36,7 @@ type Stats struct {
 	IntTensors map[string]*tensor.Int
 
 	// confusion matrix
-	Confusion confusion.Matrix `view:"no-inline"`
+	Confusion confusion.Matrix `display:"no-inline"`
 
 	// similarity matrix for comparing pattern similarities
 	SimMats map[string]*simat.SimMat
@@ -51,7 +51,7 @@ type Stats struct {
 	SVD pca.SVD
 
 	// activation-based receptive fields
-	ActRFs actrf.RFs `view:"no-inline"`
+	ActRFs actrf.RFs `display:"no-inline"`
 
 	// list of layer names configured for recording raster plots
 	Rasters []string

@@ -14,13 +14,13 @@ import (
 type ViewUpdate struct {
 
 	// the network view
-	View *NetView `view:"-"`
+	View *NetView `display:"-"`
 
 	// whether in testing mode -- can be set in advance to drive appropriate updating
-	Testing bool `view:"-"`
+	Testing bool `display:"-"`
 
 	// text to display at the bottom of the view
-	Text string `view:"-"`
+	Text string `display:"-"`
 
 	// toggles update of display on
 	On bool

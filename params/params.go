@@ -62,16 +62,16 @@ type Sel struct { //types:add
 	Desc string `width:"60"`
 
 	// parameter values to apply to whatever matches the selector
-	Params Params `view:"no-inline"`
+	Params Params `display:"no-inline"`
 
 	// Put your hyperparams here
 	Hypers Hypers
 
 	// number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
-	NMatch int `tableview:"-" toml:"-" json:"-" xml:"-" edit:"-"`
+	NMatch int `tabledisplay:"-" toml:"-" json:"-" xml:"-" edit:"-"`
 
 	// name of current Set being applied
-	SetName string `tableview:"-" toml:"-" json:"-" xml:"-" edit:"-"`
+	SetName string `tabledisplay:"-" toml:"-" json:"-" xml:"-" edit:"-"`
 }
 
 // SetFloat sets the value of given parameter

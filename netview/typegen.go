@@ -3,6 +3,10 @@
 package netview
 
 import (
+	"sync"
+
+	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
 )
@@ -69,7 +73,71 @@ func (t *LayName) SetNetView(v *NetView) *LayName { t.NetView = v; return t }
 
 var _ = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.NetData", IDName: "net-data", Doc: "NetData maintains a record of all the network data that has been displayed\nup to a given maximum number of records (updates), using efficient ring index logic\nwith no copying to store in fixed-sized buffers.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Methods: []types.Method{{Name: "OpenJSON", Doc: "OpenJSON opens colors from a JSON-formatted file.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Args: []string{"filename"}, Returns: []string{"error"}}, {Name: "SaveJSON", Doc: "SaveJSON saves colors to a JSON-formatted file.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Args: []string{"filename"}, Returns: []string{"error"}}}, Fields: []types.Field{{Name: "Net", Doc: "the network that we're viewing"}, {Name: "NoSynData", Doc: "copied from Params -- do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive"}, {Name: "PathLay", Doc: "name of the layer with unit for viewing pathways (connection / synapse-level values)"}, {Name: "PathUnIndex", Doc: "1D index of unit within PathLay for for viewing pathways"}, {Name: "PathType", Doc: "copied from NetView Params: if non-empty, this is the type pathway to show when there are multiple pathways from the same layer -- e.g., Inhib, Lateral, Forward, etc"}, {Name: "UnVars", Doc: "the list of unit variables saved"}, {Name: "UnVarIndexes", Doc: "index of each variable in the Vars slice"}, {Name: "SynVars", Doc: "the list of synaptic variables saved"}, {Name: "SynVarIndexes", Doc: "index of synaptic variable in the SynVars slice"}, {Name: "Ring", Doc: "the circular ring index -- Max here is max number of values to store, Len is number stored, and Index(Len-1) is the most recent one, etc"}, {Name: "MaxData", Doc: "max data parallel data per unit"}, {Name: "LayData", Doc: "the layer data -- map keyed by layer name"}, {Name: "UnMinPer", Doc: "unit var min values for each Ring.Max * variable"}, {Name: "UnMaxPer", Doc: "unit var max values for each Ring.Max * variable"}, {Name: "UnMinVar", Doc: "min values for unit variables"}, {Name: "UnMaxVar", Doc: "max values for unit variables"}, {Name: "SynMinVar", Doc: "min values for syn variables"}, {Name: "SynMaxVar", Doc: "max values for syn variables"}, {Name: "Counters", Doc: "counter strings"}, {Name: "RasterCtrs", Doc: "raster counter values"}, {Name: "RasterMap", Doc: "map of raster counter values to record numbers"}, {Name: "RastCtr", Doc: "dummy raster counter when passed a -1 -- increments and wraps around"}}})
 
-var _ = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.NetView", IDName: "net-view", Doc: "NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d\n3D framework.", Methods: []types.Method{{Name: "PlotSelectedUnit", Doc: "PlotSelectedUnit opens a window with a plot of all the data for the\ncurrently selected unit.\nUseful for replaying detailed trace for units of interest.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"Table", "PlotEditor"}}, {Name: "Current", Doc: "Current records the current state of the network, including synaptic values,\nand updates the display.  Use this when switching to NetView tab after network\nhas been running while viewing another tab, because the network state\nis typically not recored then.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}}, {Name: "SaveWeights", Doc: "SaveWeights saves the network weights.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Args: []string{"filename"}}, {Name: "OpenWeights", Doc: "OpenWeights opens the network weights.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Args: []string{"filename"}}, {Name: "ShowNonDefaultParams", Doc: "ShowNonDefaultParams shows a dialog of all the parameters that\nare not at their default values in the network.  Useful for setting params.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowAllParams", Doc: "ShowAllParams shows a dialog of all the parameters in the network.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyLayerParams", Doc: "ShowKeyLayerParams shows a dialog with a listing for all layers in the network,\nof the most important layer-level params (specific to each algorithm)", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyPathParams", Doc: "ShowKeyPathParams shows a dialog with a listing for all Recv pathways in the network,\nof the most important pathway-level params (specific to each algorithm)", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}}, Embeds: []types.Field{{Name: "invalid type"}}, Fields: []types.Field{{Name: "Net", Doc: "the network that we're viewing"}, {Name: "Var", Doc: "current variable that we're viewing"}, {Name: "Di", Doc: "current data parallel index di, for networks capable of processing input patterns in parallel."}, {Name: "Vars", Doc: "the list of variables to view"}, {Name: "SynVars", Doc: "list of synaptic variables"}, {Name: "SynVarsMap", Doc: "map of synaptic variable names to index"}, {Name: "VarParams", Doc: "parameters for the list of variables to view"}, {Name: "CurVarParams", Doc: "current var params -- only valid during Update of display"}, {Name: "Params", Doc: "parameters controlling how the view is rendered"}, {Name: "ColorMap", Doc: "color map for mapping values to colors -- set by name in Params"}, {Name: "ColorMapButton", Doc: "color map value representing ColorMap"}, {Name: "RecNo", Doc: "record number to display -- use -1 to always track latest, otherwise in range"}, {Name: "LastCtrs", Doc: "last non-empty counters string provided -- re-used if no new one"}, {Name: "Data", Doc: "contains all the network data with history"}, {Name: "DataMu", Doc: "mutex on data access"}}})
+// NetViewType is the [types.Type] for [NetView]
+var NetViewType = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.NetView", IDName: "net-view", Doc: "NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d\n3D framework.", Methods: []types.Method{{Name: "PlotSelectedUnit", Doc: "PlotSelectedUnit opens a window with a plot of all the data for the\ncurrently selected unit.\nUseful for replaying detailed trace for units of interest.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"Table", "PlotEditor"}}, {Name: "Current", Doc: "Current records the current state of the network, including synaptic values,\nand updates the display.  Use this when switching to NetView tab after network\nhas been running while viewing another tab, because the network state\nis typically not recored then.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}}, {Name: "SaveWeights", Doc: "SaveWeights saves the network weights.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Args: []string{"filename"}}, {Name: "OpenWeights", Doc: "OpenWeights opens the network weights.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Args: []string{"filename"}}, {Name: "ShowNonDefaultParams", Doc: "ShowNonDefaultParams shows a dialog of all the parameters that\nare not at their default values in the network.  Useful for setting params.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowAllParams", Doc: "ShowAllParams shows a dialog of all the parameters in the network.", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyLayerParams", Doc: "ShowKeyLayerParams shows a dialog with a listing for all layers in the network,\nof the most important layer-level params (specific to each algorithm)", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}, {Name: "ShowKeyPathParams", Doc: "ShowKeyPathParams shows a dialog with a listing for all Recv pathways in the network,\nof the most important pathway-level params (specific to each algorithm)", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Returns: []string{"string"}}}, Embeds: []types.Field{{Name: "Frame"}}, Fields: []types.Field{{Name: "Net", Doc: "the network that we're viewing"}, {Name: "Var", Doc: "current variable that we're viewing"}, {Name: "Di", Doc: "current data parallel index di, for networks capable of processing input patterns in parallel."}, {Name: "Vars", Doc: "the list of variables to view"}, {Name: "SynVars", Doc: "list of synaptic variables"}, {Name: "SynVarsMap", Doc: "map of synaptic variable names to index"}, {Name: "VarParams", Doc: "parameters for the list of variables to view"}, {Name: "CurVarParams", Doc: "current var params -- only valid during Update of display"}, {Name: "Params", Doc: "parameters controlling how the view is rendered"}, {Name: "ColorMap", Doc: "color map for mapping values to colors -- set by name in Params"}, {Name: "ColorMapButton", Doc: "color map value representing ColorMap"}, {Name: "RecNo", Doc: "record number to display -- use -1 to always track latest, otherwise in range"}, {Name: "LastCtrs", Doc: "last non-empty counters string provided -- re-used if no new one"}, {Name: "Data", Doc: "contains all the network data with history"}, {Name: "DataMu", Doc: "mutex on data access"}}, Instance: &NetView{}})
+
+// NewNetView returns a new [NetView] with the given optional parent:
+// NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
+// 3D framework.
+func NewNetView(parent ...tree.Node) *NetView { return tree.New[*NetView](parent...) }
+
+// NodeType returns the [*types.Type] of [NetView]
+func (t *NetView) NodeType() *types.Type { return NetViewType }
+
+// New returns a new [*NetView] value
+func (t *NetView) New() tree.Node { return &NetView{} }
+
+// SetDi sets the [NetView.Di]:
+// current data parallel index di, for networks capable of processing input patterns in parallel.
+func (t *NetView) SetDi(v int) *NetView { t.Di = v; return t }
+
+// SetVars sets the [NetView.Vars]:
+// the list of variables to view
+func (t *NetView) SetVars(v ...string) *NetView { t.Vars = v; return t }
+
+// SetSynVars sets the [NetView.SynVars]:
+// list of synaptic variables
+func (t *NetView) SetSynVars(v ...string) *NetView { t.SynVars = v; return t }
+
+// SetSynVarsMap sets the [NetView.SynVarsMap]:
+// map of synaptic variable names to index
+func (t *NetView) SetSynVarsMap(v map[string]int) *NetView { t.SynVarsMap = v; return t }
+
+// SetVarParams sets the [NetView.VarParams]:
+// parameters for the list of variables to view
+func (t *NetView) SetVarParams(v map[string]*VarParams) *NetView { t.VarParams = v; return t }
+
+// SetCurVarParams sets the [NetView.CurVarParams]:
+// current var params -- only valid during Update of display
+func (t *NetView) SetCurVarParams(v *VarParams) *NetView { t.CurVarParams = v; return t }
+
+// SetParams sets the [NetView.Params]:
+// parameters controlling how the view is rendered
+func (t *NetView) SetParams(v Params) *NetView { t.Params = v; return t }
+
+// SetColorMap sets the [NetView.ColorMap]:
+// color map for mapping values to colors -- set by name in Params
+func (t *NetView) SetColorMap(v *colormap.Map) *NetView { t.ColorMap = v; return t }
+
+// SetColorMapButton sets the [NetView.ColorMapButton]:
+// color map value representing ColorMap
+func (t *NetView) SetColorMapButton(v *core.ColorMapButton) *NetView { t.ColorMapButton = v; return t }
+
+// SetRecNo sets the [NetView.RecNo]:
+// record number to display -- use -1 to always track latest, otherwise in range
+func (t *NetView) SetRecNo(v int) *NetView { t.RecNo = v; return t }
+
+// SetLastCtrs sets the [NetView.LastCtrs]:
+// last non-empty counters string provided -- re-used if no new one
+func (t *NetView) SetLastCtrs(v string) *NetView { t.LastCtrs = v; return t }
+
+// SetData sets the [NetView.Data]:
+// contains all the network data with history
+func (t *NetView) SetData(v NetData) *NetView { t.Data = v; return t }
+
+// SetDataMu sets the [NetView.DataMu]:
+// mutex on data access
+func (t *NetView) SetDataMu(v sync.RWMutex) *NetView { t.DataMu = v; return t }
 
 var _ = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.RasterParams", IDName: "raster-params", Doc: "RasterParams holds parameters controlling the raster plot view", Directives: []types.Directive{{Tool: "types", Directive: "add"}}, Fields: []types.Field{{Name: "On", Doc: "if true, show a raster plot over time, otherwise units"}, {Name: "XAxis", Doc: "if true, the raster counter (time) is plotted across the X axis -- otherwise the Z depth axis"}, {Name: "Max", Doc: "maximum count for the counter defining the raster plot"}, {Name: "UnitSize", Doc: "size of a single unit, where 1 = full width and no space.. 1 default"}, {Name: "UnitHeight", Doc: "height multiplier for units, where 1 = full height.. 0.2 default"}}})
 

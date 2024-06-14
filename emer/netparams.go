@@ -22,7 +22,7 @@ import (
 type NetParams struct {
 
 	// full collection of param sets to use
-	Params netparams.Sets `view:"no-inline"`
+	Params netparams.Sets `display:"no-inline"`
 
 	// optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)
 	ExtraSheets string
@@ -31,10 +31,10 @@ type NetParams struct {
 	Tag string
 
 	// the network to apply parameters to
-	Network Network `view:"-"`
+	Network Network `display:"-"`
 
 	// list of hyper parameters compiled from the network parameters, using the layers and pathways from the network, so that the same styling logic as for regular parameters can be used
-	NetHypers params.Flex `view:"-"`
+	NetHypers params.Flex `display:"-"`
 
 	// print out messages for each parameter that is set
 	SetMsg bool
