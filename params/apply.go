@@ -12,8 +12,8 @@ import (
 	"reflect"
 	"strings"
 
+	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/base/reflectx"
-	"cogentcore.org/core/core"
 )
 
 // PathAfterType returns the portion of a path string after the initial
@@ -51,7 +51,7 @@ func (pr *Params) Apply(obj any, setMsg bool) error {
 		if styob, has := obj.(StylerObj); has {
 			obj = styob.Object()
 		}
-	} else if lblr, has := obj.(core.Labeler); has {
+	} else if lblr, has := obj.(labels.Labeler); has {
 		objNm = lblr.Label()
 	}
 	var errs []error
@@ -109,7 +109,7 @@ func (pr *Hypers) Apply(obj any, setMsg bool) error {
 		if styob, has := obj.(StylerObj); has {
 			obj = styob.Object()
 		}
-	} else if lblr, has := obj.(core.Labeler); has {
+	} else if lblr, has := obj.(labels.Labeler); has {
 		objNm = lblr.Label()
 	}
 	if hv, ok := obj.(Hypers); ok {

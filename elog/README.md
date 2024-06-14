@@ -404,7 +404,7 @@ First, initialize the ActRFs in the `ConfigLogs` function, using strings that sp
 To add tabs in the gui to visualize the resulting RFs, add this in your `ConfigGUI` (note also adding a tab to visualize the input Image that is being presented to the network):
 
 ```Go
-    tg := ss.GUI.TabView.AddNewTab(tensorview.KiT_TensorGrid, "Image").(*tensorview.TensorGrid)
+    tg := ss.GUI.TabView.AddNewTab(tensorcore.KiT_TensorGrid, "Image").(*tensorcore.TensorGrid)
     tg.SetStretchMax()
     ss.GUI.SetGrid("Image", tg)
     tg.SetTensor(&ss.TrainEnv.Vis.ImgTsr)

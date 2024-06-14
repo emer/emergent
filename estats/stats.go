@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/base/timer"
-	"cogentcore.org/core/plot/plotview"
+	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/pca"
 	"cogentcore.org/core/tensor/stats/simat"
@@ -42,7 +42,7 @@ type Stats struct {
 	SimMats map[string]*simat.SimMat
 
 	// analysis plots -- created by analysis routines
-	Plots map[string]*plotview.PlotView
+	Plots map[string]*plotcore.PlotEditor
 
 	// one PCA object can be reused for all PCA computations
 	PCA pca.PCA
@@ -75,7 +75,7 @@ func (st *Stats) Init() {
 	st.F64Tensors = make(map[string]*tensor.Float64)
 	st.IntTensors = make(map[string]*tensor.Int)
 	st.SimMats = make(map[string]*simat.SimMat)
-	st.Plots = make(map[string]*plotview.PlotView)
+	st.Plots = make(map[string]*plotcore.PlotEditor)
 	st.LinDecoders = make(map[string]*decoder.Linear)
 	st.SoftMaxDecoders = make(map[string]*decoder.SoftMax)
 	st.Timers = make(map[string]*timer.Time)
@@ -385,12 +385,12 @@ func (st *Stats) SimMat(name string) *simat.SimMat {
 	return sm
 }
 
-// Plot returns an plotview.PlotView of given name, creating if not yet made
-func (st *Stats) Plot(name string) *plotview.PlotView {
+// Plot returns an plotcore.PlotEditor of given name, creating if not yet made
+func (st *Stats) Plot(name string) *plotcore.PlotEditor {
 	pl, has := st.Plots[name]
 	if !has {
-		pl = &plotview.PlotView{}
-		pl.InitName(pl, name) // any Ki obj needs this
+		pl = plotcore.NewPlotEditor()
+		pl.Name = name // any Ki obj needs this
 		st.Plots[name] = pl
 	}
 	return pl

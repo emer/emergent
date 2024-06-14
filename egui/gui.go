@@ -8,9 +8,8 @@ package egui
 
 import (
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/plot/plotview"
-	"cogentcore.org/core/tensor/tensorview"
-	"cogentcore.org/core/views"
+	"cogentcore.org/core/plot/plotcore"
+	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
 	// _ "cogentcore.org/core/vgpu/gosl/slboolview" // include to get gui views
@@ -32,13 +31,13 @@ type GUI struct {
 	StopNow bool `view:"-"`
 
 	// plots by scope
-	Plots map[etime.ScopeKey]*plotview.PlotView
+	Plots map[etime.ScopeKey]*plotcore.PlotEditor
 
 	// plots by scope
-	TableViews map[etime.ScopeKey]*tensorview.TableView
+	TableViews map[etime.ScopeKey]*tensorcore.Table
 
 	// tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access
-	Grids map[string]*tensorview.TensorGrid
+	Grids map[string]*tensorcore.TensorGrid
 
 	// the view update for managing updates of netview
 	ViewUpdate *netview.ViewUpdate `view:"-"`
@@ -47,7 +46,7 @@ type GUI struct {
 	NetData *netview.NetData `view:"-"`
 
 	// displays Sim fields on left
-	StructView *views.StructView `view:"-"`
+	StructView *core.Form `view:"-"`
 
 	// tabs for different view elements: plots, rasters
 	Tabs *core.Tabs `view:"-"`
@@ -98,12 +97,13 @@ func (gui *GUI) Stopped() {
 
 // MakeBody returns default window Body content
 func (gui *GUI) MakeBody(sim any, appname, title, about string) {
-	views.NoSentenceCaseFor = append(views.NoSentenceCaseFor, "github.com/emer")
+	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
 	// gui.Body.App().About = about
 	split := core.NewSplits(gui.Body, "split")
-	gui.StructView = views.NewStructView(split, "sv").SetStruct(sim)
+	gui.StructView = core.NewForm(split).SetStruct(sim)
+	gui.StructView.Name = "sv"
 	if tb, ok := sim.(core.Toolbarer); ok {
 		gui.Body.AddAppBar(tb.ConfigToolbar)
 	}

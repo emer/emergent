@@ -19,7 +19,7 @@ import (
 
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/plot/plotview"
+	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
@@ -624,7 +624,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // PlotSelectedUnit opens a window with a plot of all the data for the
 // currently selected unit.
 // Useful for replaying detailed trace for units of interest.
-func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotview.PlotView) { //types:add
+func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //types:add
 	nd := &nv.Data
 	if nd.PathLay == "" || nd.PathUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
@@ -634,11 +634,11 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotview.PlotView) { //typ
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
 	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
-	plt := plotview.NewPlotView(b)
+	plt := plotcore.NewPlotEditor(b)
 	plt.Params.Title = "NetView " + selnm
 	plt.Params.XAxisColumn = "Rec"
 
-	b.AddAppBar(plt.ConfigToolbar)
+	b.AddAppBar(plt.MakeToolbar)
 	dt := nd.SelectedUnitTable(nv.Di)
 
 	plt.SetTable(dt)

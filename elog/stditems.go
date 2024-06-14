@@ -279,7 +279,7 @@ func (lg *Logs) RunStats(stats ...string) {
 	lt := lg.TableDetailsScope(sk)
 	ix, _ := lt.NamedIndexView("RunStats")
 
-	spl := split.GroupBy(ix, []string{"RunName"})
+	spl := split.GroupBy(ix, "RunName")
 	for _, st := range stats {
 		split.DescColumn(spl, st)
 	}

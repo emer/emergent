@@ -8,23 +8,23 @@ import (
 	"fmt"
 	"image"
 
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyz/xyzview"
+	"cogentcore.org/core/xyz/xyzcore"
 	"github.com/emer/emergent/v2/emer"
 )
 
 // Scene is a Widget for managing the 3D Scene of the NetView
 type Scene struct {
-	xyzview.Scene
+	xyzcore.Scene
 
 	NetView *NetView
 }
 
-func (sw *Scene) OnInit() {
-	sw.Scene.OnInit()
+func (sw *Scene) Init() {
+	sw.Scene.Init()
 	sw.HandleEvents()
 }
 
@@ -41,7 +41,7 @@ func (sw *Scene) HandleEvents() {
 		sw.SceneXYZ().KeyChordEvent(e)
 		sw.NeedsRender()
 	})
-	sw.HandleSlideEvents()
+	// sw.HandleSlideEvents() // TODO: need this
 }
 
 func (sw *Scene) MouseDownEvent(e events.Event) {
@@ -52,7 +52,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 		if ok {
 			lay := ln.NetView.Net.LayerByName(ln.Text)
 			if lay != nil {
-				views.StructViewDialog(sw, lay, "Layer: "+lay.Name(), true)
+				core.FormDialog(sw, lay, "Layer: "+lay.Name(), true)
 			}
 			e.SetHandled()
 			return
@@ -110,10 +110,11 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIndex int) {
 	pos = pos.Sub(sw.Geom.ContentBBox.Min)
 	sc := sw.SceneXYZ()
-	laysGp := sc.ChildByName("Layers", 0)
-	if laysGp == nil {
+	laysGpi := sc.ChildByName("Layers", 0)
+	if laysGpi == nil {
 		return
 	}
+	_, laysGp := xyz.AsNode(laysGpi)
 	nv := sw.NetView
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
@@ -121,7 +122,7 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 	szc := math32.Max(nsc.X, nsc.Y)
 	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
-	for li, lgi := range *laysGp.Children() {
+	for li, lgi := range laysGp.Children {
 		lay = nv.Net.Layer(li)
 		lg := lgi.(*xyz.Group)
 		lp := lay.Pos()

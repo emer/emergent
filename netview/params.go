@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"strconv"
 
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32/minmax"
-	"cogentcore.org/core/views"
 )
 
 // NVarCols is the default number of variable columns in the NetView
@@ -72,7 +72,7 @@ type Params struct { //types:add
 	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" default:"0.05"`
 
 	// name of color map to use
-	ColorMap views.ColorMapName
+	ColorMap core.ColorMapName
 
 	// opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
 	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`
@@ -102,7 +102,7 @@ func (nv *Params) Defaults() {
 		nv.ZeroAlpha = 0.5
 	}
 	if nv.ColorMap == "" {
-		nv.ColorMap = views.ColorMapName("ColdHot")
+		nv.ColorMap = core.ColorMapName("ColdHot")
 	}
 	if nv.NFastSteps == 0 {
 		nv.NFastSteps = 10
@@ -112,7 +112,6 @@ func (nv *Params) Defaults() {
 // Update satisfies the core.Updater interface and will trigger display update on edits
 func (nv *Params) Update() {
 	if nv.NetView != nil {
-		nv.NetView.Config()
 		nv.NetView.Update()
 	}
 }

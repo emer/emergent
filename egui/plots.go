@@ -10,8 +10,8 @@ import (
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors"
-	"cogentcore.org/core/plot/plotview"
-	"cogentcore.org/core/tensor/tensorview"
+	"cogentcore.org/core/plot/plotcore"
+	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
 )
@@ -19,7 +19,7 @@ import (
 // AddPlots adds plots based on the unique tables we have,
 // currently assumes they should always be plotted
 func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
-	gui.Plots = make(map[etime.ScopeKey]*plotview.PlotView)
+	gui.Plots = make(map[etime.ScopeKey]*plotcore.PlotEditor)
 	// for key, table := range Log.Tables {
 	for _, key := range lg.TableOrder {
 		modes, times := key.ModesAndTimes()
@@ -41,7 +41,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 	}
 }
 
-func ConfigPlotFromLog(title string, plt *plotview.PlotView, lg *elog.Logs, key etime.ScopeKey) {
+func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, key etime.ScopeKey) {
 	_, times := key.ModesAndTimes()
 	time := times[0]
 	lt := lg.Tables[key] // LogTable struct
@@ -74,12 +74,12 @@ func ConfigPlotFromLog(title string, plt *plotview.PlotView, lg *elog.Logs, key 
 }
 
 // Plot returns plot for mode, time scope
-func (gui *GUI) Plot(mode etime.Modes, time etime.Times) *plotview.PlotView {
+func (gui *GUI) Plot(mode etime.Modes, time etime.Times) *plotcore.PlotEditor {
 	return gui.PlotScope(etime.Scope(mode, time))
 }
 
 // PlotScope returns plot for given scope
-func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotview.PlotView {
+func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 	if !gui.Active {
 		return nil
 	}
@@ -92,15 +92,15 @@ func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotview.PlotView {
 }
 
 // SetPlot stores given plot in Plots map
-func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotview.PlotView) {
+func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotcore.PlotEditor) {
 	if gui.Plots == nil {
-		gui.Plots = make(map[etime.ScopeKey]*plotview.PlotView)
+		gui.Plots = make(map[etime.ScopeKey]*plotcore.PlotEditor)
 	}
 	gui.Plots[scope] = plt
 }
 
 // UpdatePlot updates plot for given mode, time scope
-func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *plotview.PlotView {
+func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *plotcore.PlotEditor {
 	plot := gui.Plot(mode, time)
 	if plot != nil {
 		plot.GoUpdatePlot()
@@ -109,7 +109,7 @@ func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *plotview.PlotVie
 }
 
 // UpdatePlotScope updates plot at given scope
-func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotview.PlotView {
+func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
 		plot.GoUpdatePlot()
@@ -119,7 +119,7 @@ func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotview.PlotView {
 
 // UpdateCyclePlot updates cycle plot for given mode.
 // only updates every CycleUpdateInterval
-func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotview.PlotView {
+func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEditor {
 	plot := gui.Plot(mode, etime.Cycle)
 	if plot == nil {
 		return plot
@@ -133,17 +133,17 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotview.PlotView 
 // NewPlotTab adds a new plot with given key for Plots lookup
 // and using given tab label.  For ad-hoc plots, you can
 // construct a ScopeKey from any two strings using etime.ScopeStr.
-func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotview.PlotView {
-	plt := plotview.NewSubPlot(gui.Tabs.NewTab(tabLabel))
+func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotcore.PlotEditor {
+	plt := plotcore.NewSubPlot(gui.Tabs.NewTab(tabLabel))
 	gui.Plots[key] = plt
 	return plt
 }
 
 // AddTableView adds a table view of given log,
 // typically particularly useful for Debug logs.
-func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) *tensorview.TableView {
+func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) *tensorcore.Table {
 	if gui.TableViews == nil {
-		gui.TableViews = make(map[etime.ScopeKey]*tensorview.TableView)
+		gui.TableViews = make(map[etime.ScopeKey]*tensorcore.Table)
 	}
 
 	key := etime.Scope(mode, time)
@@ -154,7 +154,7 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 	}
 
 	tt := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
-	tv := tensorview.NewTableView(tt)
+	tv := tensorcore.NewTableView(tt)
 	gui.TableViews[key] = tv
 	tv.SetReadOnly(true)
 	tv.SetTable(lt.Table)
@@ -162,7 +162,7 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 }
 
 // TableView returns TableView for mode, time scope
-func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *tensorview.TableView {
+func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *tensorcore.Table {
 	if !gui.Active {
 		return nil
 	}
@@ -176,7 +176,7 @@ func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *tensorview.TableV
 }
 
 // UpdateTableView updates TableView for given mode, time scope
-func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *tensorview.TableView {
+func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *tensorcore.Table {
 	tv := gui.TableView(mode, time)
 	if tv != nil {
 		tv.GoUpdateView()

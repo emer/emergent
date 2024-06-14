@@ -35,15 +35,15 @@ func NewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	lm := &LayMesh{}
 	lm.View = nv
 	lm.Lay = lay
-	lm.Nm = lay.Name()
+	lm.Name = lay.Name()
 	sc.AddMesh(lm)
 	return lm
 }
 
 func (lm *LayMesh) Sizes() (nVtx, nIndex int, hasColor bool) {
-	lm.Trans = true
+	lm.Transparent = true
 	lm.Dynamic = true
-	lm.Color = true
+	lm.HasColor = true
 	if lm.Lay == nil {
 		return 0, 0, true
 	}
@@ -51,18 +51,18 @@ func (lm *LayMesh) Sizes() (nVtx, nIndex int, hasColor bool) {
 	lm.Shape.CopyShape(shp)
 	if lm.View.Params.Raster.On {
 		if shp.NumDims() == 4 {
-			lm.NVtx, lm.NIndex = lm.RasterSize4D()
+			lm.NumVertex, lm.NumIndex = lm.RasterSize4D()
 		} else {
-			lm.NVtx, lm.NIndex = lm.RasterSize2D()
+			lm.NumVertex, lm.NumIndex = lm.RasterSize2D()
 		}
 	} else {
 		if shp.NumDims() == 4 {
-			lm.NVtx, lm.NIndex = lm.Size4D()
+			lm.NumVertex, lm.NumIndex = lm.Size4D()
 		} else {
-			lm.NVtx, lm.NIndex = lm.Size2D()
+			lm.NumVertex, lm.NumIndex = lm.Size2D()
 		}
 	}
-	return lm.NVtx, lm.NIndex, lm.Color
+	return lm.NumVertex, lm.NumIndex, lm.HasColor
 }
 
 func (lm *LayMesh) Size2D() (nVtx, nIndex int) {
@@ -202,9 +202,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	}
 	lm.View.ReadUnlock()
 
-	lm.BBoxMu.Lock()
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
-	lm.BBoxMu.Unlock()
 }
 
 func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
@@ -273,7 +271,5 @@ func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	}
 	lm.View.ReadUnlock()
 
-	lm.BBoxMu.Lock()
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpz*fnuz), math32.Vec3(fnpx*fnux, 0.5, 0))
-	lm.BBoxMu.Unlock()
 }
