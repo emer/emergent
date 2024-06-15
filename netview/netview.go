@@ -99,8 +99,6 @@ func (nv *NetView) Init() {
 		s.Grow.Set(1, 1)
 	})
 	nv.OnShow(func(e events.Event) {
-		sw := nv.SceneWidget()
-		sw.UpdateWidget()
 		nv.ConfigLayers()
 	})
 
@@ -128,8 +126,6 @@ func (nv *NetView) Init() {
 			nv.ViewDefaults(se)
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
-			se.SetNeedsConfig()
-			w.NeedsRender()
 		})
 	})
 	core.AddChildAt(nv, "counters", func(w *core.Text) {
@@ -160,9 +156,9 @@ func (nv *NetView) SetNet(net emer.Network) {
 func (nv *NetView) SetVar(vr string) {
 	nv.DataMu.Lock()
 	nv.Var = vr
-	nv.VarsUpdate()
-	nv.Toolbar().Update()
+	nv.VarsFrame().Update()
 	nv.DataMu.Unlock()
+	nv.Toolbar().Update()
 	nv.UpdateView()
 }
 
@@ -225,10 +221,10 @@ func (nv *NetView) GoUpdateView() {
 		return
 	}
 	sw := nv.SceneWidget()
-	sc := sw.SceneXYZ()
+	se := sw.SceneXYZ()
 	sw.Scene.AsyncLock()
 	nv.UpdateImpl()
-	sc.SetNeedsRender()
+	se.SetNeedsRender()
 	sw.NeedsRender()
 	sw.Scene.AsyncUnlock()
 }
@@ -294,6 +290,11 @@ func (nv *NetView) UpdateImpl() {
 				}
 				vp.Range.Max = bmax
 				vp.Range.Min = -bmax
+			}
+			if needUpdate {
+				tb := nv.Toolbar()
+				tb.UpdateTree()
+				tb.NeedsRender()
 			}
 		}
 	}
@@ -499,13 +500,6 @@ func (nv *NetView) VarsListUpdate() {
 	}
 }
 
-// VarsUpdate updates the selection status of the variables
-// and the view range state too
-func (nv *NetView) VarsUpdate() {
-	vl := nv.VarsFrame()
-	vl.Update()
-}
-
 // makeVars configures the variables
 func (nv *NetView) makeVars(p *core.Plan) {
 	nv.VarsListUpdate()
@@ -526,7 +520,6 @@ func (nv *NetView) makeVars(p *core.Plan) {
 					w.Tooltip = vn + ": " + desc
 				}
 			}
-			w.SetSelected(vn == nv.Var)
 			w.OnClick(func(e events.Event) {
 				nv.SetVar(vn)
 			})
@@ -547,21 +540,17 @@ func (nv *NetView) ConfigLayers() {
 		se.Meshes.Reset()
 		return
 	}
-	// todo:
-	// vs.BgColor = core.Prefs.Colors.Background // reset in case user changes
+	if nv.NeedsRebuild() {
+		se.BackgroundColor = colors.Scheme.Background
+		se.SetNeedsConfig()
+	}
 	nlay := nv.Net.NLayers()
 	laysGp := se.ChildByName("Layers", 0).(*xyz.Group)
 
 	layConfig := tree.TypePlan{}
 	for li := 0; li < nlay; li++ {
-		lay := nv.Net.Layer(li)
-		lmesh := se.MeshByName(lay.Name())
-		if lmesh == nil {
-			NewLayMesh(se, nv, lay)
-		} else {
-			lmesh.(*LayMesh).Lay = lay // make sure
-		}
-		layConfig.Add(xyz.GroupType, lay.Name())
+		ly := nv.Net.Layer(li)
+		layConfig.Add(xyz.GroupType, ly.Name())
 	}
 
 	if !tree.Update(laysGp, layConfig) {
@@ -581,6 +570,12 @@ func (nv *NetView) ConfigLayers() {
 	poff.Y = -0.5
 	for li, lgi := range laysGp.Children {
 		ly := nv.Net.Layer(li)
+		lmesh := se.MeshByName(ly.Name())
+		if lmesh == nil {
+			NewLayMesh(se, nv, ly)
+		} else {
+			lmesh.(*LayMesh).Lay = ly // make sure
+		}
 		lg := lgi.(*xyz.Group)
 		// gpConfig[1].Name = ly.Name() // todo: texture is not working, re-using for now
 		tree.Update(lg, gpConfig)
@@ -612,8 +607,6 @@ func (nv *NetView) ConfigLayers() {
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
-	se.ReconfigMeshes()
-	se.ReconfigTextures()
 	sw.XYZ.SetNeedsConfig()
 	sw.NeedsRender()
 }
@@ -624,8 +617,7 @@ func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1
 	se.Camera.LookAt(math32.Vec3(0, 0, 0), math32.Vec3(0, 1, 0))
-	// todo:
-	// vs.BgColor = core.Prefs.Colors.Background
+	se.BackgroundColor = colors.Scheme.Background
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
 	dir := xyz.NewDirLight(se, "dirUp", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, 0)
@@ -870,30 +862,40 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		vp.Defaults()
 	}
 
-	var mnsp, mxsp *core.Spinner
+	var minSpin, maxSpin *core.Spinner
+	var minSwitch, maxSwitch *core.Switch
 
 	core.Add(p, func(w *core.Separator) {})
-	core.AddAt(p, "mnsw", func(w *core.Switch) {
+	core.AddAt(p, "minSwitch", func(w *core.Switch) {
+		minSwitch = w
 		w.SetText("Min").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMin).
 			SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 			OnChange(func(e events.Event) {
 				vp := nv.VarParams[nv.Var]
 				vp.Range.FixMin = w.IsChecked()
-				mnsp.UpdateWidget()
+				minSpin.UpdateWidget().NeedsRender()
 				nv.UpdateView()
 			})
+		w.Updater(func() {
+			vp := nv.VarParams[nv.Var]
+			if vp != nil {
+				w.SetChecked(vp.Range.FixMin)
+			}
+		})
 	})
-	core.AddAt(p, "mnsp", func(w *core.Spinner) {
-		mnsp = w
+	core.AddAt(p, "minSpin", func(w *core.Spinner) {
+		minSpin = w
 		w.SetValue(vp.Range.Min).
 			OnChange(func(e events.Event) {
 				vp := nv.VarParams[nv.Var]
 				vp.Range.SetMin(w.Value)
+				vp.Range.FixMin = true
+				minSwitch.UpdateWidget().NeedsRender()
 				if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
 					vp.Range.SetMax(-vp.Range.Min)
 				}
 				if vp.ZeroCtr {
-					mxsp.UpdateWidget()
+					maxSpin.UpdateWidget().NeedsRender()
 				}
 				nv.UpdateView()
 			})
@@ -922,27 +924,36 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.AddAt(p, "mxsw", func(w *core.Switch) {
+	core.AddAt(p, "maxSwitch", func(w *core.Switch) {
+		maxSwitch = w
 		w.SetText("Max").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMax).
 			SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 			OnChange(func(e events.Event) {
 				vp := nv.VarParams[nv.Var]
 				vp.Range.FixMax = w.IsChecked()
-				mxsp.UpdateWidget()
+				maxSpin.UpdateWidget().NeedsRender()
 				nv.UpdateView()
 			})
+		w.Updater(func() {
+			vp := nv.VarParams[nv.Var]
+			if vp != nil {
+				w.SetChecked(vp.Range.FixMax)
+			}
+		})
 	})
 
-	core.AddAt(p, "mxsp", func(w *core.Spinner) {
-		mxsp = w
+	core.AddAt(p, "maxSpin", func(w *core.Spinner) {
+		maxSpin = w
 		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
 			vp := nv.VarParams[nv.Var]
 			vp.Range.SetMax(w.Value)
+			vp.Range.FixMax = true
+			maxSwitch.UpdateWidget().NeedsRender()
 			if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
 				vp.Range.SetMin(-vp.Range.Max)
 			}
 			if vp.ZeroCtr {
-				mnsp.UpdateWidget()
+				minSpin.UpdateWidget().NeedsRender()
 			}
 			nv.UpdateView()
 		})
@@ -954,7 +965,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.AddAt(p, "zcsw", func(w *core.Switch) {
+	core.AddAt(p, "zeroCtrSwitch", func(w *core.Switch) {
 		w.SetText("ZeroCtr").SetChecked(vp.ZeroCtr).
 			SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
 			OnChange(func(e events.Event) {
