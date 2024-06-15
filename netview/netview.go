@@ -881,28 +881,28 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 	core.Add(p, func(w *core.Separator) {})
 	core.Add(p, func(w *core.Button) {
 		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
-			fb := core.NewFuncButton(m, nv.SaveWeights)
+			fb := core.NewFuncButton(m).SetFunc(nv.SaveWeights)
 			fb.SetIcon(icons.Save)
 			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
-			fb = core.NewFuncButton(m, nv.OpenWeights)
+			fb = core.NewFuncButton(m).SetFunc(nv.OpenWeights)
 			fb.SetIcon(icons.Open)
 			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
 		})
 	})
 	core.Add(p, func(w *core.Button) {
 		w.SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene) {
-			core.NewFuncButton(m, nv.ShowNonDefaultParams).SetIcon(icons.Info)
-			core.NewFuncButton(m, nv.ShowAllParams).SetIcon(icons.Info)
-			core.NewFuncButton(m, nv.ShowKeyLayerParams).SetIcon(icons.Info)
-			core.NewFuncButton(m, nv.ShowKeyPathParams).SetIcon(icons.Info)
+			core.NewFuncButton(m).SetFunc(nv.ShowNonDefaultParams).SetIcon(icons.Info)
+			core.NewFuncButton(m).SetFunc(nv.ShowAllParams).SetIcon(icons.Info)
+			core.NewFuncButton(m).SetFunc(nv.ShowKeyLayerParams).SetIcon(icons.Info)
+			core.NewFuncButton(m).SetFunc(nv.ShowKeyPathParams).SetIcon(icons.Info)
 		})
 	})
 	core.Add(p, func(w *core.Button) {
 		w.SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
-			core.NewFuncButton(m, nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
-			core.NewFuncButton(m, nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
+			core.NewFuncButton(m).SetFunc(nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
+			core.NewFuncButton(m).SetFunc(nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
 			core.NewSeparator(m)
-			core.NewFuncButton(m, nv.PlotSelectedUnit).SetIcon(icons.Open)
+			core.NewFuncButton(m).SetFunc(nv.PlotSelectedUnit).SetIcon(icons.Open)
 		})
 	})
 	core.Add(p, func(w *core.Separator) {})
