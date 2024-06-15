@@ -3,7 +3,8 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package netview provides the NetView interactive 3D network viewer, implemented in the Cogent Core 3D framework.
+Package netview provides the NetView interactive 3D network viewer,
+implemented in the Cogent Core 3D framework.
 */
 package netview
 
@@ -77,6 +78,9 @@ type NetView struct {
 	// last non-empty counters string provided -- re-used if no new one
 	LastCtrs string
 
+	// current counters
+	CurCtrs string
+
 	// contains all the network data with history
 	Data NetData
 
@@ -93,6 +97,11 @@ func (nv *NetView) Init() {
 	nv.Styler(func(s *styles.Style) {
 		s.Direction = styles.Column
 		s.Grow.Set(1, 1)
+	})
+	nv.OnShow(func(e events.Event) {
+		sw := nv.SceneWidget()
+		sw.UpdateWidget()
+		nv.ConfigLayers()
 	})
 
 	core.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
@@ -119,10 +128,20 @@ func (nv *NetView) Init() {
 			nv.ViewDefaults(se)
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
+			se.SetNeedsConfig()
+			w.NeedsRender()
 		})
 	})
 	core.AddChildAt(nv, "counters", func(w *core.Text) {
-		w.SetText("Counters: " + strings.Repeat(" ", 200))
+		w.SetText("Counters: " + strings.Repeat(" ", 200)).
+			Styler(func(s *styles.Style) {
+				s.Min.X.Ch(200)
+			})
+		w.Updater(func() {
+			if w.Text != nv.CurCtrs && nv.CurCtrs != "" {
+				w.SetText(nv.CurCtrs)
+			}
+		})
 	})
 	core.AddChildAt(nv, "vbar", func(w *core.Toolbar) {
 		w.Maker(nv.MakeViewbar)
@@ -142,7 +161,7 @@ func (nv *NetView) SetVar(vr string) {
 	nv.DataMu.Lock()
 	nv.Var = vr
 	nv.VarsUpdate()
-	nv.VarScaleUpdate(nv.Var)
+	nv.Toolbar().Update()
 	nv.DataMu.Unlock()
 	nv.UpdateView()
 }
@@ -209,7 +228,8 @@ func (nv *NetView) GoUpdateView() {
 	sc := sw.SceneXYZ()
 	sw.Scene.AsyncLock()
 	nv.UpdateImpl()
-	sc.NeedsRender = true
+	sc.SetNeedsRender()
+	sw.NeedsRender()
 	sw.Scene.AsyncUnlock()
 }
 
@@ -220,7 +240,7 @@ func (nv *NetView) UpdateView() {
 	}
 	sw := nv.SceneWidget()
 	nv.UpdateImpl()
-	sw.XYZ.NeedsRender = true
+	sw.XYZ.SetNeedsRender()
 	sw.NeedsRender()
 }
 
@@ -275,69 +295,19 @@ func (nv *NetView) UpdateImpl() {
 				vp.Range.Max = bmax
 				vp.Range.Min = -bmax
 			}
-			if needUpdate {
-				nv.VarScaleUpdate(nv.Var)
-			}
 		}
 	}
 
-	se := nv.SceneXYZ()
-	nv.ConfigLayers()
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
 	nv.UpdateRecNo()
 	nv.DataMu.Unlock()
-	se.UpdateMeshes()
+	nv.ConfigLayers()
 }
-
-/*
-// ConfigNetView configures the overall view widget
-func (nv *NetView) ConfigNetView() {
-	tb := core.NewToolbar(nv)
-	tb.SetName("tbar")
-	nlay := core.NewFrame(nv)
-	nlay.SetName("net")
-	nlay.Styler(func(s *styles.Style) {
-		s.Direction = styles.Row
-		s.Grow.Set(1, 1)
-	})
-	core.NewText(nv).SetName("counters").SetText(strings.Repeat(" ", 200))
-	vb := core.NewToolbar(nv, "vbar")
-
-	vlay := core.NewFrame(nlay, "vars")
-	vlay.Styler(func(s *styles.Style) {
-		s.Display = styles.Grid
-		s.Columns = nv.Params.NVarCols
-		s.Grow.Set(0, 1)
-		s.Overflow.Y = styles.OverflowAuto
-		s.Background = colors.C(colors.Scheme.SurfaceContainerLow)
-	})
-
-	sw := NewScene(nlay, "scene")
-	sw.NetView = nv
-
-	nv.ConfigToolbar(tb)
-	nv.ConfigViewbar(vb)
-
-	nv.VarsConfig()
-	nv.ViewConfig()
-
-	ctrs := nv.Counters()
-	ctrs.SetText("Counters: " + strings.Repeat("-", 200))
-
-	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
-	nv.DataMu.Unlock()
-	nv.ReconfigMeshes()
-	nv.NeedsLayout()
-}
-*/
 
 // ReconfigMeshes reconfigures the layer meshes
 func (nv *NetView) ReconfigMeshes() {
 	se := nv.SceneXYZ()
-	// if se.IsConfiged() {
 	se.ReconfigMeshes()
-	// }
 }
 
 func (nv *NetView) Toolbar() *core.Toolbar {
@@ -370,10 +340,12 @@ func (nv *NetView) VarsFrame() *core.Frame {
 
 // SetCounters sets the counters widget view display at bottom of netview
 func (nv *NetView) SetCounters(ctrs string) {
-	ct := nv.Counters()
-	if ct.Text != ctrs {
-		ct.SetText(ctrs).Update()
+	if ctrs == "" {
+		return
 	}
+	nv.CurCtrs = ctrs
+	ct := nv.Counters()
+	ct.UpdateWidget().NeedsRender()
 }
 
 // UpdateRecNo updates the record number viewing
@@ -381,7 +353,7 @@ func (nv *NetView) UpdateRecNo() {
 	vbar := nv.Viewbar()
 	rlbl := vbar.ChildByName("rec", 10)
 	if rlbl != nil {
-		rlbl.(*core.Text).SetText(fmt.Sprintf("%4d ", nv.RecNo)).Update()
+		rlbl.(*core.Text).UpdateWidget().NeedsRender()
 	}
 }
 
@@ -531,66 +503,7 @@ func (nv *NetView) VarsListUpdate() {
 // and the view range state too
 func (nv *NetView) VarsUpdate() {
 	vl := nv.VarsFrame()
-	for _, vbi := range vl.Children {
-		vb := vbi.(*core.Button)
-		vb.SetSelected(vb.Text == nv.Var)
-	}
-	nv.ColorMapButton.Update()
-	vl.NeedsRender()
-}
-
-// VarScaleUpdate updates display of the scaling params
-// for given variable (use nv.Var for current)
-// returns true if any setting changed (update always triggered)
-func (nv *NetView) VarScaleUpdate(varNm string) bool {
-	vp := nv.VarParams[varNm]
-
-	tb := nv.Toolbar()
-	mod := false
-
-	if ci := tb.ChildByName("mnsw", 4); ci != nil {
-		sw := ci.(*core.Switch)
-		if sw.IsChecked() != vp.Range.FixMin {
-			mod = true
-			sw.SetChecked(vp.Range.FixMin)
-			sw.NeedsRender()
-		}
-	}
-	if ci := tb.ChildByName("mxsw", 6); ci != nil {
-		sw := ci.(*core.Switch)
-		if sw.IsChecked() != vp.Range.FixMax {
-			mod = true
-			sw.SetChecked(vp.Range.FixMax)
-			sw.NeedsRender()
-		}
-	}
-	if ci := tb.ChildByName("mnsp", 5); ci != nil {
-		sp := ci.(*core.Spinner)
-		mnv := vp.Range.Min
-		if sp.Value != mnv {
-			mod = true
-			sp.SetValue(mnv)
-			sp.NeedsRender()
-		}
-	}
-	if ci := tb.ChildByName("mxsp", 7); ci != nil {
-		sp := ci.(*core.Spinner)
-		mxv := vp.Range.Max
-		if sp.Value != mxv {
-			mod = true
-			sp.SetValue(mxv)
-			sp.NeedsRender()
-		}
-	}
-	if ci := tb.ChildByName("zcsw", 8); ci != nil {
-		sw := ci.(*core.Switch)
-		if sw.IsChecked() != vp.ZeroCtr {
-			mod = true
-			sw.SetChecked(vp.ZeroCtr)
-			sw.NeedsRender()
-		}
-	}
-	return mod
+	vl.Update()
 }
 
 // makeVars configures the variables
@@ -617,6 +530,9 @@ func (nv *NetView) makeVars(p *core.Plan) {
 			w.OnClick(func(e events.Event) {
 				nv.SetVar(vn)
 			})
+			w.Updater(func() {
+				w.SetSelected(w.Text == nv.Var)
+			})
 		})
 	}
 }
@@ -625,6 +541,7 @@ func (nv *NetView) makeVars(p *core.Plan) {
 func (nv *NetView) ConfigLayers() {
 	sw := nv.SceneWidget()
 	se := sw.Scene.XYZ
+
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		se.DeleteChildren()
 		se.Meshes.Reset()
@@ -634,6 +551,7 @@ func (nv *NetView) ConfigLayers() {
 	// vs.BgColor = core.Prefs.Colors.Background // reset in case user changes
 	nlay := nv.Net.NLayers()
 	laysGp := se.ChildByName("Layers", 0).(*xyz.Group)
+
 	layConfig := tree.TypePlan{}
 	for li := 0; li < nlay; li++ {
 		lay := nv.Net.Layer(li)
@@ -645,13 +563,15 @@ func (nv *NetView) ConfigLayers() {
 		}
 		layConfig.Add(xyz.GroupType, lay.Name())
 	}
+
+	if !tree.Update(laysGp, layConfig) {
+		se.UpdateMeshes()
+		return
+	}
+
 	gpConfig := tree.TypePlan{}
 	gpConfig.Add(LayObjType, "layer")
 	gpConfig.Add(LayNameType, "name")
-
-	if !tree.Update(laysGp, layConfig) {
-		return
-	}
 
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
@@ -662,6 +582,7 @@ func (nv *NetView) ConfigLayers() {
 	for li, lgi := range laysGp.Children {
 		ly := nv.Net.Layer(li)
 		lg := lgi.(*xyz.Group)
+		// gpConfig[1].Name = ly.Name() // todo: texture is not working, re-using for now
 		tree.Update(lg, gpConfig)
 		lp := ly.Pos()
 		lp.Y = -lp.Y // reverse direction
@@ -683,7 +604,6 @@ func (nv *NetView) ConfigLayers() {
 		// but then the front and back fight against each other, causing flickering
 
 		txt := lg.Child(1).(*LayName)
-		txt.Name = "layname:" + ly.Name()
 		txt.Defaults()
 		txt.NetView = nv
 		txt.SetText(ly.Name())
@@ -692,7 +612,9 @@ func (nv *NetView) ConfigLayers() {
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
-	sw.XYZ.NeedsConfig = true
+	se.ReconfigMeshes()
+	se.ReconfigTextures()
+	sw.XYZ.SetNeedsConfig()
 	sw.NeedsRender()
 }
 
@@ -948,17 +870,21 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		vp.Defaults()
 	}
 
+	var mnsp, mxsp *core.Spinner
+
 	core.Add(p, func(w *core.Separator) {})
 	core.AddAt(p, "mnsw", func(w *core.Switch) {
 		w.SetText("Min").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMin).
-			SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").OnChange(func(e events.Event) {
-			vp := nv.VarParams[nv.Var]
-			vp.Range.FixMin = w.IsChecked()
-			nv.VarScaleUpdate(nv.Var) // todo: before update?
-			nv.UpdateView()
-		})
+			SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
+			OnChange(func(e events.Event) {
+				vp := nv.VarParams[nv.Var]
+				vp.Range.FixMin = w.IsChecked()
+				mnsp.UpdateWidget()
+				nv.UpdateView()
+			})
 	})
 	core.AddAt(p, "mnsp", func(w *core.Spinner) {
+		mnsp = w
 		w.SetValue(vp.Range.Min).
 			OnChange(func(e events.Event) {
 				vp := nv.VarParams[nv.Var]
@@ -966,9 +892,17 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 				if vp.ZeroCtr && vp.Range.Min < 0 && vp.Range.FixMax {
 					vp.Range.SetMax(-vp.Range.Min)
 				}
-				nv.VarScaleUpdate(nv.Var)
+				if vp.ZeroCtr {
+					mxsp.UpdateWidget()
+				}
 				nv.UpdateView()
 			})
+		w.Updater(func() {
+			vp := nv.VarParams[nv.Var]
+			if vp != nil {
+				w.SetValue(vp.Range.Min)
+			}
+		})
 	})
 
 	core.AddAt(p, "cmap", func(w *core.ColorMapButton) {
@@ -994,20 +928,29 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 			OnChange(func(e events.Event) {
 				vp := nv.VarParams[nv.Var]
 				vp.Range.FixMax = w.IsChecked()
-				nv.VarScaleUpdate(nv.Var)
+				mxsp.UpdateWidget()
 				nv.UpdateView()
 			})
 	})
 
 	core.AddAt(p, "mxsp", func(w *core.Spinner) {
+		mxsp = w
 		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
 			vp := nv.VarParams[nv.Var]
 			vp.Range.SetMax(w.Value)
 			if vp.ZeroCtr && vp.Range.Max > 0 && vp.Range.FixMin {
 				vp.Range.SetMin(-vp.Range.Max)
 			}
-			nv.VarScaleUpdate(nv.Var)
+			if vp.ZeroCtr {
+				mnsp.UpdateWidget()
+			}
 			nv.UpdateView()
+		})
+		w.Updater(func() {
+			vp := nv.VarParams[nv.Var]
+			if vp != nil {
+				w.SetValue(vp.Range.Max)
+			}
 		})
 	})
 
@@ -1017,9 +960,14 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 			OnChange(func(e events.Event) {
 				vp := nv.VarParams[nv.Var]
 				vp.ZeroCtr = w.IsChecked()
-				nv.VarScaleUpdate(nv.Var)
 				nv.UpdateView()
 			})
+		w.Updater(func() {
+			vp := nv.VarParams[nv.Var]
+			if vp != nil {
+				w.SetChecked(vp.ZeroCtr)
+			}
+		})
 	})
 }
 
@@ -1173,8 +1121,14 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 	})
 
 	core.AddAt(p, "rec", func(w *core.Text) {
-		w.SetText(fmt.Sprintf("%4d ", nv.RecNo)).
-			SetTooltip("current view record: -1 means latest, 0 = earliest")
+		w.SetText(fmt.Sprintf("  %4d  ", nv.RecNo)).
+			SetTooltip("current view record: -1 means latest, 0 = earliest").
+			Styler(func(s *styles.Style) {
+				s.Min.X.Ch(5)
+			})
+		w.Updater(func() {
+			w.SetText(fmt.Sprintf("  %4d  ", nv.RecNo))
+		})
 	})
 	core.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").

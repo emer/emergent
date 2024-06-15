@@ -34,6 +34,8 @@ func (sw *Scene) HandleEvents() {
 		sw.NeedsRender()
 	})
 	sw.On(events.Scroll, func(e events.Event) {
+		pos := sw.Geom.ContentBBox.Min
+		e.SetLocalOff(e.LocalOff().Add(pos))
 		sw.SceneXYZ().MouseScrollEvent(e.(*events.MouseScroll))
 		sw.NeedsRender()
 	})
