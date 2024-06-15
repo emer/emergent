@@ -99,7 +99,7 @@ func (nv *NetView) Init() {
 		s.Grow.Set(1, 1)
 	})
 	nv.OnShow(func(e events.Event) {
-		nv.ConfigLayers()
+		nv.UpdateLayers()
 	})
 
 	core.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
@@ -122,7 +122,7 @@ func (nv *NetView) Init() {
 		})
 		core.AddChildAt(w, "scene", func(w *Scene) {
 			w.NetView = nv
-			se := w.Scene.XYZ
+			se := w.SceneXYZ()
 			nv.ViewDefaults(se)
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
@@ -302,7 +302,7 @@ func (nv *NetView) UpdateImpl() {
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
 	nv.UpdateRecNo()
 	nv.DataMu.Unlock()
-	nv.ConfigLayers()
+	nv.UpdateLayers()
 }
 
 // ReconfigMeshes reconfigures the layer meshes
@@ -332,7 +332,7 @@ func (nv *NetView) SceneWidget() *Scene {
 }
 
 func (nv *NetView) SceneXYZ() *xyz.Scene {
-	return nv.SceneWidget().Scene.XYZ
+	return nv.SceneWidget().SceneXYZ()
 }
 
 func (nv *NetView) VarsFrame() *core.Frame {
@@ -530,10 +530,11 @@ func (nv *NetView) makeVars(p *core.Plan) {
 	}
 }
 
-// ConfigLayers configures the layers
-func (nv *NetView) ConfigLayers() {
+// UpdateLayers updates the layer display with any structural or
+// current data changes.  Very fast if no structural changes.
+func (nv *NetView) UpdateLayers() {
 	sw := nv.SceneWidget()
-	se := sw.Scene.XYZ
+	se := sw.SceneXYZ()
 
 	if nv.Net == nil || nv.Net.NLayers() == 0 {
 		se.DeleteChildren()
@@ -577,7 +578,7 @@ func (nv *NetView) ConfigLayers() {
 			lmesh.(*LayMesh).Lay = ly // make sure
 		}
 		lg := lgi.(*xyz.Group)
-		// gpConfig[1].Name = ly.Name() // todo: texture is not working, re-using for now
+		gpConfig[1].Name = ly.Name() // text2d textures use obj name, so must be unique
 		tree.Update(lg, gpConfig)
 		lp := ly.Pos()
 		lp.Y = -lp.Y // reverse direction
