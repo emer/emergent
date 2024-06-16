@@ -503,6 +503,9 @@ func (nv *NetView) VarsListUpdate() {
 // makeVars configures the variables
 func (nv *NetView) makeVars(p *core.Plan) {
 	nv.VarsListUpdate()
+	if nv.Net == nil {
+		return
+	}
 	unprops := nv.Net.UnitVarProps()
 	pathprops := nv.Net.SynVarProps()
 	for _, vn := range nv.Vars {

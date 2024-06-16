@@ -118,6 +118,7 @@ func (gui *GUI) AddNetView(tabName string) *netview.NetView {
 	nvt := gui.Tabs.NewTab(tabName)
 	nv := netview.NewNetView(nvt)
 	nv.Var = "Act"
+	nv.UpdateTree() // need children
 	return nv
 }
 
