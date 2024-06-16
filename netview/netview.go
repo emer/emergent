@@ -618,12 +618,14 @@ func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	// 	vs.Camera.Pose.Pos.Set(0, 1, 2.75) // more "head on" for larger / deeper networks
 	se.Camera.Near = 0.1
 	se.Camera.LookAt(math32.Vec3(0, 0, 0), math32.Vec3(0, 1, 0))
-	se.BackgroundColor = colors.Scheme.Background
+	nv.Styler(func(s *styles.Style) {
+		se.BackgroundColor = colors.Scheme.Background
+	})
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
 	dir := xyz.NewDirLight(se, "dirUp", 0.3, xyz.DirectSun)
 	dir.Pos.Set(0, 1, 0)
 	dir = xyz.NewDirLight(se, "dirBack", 0.3, xyz.DirectSun)
-	dir.Pos.Set(0, 1, -2.5)
+	dir.Pos.Set(0, 1, 2.5)
 	// point := xyz.NewPointLight(vs, "point", 1, xyz.DirectSun)
 	// point.Pos.Set(0, 2, 5)
 	// spot := xyz.NewSpotLight(vs, "spot", 1, xyz.DirectSun)
