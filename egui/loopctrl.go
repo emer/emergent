@@ -31,13 +31,14 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 	for _, m := range modes {
 		mode := m
 		core.AddAt(p, mode.String()+"-run", func(w *core.Button) {
+			tb := p.Widget.(*core.Toolbar)
 			w.SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
 				SetTooltip("Run the " + mode.String() + " process").
 				FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
 				OnClick(func(e events.Event) {
 					if !gui.IsRunning {
 						gui.IsRunning = true
-						// tb.Restyle() // todo: need obj on plan
+						tb.Restyle()
 						go func() {
 							loops.Run(mode)
 							gui.Stopped()
@@ -55,6 +56,7 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 		}
 
 		core.AddAt(p, mode.String()+"-step", func(w *core.Button) {
+			tb := p.Widget.(*core.Toolbar)
 			w.SetText("Step").SetIcon(icons.SkipNext).
 				SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
 				FirstStyler(func(s *styles.Style) {
@@ -64,7 +66,7 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 				OnClick(func(e events.Event) {
 					if !gui.IsRunning {
 						gui.IsRunning = true
-						// tb.Restyle()
+						tb.Restyle()
 						go func() {
 							stack := loops.Stacks[mode]
 							loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
