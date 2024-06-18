@@ -11,7 +11,7 @@ import (
 	"os"
 	"reflect"
 
-	"cogentcore.org/core/base/dirs"
+	"cogentcore.org/core/base/fsx"
 	"cogentcore.org/core/base/mpi"
 )
 
@@ -74,13 +74,13 @@ func Config(cfg any, defaultFile ...string) ([]string, error) {
 
 	var cfgFiles []string
 	if ConfigFile != "" {
-		files := dirs.FindFilesOnPaths(IncludePaths, ConfigFile)
+		files := fsx.FindFilesOnPaths(IncludePaths, ConfigFile)
 		if len(files) > 0 {
 			cfgFiles = append(cfgFiles, ConfigFile)
 		}
 	} else {
 		for _, fn := range defaultFile {
-			files := dirs.FindFilesOnPaths(IncludePaths, fn)
+			files := fsx.FindFilesOnPaths(IncludePaths, fn)
 			if len(files) > 0 {
 				cfgFiles = append(cfgFiles, fn)
 			}
