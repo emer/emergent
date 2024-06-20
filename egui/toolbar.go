@@ -9,6 +9,7 @@ import (
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
+	"cogentcore.org/core/tree"
 )
 
 // ToolbarItem holds the configuration values for a toolbar item
@@ -21,8 +22,8 @@ type ToolbarItem struct {
 }
 
 // AddToolbarItem adds a toolbar item but also checks when it be active in the UI
-func (gui *GUI) AddToolbarItem(p *core.Plan, item ToolbarItem) {
-	core.AddAt(p, item.Label, func(w *core.Button) {
+func (gui *GUI) AddToolbarItem(p *tree.Plan, item ToolbarItem) {
+	tree.AddAt(p, item.Label, func(w *core.Button) {
 		w.SetText(item.Label).SetIcon(item.Icon).
 			SetTooltip(item.Tooltip).OnClick(func(e events.Event) {
 			item.Func()

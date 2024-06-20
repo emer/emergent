@@ -99,15 +99,15 @@ func (nv *NetView) Init() {
 		s.Grow.Set(1, 1)
 	})
 
-	core.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
+	tree.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
 		w.Maker(nv.MakeToolbar)
 	})
-	core.AddChildAt(nv, "netframe", func(w *core.Frame) {
+	tree.AddChildAt(nv, "netframe", func(w *core.Frame) {
 		w.Styler(func(s *styles.Style) {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
 		})
-		core.AddChildAt(w, "vars", func(w *core.Frame) {
+		tree.AddChildAt(w, "vars", func(w *core.Frame) {
 			w.Styler(func(s *styles.Style) {
 				s.Display = styles.Grid
 				s.Columns = nv.Params.NVarCols
@@ -117,7 +117,7 @@ func (nv *NetView) Init() {
 			})
 			w.Maker(nv.makeVars)
 		})
-		core.AddChildAt(w, "scene", func(w *Scene) {
+		tree.AddChildAt(w, "scene", func(w *Scene) {
 			w.NetView = nv
 			se := w.SceneXYZ()
 			nv.ViewDefaults(se)
@@ -125,7 +125,7 @@ func (nv *NetView) Init() {
 			laysGp.Name = "Layers"
 		})
 	})
-	core.AddChildAt(nv, "counters", func(w *core.Text) {
+	tree.AddChildAt(nv, "counters", func(w *core.Text) {
 		w.SetText("Counters: " + strings.Repeat(" ", 200)).
 			Styler(func(s *styles.Style) {
 				s.Min.X.Ch(200)
@@ -136,7 +136,7 @@ func (nv *NetView) Init() {
 			}
 		})
 	})
-	core.AddChildAt(nv, "vbar", func(w *core.Toolbar) {
+	tree.AddChildAt(nv, "vbar", func(w *core.Toolbar) {
 		w.Maker(nv.MakeViewbar)
 	})
 }
@@ -500,7 +500,7 @@ func (nv *NetView) VarsListUpdate() {
 }
 
 // makeVars configures the variables
-func (nv *NetView) makeVars(p *core.Plan) {
+func (nv *NetView) makeVars(p *tree.Plan) {
 	nv.VarsListUpdate()
 	if nv.Net == nil {
 		return
@@ -508,7 +508,7 @@ func (nv *NetView) makeVars(p *core.Plan) {
 	unprops := nv.Net.UnitVarProps()
 	pathprops := nv.Net.SynVarProps()
 	for _, vn := range nv.Vars {
-		core.AddAt(p, vn, func(w *core.Button) {
+		tree.AddAt(p, vn, func(w *core.Button) {
 			w.SetText(vn).SetType(core.ButtonAction)
 			pstr := ""
 			if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
@@ -791,23 +791,23 @@ func (nv *NetView) LayerByName(lay string) *xyz.Group {
 	return ly.(*xyz.Group)
 }
 
-func (nv *NetView) MakeToolbar(p *core.Plan) {
-	core.Add(p, func(w *core.FuncButton) {
+func (nv *NetView) MakeToolbar(p *tree.Plan) {
+	tree.Add(p, func(w *core.FuncButton) {
 		w.SetFunc(nv.Update).SetText("Init").SetIcon(icons.Update)
 	})
-	core.Add(p, func(w *core.FuncButton) {
+	tree.Add(p, func(w *core.FuncButton) {
 		w.SetFunc(nv.Current).SetIcon(icons.Update)
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetText("Config").SetIcon(icons.Settings).
 			SetTooltip("set parameters that control display (font size etc)").
 			OnClick(func(e events.Event) {
 				FormDialog(nv, &nv.Params, nv.Name+" Params")
 			})
 	})
-	core.Add(p, func(w *core.Separator) {})
-	core.Add(p, func(w *core.Separator) {})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Button) {
 		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
 			fb := core.NewFuncButton(m).SetFunc(nv.SaveWeights)
 			fb.SetIcon(icons.Save)
@@ -817,7 +817,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
 		})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene) {
 			core.NewFuncButton(m).SetFunc(nv.ShowNonDefaultParams).SetIcon(icons.Info)
 			core.NewFuncButton(m).SetFunc(nv.ShowAllParams).SetIcon(icons.Info)
@@ -825,7 +825,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 			core.NewFuncButton(m).SetFunc(nv.ShowKeyPathParams).SetIcon(icons.Info)
 		})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
 			core.NewFuncButton(m).SetFunc(nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
 			core.NewFuncButton(m).SetFunc(nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
@@ -833,12 +833,12 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 			core.NewFuncButton(m).SetFunc(nv.PlotSelectedUnit).SetIcon(icons.Open)
 		})
 	})
-	core.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Separator) {})
 	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
-	core.Add(p, func(w *core.Text) {
+	tree.Add(p, func(w *core.Text) {
 		w.SetText("Di:").SetTooltip(ditp)
 	})
-	core.Add(p, func(w *core.Spinner) {
+	tree.Add(p, func(w *core.Spinner) {
 		w.SetMin(0).SetStep(1).SetValue(float32(nv.Di)).SetTooltip(ditp)
 		w.OnChange(func(e events.Event) {
 			maxData := nv.Net.MaxParallelData()
@@ -851,9 +851,9 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Separator) {})
 
-	core.Add(p, func(w *core.Switch) {
+	tree.Add(p, func(w *core.Switch) {
 		w.SetText("Raster").SetChecked(nv.Params.Raster.On).
 			SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)").
 			OnChange(func(e events.Event) {
@@ -862,7 +862,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Switch) {
+	tree.Add(p, func(w *core.Switch) {
 		w.SetText("X").SetType(core.SwitchCheckbox).SetChecked(nv.Params.Raster.XAxis).
 			SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
 			OnChange(func(e events.Event) {
@@ -879,8 +879,8 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 	var minSpin, maxSpin *core.Spinner
 	var minSwitch, maxSwitch *core.Switch
 
-	core.Add(p, func(w *core.Separator) {})
-	core.AddAt(p, "minSwitch", func(w *core.Switch) {
+	tree.Add(p, func(w *core.Separator) {})
+	tree.AddAt(p, "minSwitch", func(w *core.Switch) {
 		minSwitch = w
 		w.SetText("Min").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMin).
 			SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
@@ -897,7 +897,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 			}
 		})
 	})
-	core.AddAt(p, "minSpin", func(w *core.Spinner) {
+	tree.AddAt(p, "minSpin", func(w *core.Spinner) {
 		minSpin = w
 		w.SetValue(vp.Range.Min).
 			OnChange(func(e events.Event) {
@@ -921,7 +921,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.AddAt(p, "cmap", func(w *core.ColorMapButton) {
+	tree.AddAt(p, "cmap", func(w *core.ColorMapButton) {
 		nv.ColorMapButton = w
 		w.MapName = string(nv.Params.ColorMap)
 		w.SetTooltip("Color map for translating values into colors -- click to select alternative.").
@@ -938,7 +938,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.AddAt(p, "maxSwitch", func(w *core.Switch) {
+	tree.AddAt(p, "maxSwitch", func(w *core.Switch) {
 		maxSwitch = w
 		w.SetText("Max").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMax).
 			SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
@@ -956,7 +956,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.AddAt(p, "maxSpin", func(w *core.Spinner) {
+	tree.AddAt(p, "maxSpin", func(w *core.Spinner) {
 		maxSpin = w
 		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
 			vp := nv.VarParams[nv.Var]
@@ -979,7 +979,7 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 		})
 	})
 
-	core.AddAt(p, "zeroCtrSwitch", func(w *core.Switch) {
+	tree.AddAt(p, "zeroCtrSwitch", func(w *core.Switch) {
 		w.SetText("ZeroCtr").SetChecked(vp.ZeroCtr).
 			SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
 			OnChange(func(e events.Event) {
@@ -996,15 +996,15 @@ func (nv *NetView) MakeToolbar(p *core.Plan) {
 	})
 }
 
-func (nv *NetView) MakeViewbar(p *core.Plan) {
-	core.Add(p, func(w *core.Button) {
+func (nv *NetView) MakeViewbar(p *tree.Plan) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.Update).SetTooltip("reset to default initial display").
 			OnClick(func(e events.Event) {
 				nv.SceneXYZ().SetCamera("default")
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.ZoomIn).SetTooltip("zoom in").
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1014,7 +1014,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.ZoomOut).SetTooltip("zoom out").
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1024,11 +1024,11 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Separator) {})
-	core.Add(p, func(w *core.Text) {
+	tree.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Text) {
 		w.SetText("Rot:").SetTooltip("rotate display")
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowLeft).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1038,7 +1038,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowUp).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1048,7 +1048,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowDown).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1058,7 +1058,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowRight).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1068,12 +1068,12 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Separator) {})
 
-	core.Add(p, func(w *core.Text) {
+	tree.Add(p, func(w *core.Text) {
 		w.SetText("Pan:").SetTooltip("pan display")
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowLeft).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1083,7 +1083,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowUp).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1093,7 +1093,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowDown).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1103,7 +1103,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.KeyboardArrowRight).
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1113,13 +1113,13 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				nv.UpdateView()
 			})
 	})
-	core.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Separator) {})
 
-	core.Add(p, func(w *core.Text) { w.SetText("Save:") })
+	tree.Add(p, func(w *core.Text) { w.SetText("Save:") })
 
 	for i := 1; i <= 4; i++ {
 		nm := fmt.Sprintf("%d", i)
-		core.AddAt(p, "saved-"+nm, func(w *core.Button) {
+		tree.AddAt(p, "saved-"+nm, func(w *core.Button) {
 			w.SetText(nm).
 				SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
 				OnClick(func(e events.Event) {
@@ -1138,14 +1138,14 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				})
 		})
 	}
-	core.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Separator) {})
 
-	core.Add(p, func(w *core.Text) {
+	tree.Add(p, func(w *core.Text) {
 		w.SetText("Time:").
 			SetTooltip("states are recorded over time -- last N can be reviewed using these buttons")
 	})
 
-	core.AddAt(p, "rec", func(w *core.Text) {
+	tree.AddAt(p, "rec", func(w *core.Text) {
 		w.SetText(fmt.Sprintf("  %4d  ", nv.RecNo)).
 			SetTooltip("current view record: -1 means latest, 0 = earliest").
 			Styler(func(s *styles.Style) {
@@ -1155,7 +1155,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 			w.SetText(fmt.Sprintf("  %4d  ", nv.RecNo))
 		})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
 			OnClick(func(e events.Event) {
 				if nv.RecFullBkwd() {
@@ -1163,7 +1163,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				}
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1174,7 +1174,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				}
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1185,7 +1185,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				}
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
 			OnClick(func(e events.Event) {
 				if nv.RecTrackLatest() {
@@ -1193,7 +1193,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				}
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.SkipNext).SetTooltip("move later by 1").
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1204,7 +1204,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				}
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
 			Styler(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -1215,7 +1215,7 @@ func (nv *NetView) MakeViewbar(p *core.Plan) {
 				}
 			})
 	})
-	core.Add(p, func(w *core.Button) {
+	tree.Add(p, func(w *core.Button) {
 		w.SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
 			OnClick(func(e events.Event) {
 				if nv.RecTrackLatest() {

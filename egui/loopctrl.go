@@ -10,13 +10,14 @@ import (
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
+	"cogentcore.org/core/tree"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 )
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime.Modes) {
+func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime.Modes) {
 	gui.AddToolbarItem(p, ToolbarItem{Label: "Stop",
 		Icon:    icons.Stop,
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
@@ -30,8 +31,8 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 
 	for _, m := range modes {
 		mode := m
-		core.AddAt(p, mode.String()+"-run", func(w *core.Button) {
-			tb := p.Widget.(*core.Toolbar)
+		tree.AddAt(p, mode.String()+"-run", func(w *core.Button) {
+			tb := p.Parent.(*core.Toolbar)
 			w.SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
 				SetTooltip("Run the " + mode.String() + " process").
 				FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
@@ -55,8 +56,8 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 			stringToEnumTime[st.String()] = st
 		}
 
-		core.AddAt(p, mode.String()+"-step", func(w *core.Button) {
-			tb := p.Widget.(*core.Toolbar)
+		tree.AddAt(p, mode.String()+"-step", func(w *core.Button) {
+			tb := p.Parent.(*core.Toolbar)
 			w.SetText("Step").SetIcon(icons.SkipNext).
 				SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
 				FirstStyler(func(s *styles.Style) {
@@ -77,7 +78,7 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 		})
 
 		var chs *core.Chooser
-		core.AddAt(p, mode.String()+"-level", func(w *core.Chooser) {
+		tree.AddAt(p, mode.String()+"-level", func(w *core.Chooser) {
 			chs = w
 			stepStrs := []string{}
 			for _, s := range steps {
@@ -88,7 +89,7 @@ func (gui *GUI) AddLooperCtrl(p *core.Plan, loops *looper.Manager, modes []etime
 			w.SetCurrentValue(stack.StepLevel.String())
 		})
 
-		core.AddAt(p, mode.String()+"-n", func(w *core.Spinner) {
+		tree.AddAt(p, mode.String()+"-n", func(w *core.Spinner) {
 			w.SetStep(1).SetMin(1).SetValue(1)
 			w.SetTooltip("number of iterations per step").
 				OnChange(func(e events.Event) {
