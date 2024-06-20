@@ -98,9 +98,6 @@ func (nv *NetView) Init() {
 		s.Direction = styles.Column
 		s.Grow.Set(1, 1)
 	})
-	nv.OnShow(func(e events.Event) {
-		nv.UpdateLayers()
-	})
 
 	core.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
 		w.Maker(nv.MakeToolbar)
@@ -150,6 +147,8 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.DataMu.Lock()
 	nv.Data.Init(nv.Net, nv.Params.MaxRecs, nv.Params.NoSynData, nv.Net.MaxParallelData())
 	nv.DataMu.Unlock()
+	nv.UpdateTree() // need children
+	nv.UpdateLayers()
 }
 
 // SetVar sets the variable to view and updates the display
@@ -729,6 +728,15 @@ func (nv *NetView) Labels() *xyz.Group {
 	return lgpi.(*xyz.Group)
 }
 
+func (nv *NetView) Layers() *xyz.Group {
+	se := nv.SceneXYZ()
+	lgpi := se.ChildByName("Layers", 0)
+	if lgpi == nil {
+		return nil
+	}
+	return lgpi.(*xyz.Group)
+}
+
 // ConfigLabels ensures that given label xyz.Text2D objects are created and initialized
 // in a top-level group called Labels.  Use LabelByName() to get a given label, and
 // LayerByName() to get a Layer group, whose Pose can be copied to put a label in
@@ -775,7 +783,7 @@ func (nv *NetView) LabelByName(lab string) *xyz.Text2D {
 // LayerByName returns the xyz.Group that represents layer of given name.
 // nil if not found.
 func (nv *NetView) LayerByName(lay string) *xyz.Group {
-	lgp := nv.Labels()
+	lgp := nv.Layers()
 	ly := lgp.ChildByName(lay, 0)
 	if ly == nil {
 		return nil
