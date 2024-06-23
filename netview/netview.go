@@ -924,12 +924,13 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	tree.AddAt(p, "cmap", func(w *core.ColorMapButton) {
 		nv.ColorMapButton = w
 		w.MapName = string(nv.Params.ColorMap)
-		w.SetTooltip("Color map for translating values into colors -- click to select alternative.").
-			Styler(func(s *styles.Style) {
-				s.Min.X.Em(10)
-				s.Min.Y.Em(1.2)
-				s.Grow.Set(0, 1)
-			}).OnChange(func(e events.Event) {
+		w.SetTooltip("Color map for translating values into colors -- click to select alternative.")
+		w.Styler(func(s *styles.Style) {
+			s.Min.X.Em(10)
+			s.Min.Y.Em(1.2)
+			s.Grow.Set(0, 1)
+		})
+		w.OnChange(func(e events.Event) {
 			cmap, ok := colormap.AvailableMaps[string(nv.ColorMapButton.MapName)]
 			if ok {
 				nv.ColorMap = cmap
@@ -1005,68 +1006,68 @@ func (nv *NetView) MakeViewbar(p *tree.Plan) {
 			})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.ZoomIn).SetTooltip("zoom in").
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Zoom(-.05)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.ZoomIn).SetTooltip("zoom in")
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Zoom(-.05)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.ZoomOut).SetTooltip("zoom out").
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Zoom(.05)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.ZoomOut).SetTooltip("zoom out")
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Zoom(.05)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Separator) {})
 	tree.Add(p, func(w *core.Text) {
 		w.SetText("Rot:").SetTooltip("rotate display")
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowLeft).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Orbit(5, 0)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowLeft)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(5, 0)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowUp).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Orbit(0, 5)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowUp)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(0, 5)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowDown).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Orbit(0, -5)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowDown)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(0, -5)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowRight).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Orbit(-5, 0)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowRight)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Orbit(-5, 0)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Separator) {})
 
@@ -1074,44 +1075,44 @@ func (nv *NetView) MakeViewbar(p *tree.Plan) {
 		w.SetText("Pan:").SetTooltip("pan display")
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowLeft).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Pan(-.2, 0)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowLeft)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(-.2, 0)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowUp).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Pan(0, .2)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowUp)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(0, .2)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowDown).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Pan(0, -.2)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowDown)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(0, -.2)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.KeyboardArrowRight).
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				nv.SceneXYZ().Camera.Pan(.2, 0)
-				nv.UpdateView()
-			})
+		w.SetIcon(icons.KeyboardArrowRight)
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			nv.SceneXYZ().Camera.Pan(.2, 0)
+			nv.UpdateView()
+		})
 	})
 	tree.Add(p, func(w *core.Separator) {})
 
@@ -1121,21 +1122,21 @@ func (nv *NetView) MakeViewbar(p *tree.Plan) {
 		nm := fmt.Sprintf("%d", i)
 		tree.AddAt(p, "saved-"+nm, func(w *core.Button) {
 			w.SetText(nm).
-				SetTooltip("first click (or + Shift) saves current view, second click restores to saved state").
-				OnClick(func(e events.Event) {
-					sc := nv.SceneXYZ()
-					cam := nm
-					if e.HasAllModifiers(e.Modifiers(), key.Shift) {
+				SetTooltip("first click (or + Shift) saves current view, second click restores to saved state")
+			w.OnClick(func(e events.Event) {
+				sc := nv.SceneXYZ()
+				cam := nm
+				if e.HasAllModifiers(e.Modifiers(), key.Shift) {
+					sc.SaveCamera(cam)
+				} else {
+					err := sc.SetCamera(cam)
+					if err != nil {
 						sc.SaveCamera(cam)
-					} else {
-						err := sc.SetCamera(cam)
-						if err != nil {
-							sc.SaveCamera(cam)
-						}
 					}
-					fmt.Printf("Camera %s: %v\n", cam, sc.Camera.GenGoSet(""))
-					nv.UpdateView()
-				})
+				}
+				fmt.Printf("Camera %s: %v\n", cam, sc.Camera.GenGoSet(""))
+				nv.UpdateView()
+			})
 		})
 	}
 	tree.Add(p, func(w *core.Separator) {})
@@ -1147,81 +1148,81 @@ func (nv *NetView) MakeViewbar(p *tree.Plan) {
 
 	tree.AddAt(p, "rec", func(w *core.Text) {
 		w.SetText(fmt.Sprintf("  %4d  ", nv.RecNo)).
-			SetTooltip("current view record: -1 means latest, 0 = earliest").
-			Styler(func(s *styles.Style) {
-				s.Min.X.Ch(5)
-			})
+			SetTooltip("current view record: -1 means latest, 0 = earliest")
+		w.Styler(func(s *styles.Style) {
+			s.Min.X.Ch(5)
+		})
 		w.Updater(func() {
 			w.SetText(fmt.Sprintf("  %4d  ", nv.RecNo))
 		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)").
-			OnClick(func(e events.Event) {
-				if nv.RecFullBkwd() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.FirstPage).SetTooltip("move to first record (start of history)")
+		w.OnClick(func(e events.Event) {
+			if nv.RecFullBkwd() {
+				nv.UpdateView()
+			}
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)").
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				if nv.RecFastBkwd() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.FastRewind).SetTooltip("move earlier by N records (default 10)")
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			if nv.RecFastBkwd() {
+				nv.UpdateView()
+			}
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1").
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				if nv.RecBkwd() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.SkipPrevious).SetTooltip("move earlier by 1")
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			if nv.RecBkwd() {
+				nv.UpdateView()
+			}
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)").
-			OnClick(func(e events.Event) {
-				if nv.RecTrackLatest() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.PlayArrow).SetTooltip("move to latest and always display latest (-1)")
+		w.OnClick(func(e events.Event) {
+			if nv.RecTrackLatest() {
+				nv.UpdateView()
+			}
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.SkipNext).SetTooltip("move later by 1").
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				if nv.RecFwd() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.SkipNext).SetTooltip("move later by 1")
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			if nv.RecFwd() {
+				nv.UpdateView()
+			}
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)").
-			Styler(func(s *styles.Style) {
-				s.SetAbilities(true, abilities.RepeatClickable)
-			}).
-			OnClick(func(e events.Event) {
-				if nv.RecFastFwd() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.FastForward).SetTooltip("move later by N (default 10)")
+		w.Styler(func(s *styles.Style) {
+			s.SetAbilities(true, abilities.RepeatClickable)
+		})
+		w.OnClick(func(e events.Event) {
+			if nv.RecFastFwd() {
+				nv.UpdateView()
+			}
+		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)").
-			OnClick(func(e events.Event) {
-				if nv.RecTrackLatest() {
-					nv.UpdateView()
-				}
-			})
+		w.SetIcon(icons.LastPage).SetTooltip("move to end (current time, tracking latest updates)")
+		w.OnClick(func(e events.Event) {
+			if nv.RecTrackLatest() {
+				nv.UpdateView()
+			}
+		})
 	})
 }
 

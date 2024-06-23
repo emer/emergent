@@ -34,18 +34,18 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 		tree.AddAt(p, mode.String()+"-run", func(w *core.Button) {
 			tb := p.Parent.(*core.Toolbar)
 			w.SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
-				SetTooltip("Run the " + mode.String() + " process").
-				FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) }).
-				OnClick(func(e events.Event) {
-					if !gui.IsRunning {
-						gui.IsRunning = true
-						tb.Restyle()
-						go func() {
-							loops.Run(mode)
-							gui.Stopped()
-						}()
-					}
-				})
+				SetTooltip("Run the " + mode.String() + " process")
+			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
+			w.OnClick(func(e events.Event) {
+				if !gui.IsRunning {
+					gui.IsRunning = true
+					tb.Restyle()
+					go func() {
+						loops.Run(mode)
+						gui.Stopped()
+					}()
+				}
+			})
 		})
 
 		stepN := make(map[string]int)
@@ -59,22 +59,22 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 		tree.AddAt(p, mode.String()+"-step", func(w *core.Button) {
 			tb := p.Parent.(*core.Toolbar)
 			w.SetText("Step").SetIcon(icons.SkipNext).
-				SetTooltip("Step the " + mode.String() + " process according to the following step level and N").
-				FirstStyler(func(s *styles.Style) {
-					s.SetEnabled(!gui.IsRunning)
-					s.SetAbilities(true, abilities.RepeatClickable)
-				}).
-				OnClick(func(e events.Event) {
-					if !gui.IsRunning {
-						gui.IsRunning = true
-						tb.Restyle()
-						go func() {
-							stack := loops.Stacks[mode]
-							loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
-							gui.Stopped()
-						}()
-					}
-				})
+				SetTooltip("Step the " + mode.String() + " process according to the following step level and N")
+			w.FirstStyler(func(s *styles.Style) {
+				s.SetEnabled(!gui.IsRunning)
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
+			w.OnClick(func(e events.Event) {
+				if !gui.IsRunning {
+					gui.IsRunning = true
+					tb.Restyle()
+					go func() {
+						stack := loops.Stacks[mode]
+						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
+						gui.Stopped()
+					}()
+				}
+			})
 		})
 
 		var chs *core.Chooser
