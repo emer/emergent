@@ -172,12 +172,13 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 }
 
 // FormDialog opens a dialog in a new, separate window
-// for viewing / editing the given struct object, in the context of given ctx widget
-func FormDialog(ctx core.Widget, stru any, title string) {
+// for viewing / editing the given struct object, in
+// the context of the given ctx widget.
+func FormDialog(ctx core.Widget, v any, title string) {
 	d := core.NewBody().AddTitle(title)
-	core.NewForm(d).SetStruct(stru)
-	if tb, ok := stru.(core.ToolbarMaker); ok {
+	core.NewForm(d).SetStruct(v)
+	if tb, ok := v.(core.ToolbarMaker); ok {
 		d.AddAppBar(tb.MakeToolbar)
 	}
-	d.NewFullDialog(ctx).SetNewWindow(true).Run()
+	d.RunWindowDialog(ctx)
 }
