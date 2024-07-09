@@ -59,7 +59,7 @@ func (pc *OneD) Defaults() {
 	pc.MinSum = 0.2
 }
 
-func (pc *OneD) ShouldShow(field string) bool {
+func (pc *OneD) ShouldDisplay(field string) bool {
 	switch field {
 	case "Sigma":
 		return pc.Code == GaussBump

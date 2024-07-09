@@ -275,7 +275,7 @@ func (gt *GaussTopo) Defaults() {
 	gt.CtrMove = 1
 }
 
-func (gt *GaussTopo) ShouldShow(field string) bool {
+func (gt *GaussTopo) ShouldDisplay(field string) bool {
 	switch field {
 	case "On":
 		return true
@@ -503,7 +503,7 @@ func (gt *SigmoidTopo) Defaults() {
 	gt.CtrMove = 0.5
 }
 
-func (gt *SigmoidTopo) ShouldShow(field string) bool {
+func (gt *SigmoidTopo) ShouldDisplay(field string) bool {
 	switch field {
 	case "On":
 		return true

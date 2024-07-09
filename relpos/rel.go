@@ -57,7 +57,7 @@ func (rp *Rel) Defaults() {
 	}
 }
 
-func (rp *Rel) ShouldShow(field string) bool {
+func (rp *Rel) ShouldDisplay(field string) bool {
 	switch field {
 	case "XAlign":
 		return rp.Rel == FrontOf || rp.Rel == Behind || rp.Rel == Above || rp.Rel == Below
