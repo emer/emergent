@@ -101,7 +101,7 @@ func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotcore.PlotEditor) {
 func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *plotcore.PlotEditor {
 	plot := gui.Plot(mode, time)
 	if plot != nil {
-		plot.GoUpdatePlot()
+		plot.Async(plot.UpdatePlot)
 	}
 	return plot
 }
@@ -110,7 +110,7 @@ func (gui *GUI) UpdatePlot(mode etime.Modes, time etime.Times) *plotcore.PlotEdi
 func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
-		plot.GoUpdatePlot()
+		plot.Async(plot.UpdatePlot)
 	}
 	return plot
 }
@@ -123,7 +123,7 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEdito
 		return plot
 	}
 	if (gui.CycleUpdateInterval > 0) && (cycle%gui.CycleUpdateInterval == 0) {
-		plot.GoUpdatePlot()
+		plot.Async(plot.UpdatePlot)
 	}
 	return plot
 }
@@ -177,7 +177,7 @@ func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *tensorcore.Table 
 func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *tensorcore.Table {
 	tv := gui.TableView(mode, time)
 	if tv != nil {
-		tv.GoUpdateView()
+		tv.AsyncUpdateTable()
 	}
 	return tv
 }
