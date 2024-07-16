@@ -68,10 +68,10 @@ type Sel struct { //types:add
 	Hypers Hypers
 
 	// number of times this selector matched a target during the last Apply process -- a warning is issued for any that remain at 0 -- see Sheet SelMatchReset and SelNoMatchWarn methods
-	NMatch int `tabledisplay:"-" toml:"-" json:"-" xml:"-" edit:"-"`
+	NMatch int `table:"-" toml:"-" json:"-" xml:"-" edit:"-"`
 
 	// name of current Set being applied
-	SetName string `tabledisplay:"-" toml:"-" json:"-" xml:"-" edit:"-"`
+	SetName string `table:"-" toml:"-" json:"-" xml:"-" edit:"-"`
 }
 
 // SetFloat sets the value of given parameter

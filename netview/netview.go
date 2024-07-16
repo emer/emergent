@@ -30,6 +30,7 @@ import (
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/tree"
+	"cogentcore.org/core/types"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
 )
@@ -113,7 +114,7 @@ func (nv *NetView) Init() {
 				s.Columns = nv.Params.NVarCols
 				s.Grow.Set(0, 1)
 				s.Overflow.Y = styles.OverflowAuto
-				s.Background = colors.C(colors.Scheme.SurfaceContainerLow)
+				s.Background = colors.Scheme.SurfaceContainerLow
 			})
 			w.Maker(nv.makeVars)
 		})
@@ -544,7 +545,7 @@ func (nv *NetView) UpdateLayers() {
 		return
 	}
 	if nv.NeedsRebuild() {
-		se.BackgroundColor = colors.Scheme.Background
+		se.Background = colors.Scheme.Background
 		se.SetNeedsConfig()
 	}
 	nlay := nv.Net.NLayers()
@@ -553,7 +554,7 @@ func (nv *NetView) UpdateLayers() {
 	layConfig := tree.TypePlan{}
 	for li := 0; li < nlay; li++ {
 		ly := nv.Net.Layer(li)
-		layConfig.Add(xyz.GroupType, ly.Name())
+		layConfig.Add(types.For[xyz.Group](), ly.Name())
 	}
 
 	if !tree.Update(laysGp, layConfig) {
@@ -562,8 +563,8 @@ func (nv *NetView) UpdateLayers() {
 	}
 
 	gpConfig := tree.TypePlan{}
-	gpConfig.Add(LayObjType, "layer")
-	gpConfig.Add(LayNameType, "name")
+	gpConfig.Add(types.For[LayObj](), "layer")
+	gpConfig.Add(types.For[LayName](), "name")
 
 	nmin, nmax := nv.Net.Bounds()
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
@@ -606,7 +607,7 @@ func (nv *NetView) UpdateLayers() {
 		txt.NetView = nv
 		txt.SetText(ly.Name())
 		txt.Pose.Scale = math32.Vector3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
-		txt.Styles.Background = colors.C(colors.Transparent)
+		txt.Styles.Background = colors.Uniform(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
@@ -621,7 +622,7 @@ func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	se.Camera.Near = 0.1
 	se.Camera.LookAt(math32.Vec3(0, 0, 0), math32.Vec3(0, 1, 0))
 	nv.Styler(func(s *styles.Style) {
-		se.BackgroundColor = colors.Scheme.Background
+		se.Background = colors.Scheme.Background
 	})
 	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
 	dir := xyz.NewDirLight(se, "dirUp", 0.3, xyz.DirectSun)
@@ -752,7 +753,7 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 
 	lbConfig := tree.TypePlan{}
 	for _, ls := range labs {
-		lbConfig.Add(xyz.Text2DType, ls)
+		lbConfig.Add(types.For[xyz.Text2D](), ls)
 	}
 	if tree.Update(lgp, lbConfig) {
 		for i, ls := range labs {

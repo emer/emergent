@@ -635,8 +635,8 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 
 	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
 	plt := plotcore.NewPlotEditor(b)
-	plt.Params.Title = "NetView " + selnm
-	plt.Params.XAxisColumn = "Rec"
+	plt.Options.Title = "NetView " + selnm
+	plt.Options.XAxisColumn = "Rec"
 
 	b.AddAppBar(plt.MakeToolbar)
 	dt := nd.SelectedUnitTable(nv.Di)
@@ -653,7 +653,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 		if min < 0 && vp.Range.FixMin && vp.MinMax.Min >= 0 {
 			min = 0 // netview uses -1..1 but not great for graphs unless needed
 		}
-		plt.SetColParams(vnm, disp, vp.Range.FixMin, min, vp.Range.FixMax, vp.Range.Max)
+		plt.SetColumnOptions(vnm, disp, vp.Range.FixMin, min, vp.Range.FixMax, vp.Range.Max)
 	}
 
 	b.RunWindow()

@@ -13,16 +13,16 @@ import (
 )
 
 func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {
-	plt.Params.Title = nm
+	plt.Options.Title = nm
 	col1 := dt.ColumnName(1)
-	plt.Params.XAxisColumn = col1
+	plt.Options.XAxisColumn = col1
 	plt.SetTable(dt)
-	plt.Params.Lines = false
-	plt.Params.Points = true
+	plt.Options.Lines = false
+	plt.Options.Points = true
 	// order of params: on, fixMin, min, fixMax, max
-	plt.SetColParams(dt.ColumnName(0), plotcore.On, plotcore.FloatMin, 0, plotcore.FloatMax, 0)
-	plt.SetColParams(col1, plotcore.Off, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
-	plt.SetColParams(dt.ColumnName(2), plotcore.On, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
+	plt.SetColumnOptions(dt.ColumnName(0), plotcore.On, plotcore.FloatMin, 0, plotcore.FloatMax, 0)
+	plt.SetColumnOptions(col1, plotcore.Off, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
+	plt.SetColumnOptions(dt.ColumnName(2), plotcore.On, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
 }
 
 // ClustPlot does one cluster plot on given table column name
@@ -34,11 +34,11 @@ func ClustPlot(plt *plotcore.PlotEditor, ix *table.IndexView, colNm, lblNm strin
 	pt := &table.Table{}
 	clust.Plot(pt, clust.Glom(smat, clust.ContrastDist), smat)
 	plt.Name = colNm
-	plt.Params.Title = "Cluster Plot of: " + nm + " " + colNm
-	plt.Params.XAxisColumn = "X"
+	plt.Options.Title = "Cluster Plot of: " + nm + " " + colNm
+	plt.Options.XAxisColumn = "X"
 	plt.SetTable(pt)
 	// order of params: on, fixMin, min, fixMax, max
-	plt.SetColParams("X", plotcore.Off, plotcore.FixMin, 0, plotcore.FloatMax, 0)
-	plt.SetColParams("Y", plotcore.On, plotcore.FixMin, 0, plotcore.FloatMax, 0)
-	plt.SetColParams("Label", plotcore.On, plotcore.FixMin, 0, plotcore.FloatMax, 0)
+	plt.SetColumnOptions("X", plotcore.Off, plotcore.FixMin, 0, plotcore.FloatMax, 0)
+	plt.SetColumnOptions("Y", plotcore.On, plotcore.FixMin, 0, plotcore.FloatMax, 0)
+	plt.SetColumnOptions("Label", plotcore.On, plotcore.FixMin, 0, plotcore.FloatMax, 0)
 }

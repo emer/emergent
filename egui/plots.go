@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/colors"
+	"cogentcore.org/core/colors/gradient"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/elog"
@@ -34,7 +34,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 
 		plt := gui.NewPlotTab(key, mode+" "+time+" Plot")
 		plt.SetTable(lt.Table)
-		plt.Params.FromMetaMap(lt.Meta)
+		plt.Options.FromMetaMap(lt.Meta)
 
 		ConfigPlotFromLog(title, plt, lg, key)
 	}
@@ -50,21 +50,21 @@ func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, ke
 		if !ok {
 			continue
 		}
-		cp := plt.SetColParams(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
+		cp := plt.SetColumnOptions(item.Name, item.Plot, item.FixMin, item.Range.Min, item.FixMax, item.Range.Max)
 
 		if item.Color != "" {
-			cp.Color = errors.Log1(colors.FromString(item.Color, nil))
+			cp.Color = errors.Log1(gradient.FromString(item.Color, nil))
 		}
 		cp.TensorIndex = item.TensorIndex
 		cp.ErrColumn = item.ErrCol
 
-		plt.Params.Title = title + " " + time + " Plot"
-		plt.Params.XAxisColumn = time
+		plt.Options.Title = title + " " + time + " Plot"
+		plt.Options.XAxisColumn = time
 		if xaxis, has := lt.Meta["XAxisColumn"]; has {
-			plt.Params.XAxisColumn = xaxis
+			plt.Options.XAxisColumn = xaxis
 		}
 		if legend, has := lt.Meta["LegendColumn"]; has {
-			plt.Params.LegendColumn = legend
+			plt.Options.LegendColumn = legend
 		}
 	}
 	plt.ColumnsFromMetaMap(lt.Table.MetaData)
