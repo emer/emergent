@@ -3,11 +3,11 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.2.3-0.20240716065916-12e066bd41b3
+	cogentcore.org/core v0.2.3
 	github.com/BurntSushi/toml v1.3.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/iancoleman/strcase v0.3.0
- 	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848
 )
 
