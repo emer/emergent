@@ -25,10 +25,6 @@ type Scene struct {
 
 func (sw *Scene) Init() {
 	sw.Scene.Init()
-	sw.HandleEvents()
-}
-
-func (sw *Scene) HandleEvents() {
 	sw.On(events.MouseDown, func(e events.Event) {
 		sw.MouseDownEvent(e)
 		sw.NeedsRender()
