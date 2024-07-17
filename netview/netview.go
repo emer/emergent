@@ -812,10 +812,10 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
 			fb := core.NewFuncButton(m).SetFunc(nv.SaveWeights)
 			fb.SetIcon(icons.Save)
-			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
+			fb.Args[0].SetTag(`extension:".wts,.wts.gz"`)
 			fb = core.NewFuncButton(m).SetFunc(nv.OpenWeights)
 			fb.SetIcon(icons.Open)
-			fb.Args[0].SetTag(`"ext:".wts,.wts.gz"`)
+			fb.Args[0].SetTag(`extension:".wts,.wts.gz"`)
 		})
 	})
 	tree.Add(p, func(w *core.Button) {
