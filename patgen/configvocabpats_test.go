@@ -246,7 +246,7 @@ func TestVocab(t *testing.T) {
 	assert.Equal(t, exbpp, m["B''"].String())
 
 	// config pats
-	dt := table.NewTable(0, "TrainAB")
+	dt := table.NewTable("TrainAB")
 	InitPats(dt, "TrainAB", "describe", "Input", "ECout", 6, 3, 2, 3, 3)
 	MixPats(dt, m, "Input", []string{"A", "B", "ctxt1", "ctxt1", "empty", "B'"})
 	MixPats(dt, m, "ECout", []string{"A", "B", "ctxt1", "ctxt1", "empty", "B'"})
