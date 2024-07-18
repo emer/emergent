@@ -59,12 +59,12 @@ func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, ke
 		cp.ErrColumn = item.ErrCol
 
 		plt.Options.Title = title + " " + time + " Plot"
-		plt.Options.XAxisColumn = time
-		if xaxis, has := lt.Meta["XAxisColumn"]; has {
-			plt.Options.XAxisColumn = xaxis
+		plt.Options.XAxis = time
+		if xaxis, has := lt.Meta["XAxis"]; has {
+			plt.Options.XAxis = xaxis
 		}
-		if legend, has := lt.Meta["LegendColumn"]; has {
-			plt.Options.LegendColumn = legend
+		if legend, has := lt.Meta["Legend"]; has {
+			plt.Options.Legend = legend
 		}
 	}
 	plt.ColumnsFromMetaMap(lt.Table.MetaData)

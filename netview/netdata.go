@@ -636,7 +636,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
 	plt := plotcore.NewPlotEditor(b)
 	plt.Options.Title = "NetView " + selnm
-	plt.Options.XAxisColumn = "Rec"
+	plt.Options.XAxis = "Rec"
 
 	b.AddAppBar(plt.MakeToolbar)
 	dt := nd.SelectedUnitTable(nv.Di)

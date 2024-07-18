@@ -16,7 +16,7 @@ type LogTable struct {
 	// Actual data stored.
 	Table *table.Table
 
-	// arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxisColumn, LegendCol
+	// arbitrary meta-data for each table, e.g., hints for plotting: Plot = false to not plot, XAxis, LegendCol
 	Meta map[string]string
 
 	// Index View of the table -- automatically updated when a new row of data is logged to the table.

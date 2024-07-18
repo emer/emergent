@@ -15,7 +15,7 @@ import (
 func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {
 	plt.Options.Title = nm
 	col1 := dt.ColumnName(1)
-	plt.Options.XAxisColumn = col1
+	plt.Options.XAxis = col1
 	plt.SetTable(dt)
 	plt.Options.Lines = false
 	plt.Options.Points = true
@@ -35,7 +35,7 @@ func ClustPlot(plt *plotcore.PlotEditor, ix *table.IndexView, colNm, lblNm strin
 	clust.Plot(pt, clust.Glom(smat, clust.ContrastDist), smat)
 	plt.Name = colNm
 	plt.Options.Title = "Cluster Plot of: " + nm + " " + colNm
-	plt.Options.XAxisColumn = "X"
+	plt.Options.XAxis = "X"
 	plt.SetTable(pt)
 	// order of params: on, fixMin, min, fixMax, max
 	plt.SetColumnOptions("X", plotcore.Off, plotcore.FixMin, 0, plotcore.FloatMax, 0)
