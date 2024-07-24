@@ -3,7 +3,7 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.2.3
+	cogentcore.org/core v0.2.4-0.20240724010755-4f3adddb53a4
 	github.com/BurntSushi/toml v1.3.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/iancoleman/strcase v0.3.0
@@ -24,7 +24,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240307211618-a69d953ea142 // indirect
 	github.com/goki/freetype v1.0.5 // indirect
-	github.com/goki/vulkan v1.0.7 // indirect
+	github.com/goki/vulkan v1.0.8 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
