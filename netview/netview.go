@@ -305,11 +305,11 @@ func (nv *NetView) UpdateImpl() {
 	nv.UpdateLayers()
 }
 
-// ReconfigMeshes reconfigures the layer meshes
-func (nv *NetView) ReconfigMeshes() {
-	se := nv.SceneXYZ()
-	se.ReconfigMeshes()
-}
+// // ReconfigMeshes reconfigures the layer meshes
+// func (nv *NetView) ReconfigMeshes() {
+// 	se := nv.SceneXYZ()
+// 	se.ReconfigMeshes()
+// }
 
 func (nv *NetView) Toolbar() *core.Toolbar {
 	return nv.ChildByName("tbar", 0).(*core.Toolbar)
@@ -546,7 +546,6 @@ func (nv *NetView) UpdateLayers() {
 	}
 	if nv.NeedsRebuild() {
 		se.Background = colors.Scheme.Background
-		se.SetNeedsConfig()
 	}
 	nlay := nv.Net.NLayers()
 	laysGp := se.ChildByName("Layers", 0).(*xyz.Group)
@@ -558,7 +557,11 @@ func (nv *NetView) UpdateLayers() {
 	}
 
 	if !tree.Update(laysGp, layConfig) {
-		se.UpdateMeshes()
+		for li := range laysGp.Children {
+			ly := nv.Net.Layer(li)
+			lmesh := se.MeshByName(ly.Name())
+			se.SetMesh(lmesh) // does update
+		}
 		return
 	}
 
@@ -607,11 +610,12 @@ func (nv *NetView) UpdateLayers() {
 		txt.NetView = nv
 		txt.SetText(ly.Name())
 		txt.Pose.Scale = math32.Vector3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
+		txt.Pose.RotateOnAxis(0, 1, 0, 180)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
-	sw.XYZ.SetNeedsConfig()
+	sw.XYZ.SetNeedsUpdate()
 	sw.NeedsRender()
 }
 
@@ -624,16 +628,9 @@ func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	nv.Styler(func(s *styles.Style) {
 		se.Background = colors.Scheme.Background
 	})
-	xyz.NewAmbientLight(se, "ambient", 0.1, xyz.DirectSun)
-	dir := xyz.NewDirLight(se, "dirUp", 0.3, xyz.DirectSun)
-	dir.Pos.Set(0, 1, 0)
-	dir = xyz.NewDirLight(se, "dirBack", 0.3, xyz.DirectSun)
-	dir.Pos.Set(0, 1, 2.5)
-	// point := xyz.NewPointLight(vs, "point", 1, xyz.DirectSun)
-	// point.Pos.Set(0, 2, 5)
-	// spot := xyz.NewSpotLight(vs, "spot", 1, xyz.DirectSun)
-	// spot.Pose.Pos.Set(0, 2, 5)
-	// spot.LookAtOrigin()
+	xyz.NewAmbient(se, "ambient", 0.1, xyz.DirectSun)
+	xyz.NewDirectional(se, "directional", 0.5, xyz.DirectSun).Pos.Set(0, 2, 5)
+	xyz.NewPoint(se, "point", .2, xyz.DirectSun).Pos.Set(0, 2, -5)
 }
 
 // ReadLock locks data for reading -- call ReadUnlock when done.
@@ -758,7 +755,6 @@ func (nv *NetView) ConfigLabels(labs []string) bool {
 	if tree.Update(lgp, lbConfig) {
 		for i, ls := range labs {
 			lb := lgp.ChildByName(ls, i).(*xyz.Text2D)
-			// lb.Defaults()
 			lb.SetText(ls)
 			// todo:
 			// lb.SetProperty("text-align", styles.Start)
@@ -859,7 +855,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 			SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)").
 			OnChange(func(e events.Event) {
 				nv.Params.Raster.On = w.IsChecked()
-				nv.ReconfigMeshes()
+				// nv.ReconfigMeshes()
 				nv.UpdateView()
 			})
 	})

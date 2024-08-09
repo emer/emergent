@@ -7,7 +7,6 @@ package netview
 import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/vgpu/vshape"
-	"cogentcore.org/core/xyz"
 )
 
 func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
@@ -42,7 +41,7 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 	return
 }
 
-func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	nuz := rs.DimSize(0)
 	nux := rs.DimSize(1)
@@ -123,7 +122,7 @@ func (lm *LayMesh) RasterSet2DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 }
 
-func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	nuz := rs.DimSize(0)
 	nux := rs.DimSize(1)
@@ -203,7 +202,7 @@ func (lm *LayMesh) RasterSet2DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 }
 
-func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	npz := rs.DimSize(0) // p = pool
 	npx := rs.DimSize(1)
@@ -304,7 +303,7 @@ func (lm *LayMesh) RasterSet4DX(sc *xyz.Scene, init bool, vtxAry, normAry, texAr
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpoz*fnuz), math32.Vec3(fnpox*fnux, 0.5, 0))
 }
 
-func (lm *LayMesh) RasterSet4DZ(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	rs := lm.Lay.RepShape()
 	npz := rs.DimSize(0) // p = pool
 	npx := rs.DimSize(1)

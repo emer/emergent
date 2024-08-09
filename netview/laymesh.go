@@ -36,13 +36,12 @@ func NewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	lm.View = nv
 	lm.Lay = lay
 	lm.Name = lay.Name()
-	sc.AddMesh(lm)
+	sc.SetMesh(lm)
 	return lm
 }
 
-func (lm *LayMesh) Sizes() (nVtx, nIndex int, hasColor bool) {
+func (lm *LayMesh) MeshSize() (nVtx, nIndex int, hasColor bool) {
 	lm.Transparent = true
-	lm.Dynamic = true
 	lm.HasColor = true
 	if lm.Lay == nil {
 		return 0, 0, true
@@ -90,72 +89,38 @@ func (lm *LayMesh) Size4D() (nVtx, nIndex int) {
 	return
 }
 
-func (lm *LayMesh) Set(sc *xyz.Scene, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) Set(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
-	// true = init
 	if lm.View.Params.Raster.On {
 		if lm.View.Params.Raster.XAxis {
 			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4DX(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet4DX(vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
-				lm.RasterSet2DX(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet2DX(vtxAry, normAry, texAry, clrAry, idxAry)
 			}
 		} else {
 			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4DZ(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet4DZ(vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
-				lm.RasterSet2DZ(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+				lm.RasterSet2DZ(vtxAry, normAry, texAry, clrAry, idxAry)
 			}
 		}
 	} else {
 		if lm.Shape.NumDims() == 4 {
-			lm.Set4D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+			lm.Set4D(vtxAry, normAry, texAry, clrAry, idxAry)
 		} else {
-			lm.Set2D(sc, true, vtxAry, normAry, texAry, clrAry, idxAry)
+			lm.Set2D(vtxAry, normAry, texAry, clrAry, idxAry)
 		}
 	}
-	lm.SetMod(sc)
-
-}
-
-func (lm *LayMesh) Update(sc *xyz.Scene, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
-		return // nothing
-	}
-	// false = not init
-	// todo: not using the init flag to save minor amount of index non-updating..
-
-	if lm.View.Params.Raster.On {
-		if lm.View.Params.Raster.XAxis {
-			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4DX(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
-			} else {
-				lm.RasterSet2DX(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
-			}
-		} else {
-			if lm.Shape.NumDims() == 4 {
-				lm.RasterSet4DZ(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
-			} else {
-				lm.RasterSet2DZ(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
-			}
-		}
-	} else {
-		if lm.Shape.NumDims() == 4 {
-			lm.Set4D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
-		} else {
-			lm.Set2D(sc, false, vtxAry, normAry, texAry, clrAry, idxAry)
-		}
-	}
-	lm.SetMod(sc)
 }
 
 // MinUnitHeight ensures that there is always at least some dimensionality
 // to the unit cubes -- affects transparency rendering etc
 var MinUnitHeight = float32(1.0e-6)
 
-func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) Set2D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	nz := lm.Shape.DimSize(0)
 	nx := lm.Shape.DimSize(1)
 
@@ -205,7 +170,7 @@ func (lm *LayMesh) Set2D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrA
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 }
 
-func (lm *LayMesh) Set4D(sc *xyz.Scene, init bool, vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
+func (lm *LayMesh) Set4D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
 	npz := lm.Shape.DimSize(0) // p = pool
 	npx := lm.Shape.DimSize(1)
 	nuz := lm.Shape.DimSize(2) // u = unit
