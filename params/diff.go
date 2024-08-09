@@ -63,61 +63,13 @@ func (ps *Sets) DiffsFirst() string {
 }
 
 // DiffsWithin reports all the cases where the same param path is being set
-// to different values within different sheets in given set
-func (ps *Sets) DiffsWithin(setName string) string {
-	set, err := ps.SetByNameTry(setName)
+// to different values within given sheet.
+func (ps *Sets) DiffsWithin(sheetName string) string {
+	sht, err := ps.SheetByNameTry(sheetName)
 	if err != nil {
 		return err.Error()
 	}
-	return set.DiffsWithin()
-}
-
-/////////////////////////////////////////////////////////
-//   Set
-
-// Diffs reports all the cases where the same param path is being set
-// to different values between this set and the other set.
-func (ps *Set) Diffs(ops *Set, name, otherName string) string {
-	pd := ""
-	for snm, sht := range ps.Sheets {
-		for osnm, osht := range ops.Sheets {
-			spd := sht.Diffs(osht, name+"."+snm, otherName+"."+osnm)
-			pd += spd
-		}
-	}
-	return pd
-}
-
-// DiffsWithin reports all the cases where the same param path is being set
-// to different values within different sheets
-func (ps *Set) DiffsWithin() string {
-	return ps.Sheets.DiffsWithin()
-}
-
-/////////////////////////////////////////////////////////
-//   Sheets
-
-// DiffsWithin reports all the cases where the same param path is being set
-// to different values within different sheets
-func (ps *Sheets) DiffsWithin() string {
-	pd := "Within Sheet Diffs (Same param path set differentially within a Sheet):\n\n"
-	for snm, sht := range *ps {
-		spd := sht.DiffsWithin(snm)
-		pd += spd
-	}
-	got := false
-	for snm, sht := range *ps {
-		for osnm, osht := range *ps {
-			spd := sht.Diffs(osht, snm, osnm)
-			if !got {
-				pd += "////////////////////////////////////////////////////////////////////////////////////\n"
-				pd += "Between Sheet Diffs (Same param path set differentially between two Sheets):\n\n"
-				got = true
-			}
-			pd += spd
-		}
-	}
-	return pd
+	return sht.DiffsWithin(sheetName)
 }
 
 /////////////////////////////////////////////////////////
@@ -138,13 +90,13 @@ func (ps *Sheet) Diffs(ops *Sheet, setNm1, setNm2 string) string {
 
 // DiffsWithin reports all the cases where the same param path is being set
 // to different values within different Sel's in this Sheet.
-func (ps *Sheet) DiffsWithin(shtNm string) string {
+func (ps *Sheet) DiffsWithin(sheetName string) string {
 	pd := ""
 	sz := len(*ps)
 	for i, sel := range *ps {
 		for j := i + 1; j < sz; j++ {
 			osel := (*ps)[j]
-			spd := sel.Params.Diffs(&sel.Params, shtNm+":"+sel.Sel, shtNm+":"+osel.Sel)
+			spd := sel.Params.Diffs(&sel.Params, sheetName+":"+sel.Sel, sheetName+":"+osel.Sel)
 			pd += spd
 		}
 	}

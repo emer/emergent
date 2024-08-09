@@ -46,9 +46,9 @@ func (pr *Params) Path(path string) string {
 // parameter at given path, and returns error if so).
 func (pr *Params) Apply(obj any, setMsg bool) error {
 	objNm := ""
-	if stylr, has := obj.(Styler); has {
-		objNm = stylr.Name()
-		if styob, has := obj.(StylerObj); has {
+	if styler, has := obj.(Styler); has {
+		objNm = styler.StyleName()
+		if styob, has := obj.(StylerObject); has {
 			obj = styob.Object()
 		}
 	} else if lblr, has := obj.(labels.Labeler); has {
@@ -104,9 +104,9 @@ func (pr *Hypers) Path(path string) string {
 // parameter at given path, and returns error if so).
 func (pr *Hypers) Apply(obj any, setMsg bool) error {
 	objNm := ""
-	if stylr, has := obj.(Styler); has {
-		objNm = stylr.Name()
-		if styob, has := obj.(StylerObj); has {
+	if styler, has := obj.(Styler); has {
+		objNm = styler.StyleName()
+		if styob, has := obj.(StylerObject); has {
 			obj = styob.Object()
 		}
 	} else if lblr, has := obj.(labels.Labeler); has {
@@ -162,15 +162,15 @@ func (ps *Sel) Apply(obj any, setMsg bool) (bool, error) {
 // TargetTypeMatch return true if target type applies to object
 func (ps *Sel) TargetTypeMatch(obj any) bool {
 	trg := ps.Params.TargetType()
-	if stylr, has := obj.(Styler); has {
-		tnm := stylr.TypeName()
+	if styler, has := obj.(Styler); has {
+		tnm := styler.StyleType()
 		if tnm == trg {
 			return true
 		}
 	}
 	trgh := ps.Hypers.TargetType()
-	if stylr, has := obj.(Styler); has {
-		tnm := stylr.TypeName()
+	if styler, has := obj.(Styler); has {
+		tnm := styler.StyleType()
 		if tnm == trgh {
 			return true
 		}
@@ -181,15 +181,15 @@ func (ps *Sel) TargetTypeMatch(obj any) bool {
 
 // SelMatch returns true if Sel selector matches the target object properties
 func (ps *Sel) SelMatch(obj any) bool {
-	stylr, has := obj.(Styler)
+	styler, has := obj.(Styler)
 	if !has {
 		return true // default match if no styler..
 	}
-	if styob, has := obj.(StylerObj); has {
+	if styob, has := obj.(StylerObject); has {
 		obj = styob.Object()
 	}
 	gotyp := reflectx.NonPointerType(reflect.TypeOf(obj)).Name()
-	return SelMatch(ps.Sel, stylr.Name(), stylr.Class(), stylr.TypeName(), gotyp)
+	return SelMatch(ps.Sel, styler.StyleName(), styler.StyleClass(), styler.StyleType(), gotyp)
 }
 
 // SelMatch returns true if Sel selector matches the target object properties

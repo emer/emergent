@@ -6,49 +6,6 @@ import (
 	"cogentcore.org/core/enums"
 )
 
-var _LayerTypeValues = []LayerType{0, 1, 2, 3}
-
-// LayerTypeN is the highest valid value for type LayerType, plus one.
-const LayerTypeN LayerType = 4
-
-var _LayerTypeValueMap = map[string]LayerType{`Hidden`: 0, `Input`: 1, `Target`: 2, `Compare`: 3}
-
-var _LayerTypeDescMap = map[LayerType]string{0: `Hidden is an internal representational layer that does not receive direct input / targets`, 1: `Input is a layer that receives direct external input in its Ext inputs`, 2: `Target is a layer that receives direct external target inputs used for driving plus-phase learning`, 3: `Compare is a layer that receives external comparison inputs, which drive statistics but do NOT drive activation or learning directly`}
-
-var _LayerTypeMap = map[LayerType]string{0: `Hidden`, 1: `Input`, 2: `Target`, 3: `Compare`}
-
-// String returns the string representation of this LayerType value.
-func (i LayerType) String() string { return enums.String(i, _LayerTypeMap) }
-
-// SetString sets the LayerType value from its string representation,
-// and returns an error if the string is invalid.
-func (i *LayerType) SetString(s string) error {
-	return enums.SetString(i, s, _LayerTypeValueMap, "LayerType")
-}
-
-// Int64 returns the LayerType value as an int64.
-func (i LayerType) Int64() int64 { return int64(i) }
-
-// SetInt64 sets the LayerType value from an int64.
-func (i *LayerType) SetInt64(in int64) { *i = LayerType(in) }
-
-// Desc returns the description of the LayerType value.
-func (i LayerType) Desc() string { return enums.Desc(i, _LayerTypeDescMap) }
-
-// LayerTypeValues returns all possible values for the type LayerType.
-func LayerTypeValues() []LayerType { return _LayerTypeValues }
-
-// Values returns all possible values for the type LayerType.
-func (i LayerType) Values() []enums.Enum { return enums.Values(_LayerTypeValues) }
-
-// MarshalText implements the [encoding.TextMarshaler] interface.
-func (i LayerType) MarshalText() ([]byte, error) { return []byte(i.String()), nil }
-
-// UnmarshalText implements the [encoding.TextUnmarshaler] interface.
-func (i *LayerType) UnmarshalText(text []byte) error {
-	return enums.UnmarshalText(i, text, "LayerType")
-}
-
 var _PathTypeValues = []PathType{0, 1, 2, 3}
 
 // PathTypeN is the highest valid value for type PathType, plus one.

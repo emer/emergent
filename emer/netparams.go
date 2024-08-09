@@ -10,19 +10,18 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/mpi"
-	"github.com/emer/emergent/v2/netparams"
 	"github.com/emer/emergent/v2/params"
 )
 
-// NetParams handles standard parameters for a Network only
-// (use econfig and a Config struct for other configuration params)
+// NetParams handles standard parameters for a Network
+// (use econfig and a Config struct for other configuration params).
 // Assumes a Set named "Base" has the base-level parameters, which are
 // always applied first, followed optionally by additional Set(s)
 // that can have different parameters to try.
 type NetParams struct {
 
 	// full collection of param sets to use
-	Params netparams.Sets `display:"no-inline"`
+	Params params.Sets `display:"no-inline"`
 
 	// optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)
 	ExtraSheets string
@@ -41,7 +40,7 @@ type NetParams struct {
 }
 
 // Config configures the ExtraSheets, Tag, and Network fields
-func (pr *NetParams) Config(pars netparams.Sets, extraSheets, tag string, net Network) {
+func (pr *NetParams) Config(pars params.Sets, extraSheets, tag string, net Network) {
 	pr.Params = pars
 	report := ""
 	if extraSheets != "" {

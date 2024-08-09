@@ -31,11 +31,6 @@ func (ln *LayNames) Add(laynm ...string) {
 	*ln = append(*ln, laynm...)
 }
 
-// AddOne adds one layer name to list -- python version -- doesn't support varargs
-func (ln *LayNames) AddOne(laynm string) {
-	*ln = append(*ln, laynm)
-}
-
 // AddAllBut adds all layers in network except those in exlude list
 func (ln *LayNames) AddAllBut(net Network, excl ...string) {
 	exmap := make(map[string]struct{})
@@ -46,7 +41,7 @@ func (ln *LayNames) AddAllBut(net Network, excl ...string) {
 	nl := net.NLayers()
 	for li := 0; li < nl; li++ {
 		aly := net.Layer(li)
-		nm := aly.Name()
+		nm := aly.AsEmer().Name
 		if _, on := exmap[nm]; on {
 			continue
 		}
