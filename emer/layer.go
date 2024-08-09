@@ -4,8 +4,6 @@
 
 package emer
 
-//go:generate core generate
-
 import (
 	"fmt"
 	"io"
@@ -28,13 +26,14 @@ var (
 	LayerDimNames4D = []string{"PoolY", "PoolX", "NeurY", "NeurX"}
 )
 
-// Layer defines the basic interface for neural network layers,
+// Layer defines the minimal interface for neural network layers,
 // necessary to support the visualization (NetView), I/O,
 // and parameter setting functionality provided by emergent.
-// Interfaces are automatically pointers, so think of this
-// as a pointer to your specific layer type,
+// Most of the standard expected functionality is defined in the
+// LayerBase struct, and this interface only has methods that must be
+// implemented specifically for a given algorithmic implementation.
 type Layer interface {
-	// StyleType, StyleClass, and StyleClass methods for parameter styling.
+	// StyleType, StyleClass, and StyleName methods for parameter styling.
 	params.Styler
 
 	// AsEmer returns the layer as an *emer.LayerBase,
@@ -180,8 +179,7 @@ type Layer interface {
 // LayerBase defines the basic shared data for neural network layers,
 // used for managing the structural elements of a network,
 // and for visualization, I/O, etc.
-// Nothing algorithm-specific is implemented here;
-// all of that goes in your specific layer struct.
+// Nothing algorithm-specific is implemented here
 type LayerBase struct {
 	// EmerLayer provides access to the emer.Layer interface
 	// methods for functions defined in the LayerBase type.
@@ -221,11 +219,11 @@ type LayerBase struct {
 	// the list of layers in the network.
 	Index int `display:"-" inactive:"-"`
 
-	// SampleIndexes returns the current set of "sample" unit indexes,
+	// SampleIndexes are the current set of "sample" unit indexes,
 	// which are a smaller subset of units that represent the behavior
 	// of the layer, for computationally intensive statistics and displays
 	// (e.g., PCA, ActRF, NetView rasters), when the layer is large.
-	// Returns nil if none has been set (in which case all units are used).
+	// If none have been set, then all units are used.
 	// See utility function CenterPoolIndexes that returns indexes of
 	// units in the central pools of a 4D layer.
 	SampleIndexes []int
@@ -563,7 +561,7 @@ func Layer2DSampleIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 func SendNameTry(l Layer, sender string) (Path, error) {
 	for pi := 0; pi < l.NRecvPaths(); pi++ {
 		pj := l.RecvPath(pi)
-		if pj.SendLay().AsEmer().Name == sender {
+		if pj.SendLayer().AsEmer().Name == sender {
 			return pj, nil
 		}
 	}
@@ -573,7 +571,7 @@ func SendNameTry(l Layer, sender string) (Path, error) {
 func RecvNameTry(l Layer, recv string) (Path, error) {
 	for pi := 0; pi < l.NSendPaths(); pi++ {
 		pj := l.SendPath(pi)
-		if pj.RecvLay().AsEmer().Name == recv {
+		if pj.RecvLayer().AsEmer().Name == recv {
 			return pj, nil
 		}
 	}
@@ -583,7 +581,7 @@ func RecvNameTry(l Layer, recv string) (Path, error) {
 func SendNameTypeTry(l Layer, sender, typ string) (Path, error) {
 	for pi := 0; pi < l.NRecvPaths(); pi++ {
 		pj := l.RecvPath(pi)
-		if pj.SendLay().AsEmer().Name == sender && pj.PathTypeName() == typ {
+		if pj.SendLayer().AsEmer().Name == sender && pj.TypeName() == typ {
 			return pj, nil
 		}
 	}
@@ -593,7 +591,7 @@ func SendNameTypeTry(l Layer, sender, typ string) (Path, error) {
 func RecvNameTypeTry(l Layer, recv, typ string) (Path, error) {
 	for pi := 0; pi < l.NSendPaths(); pi++ {
 		pj := l.SendPath(pi)
-		if pj.RecvLay().AsEmer().Name == recv && pj.PathTypeName() == typ {
+		if pj.RecvLayer().AsEmer().Name == recv && pj.TypeName() == typ {
 			return pj, nil
 		}
 	}
