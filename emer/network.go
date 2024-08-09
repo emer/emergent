@@ -7,36 +7,52 @@ package emer
 //go:generate core generate -add-types
 
 import (
+	"fmt"
 	"io"
+	"strings"
 
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/weights"
 )
 
-// Network defines the basic interface for a neural network, used for managing the structural
-// elements of a network, and for visualization, I/O, etc
+// Network defines the minimal interface for a neural network,
+// used for managing the structural elements of a network,
+// and for visualization, I/O, etc.
+// Most of the standard expected functionality is defined in the
+// NetworkBase struct, and this interface only has methods that must be
+// implemented specifically for a given algorithmic implementation.
 type Network interface {
-	// InitName MUST be called to initialize the network's pointer to itself as an emer.Network
-	// which enables the proper interface methods to be called.  Also sets the name.
-	InitName(net Network, name string)
+	// AsEmer returns the network as an *emer.NetworkBase,
+	// to access base functionality.
+	AsEmer() *NetworkBase
 
-	// Name() returns name of the network
-	Name() string
-
-	// Label satisfies the core.Labeler interface for getting the name of objects generically
+	// Label satisfies the core.Labeler interface for getting
+	// the name of objects generically.
 	Label() string
 
-	// NLayers returns the number of layers in the network
-	NLayers() int
+	// NumLayers returns the number of layers in the network.
+	NumLayers() int
 
-	// Layer returns layer (as emer.Layer interface) at given index -- does not
-	// do extra bounds checking
-	Layer(idx int) Layer
+	// EmerLayer returns layer as emer.Layer interface at given index.
+	// Does not do extra bounds checking.
+	EmerLayer(idx int) Layer
 
+	// MaxParallelData returns the maximum number of data inputs that can be
+	// processed in parallel by the network.
+	// The NetView supports display of up to this many data elements.
+	MaxParallelData() int
+
+	// NParallelData returns the current number of data inputs currently being
+	// processed in parallel by the network.
+	// Logging supports recording each of these where appropriate.
+	NParallelData() int
+
+	// todo: remove?
 	// LayerByName returns layer of given name, nil if not found.
-	// Layer names must be unique and a map is used so this is a fast operation
+	// Layer names must be unique and a map is used so this is a fast operation.
 	LayerByName(name string) Layer
 
 	// LayerByNameTry returns layer of given name, returns error if not found.
@@ -47,16 +63,19 @@ type Network interface {
 	// Path names are SendToRecv, and are looked up by parsing the name
 	PathByNameTry(name string) (Path, error)
 
-	// Defaults sets default parameter values for everything in the Network
+	// Defaults sets default parameter values for everything in the Network.
 	Defaults()
 
 	// UpdateParams() updates parameter values for all Network parameters,
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// ApplyParams applies given parameter style Sheet to layers and paths in this network.
-	// Calls UpdateParams on anything set to ensure derived parameters are all updated.
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
+	// ApplyParams applies given parameter style Sheet to layers
+	// and paths in this network.
+	// Calls UpdateParams on anything set to ensure derived parameters
+	// are all updated.
+	// If setMsg is true, then a message is printed to confirm each
+	// parameter that is set.
 	// it always prints a message if a parameter fails to be set.
 	// returns true if any params were set, and error if there were any errors.
 	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
@@ -76,15 +95,18 @@ type Network interface {
 	// of the most important pathway-level params (specific to each algorithm).
 	KeyPathParams() string
 
-	// UnitVarNames returns a list of variable names available on the units in this network.
-	// This list determines what is shown in the NetView (and the order of vars list).
-	// Not all layers need to support all variables, but must safely return math32.NaN() for
-	// unsupported ones.
+	// UnitVarNames returns a list of variable names available on
+	// the units in this network.
+	// This list determines what is shown in the NetView
+	// (and the order of vars list).
+	// Not all layers need to support all variables,
+	// but must safely return math32.NaN() for unsupported ones.
 	// This is typically a global list so do not modify!
 	UnitVarNames() []string
 
-	// UnitVarProps returns a map of unit variable properties, with the key being the
-	// name of the variable, and the value gives a space-separated list of
+	// UnitVarProps returns a map of unit variable properties,
+	// with the key being the name of the variable,
+	// and the value gives a space-separated list of
 	// go-tag-style properties for that variable.
 	// The NetView recognizes the following properties:
 	// range:"##" = +- range around 0 for default display scaling
@@ -95,15 +117,19 @@ type Network interface {
 	// Note: this is typically a global list so do not modify!
 	UnitVarProps() map[string]string
 
-	// SynVarNames returns the names of all the variables on the synapses in this network.
-	// This list determines what is shown in the NetView (and the order of vars list).
-	// Not all pathways need to support all variables, but must safely return math32.NaN() for
+	// SynVarNames returns the names of all the variables
+	// on the synapses in this network.
+	// This list determines what is shown in the NetView
+	// (and the order of vars list).
+	// Not all pathways need to support all variables,
+	// but must safely return math32.NaN() for
 	// unsupported ones.
 	// This is typically a global list so do not modify!
 	SynVarNames() []string
 
-	// SynVarProps returns a map of synapse variable properties, with the key being the
-	// name of the variable, and the value gives a space-separated list of
+	// SynVarProps returns a map of synapse variable properties,
+	// with the key being the name of the variable,
+	// and the value gives a space-separated list of
 	// go-tag-style properties for that variable.
 	// The NetView recognizes the following properties:
 	// range:"##" = +- range around 0 for default display scaling
@@ -113,46 +139,166 @@ type Network interface {
 	// Note: this is typically a global list so do not modify!
 	SynVarProps() map[string]string
 
-	// WriteWtsJSON writes network weights (and any other state that adapts with learning)
-	// to JSON-formatted output.
+	// WriteWtsJSON writes network weights (and any other state
+	// that adapts with learning) to JSON-formatted output.
 	WriteWtsJSON(w io.Writer) error
 
-	// ReadWtsJSON reads network weights (and any other state that adapts with learning)
-	// from JSON-formatted input.  Reads into a temporary weights.Network structure that
+	// ReadWtsJSON reads network weights (and any other state
+	// that adapts with learning) from JSON-formatted input.
+	// Reads into a temporary weights.Network structure that
 	// is then passed to SetWts to actually set the weights.
 	ReadWtsJSON(r io.Reader) error
 
-	// SetWts sets the weights for this network from weights.Network decoded values
+	// SetWts sets the weights for this network from weights.Network
+	// decoded values.
 	SetWts(nw *weights.Network) error
 
-	// SaveWtsJSON saves network weights (and any other state that adapts with learning)
-	// to a JSON-formatted file.  If filename has .gz extension, then file is gzip compressed.
+	// SaveWtsJSON saves network weights (and any other state
+	// that adapts with learning) to a JSON-formatted file.
+	// If filename has .gz extension, then file is gzip compressed.
 	SaveWtsJSON(filename core.Filename) error
 
-	// OpenWtsJSON opens network weights (and any other state that adapts with learning)
-	// from a JSON-formatted file.  If filename has .gz extension, then file is gzip uncompressed.
+	// OpenWtsJSON opens network weights (and any other state that
+	// adapts with learning) from a JSON-formatted file.
+	// If filename has .gz extension, then file is gzip uncompressed.
 	OpenWtsJSON(filename core.Filename) error
-
-	// Bounds returns the minimum and maximum display coordinates of the network for 3D display
-	Bounds() (min, max math32.Vector3)
 
 	// VarRange returns the min / max values for given variable
 	VarRange(varNm string) (min, max float32, err error)
+}
 
-	// LayersByClass returns a list of layer names by given class(es).
-	// Lists are compiled when network Build() function called.
-	// The layer Type is always included as a Class, along with any other
-	// space-separated strings specified in Class for parameter styling, etc.
-	// If no classes are passed, all layer names in order are returned.
-	LayersByClass(classes ...string) []string
+// NetworkBase defines the basic data for a neural network,
+// used for managing the structural elements of a network,
+// and for visualization, I/O, etc.
+type NetworkBase struct {
+	// EmerNetwork provides access to the emer.Network interface
+	// methods for functions defined in the NetworkBase type.
+	// Must set this with a pointer to the actual instance
+	// when created, using InitNetwork function.
+	EmerNetwork Network
 
-	// MaxParallelData returns the maximum number of data inputs that can be
-	// processed in parallel by the network.
-	// The NetView supports display of up to this many data elements.
-	MaxParallelData() int
+	// overall name of network, which helps discriminate if there are multiple.
+	Name string
 
-	// NParallelData returns the current number of data inputs currently being
-	// processed in parallel by the network.
-	// Logging supports recording each of these where appropriate.
-	NParallelData() int
+	// filename of last weights file loaded or saved.
+	WeightsFile string
+
+	// map of name to layers, for LayerByName methods
+	LayerNameMap map[string]Layer `display:"-"`
+
+	// map from class name to layer names.
+	LayerClassMap map[string][]string `display:"-"`
+
+	// minimum display position in network
+	MinPos math32.Vector3 `display:"-"`
+
+	// maximum display position in network
+	MaxPos math32.Vector3 `display:"-"`
+
+	// optional metadata that is saved in network weights files,
+	// e.g., can indicate number of epochs that were trained,
+	// or any other information about this network that would be useful to save.
+	MetaData map[string]string
+
+	// random number generator for the network.
+	// all random calls must use this.
+	// Set seed here for weight initialization values.
+	Rand randx.SysRand `display:"-"`
+
+	// Random seed to be set at the start of configuring
+	// the network and initializing the weights.
+	// Set this to get a different set of weights.
+	RandSeed int64 `edit:"-"`
+}
+
+// InitNetwork initializes the network, setting the EmerNetwork interface
+// to provide access to it for NetworkBase methods, along with the name.
+func InitNetwork(nt Network, name string) {
+	nb := nt.AsEmer()
+	nb.EmerNetwork = nt
+	nb.Name = name
+}
+
+func (nt *NetworkBase) AsEmer() *NetworkBase { return nt }
+
+func (nt *NetworkBase) Label() string { return nt.Name }
+
+// UpdateLayerMaps updates the LayerNameMap and LayerClassMap.
+// Call this when the network is built.
+func (nt *NetworkBase) UpdateLayerMaps() {
+	nt.LayerNameMap = make(map[string]Layer)
+	nt.LayerClassMap = make(map[string][]string)
+	nl := nt.EmerNetwork.NumLayers()
+	for li := range nl {
+		ly := nt.EmerNetwork.EmerLayer(li)
+		lnm := ly.StyleName()
+		nt.LayerNameMap[lnm] = ly
+		cls := strings.Split(ly.StyleClass(), " ")
+		for _, cl := range cls {
+			ll := nt.LayerClassMap[cl]
+			ll = append(ll, lnm)
+			nt.LayerClassMap[cl] = ll
+		}
+	}
+}
+
+// LayerByNameTry returns a layer by looking it up by name.
+// returns error message if layer is not found.
+func (nt *NetworkBase) LayerByNameTry(name string) (Layer, error) {
+	if nt.LayerNameMap == nil || len(nt.LayerNameMap) != nt.EmerNetwork.NumLayers() {
+		nt.UpdateLayerMaps()
+	}
+	if ly, ok := nt.LayerNameMap[name]; ok {
+		return ly, nil
+	}
+	err := fmt.Errorf("Layer named: %s not found in Network: %s", name, nt.Name)
+	return nil, err
+}
+
+// LayerByName returns a layer by looking it up by name
+// in the layer map (nil if not found).
+func (nt *NetworkBase) LayerByName(name string) Layer {
+	ly, _ := nt.LayerByNameTry(name)
+	return ly
+}
+
+// LayersByClass returns a list of layer names by given class(es).
+// Lists are compiled when network Build() function called,
+// or now if not yet present.
+// The layer Type is always included as a Class, along with any other
+// space-separated strings specified in Class for parameter styling, etc.
+// If no classes are passed, all layer names in order are returned.
+func (nt *NetworkBase) LayersByClass(classes ...string) []string {
+	if nt.LayerClassMap == nil {
+		nt.UpdateLayerMaps()
+	}
+	var nms []string
+	nl := nt.EmerNetwork.NumLayers()
+	if len(classes) == 0 {
+		for li := range nl {
+			ly := nt.EmerNetwork.EmerLayer(li).AsEmer()
+			if ly.Off {
+				continue
+			}
+			nms = append(nms, ly.Name)
+		}
+		return nms
+	}
+	for _, lc := range classes {
+		nms = append(nms, nt.LayerClassMap[lc]...)
+	}
+	// only get unique layers
+	layers := []string{}
+	has := map[string]bool{}
+	for _, nm := range nms {
+		if has[nm] {
+			continue
+		}
+		layers = append(layers, nm)
+		has[nm] = true
+	}
+	if len(layers) == 0 {
+		panic(fmt.Sprintf("No Layers found for query: %#v.", classes))
+	}
+	return layers
 }

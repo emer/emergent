@@ -7,6 +7,7 @@ package emer
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"strings"
 
 	"cogentcore.org/core/base/mpi"
@@ -145,4 +146,70 @@ func (pr *NetParams) SetNetworkSheet(net Network, sh *params.Sheet, setName stri
 	} else {
 		pr.NetHypers.CopyFrom(hypers)
 	}
+}
+
+// NetworkHyperParams returns the compiled hyper parameters from given Sheet
+// for each layer and pathway in the network -- applies the standard css
+// styling logic for the hyper parameters.
+func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
+	hypers := params.Flex{}
+	nl := net.NumLayers()
+	for li := range nl {
+		ly := net.EmerLayer(li)
+		nm := ly.StyleName()
+		hypers[nm] = &params.FlexVal{Nm: nm, Type: "Layer", Cls: ly.StyleClass(), Obj: params.Hypers{}}
+	}
+	// separate pathways
+	for li := range nl {
+		ly := net.EmerLayer(li)
+		np := ly.NRecvPaths()
+		for pi := range np {
+			pj := ly.RecvPath(pi)
+			nm := pj.StyleName()
+			hypers[nm] = &params.FlexVal{Nm: nm, Type: "Path", Cls: pj.StyleClass(), Obj: params.Hypers{}}
+		}
+	}
+	for nm, vl := range hypers {
+		sheet.Apply(vl, false)
+		hv := vl.Obj.(params.Hypers)
+		hv.DeleteValOnly()
+		if len(hv) == 0 {
+			delete(hypers, nm)
+		}
+	}
+	return hypers
+}
+
+// SetFloatParam sets given float32 param value to layer or pathway
+// (typ = Layer or Path) of given name, at given path (which can start
+// with the typ name).
+// Returns an error (and logs it automatically) for any failure.
+func SetFloatParam(net Network, name, typ, path string, val float32) error {
+	rpath := params.PathAfterType(path)
+	prs := fmt.Sprintf("%g", val)
+	switch typ {
+	case "Layer":
+		ly, err := net.LayerByNameTry(name)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		err = ly.SetParam(rpath, prs)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+	case "Path":
+		pj, err := net.PathByNameTry(name)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		err = pj.SetParam(rpath, prs)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+	}
+	return nil
 }

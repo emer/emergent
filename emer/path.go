@@ -47,39 +47,24 @@ type Path interface {
 	// can use a Recv field with the actual Layer struct type.
 	RecvLayer() Layer
 
-	// SynVarNames returns the names of all the variables on the synapse
-	// This is typically a global list so do not modify!
-	SynVarNames() []string
-
-	// SynVarProps returns a map of synapse variable properties, with the key being the
-	// name of the variable, and the value gives a space-separated list of
-	// go-tag-style properties for that variable.
-	// The NetView recognizes the following properties:
-	// range:"##" = +- range around 0 for default display scaling
-	// min:"##" max:"##" = min, max display range
-	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
-	// zeroctr:"+" or "-" = control whether zero-centering is used
-	// Note: this is a global list so do not modify!
-	SynVarProps() map[string]string
+	// NumSyns returns the number of synapses for this path.
+	// This is the max idx for SynValue1D and the number
+	// of vals set by SynValues.
+	NumSyns() int
 
 	// SynIndex returns the index of the synapse between given send, recv unit indexes
 	// (1D, flat indexes). Returns -1 if synapse not found between these two neurons.
 	// This requires searching within connections for receiving unit (a bit slow).
 	SynIndex(sidx, ridx int) int
 
+	// SynVarNames returns the names of all the variables on the synapse
+	// This is typically a global list so do not modify!
+	SynVarNames() []string
+
 	// SynVarIndex returns the index of given variable within the synapse,
 	// according to *this path's* SynVarNames() list (using a map to lookup index),
 	// or -1 and error message if not found.
 	SynVarIndex(varNm string) (int, error)
-
-	// SynVarNum returns the number of synapse-level variables
-	// for this paths.  This is needed for extending indexes in derived types.
-	SynVarNum() int
-
-	// NumSyns returns the number of synapses for this path.
-	// This is the max idx for SynValue1D and the number
-	// of vals set by SynValues.
-	NumSyns() int
 
 	// SynValues sets values of given variable name for each synapse,
 	// using the natural ordering of the synapses (sender based for Axon),
@@ -93,14 +78,6 @@ type Path interface {
 	// This is the core synapse var access method used by other methods,
 	// so it is the only one that needs to be updated for derived types.
 	SynValue1D(varIndex int, synIndex int) float32
-
-	// todo: we don't need this in interface right?
-	// SetSynValue sets value of given variable name on the synapse
-	// between given send, recv unit indexes (1D, flat indexes).
-	// Typically only supports base synapse variables and is not extended
-	// for derived types.
-	// Returns error for access errors.
-	// SetSynValue(varNm string, sidx, ridx int, val float32) error
 
 	// UpdateParams() updates parameter values for all Path parameters,
 	// based on any other params that might have changed.

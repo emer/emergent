@@ -48,35 +48,11 @@ type Layer interface {
 	// by the algorithm (and usually set by an enum).
 	TypeName() string
 
-	// UnitVarNames returns a list of variable names available
-	// on the units in this layer.
-	// This is typically a global list so do not modify!
-	UnitVarNames() []string
-
-	// UnitVarProps returns a map of unit variable properties,
-	// with the key being the name of the variable, and the
-	// value gives a space-separated list of
-	// go-tag-style properties for that variable.
-	// The NetView recognizes the following properties:
-	// range:"##" = +- range around 0 for default display scaling
-	// min:"##" max:"##" = min, max display range
-	// auto-scale:"+" or "-" = use automatic scaling instead of fixed
-	// range or not.
-	// zeroctr:"+" or "-" = control whether zero-centering is used
-	// desc:"txt" tooltip description of the variable
-	// Note: this is a global list so do not modify!
-	UnitVarProps() map[string]string
-
 	// UnitVarIndex returns the index of given variable within
 	// the Neuron, according to *this layer's* UnitVarNames() list
 	// (using a map to lookup index), or -1 and error message if
 	// not found.
 	UnitVarIndex(varNm string) (int, error)
-
-	// UnitVarNum returns the number of Neuron-level variables
-	// for this layer.  This is needed for extending indexes in
-	// derived types.
-	UnitVarNum() int
 
 	// UnitVal1D returns value of given variable index on given unit,
 	// using 1-dimensional index, and a data parallel index di,
@@ -85,10 +61,6 @@ type Layer interface {
 	// This is the core unit var access method used by other methods,
 	// so it is the only one that needs to be updated for derived layer types.
 	UnitVal1D(varIndex int, idx, di int) float32
-
-	// VarRange returns the min / max values for given variable
-	// over the layer
-	VarRange(varNm string) (min, max float32, err error)
 
 	// NRecvPaths returns the number of receiving pathways.
 	NRecvPaths() int
@@ -185,16 +157,25 @@ type LayerBase struct {
 	// methods for functions defined in the LayerBase type.
 	// Must set this with a pointer to the actual instance
 	// when created, using InitLayer function.
-	EmerLayer Layer
+	EmerLayer Layer `display:"-"`
 
 	// Name of the layer, which must be unique within the network.
 	// Layers are typically accessed directly by name, via a map.
 	Name string
 
+	// Info contains descriptive information about the layer.
+	// This is displayed in a tooltip in the network view.
+	Info string
+
 	// Class is for applying parameter styles across multiple layers
 	// that all get the same parameters.  This can be space separated
 	// with multple classes.
 	Class string
+
+	// Off turns off the layer, removing from all computations.
+	// This provides a convenient way to dynamically test for
+	// the contributions of the layer, for example.
+	Off bool
 
 	// Shape of the layer, either 2D or 4D.  Although spatial topology
 	// is not relevant to all algorithms, the 2D shape is important for
