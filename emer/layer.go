@@ -288,11 +288,11 @@ func (ly *LayerBase) PlaceAbove(other Layer) {
 	ly.Pos.SetAbove(other.AsEmer().Name)
 }
 
-// Size returns the display size of this layer for the 3D view.
+// DisplaySize returns the display size of this layer for the 3D view.
 // see Pos field for general info.
 // This is multiplied by the Pos.Scale factor to rescale
 // layer sizes, and takes into account 2D and 4D layer structures.
-func (ly *LayerBase) Size() math32.Vector2 {
+func (ly *LayerBase) DisplaySize() math32.Vector2 {
 	if ly.Pos.Scale == 0 {
 		ly.Pos.Defaults()
 	}

@@ -11,10 +11,12 @@ import (
 	"io"
 	"strings"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/params"
+	"github.com/emer/emergent/v2/relpos"
 	"github.com/emer/emergent/v2/weights"
 )
 
@@ -289,4 +291,61 @@ func (nt *NetworkBase) LayersByClass(classes ...string) []string {
 		panic(fmt.Sprintf("No Layers found for query: %#v.", classes))
 	}
 	return layers
+}
+
+// LayoutLayers computes the 3D layout of layers based on their relative
+// position settings.
+func (nt *NetworkBase) LayoutLayers() {
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	for range 5 {
+		var lstly *LayerBase
+		for li := range nlay {
+			ly := en.EmerLayer(li).AsEmer()
+			var oly *LayerBase
+			if lstly != nil && ly.Pos.Rel == relpos.NoRel {
+				if ly.Pos.Pos.X != 0 || ly.Pos.Pos.Y != 0 || ly.Pos.Pos.Z != 0 {
+					// Position has been modified, don't mess with it.
+					continue
+				}
+				oly = lstly
+				ly.Pos = relpos.Pos{Rel: relpos.Above, Other: lstly.Name, XAlign: relpos.Middle, YAlign: relpos.Front}
+			} else {
+				if ly.Pos.Other != "" {
+					olyi, err := nt.EmerLayerByName(ly.Pos.Other)
+					if errors.Log(err) != nil {
+						continue
+					}
+					oly = olyi.AsEmer()
+				} else if lstly != nil {
+					oly = lstly
+					ly.Pos = relpos.Pos{Rel: relpos.Above, Other: lstly.Name, XAlign: relpos.Middle, YAlign: relpos.Front}
+				}
+			}
+			if oly != nil {
+				ly.Pos.SetPos(oly.Pos.Pos, oly.DisplaySize(), ly.DisplaySize())
+			}
+			lstly = ly
+		}
+	}
+	nt.layoutBoundsUpdate()
+}
+
+// layoutBoundsUpdate updates the Min / Max display bounds for 3D display.
+func (nt *NetworkBase) layoutBoundsUpdate() {
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	mn := math32.Vector3Scalar(math32.Infinity)
+	mx := math32.Vector3{}
+	for li := range nlay {
+		ly := en.EmerLayer(li).AsEmer()
+		sz := ly.DisplaySize()
+		ru := ly.Pos.Pos
+		ru.X += sz.X
+		ru.Y += sz.Y
+		mn.SetMax(ly.Pos.Pos)
+		mx.SetMax(ru)
+	}
+	nt.MaxPos = mn
+	nt.MaxPos = mx
 }
