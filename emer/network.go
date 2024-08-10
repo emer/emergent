@@ -52,14 +52,6 @@ type Network interface {
 	// Logging supports recording each of these where appropriate.
 	NParallelData() int
 
-	// EmerLayerByName returns layer of given name, returns nil, error if not found.
-	// Layer names must be unique and a map is used so this is a fast operation.
-	EmerLayerByName(name string) (Layer, error)
-
-	// EmerPathByName returns path of given name, returns error if not found.
-	// Path names are SendToRecv, and are looked up by parsing the name.
-	EmerPathByName(name string) (Path, error)
-
 	// Defaults sets default parameter values for everything in the Network.
 	Defaults()
 
@@ -250,6 +242,31 @@ func (nt *NetworkBase) EmerLayerByName(name string) (Layer, error) {
 	}
 	err := fmt.Errorf("Layer named: %s not found in Network: %s", name, nt.Name)
 	return nil, err
+}
+
+// EmerPathByName returns a path by looking it up by name.
+// Paths are named SendToRecv = sending layer name "To" recv layer name.
+// returns error message if path is not found.
+func (nt *NetworkBase) EmerPathByName(name string) (Path, error) {
+	ti := strings.Index(name, "To")
+	if ti < 0 {
+		return nil, errors.Log(fmt.Errorf("EmerPathByName: path name must contain 'To': %s", name))
+	}
+	sendNm := name[:ti]
+	recvNm := name[ti+2:]
+	_, err := nt.EmerLayerByName(sendNm)
+	if errors.Log(err) != nil {
+		return nil, err
+	}
+	recv, err := nt.EmerLayerByName(recvNm)
+	if errors.Log(err) != nil {
+		return nil, err
+	}
+	path, err := recv.AsEmer().RecvPathBySendName(sendNm)
+	if errors.Log(err) != nil {
+		return nil, err
+	}
+	return path, nil
 }
 
 // LayersByClass returns a list of layer names by given class(es).

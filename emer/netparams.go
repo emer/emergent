@@ -187,9 +187,10 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 func SetFloatParam(net Network, name, typ, path string, val float32) error {
 	rpath := params.PathAfterType(path)
 	prs := fmt.Sprintf("%g", val)
+	en := net.AsEmer()
 	switch typ {
 	case "Layer":
-		ly, err := net.EmerLayerByName(name)
+		ly, err := en.EmerLayerByName(name)
 		if err != nil {
 			slog.Error(err.Error())
 			return err
@@ -200,7 +201,7 @@ func SetFloatParam(net Network, name, typ, path string, val float32) error {
 			return err
 		}
 	case "Path":
-		pj, err := net.EmerPathByName(name)
+		pj, err := en.EmerPathByName(name)
 		if err != nil {
 			slog.Error(err.Error())
 			return err

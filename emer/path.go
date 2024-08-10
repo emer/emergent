@@ -100,11 +100,11 @@ type Path interface {
 	// returns error if path not found or value cannot be set.
 	SetParam(path, val string) error
 
-	// NonDefaultParams returns a listing of all parameters in the Projection that
+	// NonDefaultParams returns a listing of all parameters in the Pathway that
 	// are not at their default values -- useful for setting param styles etc.
 	NonDefaultParams() string
 
-	// AllParams returns a listing of all parameters in the Projection
+	// AllParams returns a listing of all parameters in the Pathway.
 	AllParams() string
 
 	// WriteWtsJSON writes the weights from this pathway

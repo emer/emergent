@@ -23,11 +23,11 @@ and easier support for making permuted random lists, etc.
 
 * netview provides the NetView interactive 3D network viewer, implemented in the Cogent Core 3D framework.
 
-* path is a separate package for defining patterns of connectivity between layers
-(i.e., the ProjectionSpecs from C++ emergent).  This is done using a fully independent
-structure that *only* knows about the shapes of the two layers, and it returns a fully general
-bitmap representation of the pattern of connectivity between them.  The leabra.Path code
-then uses these patterns to do all the nitty-gritty of connecting up neurons.
+* path is a separate package for defining patterns of connectivity between layers.
+This is done using a fully independent structure that *only* knows about the shapes
+of the two layers, and it returns a fully general bitmap representation of the pattern
+of connectivity between them.  The leabra.Path code then uses these patterns to do
+all the nitty-gritty of connecting up neurons.
 This makes the pathway code *much* simpler compared to the ProjectionSpec in C++ emergent,
 which was involved in both creating the pattern and also all the complexity of setting up the
 actual connections themselves.  This should be the *last* time any of those pathway patterns
