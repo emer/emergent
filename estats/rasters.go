@@ -5,6 +5,7 @@
 package estats
 
 import (
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
 )
@@ -14,11 +15,11 @@ import (
 func (st *Stats) ConfigRasters(net emer.Network, maxCyc int, layers []string) {
 	st.Rasters = layers
 	for _, lnm := range st.Rasters {
-		ly := net.LayerByName(lnm)
+		ly := errors.Log1(net.EmerLayerByName(lnm)).AsEmer()
 		sr := st.F32Tensor("Raster_" + lnm)
-		nu := len(ly.RepIndexes())
+		nu := len(ly.SampleIndexes)
 		if nu == 0 {
-			nu = ly.Shape().Len()
+			nu = ly.Shape.Len()
 		}
 		sr.SetShape([]int{nu, maxCyc}, "Nrn", "Cyc")
 	}
@@ -36,7 +37,7 @@ func (st *Stats) SetRasterCol(sr, tsr *tensor.Float32, col int) {
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) RasterRec(net emer.Network, cyc int, varNm string, di int) {
 	for _, lnm := range st.Rasters {
-		tsr := st.SetLayerRepTensor(net, lnm, varNm, di)
+		tsr := st.SetLayerSampleTensor(net, lnm, varNm, di)
 		sr := st.F32Tensor("Raster_" + lnm)
 		if sr.DimSize(1) <= cyc {
 			continue

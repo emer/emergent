@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"time"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/tensor/stats/split"
 	"cogentcore.org/core/tensor/stats/stats"
@@ -292,26 +293,26 @@ func (lg *Logs) RunStats(stats ...string) {
 // to it so there aren't any duplicate items.
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.Modes, etm etime.Times, layClasses ...string) {
-	layers := net.LayersByClass(layClasses...)
+	layers := net.AsEmer().LayersByClass(layClasses...)
 	for _, lnm := range layers {
 		clnm := lnm
-		cly := net.LayerByName(clnm)
+		cly := errors.Log1(net.EmerLayerByName(clnm))
 		itmNm := clnm + "_" + varNm
 		itm, has := lg.ItemByName(itmNm)
 		if has {
 			itm.Write[etime.Scope(mode, etm)] = func(ctx *Context) {
-				ctx.SetLayerRepTensor(clnm, varNm)
+				ctx.SetLayerSampleTensor(clnm, varNm)
 			}
 		} else {
 			lg.AddItem(&Item{
 				Name:      itmNm,
 				Type:      reflect.Float32,
-				CellShape: cly.RepShape().Sizes,
+				CellShape: cly.AsEmer().SampleShape.Sizes,
 				FixMin:    true,
 				Range:     minmax.F32{Max: 1},
 				Write: WriteMap{
 					etime.Scope(mode, etm): func(ctx *Context) {
-						ctx.SetLayerRepTensor(clnm, varNm)
+						ctx.SetLayerSampleTensor(clnm, varNm)
 					}}})
 		}
 	}

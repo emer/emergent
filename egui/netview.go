@@ -48,6 +48,6 @@ func (gui *GUI) SaveNetData(extra string) {
 	if gui.NetData == nil {
 		return
 	}
-	ndfn := gui.NetData.Net.Name() + "_" + extra + ".netdata.gz"
+	ndfn := gui.NetData.Net.AsEmer().Name + "_" + extra + ".netdata.gz"
 	gui.NetData.SaveJSON(core.Filename(ndfn))
 }

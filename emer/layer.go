@@ -10,6 +10,7 @@ import (
 	"log"
 	"math"
 
+	"cogentcore.org/core/base/slicesx"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/params"
@@ -366,11 +367,7 @@ func (ly *LayerBase) NumPools() int {
 // Returns error on invalid var name.
 func (ly *LayerBase) UnitValues(vals *[]float32, varNm string, di int) error {
 	nn := ly.NumUnits()
-	if *vals == nil || cap(*vals) < int(nn) {
-		*vals = make([]float32, nn)
-	} else if len(*vals) < int(nn) {
-		*vals = (*vals)[0:nn]
-	}
+	slicesx.SetLength(*vals, nn)
 	vidx, err := ly.EmerLayer.UnitVarIndex(varNm)
 	if err != nil {
 		nan := math32.NaN()

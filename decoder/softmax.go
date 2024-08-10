@@ -80,7 +80,7 @@ func (sm *SoftMax) InitLayer(ncats int, layers []emer.Layer) {
 	sm.Layers = layers
 	nin := 0
 	for _, ly := range sm.Layers {
-		nin += ly.Shape().Len()
+		nin += ly.AsEmer().Shape.Len()
 	}
 	sm.Init(ncats, nin)
 }
@@ -143,12 +143,13 @@ func (sm *SoftMax) ValuesTsr(name string) *tensor.Float32 {
 func (sm *SoftMax) Input(varNm string, di int) {
 	off := 0
 	for _, ly := range sm.Layers {
-		tsr := sm.ValuesTsr(ly.Name())
-		ly.UnitValuesTensor(tsr, varNm, di)
+		lb := ly.AsEmer()
+		tsr := sm.ValuesTsr(lb.Name)
+		lb.UnitValuesTensor(tsr, varNm, di)
 		for j, v := range tsr.Values {
 			sm.Inputs[off+j] = v
 		}
-		off += ly.Shape().Len()
+		off += lb.Shape.Len()
 	}
 }
 

@@ -46,7 +46,7 @@ func LogFilename(logName, netName, runName string) string {
 
 // ProcStd processes the standard args, after Parse has been called
 // for help, note, params, tag and wts
-func (ar *Args) ProcStd(params *emer.Params) {
+func (ar *Args) ProcStd(params *emer.NetParams) {
 	if ar.Bool("help") {
 		ar.Usage()
 		os.Exit(0)
@@ -55,8 +55,8 @@ func (ar *Args) ProcStd(params *emer.Params) {
 		mpi.Printf("note: %s\n", note)
 	}
 	if pars := ar.String("params"); pars != "" {
-		params.ExtraSets = pars
-		mpi.Printf("Using ParamSet: %s\n", params.ExtraSets)
+		// params.ExtraSets = pars // todo:
+		// mpi.Printf("Using ParamSet: %s\n", params.ExtraSets)
 	}
 	if tag := ar.String("tag"); tag != "" {
 		params.Tag = tag
@@ -71,7 +71,7 @@ func (ar *Args) ProcStd(params *emer.Params) {
 // setting the log files for standard log file names using netName
 // and params.RunName to identify the network / sim and run params, tag,
 // and starting run number
-func (ar *Args) ProcStdLogs(logs *elog.Logs, params *emer.Params, netName string) {
+func (ar *Args) ProcStdLogs(logs *elog.Logs, params *emer.NetParams, netName string) {
 	runName := params.RunName(ar.Int("run")) // used for naming logs, stats, etc
 	if ar.Bool("epclog") {
 		fnm := LogFilename("epc", netName, runName)
