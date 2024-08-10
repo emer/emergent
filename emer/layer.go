@@ -63,6 +63,9 @@ type Layer interface {
 	// so it is the only one that needs to be updated for derived layer types.
 	UnitVal1D(varIndex int, idx, di int) float32
 
+	// VarRange returns the min / max values for given variable
+	VarRange(varNm string) (min, max float32, err error)
+
 	// NumRecvPaths returns the number of receiving pathways.
 	NumRecvPaths() int
 
@@ -130,23 +133,23 @@ type Layer interface {
 	// AllParams returns a listing of all parameters in the Layer
 	AllParams() string
 
-	// WriteWtsJSON writes the weights from this layer from the
+	// WriteWeightsJSON writes the weights from this layer from the
 	// receiver-side perspective in a JSON text format.
 	// We build in the indentation logic to make it much faster and
 	// more efficient.
-	WriteWtsJSON(w io.Writer, depth int)
+	WriteWeightsJSON(w io.Writer, depth int)
 
-	// ReadWtsJSON reads the weights from this layer from the
+	// ReadWeightsJSON reads the weights from this layer from the
 	// receiver-side perspective in a JSON text format.
 	// This is for a set of weights that were saved
 	// *for one layer only* and is not used for the
-	// network-level ReadWtsJSON, which reads into a separate
-	// structure -- see SetWts method.
-	ReadWtsJSON(r io.Reader) error
+	// network-level ReadWeightsJSON, which reads into a separate
+	// structure -- see SetWeights method.
+	ReadWeightsJSON(r io.Reader) error
 
-	// SetWts sets the weights for this layer from weights.Layer
+	// SetWeights sets the weights for this layer from weights.Layer
 	// decoded values
-	SetWts(lw *weights.Layer) error
+	SetWeights(lw *weights.Layer) error
 }
 
 // LayerBase defines the basic shared data for neural network layers,

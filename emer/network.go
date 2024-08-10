@@ -8,7 +8,8 @@ package emer
 
 import (
 	"fmt"
-	"io"
+	"log"
+	"os"
 	"strings"
 
 	"cogentcore.org/core/base/errors"
@@ -17,7 +18,6 @@ import (
 	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/relpos"
-	"github.com/emer/emergent/v2/weights"
 )
 
 // Network defines the minimal interface for a neural network,
@@ -58,23 +58,6 @@ type Network interface {
 	// UpdateParams() updates parameter values for all Network parameters,
 	// based on any other params that might have changed.
 	UpdateParams()
-
-	// ApplyParams applies given parameter style Sheet to layers
-	// and paths in this network.
-	// Calls UpdateParams on anything set to ensure derived parameters
-	// are all updated.
-	// If setMsg is true, then a message is printed to confirm each
-	// parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	// returns true if any params were set, and error if there were any errors.
-	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
-
-	// NonDefaultParams returns a listing of all parameters in the Network that
-	// are not at their default values -- useful for setting param styles etc.
-	NonDefaultParams() string
-
-	// AllParams returns a listing of all parameters in the Network
-	AllParams() string
 
 	// KeyLayerParams returns a listing for all layers in the network,
 	// of the most important layer-level params (specific to each algorithm).
@@ -127,33 +110,6 @@ type Network interface {
 	// zeroctr:"+" or "-" = control whether zero-centering is used
 	// Note: this is typically a global list so do not modify!
 	SynVarProps() map[string]string
-
-	// WriteWtsJSON writes network weights (and any other state
-	// that adapts with learning) to JSON-formatted output.
-	WriteWtsJSON(w io.Writer) error
-
-	// ReadWtsJSON reads network weights (and any other state
-	// that adapts with learning) from JSON-formatted input.
-	// Reads into a temporary weights.Network structure that
-	// is then passed to SetWts to actually set the weights.
-	ReadWtsJSON(r io.Reader) error
-
-	// SetWts sets the weights for this network from weights.Network
-	// decoded values.
-	SetWts(nw *weights.Network) error
-
-	// SaveWtsJSON saves network weights (and any other state
-	// that adapts with learning) to a JSON-formatted file.
-	// If filename has .gz extension, then file is gzip compressed.
-	SaveWtsJSON(filename core.Filename) error
-
-	// OpenWtsJSON opens network weights (and any other state that
-	// adapts with learning) from a JSON-formatted file.
-	// If filename has .gz extension, then file is gzip uncompressed.
-	OpenWtsJSON(filename core.Filename) error
-
-	// VarRange returns the min / max values for given variable
-	VarRange(varNm string) (min, max float32, err error)
 }
 
 // NetworkBase defines the basic data for a neural network,
@@ -212,11 +168,20 @@ func (nt *NetworkBase) AsEmer() *NetworkBase { return nt }
 
 func (nt *NetworkBase) Label() string { return nt.Name }
 
-// UpdateLayerMaps updates the LayerNameMap and LayerClassMap.
+// MakeLayerMaps creates new LayerNameMap and LayerClassMap.
 // Call this when the network is built.
-func (nt *NetworkBase) UpdateLayerMaps() {
+func (nt *NetworkBase) MakeLayerMaps() {
 	nt.LayerNameMap = make(map[string]Layer)
 	nt.LayerClassMap = make(map[string][]string)
+	nt.UpdateLayerMaps()
+}
+
+// UpdateLayerMaps updates the LayerNameMap and LayerClassMap.
+func (nt *NetworkBase) UpdateLayerMaps() {
+	if nt.LayerNameMap == nil {
+		nt.MakeLayerMaps()
+		return
+	}
 	nl := nt.EmerNetwork.NumLayers()
 	for li := range nl {
 		ly := nt.EmerNetwork.EmerLayer(li)
@@ -365,4 +330,138 @@ func (nt *NetworkBase) layoutBoundsUpdate() {
 	}
 	nt.MaxPos = mn
 	nt.MaxPos = mx
+}
+
+// VerticalLayerLayout arranges layers in a standard vertical (z axis stack)
+// layout, by setting the Pos settings.
+func (nt *NetworkBase) VerticalLayerLayout() {
+	lstnm := ""
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	for li := range nlay {
+		ly := en.EmerLayer(li).AsEmer()
+		if li == 0 {
+			ly.Pos = relpos.Pos{Rel: relpos.NoRel}
+			lstnm = ly.Name
+		} else {
+			ly.Pos = relpos.Pos{Rel: relpos.Above, Other: lstnm, XAlign: relpos.Middle, YAlign: relpos.Front}
+		}
+	}
+}
+
+// VarRange returns the min / max values for given variable.
+// error occurs when variable name is not found.
+func (nt *NetworkBase) VarRange(varNm string) (min, max float32, err error) {
+	first := true
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	for li := range nlay {
+		ly := en.EmerLayer(li)
+		lmin, lmax, lerr := ly.VarRange(varNm)
+		if lerr != nil {
+			err = lerr
+			return
+		}
+		if first {
+			min = lmin
+			max = lmax
+			continue
+		}
+		if lmin < min {
+			min = lmin
+		}
+		if lmax > max {
+			max = lmax
+		}
+	}
+	return
+}
+
+///////////////////////////////////////////////////////////////////////
+//		Params
+
+// ApplyParams applies given parameter style Sheet to layers and paths in this network.
+// Calls UpdateParams to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+// returns true if any params were set, and error if there were any errors.
+func (nt *NetworkBase) ApplyParams(pars *params.Sheet, setMsg bool) (bool, error) {
+	applied := false
+	var rerr error
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	for li := range nlay {
+		ly := en.EmerLayer(li)
+		app, err := ly.ApplyParams(pars, setMsg)
+		if app {
+			applied = true
+		}
+		if err != nil {
+			rerr = err
+		}
+	}
+	return applied, rerr
+}
+
+// NonDefaultParams returns a listing of all parameters in the Network that
+// are not at their default values -- useful for setting param styles etc.
+func (nt *NetworkBase) NonDefaultParams() string {
+	nds := ""
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	for li := range nlay {
+		ly := en.EmerLayer(li)
+		nd := ly.NonDefaultParams()
+		nds += nd
+	}
+	return nds
+}
+
+// AllParams returns a listing of all parameters in the Network.
+func (nt *NetworkBase) AllParams() string {
+	nds := ""
+	en := nt.EmerNetwork
+	nlay := en.NumLayers()
+	for li := range nlay {
+		ly := en.EmerLayer(li)
+		nd := ly.AllParams()
+		nds += nd
+	}
+	return nds
+}
+
+// SaveAllParams saves list of all parameters in Network to given file.
+func (nt *NetworkBase) SaveAllParams(filename core.Filename) error {
+	str := nt.AllParams()
+	err := os.WriteFile(string(filename), []byte(str), 0666)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
+// SaveNonDefaultParams saves list of all non-default parameters in Network to given file.
+func (nt *NetworkBase) SaveNonDefaultParams(filename core.Filename) error {
+	str := nt.NonDefaultParams()
+	err := os.WriteFile(string(filename), []byte(str), 0666)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
+// SetRandSeed sets random seed and calls ResetRandSeed
+func (nt *NetworkBase) SetRandSeed(seed int64) {
+	nt.RandSeed = seed
+	nt.ResetRandSeed()
+}
+
+// ResetRandSeed sets random seed to saved RandSeed, ensuring that the
+// network-specific random seed generator has been created.
+func (nt *NetworkBase) ResetRandSeed() {
+	if nt.Rand.Rand == nil {
+		nt.Rand.NewRand(nt.RandSeed)
+	} else {
+		nt.Rand.Seed(nt.RandSeed)
+	}
 }

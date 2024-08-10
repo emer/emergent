@@ -139,7 +139,7 @@ func (pr *NetParams) SetNetworkMap(net Network, vals map[string]any) error {
 
 // SetNetworkSheet applies params from given sheet
 func (pr *NetParams) SetNetworkSheet(net Network, sh *params.Sheet, setName string) {
-	net.ApplyParams(sh, pr.SetMsg)
+	net.AsEmer().ApplyParams(sh, pr.SetMsg)
 	hypers := NetworkHyperParams(net, sh)
 	if setName == "Base" {
 		pr.NetHypers = hypers
