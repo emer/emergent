@@ -171,7 +171,7 @@ func (nv *NetView) SetMaxRecs(max int) {
 
 // HasLayers returns true if network has any layers -- else no display
 func (nv *NetView) HasLayers() bool {
-	if nv.Net == nil || nv.Net.NLayers() == 0 {
+	if nv.Net == nil || nv.Net.NumLayers() == 0 {
 		return false
 	}
 	return true
@@ -444,7 +444,7 @@ func (nv *NetView) RecTrackLatest() bool {
 // layEven ensures that the number of layer variables is an even number if true
 // (used for display but not storage).
 func (nv *NetView) NetVarsList(net emer.Network, layEven bool) (nvars, synvars []string) {
-	if net == nil || net.NLayers() == 0 {
+	if net == nil || net.NumLayers() == 0 {
 		return nil, nil
 	}
 	unvars := net.UnitVarNames()
@@ -539,27 +539,28 @@ func (nv *NetView) UpdateLayers() {
 	sw := nv.SceneWidget()
 	se := sw.SceneXYZ()
 
-	if nv.Net == nil || nv.Net.NLayers() == 0 {
+	if nv.Net == nil || nv.Net.NumLayers() == 0 {
 		se.DeleteChildren()
 		se.Meshes.Reset()
 		return
 	}
+	nb := nv.Net.AsEmer()
 	if nv.NeedsRebuild() {
 		se.Background = colors.Scheme.Background
 	}
-	nlay := nv.Net.NLayers()
+	nlay := nv.Net.NumLayers()
 	laysGp := se.ChildByName("Layers", 0).(*xyz.Group)
 
 	layConfig := tree.TypePlan{}
-	for li := 0; li < nlay; li++ {
-		ly := nv.Net.Layer(li)
-		layConfig.Add(types.For[xyz.Group](), ly.Name())
+	for li := range nlay {
+		ly := nv.Net.EmerLayer(li)
+		layConfig.Add(types.For[xyz.Group](), ly.StyleName())
 	}
 
 	if !tree.Update(laysGp, layConfig) {
 		for li := range laysGp.Children {
-			ly := nv.Net.Layer(li)
-			lmesh := se.MeshByName(ly.Name())
+			ly := nv.Net.EmerLayer(li)
+			lmesh := se.MeshByName(ly.StyleName())
 			se.SetMesh(lmesh) // does update
 		}
 		return
@@ -569,35 +570,35 @@ func (nv *NetView) UpdateLayers() {
 	gpConfig.Add(types.For[LayObj](), "layer")
 	gpConfig.Add(types.For[LayName](), "name")
 
-	nmin, nmax := nv.Net.Bounds()
+	nmin, nmax := nb.MinPos, nb.MaxPos
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
 	nsc := math32.Vec3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
 	szc := math32.Max(nsc.X, nsc.Y)
 	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range laysGp.Children {
-		ly := nv.Net.Layer(li)
-		lmesh := se.MeshByName(ly.Name())
+		ly := nv.Net.EmerLayer(li)
+		lb := ly.AsEmer()
+		lmesh := se.MeshByName(ly.StyleName())
 		if lmesh == nil {
 			NewLayMesh(se, nv, ly)
 		} else {
 			lmesh.(*LayMesh).Lay = ly // make sure
 		}
 		lg := lgi.(*xyz.Group)
-		gpConfig[1].Name = ly.Name() // text2d textures use obj name, so must be unique
+		gpConfig[1].Name = ly.StyleName() // text2d textures use obj name, so must be unique
 		tree.Update(lg, gpConfig)
-		lp := ly.Pos()
+		lp := lb.Pos.Pos
 		lp.Y = -lp.Y // reverse direction
 		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)
-		rp := ly.RelPos()
 		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
-		lg.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
+		lg.Pose.Scale.Set(nsc.X*lb.Pos.Scale, szc, nsc.Y*lb.Pos.Scale)
 
 		lo := lg.Child(0).(*LayObj)
 		lo.Defaults()
-		lo.LayName = ly.Name()
+		lo.LayName = ly.StyleName()
 		lo.NetView = nv
-		lo.SetMeshName(ly.Name())
+		lo.SetMeshName(ly.StyleName())
 		lo.Material.Color = colors.FromRGB(255, 100, 255)
 		lo.Material.Reflective = 8
 		lo.Material.Bright = 8
@@ -608,7 +609,7 @@ func (nv *NetView) UpdateLayers() {
 		txt := lg.Child(1).(*LayName)
 		txt.Defaults()
 		txt.NetView = nv
-		txt.SetText(ly.Name())
+		txt.SetText(ly.StyleName())
 		txt.Pose.Scale = math32.Vector3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
 		txt.Pose.RotateOnAxis(0, 1, 0, 180)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
@@ -647,11 +648,12 @@ func (nv *NetView) ReadUnlock() {
 // UnitVal returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
-	idx1d := lay.Shape().Offset(idx)
-	if idx1d >= lay.Shape().Len() {
+	lb := lay.AsEmer()
+	idx1d := lb.Shape.Offset(idx)
+	if idx1d >= lb.Shape.Len() {
 		raw, hasval = 0, false
 	} else {
-		raw, hasval = nv.Data.UnitValue(lay.Name(), nv.Var, idx1d, nv.RecNo, nv.Di)
+		raw, hasval = nv.Data.UnitValue(lb.Name, nv.Var, idx1d, nv.RecNo, nv.Di)
 	}
 	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
 	return
@@ -661,21 +663,21 @@ func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, cl
 // for given unit of given layer, and given raster counter index value (0..RasterMax)
 // scaled is in range -1..1
 func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr color.RGBA, hasval bool) {
-	rs := lay.RepShape()
-	idx1d := rs.Offset(idx)
-	ridx := lay.RepIndexes()
+	lb := lay.AsEmer()
+	idx1d := lb.SampleShape.Offset(idx)
+	ridx := lb.SampleIndexes
 	if len(ridx) == 0 { // no rep
-		if idx1d >= lay.Shape().Len() {
+		if idx1d >= lb.Shape.Len() {
 			raw, hasval = 0, false
 		} else {
-			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr, nv.Di)
+			raw, hasval = nv.Data.UnitValRaster(lb.Name, nv.Var, idx1d, rCtr, nv.Di)
 		}
 	} else {
 		if idx1d >= len(ridx) {
 			raw, hasval = 0, false
 		} else {
 			idx1d = ridx[idx1d]
-			raw, hasval = nv.Data.UnitValRaster(lay.Name(), nv.Var, idx1d, rCtr, nv.Di)
+			raw, hasval = nv.Data.UnitValRaster(lb.Name, nv.Var, idx1d, rCtr, nv.Di)
 		}
 	}
 	scaled, clr = nv.UnitValColor(lay, idx1d, raw, hasval)
@@ -696,7 +698,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	}
 	if !hasval {
 		scaled = 0
-		if lay.Name() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
+		if lay.StyleName() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
 			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor

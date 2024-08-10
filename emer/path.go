@@ -61,6 +61,10 @@ type Path interface {
 	// This is typically a global list so do not modify!
 	SynVarNames() []string
 
+	// SynVarNum returns the number of synapse-level variables
+	// for this paths.  This is needed for extending indexes in derived types.
+	SynVarNum() int
+
 	// SynVarIndex returns the index of given variable within the synapse,
 	// according to *this path's* SynVarNames() list (using a map to lookup index),
 	// or -1 and error message if not found.

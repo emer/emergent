@@ -48,9 +48,9 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 	for _, n := range ns {
 		ln, ok := n.(*LayName)
 		if ok {
-			lay := ln.NetView.Net.LayerByName(ln.Text)
+			lay, _ := ln.NetView.Net.EmerLayerByName(ln.Text)
 			if lay != nil {
-				FormDialog(sw, lay, "Layer: "+lay.Name())
+				FormDialog(sw, lay, "Layer: "+lay.StyleName())
 			}
 			e.SetHandled()
 			return
@@ -63,7 +63,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 	}
 	nv := sw.NetView
 	nv.Data.PathUnIndex = unIndex
-	nv.Data.PathLay = lay.Name()
+	nv.Data.PathLay = lay.StyleName()
 	nv.UpdateView()
 	e.SetHandled()
 }
@@ -77,10 +77,11 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 	if lay == nil {
 		return "", pos
 	}
+	lb := lay.AsEmer()
 	nv := sw.NetView
 
 	tt := ""
-	if lay.Is2D() {
+	if lb.Is2D() {
 		idx := []int{ly, lx}
 		val, _, _, hasval := nv.UnitValue(lay, idx)
 		if !hasval {
@@ -88,8 +89,8 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 		} else {
 			tt = fmt.Sprintf("[%d,%d]=%g\n", lx, ly, val)
 		}
-	} else if lay.Is4D() {
-		idx, ok := lay.Index4DFrom2D(lx, ly)
+	} else if lb.Is4D() {
+		idx, ok := lb.Index4DFrom2D(lx, ly)
 		if !ok {
 			return "", pos
 		}
@@ -114,21 +115,22 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 	}
 	_, laysGp := xyz.AsNode(laysGpi)
 	nv := sw.NetView
-	nmin, nmax := nv.Net.Bounds()
+	nb := nv.Net.AsEmer()
+	nmin, nmax := nb.MinPos, nb.MaxPos
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
 	nsc := math32.Vec3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
 	szc := math32.Max(nsc.X, nsc.Y)
 	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range laysGp.Children {
-		lay = nv.Net.Layer(li)
+		lay = nv.Net.EmerLayer(li)
+		lb := lay.AsEmer()
 		lg := lgi.(*xyz.Group)
-		lp := lay.Pos()
+		lp := lb.Pos.Pos
 		lp.Y = -lp.Y // reverse direction
 		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)
-		rp := lay.RelPos()
 		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
-		lg.Pose.Scale.Set(nsc.X*rp.Scale, szc, nsc.Y*rp.Scale)
+		lg.Pose.Scale.Set(nsc.X*lb.Pos.Scale, szc, nsc.Y*lb.Pos.Scale)
 		lo := lg.Child(0).(*LayObj)
 		ray := lo.RayPick(pos)
 		// layer is in XZ plane with norm pointing up in Y axis
@@ -144,16 +146,16 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 		if lx < 0 || ly < 0 {
 			continue
 		}
-		lshp := lay.Shape()
-		if lay.Is2D() {
+		lshp := lb.Shape
+		if lb.Is2D() {
 			idx := []int{ly, lx}
 			if !lshp.IndexIsValid(idx) {
 				continue
 			}
 			unIndex = lshp.Offset(idx)
 			return
-		} else if lay.Is4D() {
-			idx, ok := lay.Index4DFrom2D(lx, ly)
+		} else if lb.Is4D() {
+			idx, ok := lb.Index4DFrom2D(lx, ly)
 			if !ok {
 				continue
 			}

@@ -50,18 +50,13 @@ type Network interface {
 	// Logging supports recording each of these where appropriate.
 	NParallelData() int
 
-	// todo: remove?
-	// LayerByName returns layer of given name, nil if not found.
+	// EmerLayerByName returns layer of given name, returns nil, error if not found.
 	// Layer names must be unique and a map is used so this is a fast operation.
-	LayerByName(name string) Layer
+	EmerLayerByName(name string) (Layer, error)
 
-	// LayerByNameTry returns layer of given name, returns error if not found.
-	// Layer names must be unique and a map is used so this is a fast operation
-	LayerByNameTry(name string) (Layer, error)
-
-	// PathByNameTry returns path of given name, returns error if not found.
-	// Path names are SendToRecv, and are looked up by parsing the name
-	PathByNameTry(name string) (Path, error)
+	// EmerPathByName returns path of given name, returns error if not found.
+	// Path names are SendToRecv, and are looked up by parsing the name.
+	EmerPathByName(name string) (Path, error)
 
 	// Defaults sets default parameter values for everything in the Network.
 	Defaults()
@@ -183,7 +178,7 @@ type NetworkBase struct {
 	// filename of last weights file loaded or saved.
 	WeightsFile string
 
-	// map of name to layers, for LayerByName methods
+	// map of name to layers, for EmerLayerByName methods
 	LayerNameMap map[string]Layer `display:"-"`
 
 	// map from class name to layer names.
@@ -242,9 +237,9 @@ func (nt *NetworkBase) UpdateLayerMaps() {
 	}
 }
 
-// LayerByNameTry returns a layer by looking it up by name.
+// EmerLayerByName returns a layer by looking it up by name.
 // returns error message if layer is not found.
-func (nt *NetworkBase) LayerByNameTry(name string) (Layer, error) {
+func (nt *NetworkBase) EmerLayerByName(name string) (Layer, error) {
 	if nt.LayerNameMap == nil || len(nt.LayerNameMap) != nt.EmerNetwork.NumLayers() {
 		nt.UpdateLayerMaps()
 	}
@@ -253,13 +248,6 @@ func (nt *NetworkBase) LayerByNameTry(name string) (Layer, error) {
 	}
 	err := fmt.Errorf("Layer named: %s not found in Network: %s", name, nt.Name)
 	return nil, err
-}
-
-// LayerByName returns a layer by looking it up by name
-// in the layer map (nil if not found).
-func (nt *NetworkBase) LayerByName(name string) Layer {
-	ly, _ := nt.LayerByNameTry(name)
-	return ly
 }
 
 // LayersByClass returns a list of layer names by given class(es).

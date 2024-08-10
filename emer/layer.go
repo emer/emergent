@@ -62,14 +62,14 @@ type Layer interface {
 	// so it is the only one that needs to be updated for derived layer types.
 	UnitVal1D(varIndex int, idx, di int) float32
 
-	// NRecvPaths returns the number of receiving pathways.
-	NRecvPaths() int
+	// NumRecvPaths returns the number of receiving pathways.
+	NumRecvPaths() int
 
 	// RecvPath returns a specific receiving pathway.
 	RecvPath(idx int) Path
 
-	// NSendPaths returns the number of sending pathways.
-	NSendPaths() int
+	// NumSendPaths returns the number of sending pathways.
+	NumSendPaths() int
 
 	// SendPath returns a specific sending pathway.
 	SendPath(idx int) Path
@@ -534,47 +534,56 @@ func Layer2DSampleIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 	return
 }
 
-//////////////////////////////////////////////////////////////////////////////////////
-//  Layers
-
-// we keep these here to make it easier for other packages to implement the emer.Layer interface
-// by just calling these methods
-func SendNameTry(l Layer, sender string) (Path, error) {
-	for pi := 0; pi < l.NRecvPaths(); pi++ {
-		pj := l.RecvPath(pi)
-		if pj.SendLayer().AsEmer().Name == sender {
-			return pj, nil
+// RecvPathBySendName returns the receiving Path with given
+// sending layer name (the first one if multiple exist).
+func (ly *LayerBase) RecvPathBySendName(sender string) (Path, error) {
+	el := ly.EmerLayer
+	for pi := range el.NumRecvPaths() {
+		pt := el.RecvPath(pi)
+		if pt.SendLayer().StyleName() == sender {
+			return pt, nil
 		}
 	}
-	return nil, fmt.Errorf("sending layer: %v not found in list of pathways", sender)
+	return nil, fmt.Errorf("sending layer named: %s not found in list of receiving pathways", sender)
 }
 
-func RecvNameTry(l Layer, recv string) (Path, error) {
-	for pi := 0; pi < l.NSendPaths(); pi++ {
-		pj := l.SendPath(pi)
-		if pj.RecvLayer().AsEmer().Name == recv {
-			return pj, nil
+// SendPathByRecvName returns the sending Path with given
+// recieving layer name (the first one if multiple exist).
+func (ly *LayerBase) SendPathByRecvName(recv string) (Path, error) {
+	el := ly.EmerLayer
+	for pi := range el.NumSendPaths() {
+		pt := el.SendPath(pi)
+		if pt.RecvLayer().StyleName() == recv {
+			return pt, nil
 		}
 	}
-	return nil, fmt.Errorf("receiving layer: %v not found in list of pathways", recv)
+	return nil, fmt.Errorf("receiving layer named: %s not found in list of sending pathways", recv)
 }
 
-func SendNameTypeTry(l Layer, sender, typ string) (Path, error) {
-	for pi := 0; pi < l.NRecvPaths(); pi++ {
-		pj := l.RecvPath(pi)
-		if pj.SendLayer().AsEmer().Name == sender && pj.TypeName() == typ {
-			return pj, nil
+// RecvPathBySendName returns the receiving Path with given
+// sending layer name, with the given type name
+// (the first one if multiple exist).
+func (ly *LayerBase) RecvPathBySendNameType(sender, typeName string) (Path, error) {
+	el := ly.EmerLayer
+	for pi := range el.NumRecvPaths() {
+		pt := el.RecvPath(pi)
+		if pt.SendLayer().StyleName() == sender && pt.TypeName() == typeName {
+			return pt, nil
 		}
 	}
-	return nil, fmt.Errorf("sending layer: %v not found in list of pathways", sender)
+	return nil, fmt.Errorf("sending layer named: %s of type %s not found in list of receiving pathways", sender, typeName)
 }
 
-func RecvNameTypeTry(l Layer, recv, typ string) (Path, error) {
-	for pi := 0; pi < l.NSendPaths(); pi++ {
-		pj := l.SendPath(pi)
-		if pj.RecvLayer().AsEmer().Name == recv && pj.TypeName() == typ {
-			return pj, nil
+// SendPathByRecvName returns the sending Path with given
+// recieving layer name, with the given type name
+// (the first one if multiple exist).
+func (ly *LayerBase) SendPathByRecvNameType(recv, typeName string) (Path, error) {
+	el := ly.EmerLayer
+	for pi := range el.NumSendPaths() {
+		pt := el.SendPath(pi)
+		if pt.RecvLayer().StyleName() == recv && pt.TypeName() == typeName {
+			return pt, nil
 		}
 	}
-	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of pathways", recv, typ)
+	return nil, fmt.Errorf("receiving layer named: %s, type: %s not found in list of sending pathways", recv, typeName)
 }

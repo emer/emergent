@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/plot/plotcore"
@@ -111,7 +112,7 @@ func (nd *NetData) Init(net emer.Network, max int, noSynData bool, maxData int) 
 // Config configures the data storage for given network
 // only re-allocates if needed.
 func (nd *NetData) Config() {
-	nlay := nd.Net.NLayers()
+	nlay := nd.Net.NumLayers()
 	if nlay == 0 {
 		return
 	}
@@ -143,26 +144,26 @@ func (nd *NetData) Config() {
 makeData:
 	if len(nd.LayData) != nlay {
 		nd.LayData = make(map[string]*LayData, nlay)
-		for li := 0; li < nlay; li++ {
-			lay := nd.Net.Layer(li)
-			nm := lay.Name()
-			ld := &LayData{LayName: nm, NUnits: lay.Shape().Len()}
+		for li := range nlay {
+			lay := nd.Net.EmerLayer(li).AsEmer()
+			nm := lay.Name
+			ld := &LayData{LayName: nm, NUnits: lay.Shape.Len()}
 			nd.LayData[nm] = ld
 			if nd.NoSynData {
 				ld.FreePaths()
 			} else {
-				ld.AllocSendPaths(lay)
+				ld.AllocSendPaths(lay.EmerLayer)
 			}
 		}
 		if !nd.NoSynData {
-			for li := 0; li < nlay; li++ {
-				rlay := nd.Net.Layer(li)
-				rld := nd.LayData[rlay.Name()]
-				rld.RecvPaths = make([]*PathData, rlay.NRecvPaths())
-				for ri := 0; ri < rlay.NRecvPaths(); ri++ {
+			for li := range nlay {
+				rlay := nd.Net.EmerLayer(li)
+				rld := nd.LayData[rlay.StyleName()]
+				rld.RecvPaths = make([]*PathData, rlay.NumRecvPaths())
+				for ri := 0; ri < rlay.NumRecvPaths(); ri++ {
 					rpj := rlay.RecvPath(ri)
-					slay := rpj.SendLay()
-					sld := nd.LayData[slay.Name()]
+					slay := rpj.SendLayer()
+					sld := nd.LayData[slay.StyleName()]
 					for _, spj := range sld.SendPaths {
 						if spj.Path == rpj {
 							rld.RecvPaths[ri] = spj // link
@@ -172,9 +173,9 @@ makeData:
 			}
 		}
 	} else {
-		for li := 0; li < nlay; li++ {
-			lay := nd.Net.Layer(li)
-			ld := nd.LayData[lay.Name()]
+		for li := range nlay {
+			lay := nd.Net.EmerLayer(li)
+			ld := nd.LayData[lay.StyleName()]
 			if nd.NoSynData {
 				ld.FreePaths()
 			} else {
@@ -183,15 +184,15 @@ makeData:
 		}
 	}
 	vmax := vlen * rmax * nd.MaxData
-	for li := 0; li < nlay; li++ {
-		lay := nd.Net.Layer(li)
-		nm := lay.Name()
+	for li := range nlay {
+		lay := nd.Net.EmerLayer(li).AsEmer()
+		nm := lay.Name
 		ld, ok := nd.LayData[nm]
 		if !ok {
 			nd.LayData = nil
 			goto makeData
 		}
-		ld.NUnits = lay.Shape().Len()
+		ld.NUnits = lay.Shape.Len()
 		nu := ld.NUnits
 		ltot := vmax * nu
 		if len(ld.Data) != ltot {
@@ -221,7 +222,7 @@ makeData:
 // and raster counter value -- if negative, then an internal
 // wraping-around counter is used.
 func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
-	nlay := nd.Net.NLayers()
+	nlay := nd.Net.NumLayers()
 	if nlay == 0 {
 		return
 	}
@@ -248,11 +249,11 @@ func (nd *NetData) Record(ctrs string, rastCtr, rastMax int) {
 		nd.UnMinPer[mmidx+vi] = math.MaxFloat32
 		nd.UnMaxPer[mmidx+vi] = -math.MaxFloat32
 	}
-	for li := 0; li < nlay; li++ {
-		lay := nd.Net.Layer(li)
-		laynm := lay.Name()
+	for li := range nlay {
+		lay := nd.Net.EmerLayer(li).AsEmer()
+		laynm := lay.Name
 		ld := nd.LayData[laynm]
-		nu := lay.Shape().Len()
+		nu := lay.Shape.Len()
 		nvu := vlen * maxData * nu
 		for vi, vnm := range nd.UnVars {
 			mn := &nd.UnMinPer[mmidx+vi]
@@ -334,7 +335,7 @@ func (nd *NetData) RecordSyns() {
 	if nd.NoSynData {
 		return
 	}
-	nlay := nd.Net.NLayers()
+	nlay := nd.Net.NumLayers()
 	if nlay == 0 {
 		return
 	}
@@ -343,11 +344,11 @@ func (nd *NetData) RecordSyns() {
 		nd.SynMinVar[vi] = math.MaxFloat32
 		nd.SynMaxVar[vi] = -math.MaxFloat32
 	}
-	for li := 0; li < nlay; li++ {
-		lay := nd.Net.Layer(li)
-		laynm := lay.Name()
+	for li := range nlay {
+		lay := nd.Net.EmerLayer(li)
+		laynm := lay.StyleName()
 		ld := nd.LayData[laynm]
-		for si := 0; si < lay.NSendPaths(); si++ {
+		for si := 0; si < lay.NumSendPaths(); si++ {
 			spd := ld.SendPaths[si]
 			spd.RecordData(nd)
 		}
@@ -443,19 +444,19 @@ func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if nd.NoSynData || !ok || nd.PathLay == "" {
 		return 0, false
 	}
-	recvLay := nd.Net.LayerByName(nd.PathLay)
+	recvLay := errors.Ignore1(nd.Net.EmerLayerByName(nd.PathLay)).AsEmer()
 	if recvLay == nil {
 		return 0, false
 	}
 	var pj emer.Path
 	var err error
 	if nd.PathType != "" {
-		pj, err = recvLay.SendNameTypeTry(laynm, nd.PathType)
+		pj, err = recvLay.RecvPathBySendNameType(laynm, nd.PathType)
 		if pj == nil {
-			pj, err = recvLay.SendNameTry(laynm)
+			pj, err = recvLay.RecvPathBySendName(laynm)
 		}
 	} else {
-		pj, err = recvLay.SendNameTry(laynm)
+		pj, err = recvLay.RecvPathBySendName(laynm)
 	}
 	if pj == nil {
 		return 0, false
@@ -478,7 +479,7 @@ func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if synIndex < 0 {
 		return 0, false
 	}
-	nsyn := pj.Syn1DNum()
+	nsyn := pj.NumSyns()
 	val := spd.SynData[varIndex*nsyn+synIndex]
 	return val, true
 }
@@ -491,19 +492,19 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if nd.NoSynData || !ok || nd.PathLay == "" {
 		return 0, false
 	}
-	sendLay := nd.Net.LayerByName(nd.PathLay)
+	sendLay := errors.Ignore1(nd.Net.EmerLayerByName(nd.PathLay)).AsEmer()
 	if sendLay == nil {
 		return 0, false
 	}
 	var pj emer.Path
 	var err error
 	if nd.PathType != "" {
-		pj, err = sendLay.RecvNameTypeTry(laynm, nd.PathType)
+		pj, err = sendLay.SendPathByRecvNameType(laynm, nd.PathType)
 		if pj == nil {
-			pj, err = sendLay.RecvNameTry(laynm)
+			pj, err = sendLay.SendPathByRecvName(laynm)
 		}
 	} else {
-		pj, err = sendLay.RecvNameTry(laynm)
+		pj, err = sendLay.SendPathByRecvName(laynm)
 	}
 	if pj == nil {
 		return 0, false
@@ -526,7 +527,7 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if synIndex < 0 {
 		return 0, false
 	}
-	nsyn := pj.Syn1DNum()
+	nsyn := pj.NumSyns()
 	val := rpd.SynData[varIndex*nsyn+synIndex]
 	return val, true
 }
