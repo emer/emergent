@@ -110,7 +110,7 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 	slices.Sort(fkeys)
 	for _, fnm := range fkeys {
 		flx := hypers[fnm]
-		hyps := flx.Obj.(Hypers)
+		hyps := flx.Object.(Hypers)
 		hkeys := maps.Keys(hyps)
 		slices.Sort(hkeys)
 		for _, ppath := range hkeys {
@@ -132,15 +132,15 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 				if !ok {
 					sflex = &FlexVal{}
 					sflex.CopyFrom(flx)
-					sflex.Obj = make(Hypers)
+					sflex.Object = make(Hypers)
 					fm[fnm] = sflex
 				}
-				shyps := sflex.Obj.(Hypers)
+				shyps := sflex.Object.(Hypers)
 				_, ok = shyps[ppath]
 				if !ok {
 					shyps[ppath] = hv
 				}
-				sflex.Obj = shyps
+				sflex.Object = shyps
 				sels[sel] = fm
 			}
 		}
@@ -164,7 +164,7 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 				break
 			}
 		}
-		hyps := f0.Obj.(Hypers)
+		hyps := f0.Object.(Hypers)
 		hkeys := maps.Keys(hyps)
 		slices.Sort(hkeys)
 		for _, ppath := range hkeys {
@@ -175,7 +175,7 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 			slices.Sort(fkeys)
 			for _, fk := range fkeys {
 				fv := flx[fk]
-				hyp := fv.Obj.(Hypers)
+				hyp := fv.Object.(Hypers)
 				vals := hyp[ppath]
 				tweak, ok := vals["Tweak"]
 				tweak = strings.ToLower(strings.TrimSpace(tweak))
@@ -189,12 +189,12 @@ func TweaksFromHypers(hypers Flex) []*Tweaks {
 				}
 				f64, err := strconv.ParseFloat(val, 32)
 				if err != nil {
-					fmt.Printf("TweakFromHypers float parse error: only works for float type params. Obj: %s  Param: %s  val: %s  parse error: %v\n", fv.Nm, ppath, val, err)
+					fmt.Printf("TweakFromHypers float parse error: only works for float type params. Obj: %s  Param: %s  val: %s  parse error: %v\n", fv.Name, ppath, val, err)
 					continue
 				}
 				start := float32(f64)
 
-				sval := SearchValues{Name: fv.Nm, Type: fv.Type, Path: ppath, Start: start}
+				sval := SearchValues{Name: fv.Name, Type: fv.Type, Path: ppath, Start: start}
 
 				var pars []float32 // param vals to search
 				if tweak[0] == '[' {

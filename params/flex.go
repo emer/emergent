@@ -19,16 +19,16 @@ import (
 // The field names are abbreviated because full names are used in StylerObject.
 type FlexVal struct {
 	// name of this specific object, matches #Name selections
-	Nm string
+	Name string
 
 	// type name of this object, matches plain TypeName selections
 	Type string
 
 	// space-separated list of class name(s), match the .Class selections
-	Cls string
+	Class string
 
 	// actual object with data that is set by the parameters
-	Obj any
+	Object any
 
 	// History of params applied
 	History HistoryImpl `table:"-"`
@@ -39,23 +39,23 @@ func (fv *FlexVal) StyleType() string {
 }
 
 func (fv *FlexVal) StyleClass() string {
-	return fv.Cls
+	return fv.Class
 }
 
-func (fv *FlexVal) Name() string {
-	return fv.Nm
+func (fv *FlexVal) StyleName() string {
+	return fv.Name
 }
 
 func (fv *FlexVal) StyleObject() any {
-	return fv.Obj
+	return fv.Object
 }
 
 func (fv *FlexVal) CopyFrom(cp *FlexVal) {
-	fv.Nm = cp.Nm // these should be the same, but copy anyway
+	fv.Name = cp.Name // these should be the same, but copy anyway
 	fv.Type = cp.Type
-	fv.Cls = cp.Cls
-	if hyp, ok := fv.Obj.(Hypers); ok { // this is the main use-case
-		if cph, ok := cp.Obj.(Hypers); ok {
+	fv.Class = cp.Class
+	if hyp, ok := fv.Object.(Hypers); ok { // this is the main use-case
+		if cph, ok := cp.Object.(Hypers); ok {
 			hyp.CopyFrom(cph)
 		}
 	}
@@ -105,7 +105,7 @@ func (fl *Flex) Init(vals []FlexVal) {
 	*fl = make(Flex, len(vals))
 	for _, vl := range vals {
 		inst := vl
-		(*fl)[vl.Nm] = &inst
+		(*fl)[vl.Name] = &inst
 	}
 }
 

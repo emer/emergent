@@ -47,7 +47,7 @@ func (ns *NetSize) AddLayers(names []string, class string) {
 		*ns = make(NetSize)
 	}
 	for _, nm := range names {
-		(*ns)[nm] = &params.FlexVal{Nm: nm, Type: "Layer", Cls: class, Obj: &LaySize{}}
+		(*ns)[nm] = &params.FlexVal{Name: nm, Type: "Layer", Class: class, Object: &LaySize{}}
 	}
 }
 
@@ -59,7 +59,7 @@ func (ns *NetSize) Layer(name string) (*LaySize, error) {
 		err := fmt.Errorf("emer.NetSize: layer named: %s not found", name)
 		return nil, err
 	}
-	return fv.Obj.(*LaySize), nil
+	return fv.Object.(*LaySize), nil
 }
 
 // LayX returns the X value = horizontal size of 2D layer or number of pools

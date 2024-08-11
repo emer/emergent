@@ -158,10 +158,10 @@ func TestParamSetsSet(t *testing.T) {
 
 var trgHypers = `{
   "Hidden1": {
-    "Nm": "Hidden1",
+    "Name": "Hidden1",
     "Type": "Layer",
-    "Cls": "Hidden",
-    "Obj": {
+    "Class": "Hidden",
+    "Object": {
       "Layer.Inhib.Layer.Gi": {
         "Min": "0.5",
         "StdDev": "0.1",
@@ -185,10 +185,10 @@ var trgHypers = `{
     ]
   },
   "Hidden2": {
-    "Nm": "Hidden2",
+    "Name": "Hidden2",
     "Type": "Layer",
-    "Cls": "Hidden",
-    "Obj": {
+    "Class": "Hidden",
+    "Object": {
       "Layer.Inhib.Layer.Gi": {
         "Min": "0.5",
         "StdDev": "0.1",
@@ -212,10 +212,10 @@ var trgHypers = `{
     ]
   },
   "Input": {
-    "Nm": "Input",
+    "Name": "Input",
     "Type": "Layer",
-    "Cls": "Input",
-    "Obj": {
+    "Class": "Input",
+    "Object": {
       "Layer.Inhib.Layer.Gi": {
         "Min": "0.5",
         "StdDev": "0.1",
@@ -239,10 +239,10 @@ var trgHypers = `{
     ]
   },
   "Output": {
-    "Nm": "Output",
+    "Name": "Output",
     "Type": "Layer",
-    "Cls": "Target",
-    "Obj": {
+    "Class": "Target",
+    "Object": {
       "Layer.Inhib.Layer.Gi": {
         "Min": "0.5",
         "StdDev": "0.1",
@@ -278,10 +278,10 @@ var trgHypers = `{
 func TestFlexHypers(t *testing.T) {
 	hypers := Flex{}
 	hypers.Init([]FlexVal{
-		FlexVal{Nm: "Input", Type: "Layer", Cls: "Input", Obj: Hypers{}},
-		FlexVal{Nm: "Hidden1", Type: "Layer", Cls: "Hidden", Obj: Hypers{}},
-		FlexVal{Nm: "Hidden2", Type: "Layer", Cls: "Hidden", Obj: Hypers{}},
-		FlexVal{Nm: "Output", Type: "Layer", Cls: "Target", Obj: Hypers{}},
+		FlexVal{Name: "Input", Type: "Layer", Class: "Input", Object: Hypers{}},
+		FlexVal{Name: "Hidden1", Type: "Layer", Class: "Hidden", Object: Hypers{}},
+		FlexVal{Name: "Hidden2", Type: "Layer", Class: "Hidden", Object: Hypers{}},
+		FlexVal{Name: "Output", Type: "Layer", Class: "Target", Object: Hypers{}},
 	})
 	basenet := paramSets["Base"]
 	hypers.ApplySheet(basenet, false)

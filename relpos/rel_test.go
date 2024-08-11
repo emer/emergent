@@ -12,16 +12,16 @@ import (
 )
 
 func TestRels(t *testing.T) {
-	rp := Rel{}
+	rp := Pos{}
 	rp.Defaults()
 	rp.Rel = RightOf
 	rp.YAlign = Center
-	rs := rp.Pos(math32.Vector3{}, math32.Vec2(10, 10), math32.Vec2(4, 4))
-	fmt.Printf("rp: %v rs: %v\n", rp, rs)
+	rp.SetPos(math32.Vector3{}, math32.Vec2(10, 10), math32.Vec2(4, 4))
+	fmt.Printf("rp: %v rs: %v\n", rp, rp.Pos)
 	rp.YAlign = Front
-	rs = rp.Pos(math32.Vector3{}, math32.Vec2(10, 10), math32.Vec2(4, 4))
-	fmt.Printf("rp: %v rs: %v\n", rp, rs)
+	rp.SetPos(math32.Vector3{}, math32.Vec2(10, 10), math32.Vec2(4, 4))
+	fmt.Printf("rp: %v rs: %v\n", rp, rp.Pos)
 	rp.YAlign = Back
-	rs = rp.Pos(math32.Vector3{}, math32.Vec2(10, 10), math32.Vec2(4, 4))
-	fmt.Printf("rp: %v rs: %v\n", rp, rs)
+	rp.SetPos(math32.Vector3{}, math32.Vec2(10, 10), math32.Vec2(4, 4))
+	fmt.Printf("rp: %v rs: %v\n", rp, rp.Pos)
 }

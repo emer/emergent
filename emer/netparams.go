@@ -76,7 +76,7 @@ func (pr *NetParams) Name() string {
 // RunName returns standard name simulation run based on params Name()
 // and starting run number.
 func (pr *NetParams) RunName(startRun int) string {
-	return fmt.Sprintf("%s_%03d", pr.Name, startRun)
+	return fmt.Sprintf("%s_%03d", pr.Name(), startRun)
 }
 
 // Validate checks that the Network has been set
@@ -157,7 +157,7 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 	for li := range nl {
 		ly := net.EmerLayer(li)
 		nm := ly.StyleName()
-		hypers[nm] = &params.FlexVal{Nm: nm, Type: "Layer", Cls: ly.StyleClass(), Obj: params.Hypers{}}
+		hypers[nm] = &params.FlexVal{Name: nm, Type: "Layer", Class: ly.StyleClass(), Object: params.Hypers{}}
 	}
 	// separate pathways
 	for li := range nl {
@@ -166,12 +166,12 @@ func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
 		for pi := range np {
 			pj := ly.RecvPath(pi)
 			nm := pj.StyleName()
-			hypers[nm] = &params.FlexVal{Nm: nm, Type: "Path", Cls: pj.StyleClass(), Obj: params.Hypers{}}
+			hypers[nm] = &params.FlexVal{Name: nm, Type: "Path", Class: pj.StyleClass(), Object: params.Hypers{}}
 		}
 	}
 	for nm, vl := range hypers {
 		sheet.Apply(vl, false)
-		hv := vl.Obj.(params.Hypers)
+		hv := vl.Object.(params.Hypers)
 		hv.DeleteValOnly()
 		if len(hv) == 0 {
 			delete(hypers, nm)
