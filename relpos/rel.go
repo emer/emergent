@@ -16,11 +16,13 @@ import (
 	"cogentcore.org/core/math32"
 )
 
-// Rel defines a position relationship among layers, in terms of X,Y width and height of layer
-// and associated position within a given X-Y plane,
-// and Z vertical stacking of layers above and below each other.
-type Rel struct { //git:add
-
+// Pos specifies the relative spatial relationship to another
+// layer, which determines positioning.  Every layer except one
+// "anchor" layer should be positioned relative to another,
+// e.g., RightOf, Above, etc.  This provides robust positioning
+// in the face of layer size changes etc.
+// Layers are arranged in X-Y planes, stacked vertically along the Z axis.
+type Pos struct { //git:add
 	// spatial relationship between this layer and the other layer
 	Rel Relations
 
@@ -44,11 +46,16 @@ type Rel struct { //git:add
 
 	// for horizontial (x-axis) alignment, amount we are offset relative to perfect alignment
 	YOffset float32
+
+	// Pos is the computed position of lower-left-hand corner of layer
+	// in 3D space, computed from the relation to other layer.
+	Pos math32.Vector3 `edit:"-"`
 }
 
-// Defaults sets default scale, space, offset values -- rel, align must be set specifically
+// Defaults sets default scale, space, offset values.
+// The relationship and align must be set specifically.
 // These are automatically applied if Scale = 0
-func (rp *Rel) Defaults() {
+func (rp *Pos) Defaults() {
 	if rp.Scale == 0 {
 		rp.Scale = 1
 	}
@@ -57,7 +64,7 @@ func (rp *Rel) Defaults() {
 	}
 }
 
-func (rp *Rel) ShouldDisplay(field string) bool {
+func (rp *Pos) ShouldDisplay(field string) bool {
 	switch field {
 	case "XAlign":
 		return rp.Rel == FrontOf || rp.Rel == Behind || rp.Rel == Above || rp.Rel == Below
@@ -68,57 +75,75 @@ func (rp *Rel) ShouldDisplay(field string) bool {
 	}
 }
 
-// NewRightOf returns a RightOf relationship with default YAlign: Front alignment and given spacing
-func NewRightOf(other string, space float32) Rel {
-	return Rel{Rel: RightOf, Other: other, YAlign: Front, Space: space, Scale: 1}
+// SetRightOf sets a RightOf relationship with default YAlign:
+// Front alignment and given spacing.
+func (rp *Pos) SetRightOf(other string, space float32) {
+	rp.Rel = RightOf
+	rp.Other = other
+	rp.YAlign = Front
+	rp.Space = space
+	rp.Scale = 1
 }
 
-// NewBehind returns a Behind relationship with default XAlign: Left alignment and given spacing
-func NewBehind(other string, space float32) Rel {
-	return Rel{Rel: Behind, Other: other, XAlign: Left, Space: space, Scale: 1}
+// SetBehind sets a Behind relationship with default XAlign:
+// Left alignment and given spacing.
+func (rp *Pos) SetBehind(other string, space float32) {
+	rp.Rel = Behind
+	rp.Other = other
+	rp.XAlign = Left
+	rp.Space = space
+	rp.Scale = 1
 }
 
-// NewAbove returns an Above relationship with default XAlign: Left, YAlign: Front alignment
-func NewAbove(other string) Rel {
-	return Rel{Rel: Above, Other: other, XAlign: Left, YAlign: Front, YOffset: 1, Scale: 1}
+// SetAbove returns an Above relationship with default XAlign:
+// Left, YAlign: Front alignment
+func (rp *Pos) SetAbove(other string) {
+	rp.Rel = Above
+	rp.Other = other
+	rp.XAlign = Left
+	rp.YAlign = Front
+	rp.YOffset = 1
+	rp.Scale = 1
 }
 
-// Pos returns the relative position compared to other position and size, based on settings
-// osz and sz must both have already been scaled by relevant Scale factor
-func (rp *Rel) Pos(op math32.Vector3, osz math32.Vector2, sz math32.Vector2) math32.Vector3 {
+// SetPos sets the relative position based on other layer
+// position and size, using current settings.
+// osz and sz must both have already been scaled by
+// relevant Scale factor.
+func (rp *Pos) SetPos(op math32.Vector3, osz math32.Vector2, sz math32.Vector2) {
 	if rp.Scale == 0 {
 		rp.Defaults()
 	}
-	rs := op
+	rp.Pos = op
 	switch rp.Rel {
 	case NoRel:
-		return op
+		return
 	case RightOf:
-		rs.X = op.X + osz.X + rp.Space
-		rs.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
+		rp.Pos.X = op.X + osz.X + rp.Space
+		rp.Pos.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
 	case LeftOf:
-		rs.X = op.X - sz.X - rp.Space
-		rs.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
+		rp.Pos.X = op.X - sz.X - rp.Space
+		rp.Pos.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
 	case Behind:
-		rs.Y = op.Y + osz.Y + rp.Space
-		rs.X = rp.AlignXPos(op.X, osz.X, sz.X)
+		rp.Pos.Y = op.Y + osz.Y + rp.Space
+		rp.Pos.X = rp.AlignXPos(op.X, osz.X, sz.X)
 	case FrontOf:
-		rs.Y = op.Y - sz.Y - rp.Space
-		rs.X = rp.AlignXPos(op.X, osz.X, sz.X)
+		rp.Pos.Y = op.Y - sz.Y - rp.Space
+		rp.Pos.X = rp.AlignXPos(op.X, osz.X, sz.X)
 	case Above:
-		rs.Z += 1
-		rs.X = rp.AlignXPos(op.X, osz.X, sz.X)
-		rs.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
+		rp.Pos.Z += 1
+		rp.Pos.X = rp.AlignXPos(op.X, osz.X, sz.X)
+		rp.Pos.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
 	case Below:
-		rs.Z -= 1
-		rs.X = rp.AlignXPos(op.X, osz.X, sz.X)
-		rs.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
+		rp.Pos.Z -= 1
+		rp.Pos.X = rp.AlignXPos(op.X, osz.X, sz.X)
+		rp.Pos.Y = rp.AlignYPos(op.Y, osz.Y, sz.Y)
 	}
-	return rs
 }
 
-// AlignYPos returns the Y-axis (within-plane vertical or height) position according to alignment factors
-func (rp *Rel) AlignYPos(yop, yosz, ysz float32) float32 {
+// AlignYPos returns the Y-axis (within-plane vertical or height)
+// position according to alignment factors.
+func (rp *Pos) AlignYPos(yop, yosz, ysz float32) float32 {
 	switch rp.YAlign {
 	case Front:
 		return yop + rp.YOffset
@@ -130,8 +155,9 @@ func (rp *Rel) AlignYPos(yop, yosz, ysz float32) float32 {
 	return yop
 }
 
-// AlignXPos returns the X-axis (within-plane horizontal or width) position according to alignment factors
-func (rp *Rel) AlignXPos(xop, xosz, xsz float32) float32 {
+// AlignXPos returns the X-axis (within-plane horizontal or width)
+// position according to alignment factors.
+func (rp *Pos) AlignXPos(xop, xosz, xsz float32) float32 {
 	switch rp.XAlign {
 	case Left:
 		return xop + rp.XOffset

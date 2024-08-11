@@ -15,8 +15,8 @@ import (
 )
 
 // FlexVal is a specific flexible value for the Flex parameter map
-// that implements the StylerObj interface for CSS-style selection logic.
-// The field names are abbreviated because full names are used in StylerObj.
+// that implements the StylerObject interface for CSS-style selection logic.
+// The field names are abbreviated because full names are used in StylerObject.
 type FlexVal struct {
 	// name of this specific object, matches #Name selections
 	Nm string
@@ -34,11 +34,11 @@ type FlexVal struct {
 	History HistoryImpl `table:"-"`
 }
 
-func (fv *FlexVal) TypeName() string {
+func (fv *FlexVal) StyleType() string {
 	return fv.Type
 }
 
-func (fv *FlexVal) Class() string {
+func (fv *FlexVal) StyleClass() string {
 	return fv.Cls
 }
 
@@ -46,7 +46,7 @@ func (fv *FlexVal) Name() string {
 	return fv.Nm
 }
 
-func (fv *FlexVal) Object() any {
+func (fv *FlexVal) StyleObject() any {
 	return fv.Obj
 }
 
@@ -85,14 +85,14 @@ func (fl *Flex) Make() {
 	*fl = make(Flex)
 }
 
-func (fl *Flex) TypeName() string { // note: assuming all same type for this purpose
+func (fl *Flex) StyleType() string { // note: assuming all same type for this purpose
 	for _, fv := range *fl {
-		return fv.TypeName()
+		return fv.StyleType()
 	}
 	return "Flex"
 }
 
-func (fl *Flex) Class() string {
+func (fl *Flex) StyleClass() string {
 	return ""
 }
 

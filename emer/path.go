@@ -5,135 +5,94 @@
 package emer
 
 import (
-	"fmt"
 	"io"
 
-	"cogentcore.org/core/base/reflectx"
+	"cogentcore.org/core/math32"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/paths"
 	"github.com/emer/emergent/v2/weights"
 )
 
-// Path defines the basic interface for a pathway which connects two layers.
-// Name is set automatically to: SendLay().Name() + "To" + RecvLay().Name()
+// Path defines the minimal interface for a pathway
+// which connects two layers, using a specific Pattern
+// of connectivity, and with its own set of parameters.
+// This supports visualization (NetView), I/O,
+// and parameter setting functionality provided by emergent.
+// Most of the standard expected functionality is defined in the
+// PathBase struct, and this interface only has methods that must be
+// implemented specifically for a given algorithmic implementation,
 type Path interface {
-	params.Styler // TypeName, Name, and Class methods for parameter styling
+	// StyleType, StyleClass, and StyleName methods for parameter styling.
+	params.Styler
 
-	// Init MUST be called to initialize the path's pointer to itself as an emer.Path
-	// which enables the proper interface methods to be called.
-	Init(path Path)
+	// AsEmer returns the path as an *emer.PathBase,
+	// to access base functionality.
+	AsEmer() *PathBase
 
-	// SendLay returns the sending layer for this pathway
-	SendLay() Layer
-
-	// RecvLay returns the receiving layer for this pathway
-	RecvLay() Layer
-
-	// Pattern returns the pattern of connectivity for interconnecting the layers
-	Pattern() paths.Pattern
-
-	// SetPattern sets the pattern of connectivity for interconnecting the layers.
-	// Returns Path so it can be chained to set other properties too
-	SetPattern(pat paths.Pattern) Path
-
-	// Type returns the functional type of pathway according to PathType (extensible in
-	// more specialized algorithms)
-	Type() PathType
-
-	// SetType sets the functional type of pathway according to PathType
-	// Returns Path so it can be chained to set other properties too
-	SetType(typ PathType) Path
-
-	// PathTypeName returns the string rep of functional type of pathway
-	// according to PathType (extensible in more specialized algorithms, by
-	// redefining this method as needed).
-	PathTypeName() string
-
-	// AddClass adds a CSS-style class name(s) for this path,
-	// ensuring that it is not a duplicate, and properly space separated.
-	// Returns Path so it can be chained to set other properties too
-	AddClass(cls ...string) Path
-
-	// Label satisfies the core.Labeler interface for getting the name of objects generically
+	// Label satisfies the core.Labeler interface for getting
+	// the name of objects generically.
 	Label() string
 
-	// IsOff returns true if pathway or either send or recv layer has been turned Off.
-	// Useful for experimentation
-	IsOff() bool
+	// TypeName is the type or category of path, defined
+	// by the algorithm (and usually set by an enum).
+	TypeName() string
 
-	// SetOff sets the pathway Off status (i.e., lesioned). Careful: Layer.SetOff(true) will
-	// reactivate that layer's pathways, so pathway-level lesioning should always be called
-	// after layer-level lesioning.
-	SetOff(off bool)
+	// SendLayer returns the sending layer for this pathway,
+	// as an emer.Layer interface.  The actual Path implmenetation
+	// can use a Send field with the actual Layer struct type.
+	SendLayer() Layer
 
-	// SynVarNames returns the names of all the variables on the synapse
-	// This is typically a global list so do not modify!
-	SynVarNames() []string
+	// RecvLayer returns the receiving layer for this pathway,
+	// as an emer.Layer interface.  The actual Path implmenetation
+	// can use a Recv field with the actual Layer struct type.
+	RecvLayer() Layer
 
-	// SynVarProps returns a map of synapse variable properties, with the key being the
-	// name of the variable, and the value gives a space-separated list of
-	// go-tag-style properties for that variable.
-	// The NetView recognizes the following properties:
-	// range:"##" = +- range around 0 for default display scaling
-	// min:"##" max:"##" = min, max display range
-	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
-	// zeroctr:"+" or "-" = control whether zero-centering is used
-	// Note: this is a global list so do not modify!
-	SynVarProps() map[string]string
+	// NumSyns returns the number of synapses for this path.
+	// This is the max idx for SynValue1D and the number
+	// of vals set by SynValues.
+	NumSyns() int
 
 	// SynIndex returns the index of the synapse between given send, recv unit indexes
 	// (1D, flat indexes). Returns -1 if synapse not found between these two neurons.
 	// This requires searching within connections for receiving unit (a bit slow).
 	SynIndex(sidx, ridx int) int
 
-	// SynVarIndex returns the index of given variable within the synapse,
-	// according to *this path's* SynVarNames() list (using a map to lookup index),
-	// or -1 and error message if not found.
-	SynVarIndex(varNm string) (int, error)
+	// SynVarNames returns the names of all the variables on the synapse
+	// This is typically a global list so do not modify!
+	SynVarNames() []string
 
 	// SynVarNum returns the number of synapse-level variables
 	// for this paths.  This is needed for extending indexes in derived types.
 	SynVarNum() int
 
-	// Syn1DNum returns the number of synapses for this path as a 1D array.
-	// This is the max idx for SynVal1D and the number of vals set by SynValues.
-	Syn1DNum() int
+	// SynVarIndex returns the index of given variable within the synapse,
+	// according to *this path's* SynVarNames() list (using a map to lookup index),
+	// or -1 and error message if not found.
+	SynVarIndex(varNm string) (int, error)
 
-	// SynVal1D returns value of given variable index (from SynVarIndex) on given SynIndex.
-	// Returns NaN on invalid index.
-	// This is the core synapse var access method used by other methods,
-	// so it is the only one that needs to be updated for derived layer types.
-	SynVal1D(varIndex int, synIndex int) float32
-
-	// SynValues sets values of given variable name for each synapse, using the natural ordering
-	// of the synapses (sender based for Leabra),
+	// SynValues sets values of given variable name for each synapse,
+	// using the natural ordering of the synapses (sender based for Axon),
 	// into given float32 slice (only resized if not big enough).
 	// Returns error on invalid var name.
 	SynValues(vals *[]float32, varNm string) error
 
-	// SynVal returns value of given variable name on the synapse
-	// between given send, recv unit indexes (1D, flat indexes).
-	// Returns math32.NaN() for access errors.
-	SynValue(varNm string, sidx, ridx int) float32
-
-	// SetSynVal sets value of given variable name on the synapse
-	// between given send, recv unit indexes (1D, flat indexes).
-	// Typically only supports base synapse variables and is not extended
-	// for derived types.
-	// Returns error for access errors.
-	SetSynValue(varNm string, sidx, ridx int, val float32) error
-
-	// Defaults sets default parameter values for all Path parameters
-	Defaults()
+	// SynValue1D returns value of given variable index
+	// (from SynVarIndex) on given SynIndex.
+	// Returns NaN on invalid index.
+	// This is the core synapse var access method used by other methods,
+	// so it is the only one that needs to be updated for derived types.
+	SynValue1D(varIndex int, synIndex int) float32
 
 	// UpdateParams() updates parameter values for all Path parameters,
 	// based on any other params that might have changed.
 	UpdateParams()
 
 	// ApplyParams applies given parameter style Sheet to this pathway.
-	// Calls UpdateParams if anything set to ensure derived parameters are all updated.
-	// If setMsg is true, then a message is printed to confirm each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
+	// Calls UpdateParams if anything set to ensure derived
+	// parameters are all updated.
+	// If setMsg is true, then a message is printed to confirm each
+	// parameter that is set.
+	// It always prints a message if a parameter fails to be set.
 	// returns true if any params were set, and error if there were any errors.
 	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
 
@@ -141,156 +100,99 @@ type Path interface {
 	// returns error if path not found or value cannot be set.
 	SetParam(path, val string) error
 
-	// NonDefaultParams returns a listing of all parameters in the Projection that
+	// NonDefaultParams returns a listing of all parameters in the Pathway that
 	// are not at their default values -- useful for setting param styles etc.
 	NonDefaultParams() string
 
-	// AllParams returns a listing of all parameters in the Projection
+	// AllParams returns a listing of all parameters in the Pathway.
 	AllParams() string
 
-	// WriteWtsJSON writes the weights from this pathway from the receiver-side perspective
-	// in a JSON text format.  We build in the indentation logic to make it much faster and
+	// WriteWeightsJSON writes the weights from this pathway
+	// from the receiver-side perspective in a JSON text format.
+	// We build in the indentation logic to make it much faster and
 	// more efficient.
-	WriteWtsJSON(w io.Writer, depth int)
+	WriteWeightsJSON(w io.Writer, depth int)
 
-	// ReadWtsJSON reads the weights from this pathway from the receiver-side perspective
-	// in a JSON text format.  This is for a set of weights that were saved *for one path only*
-	// and is not used for the network-level ReadWtsJSON, which reads into a separate
-	// structure -- see SetWts method.
-	ReadWtsJSON(r io.Reader) error
+	// ReadWeightsJSON reads the weights from this pathway
+	// from the receiver-side perspective in a JSON text format.
+	// This is for a set of weights that were saved *for one path only*
+	// and is not used for the network-level ReadWeightsJSON,
+	// which reads into a separate structure -- see SetWeights method.
+	ReadWeightsJSON(r io.Reader) error
 
-	// SetWts sets the weights for this pathway from weights.Path decoded values
-	SetWts(pw *weights.Path) error
-
-	// Build constructs the full connectivity among the layers as specified in this pathway.
-	Build() error
+	// SetWeights sets the weights for this pathway from weights.Path
+	// decoded values
+	SetWeights(pw *weights.Path) error
 }
 
-// Paths is a slice of pathways
-type Paths []Path
+// PathBase defines the basic shared data for a pathway
+// which connects two layers, using a specific Pattern
+// of connectivity, and with its own set of parameters.
+// The same struct token is added to the Recv and Send
+// layer path lists,
+type PathBase struct {
+	// EmerPath provides access to the emer.Path interface
+	// methods for functions defined in the PathBase type.
+	// Must set this with a pointer to the actual instance
+	// when created, using InitPath function.
+	EmerPath Path
 
-// ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
-func (pl *Paths) ElemLabel(idx int) string {
-	if len(*pl) == 0 {
-		return "(empty)"
+	// Name of the path, which can be automatically set to
+	// SendLayer().Name + "To" + RecvLayer().Name via
+	// SetStandardName method.
+	Name string
+
+	// Class is for applying parameter styles across multiple paths
+	// that all get the same parameters.  This can be space separated
+	// with multple classes.
+	Class string
+
+	// Info contains descriptive information about the pathway.
+	// This is displayed in a tooltip in the network view.
+	Info string
+
+	// can record notes about this pathway here.
+	Notes string
+
+	// Pattern specifies the pattern of connectivity
+	// for interconnecting the sending and receiving layers.
+	Pattern paths.Pattern
+
+	// Off inactivates this pathway, allowing for easy experimentation.
+	Off bool
+}
+
+// InitPath initializes the path, setting the EmerPath interface
+// to provide access to it for PathBase methods.
+func InitPath(pt Path) {
+	pb := pt.AsEmer()
+	pb.EmerPath = pt
+}
+
+func (pt *PathBase) AsEmer() *PathBase { return pt }
+
+// params.Styler:
+func (pt *PathBase) StyleType() string  { return "Path" }
+func (pt *PathBase) StyleClass() string { return pt.EmerPath.TypeName() + " " + pt.Class }
+func (pt *PathBase) StyleName() string  { return pt.Name }
+func (pt *PathBase) Label() string      { return pt.Name }
+
+// AddClass adds a CSS-style class name(s) for this path,
+// ensuring that it is not a duplicate, and properly space separated.
+// Returns Path so it can be chained to set other properties too.
+func (pt *PathBase) AddClass(cls ...string) *PathBase {
+	pt.Class = params.AddClass(pt.Class, cls...)
+	return pt
+}
+
+// SynValue returns value of given variable name on the synapse
+// between given send, recv unit indexes (1D, flat indexes).
+// Returns math32.NaN() for access errors.
+func (pt *PathBase) SynValue(varNm string, sidx, ridx int) float32 {
+	vidx, err := pt.EmerPath.SynVarIndex(varNm)
+	if err != nil {
+		return math32.NaN()
 	}
-	if idx < 0 || idx >= len(*pl) {
-		return ""
-	}
-	pj := (*pl)[idx]
-	if reflectx.AnyIsNil(pj) {
-		return "nil"
-	}
-	return pj.Name()
+	syi := pt.EmerPath.SynIndex(sidx, ridx)
+	return pt.EmerPath.SynValue1D(vidx, syi)
 }
-
-// Add adds a pathway to the list
-func (pl *Paths) Add(p Path) {
-	(*pl) = append(*pl, p)
-}
-
-// Send finds the pathway with given send layer
-func (pl *Paths) Send(send Layer) (Path, bool) {
-	for _, pj := range *pl {
-		if pj.SendLay() == send {
-			return pj, true
-		}
-	}
-	return nil, false
-}
-
-// Recv finds the pathway with given recv layer
-func (pl *Paths) Recv(recv Layer) (Path, bool) {
-	for _, pj := range *pl {
-		if pj.RecvLay() == recv {
-			return pj, true
-		}
-	}
-	return nil, false
-}
-
-// SendName finds the pathway with given send layer name, nil if not found
-// see Try version for error checking.
-func (pl *Paths) SendName(sender string) Path {
-	pj, _ := pl.SendNameTry(sender)
-	return pj
-}
-
-// RecvName finds the pathway with given recv layer name, nil if not found
-// see Try version for error checking.
-func (pl *Paths) RecvName(recv string) Path {
-	pj, _ := pl.RecvNameTry(recv)
-	return pj
-}
-
-// SendNameTry finds the pathway with given send layer name.
-// returns error message if not found
-func (pl *Paths) SendNameTry(sender string) (Path, error) {
-	for _, pj := range *pl {
-		if pj.SendLay().Name() == sender {
-			return pj, nil
-		}
-	}
-	return nil, fmt.Errorf("sending layer: %v not found in list of pathways", sender)
-}
-
-// SendNameTypeTry finds the pathway with given send layer name and Type string.
-// returns error message if not found.
-func (pl *Paths) SendNameTypeTry(sender, typ string) (Path, error) {
-	for _, pj := range *pl {
-		if pj.SendLay().Name() == sender {
-			tstr := pj.PathTypeName()
-			if tstr == typ {
-				return pj, nil
-			}
-		}
-	}
-	return nil, fmt.Errorf("sending layer: %v, type: %v not found in list of pathways", sender, typ)
-}
-
-// RecvNameTry finds the pathway with given recv layer name.
-// returns error message if not found
-func (pl *Paths) RecvNameTry(recv string) (Path, error) {
-	for _, pj := range *pl {
-		if pj.RecvLay().Name() == recv {
-			return pj, nil
-		}
-	}
-	return nil, fmt.Errorf("receiving layer: %v not found in list of pathways", recv)
-}
-
-// RecvNameTypeTry finds the pathway with given recv layer name and Type string.
-// returns error message if not found.
-func (pl *Paths) RecvNameTypeTry(recv, typ string) (Path, error) {
-	for _, pj := range *pl {
-		if pj.RecvLay().Name() == recv {
-			tstr := pj.PathTypeName()
-			if tstr == typ {
-				return pj, nil
-			}
-		}
-	}
-	return nil, fmt.Errorf("receiving layer: %v, type: %v not found in list of pathways", recv, typ)
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-//  PathType
-
-// PathType is the type of the pathway (extensible for more specialized algorithms).
-// Class parameter styles automatically key off of these types.
-type PathType int32 //enums:enum
-
-// The pathway types
-const (
-	// Forward is a feedforward, bottom-up pathway from sensory inputs to higher layers
-	Forward PathType = iota
-
-	// Back is a feedback, top-down pathway from higher layers back to lower layers
-	Back
-
-	// Lateral is a lateral pathway within the same layer / area
-	Lateral
-
-	// Inhib is an inhibitory pathway that drives inhibitory synaptic inputs instead of excitatory
-	Inhib
-)

@@ -12,40 +12,38 @@ import (
 )
 
 var tweakSets = Sets{
-	"Base": {Desc: "these are the best params", Sheets: Sheets{
-		"Network": &Sheet{
-			{Sel: "Path", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
-				Params: Params{
-					"Path.Learn.LRate":    "0.02",
-					"Path.Learn.Momentum": "0.9",
-				},
-				Hypers: Hypers{
-					"Path.Learn.LRate":    {"Tweak": "log"},
-					"Path.Learn.Momentum": {"Tweak": "incr"},
-				}},
-			{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
-				Params: Params{
-					"Layer.Inhib.Layer.Gi": "1.8",
-				},
-				Hypers: Hypers{
-					"Layer.Inhib.Layer.Gi": {"Tweak": "[1.75, 1.85]"},
-				}},
-			{Sel: "#Hidden", Desc: "output definitely needs lower inhib -- true for smaller layers in general",
-				Params: Params{
-					"Layer.Inhib.Layer.Gi": "1.4",
-				},
-				Hypers: Hypers{
-					"Layer.Inhib.Layer.Gi": {"Tweak": "incr"},
-				}},
-			{Sel: ".Back", Desc: "top-down back-pathways MUST have lower relative weight scale, otherwise network hallucinates",
-				Params: Params{
-					"Path.WtScale.Rel": "0.2",
-				},
-				Hypers: Hypers{
-					"Path.WtScale.Rel": {"Tweak": "log"},
-				}},
-		},
-	}},
+	"Base": {
+		{Sel: "Path", Desc: "norm and momentum on works better, but wt bal is not better for smaller nets",
+			Params: Params{
+				"Path.Learn.LRate":    "0.02",
+				"Path.Learn.Momentum": "0.9",
+			},
+			Hypers: Hypers{
+				"Path.Learn.LRate":    {"Tweak": "log"},
+				"Path.Learn.Momentum": {"Tweak": "incr"},
+			}},
+		{Sel: "Layer", Desc: "using default 1.8 inhib for all of network -- can explore",
+			Params: Params{
+				"Layer.Inhib.Layer.Gi": "1.8",
+			},
+			Hypers: Hypers{
+				"Layer.Inhib.Layer.Gi": {"Tweak": "[1.75, 1.85]"},
+			}},
+		{Sel: "#Hidden", Desc: "output definitely needs lower inhib -- true for smaller layers in general",
+			Params: Params{
+				"Layer.Inhib.Layer.Gi": "1.4",
+			},
+			Hypers: Hypers{
+				"Layer.Inhib.Layer.Gi": {"Tweak": "incr"},
+			}},
+		{Sel: ".Back", Desc: "top-down back-pathways MUST have lower relative weight scale, otherwise network hallucinates",
+			Params: Params{
+				"Path.WtScale.Rel": "0.2",
+			},
+			Hypers: Hypers{
+				"Path.WtScale.Rel": {"Tweak": "log"},
+			}},
+	},
 }
 
 func TestTweak(t *testing.T) {
@@ -73,8 +71,7 @@ func TestTweak(t *testing.T) {
 	}
 }
 
-var trgSearch = `[{"Param":"Layer.Inhib.Layer.Gi","Sel":{"Sel":"#Hidden","Desc":"output definitely needs lower inhib -- true for smaller layers in general","Params":{"Layer.Inhib.Layer.Gi":"1.4"},"Hypers":{"Layer.Inhib.Layer.Gi":{"Tweak":"incr"}}},"Search":[{"Name":"Hidden","Type":"Layer","Path":"Layer.Inhib.Layer.Gi","Start":1.4,"Values":[1.3,1.5]}]},{"Param":"Path.WtScale.Rel","Sel":{"Sel":".Back","Desc":"top-down back-pathways MUST have lower relative weight scale, otherwise network hallucinates","Params":{"Path.WtScale.Rel":"0.2"},"Hypers":{"Path.WtScale.Rel":{"Tweak":"log"}}},"Search":[{"Name":"HiddenToInput","Type":"Path","Path":"Path.WtScale.Rel","Start":0.2,"Values":[0.1,0.5]}]},{"Param":"Layer.Inhib.Layer.Gi","Sel":{"Sel":"Layer","Desc":"using default 1.8 inhib for all of network -- can explore","Params":{"Layer.Inhib.Layer.Gi":"1.8"},"Hypers":{"Layer.Inhib.Layer.Gi":{"Tweak":"[1.75, 1.85]"}}},"Search":[{"Name":"Input","Type":"Layer","Path":"Layer.Inhib.Layer.Gi","Start":1.8,"Values":[1.75,1.85]}]},{"Param":"Path.Learn.LRate","Sel":{"Sel":"Path","Desc":"norm and momentum on works better, but wt bal is not better for smaller nets","Params":{"Path.Learn.LRate":"0.02","Path.Learn.Momentum":"0.9"},"Hypers":{"Path.Learn.LRate":{"Tweak":"log"},"Path.Learn.Momentum":{"Tweak":"incr"}}},"Search":[{"Name":"HiddenToInput","Type":"Path","Path":"Path.Learn.LRate","Start":0.02,"Values":[0.01,0.05]},{"Name":"InputToHidden","Type":"Path","Path":"Path.Learn.LRate","Start":0.02,"Values":[0.01,0.05]}]},{"Param":"Path.Learn.Momentum","Sel":{"Sel":"Path","Desc":"norm and momentum on works better, but wt bal is not better for smaller nets","Params":{"Path.Learn.LRate":"0.02","Path.Learn.Momentum":"0.9"},"Hypers":{"Path.Learn.LRate":{"Tweak":"log"},"Path.Learn.Momentum":{"Tweak":"incr"}}},"Search":[{"Name":"HiddenToInput","Type":"Path","Path":"Path.Learn.Momentum","Start":0.9,"Values":[0.8,1]},{"Name":"InputToHidden","Type":"Path","Path":"Path.Learn.Momentum","Start":0.9,"Values":[0.8,1]}]}]
-`
+var trgSearch = "[\n\t{\n\t\t\"Param\": \"Layer.Inhib.Layer.Gi\",\n\t\t\"Sel\": {\n\t\t\t\"Sel\": \"#Hidden\",\n\t\t\t\"Desc\": \"output definitely needs lower inhib -- true for smaller layers in general\",\n\t\t\t\"Params\": {\n\t\t\t\t\"Layer.Inhib.Layer.Gi\": \"1.4\"\n\t\t\t},\n\t\t\t\"Hypers\": {\n\t\t\t\t\"Layer.Inhib.Layer.Gi\": {\n\t\t\t\t\t\"Tweak\": \"incr\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"Search\": [\n\t\t\t{\n\t\t\t\t\"Name\": \"Hidden\",\n\t\t\t\t\"Type\": \"Layer\",\n\t\t\t\t\"Path\": \"Layer.Inhib.Layer.Gi\",\n\t\t\t\t\"Start\": 1.4,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t1.3,\n\t\t\t\t\t1.5\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t},\n\t{\n\t\t\"Param\": \"Path.WtScale.Rel\",\n\t\t\"Sel\": {\n\t\t\t\"Sel\": \".Back\",\n\t\t\t\"Desc\": \"top-down back-pathways MUST have lower relative weight scale, otherwise network hallucinates\",\n\t\t\t\"Params\": {\n\t\t\t\t\"Path.WtScale.Rel\": \"0.2\"\n\t\t\t},\n\t\t\t\"Hypers\": {\n\t\t\t\t\"Path.WtScale.Rel\": {\n\t\t\t\t\t\"Tweak\": \"log\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"Search\": [\n\t\t\t{\n\t\t\t\t\"Name\": \"HiddenToInput\",\n\t\t\t\t\"Type\": \"Path\",\n\t\t\t\t\"Path\": \"Path.WtScale.Rel\",\n\t\t\t\t\"Start\": 0.2,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t0.1,\n\t\t\t\t\t0.5\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t},\n\t{\n\t\t\"Param\": \"Layer.Inhib.Layer.Gi\",\n\t\t\"Sel\": {\n\t\t\t\"Sel\": \"Layer\",\n\t\t\t\"Desc\": \"using default 1.8 inhib for all of network -- can explore\",\n\t\t\t\"Params\": {\n\t\t\t\t\"Layer.Inhib.Layer.Gi\": \"1.8\"\n\t\t\t},\n\t\t\t\"Hypers\": {\n\t\t\t\t\"Layer.Inhib.Layer.Gi\": {\n\t\t\t\t\t\"Tweak\": \"[1.75, 1.85]\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"Search\": [\n\t\t\t{\n\t\t\t\t\"Name\": \"Input\",\n\t\t\t\t\"Type\": \"Layer\",\n\t\t\t\t\"Path\": \"Layer.Inhib.Layer.Gi\",\n\t\t\t\t\"Start\": 1.8,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t1.75,\n\t\t\t\t\t1.85\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t},\n\t{\n\t\t\"Param\": \"Path.Learn.LRate\",\n\t\t\"Sel\": {\n\t\t\t\"Sel\": \"Path\",\n\t\t\t\"Desc\": \"norm and momentum on works better, but wt bal is not better for smaller nets\",\n\t\t\t\"Params\": {\n\t\t\t\t\"Path.Learn.LRate\": \"0.02\",\n\t\t\t\t\"Path.Learn.Momentum\": \"0.9\"\n\t\t\t},\n\t\t\t\"Hypers\": {\n\t\t\t\t\"Path.Learn.LRate\": {\n\t\t\t\t\t\"Tweak\": \"log\"\n\t\t\t\t},\n\t\t\t\t\"Path.Learn.Momentum\": {\n\t\t\t\t\t\"Tweak\": \"incr\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"Search\": [\n\t\t\t{\n\t\t\t\t\"Name\": \"HiddenToInput\",\n\t\t\t\t\"Type\": \"Path\",\n\t\t\t\t\"Path\": \"Path.Learn.LRate\",\n\t\t\t\t\"Start\": 0.02,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t0.01,\n\t\t\t\t\t0.05\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"Name\": \"InputToHidden\",\n\t\t\t\t\"Type\": \"Path\",\n\t\t\t\t\"Path\": \"Path.Learn.LRate\",\n\t\t\t\t\"Start\": 0.02,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t0.01,\n\t\t\t\t\t0.05\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t},\n\t{\n\t\t\"Param\": \"Path.Learn.Momentum\",\n\t\t\"Sel\": {\n\t\t\t\"Sel\": \"Path\",\n\t\t\t\"Desc\": \"norm and momentum on works better, but wt bal is not better for smaller nets\",\n\t\t\t\"Params\": {\n\t\t\t\t\"Path.Learn.LRate\": \"0.02\",\n\t\t\t\t\"Path.Learn.Momentum\": \"0.9\"\n\t\t\t},\n\t\t\t\"Hypers\": {\n\t\t\t\t\"Path.Learn.LRate\": {\n\t\t\t\t\t\"Tweak\": \"log\"\n\t\t\t\t},\n\t\t\t\t\"Path.Learn.Momentum\": {\n\t\t\t\t\t\"Tweak\": \"incr\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"Search\": [\n\t\t\t{\n\t\t\t\t\"Name\": \"HiddenToInput\",\n\t\t\t\t\"Type\": \"Path\",\n\t\t\t\t\"Path\": \"Path.Learn.Momentum\",\n\t\t\t\t\"Start\": 0.9,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t0.8,\n\t\t\t\t\t1\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"Name\": \"InputToHidden\",\n\t\t\t\t\"Type\": \"Path\",\n\t\t\t\t\"Path\": \"Path.Learn.Momentum\",\n\t\t\t\t\"Start\": 0.9,\n\t\t\t\t\"Values\": [\n\t\t\t\t\t0.8,\n\t\t\t\t\t1\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t}\n]\n"
 
 func TestTweakHypers(t *testing.T) {
 	hypers := Flex{}
@@ -84,7 +81,7 @@ func TestTweakHypers(t *testing.T) {
 		FlexVal{Nm: "InputToHidden", Type: "Path", Cls: "Forward", Obj: Hypers{}},
 		FlexVal{Nm: "HiddenToInput", Type: "Path", Cls: "Back", Obj: Hypers{}},
 	})
-	basenet := tweakSets.SetByName("Base").Sheets["Network"]
+	basenet := tweakSets["Base"]
 	hypers.ApplySheet(basenet, false)
 
 	// fmt.Println("hypers:", reflectx.StringJSON(hypers))

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/metric"
 	"cogentcore.org/core/tensor/stats/stats"
@@ -233,10 +234,10 @@ func (ctx *Context) ItemColTensorScope(scope etime.ScopeKey, itemNm string) tens
 ///////////////////////////////////////////////////
 //  Network
 
-// Layer returns layer by name as the emer.Layer interface --
-// you may then need to convert to a concrete type depending.
+// Layer returns layer by name as the emer.Layer interface.
+// May then need to convert to a concrete type depending.
 func (ctx *Context) Layer(layNm string) emer.Layer {
-	return ctx.Net.LayerByName(layNm)
+	return errors.Log1(ctx.Net.AsEmer().EmerLayerByName(layNm))
 }
 
 // GetLayerTensor gets tensor of Unit values on a layer for given variable
@@ -244,16 +245,16 @@ func (ctx *Context) Layer(layNm string) emer.Layer {
 func (ctx *Context) GetLayerTensor(layNm, unitVar string) *tensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValuesTensor(tsr, unitVar, ctx.Di)
+	ly.AsEmer().UnitValuesTensor(tsr, unitVar, ctx.Di)
 	return tsr
 }
 
-// GetLayerRepTensor gets tensor of representative Unit values on a layer for given variable
+// GetLayerSampleTensor gets tensor of representative Unit values on a layer for given variable
 // from current ctx.Di data parallel index.
-func (ctx *Context) GetLayerRepTensor(layNm, unitVar string) *tensor.Float32 {
+func (ctx *Context) GetLayerSampleTensor(layNm, unitVar string) *tensor.Float32 {
 	ly := ctx.Layer(layNm)
 	tsr := ctx.Stats.F32Tensor(layNm)
-	ly.UnitValuesRepTensor(tsr, unitVar, ctx.Di)
+	ly.AsEmer().UnitValuesSampleTensor(tsr, unitVar, ctx.Di)
 	return tsr
 }
 
@@ -265,10 +266,10 @@ func (ctx *Context) SetLayerTensor(layNm, unitVar string) *tensor.Float32 {
 	return tsr
 }
 
-// SetLayerRepTensor sets tensor of representative Unit values on a layer for given variable
+// SetLayerSampleTensor sets tensor of representative Unit values on a layer for given variable
 // to current ctx.Di data parallel index.
-func (ctx *Context) SetLayerRepTensor(layNm, unitVar string) *tensor.Float32 {
-	tsr := ctx.GetLayerRepTensor(layNm, unitVar)
+func (ctx *Context) SetLayerSampleTensor(layNm, unitVar string) *tensor.Float32 {
+	tsr := ctx.GetLayerSampleTensor(layNm, unitVar)
 	ctx.SetTensor(tsr)
 	return tsr
 }

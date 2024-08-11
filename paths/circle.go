@@ -15,7 +15,7 @@ import (
 // Circle implements a circular pattern of connectivity between two layers
 // where the center moves in proportion to receiver position with offset
 // and multiplier factors, and a given radius is used (with wrap-around
-// optionally).  A corresponding Gaussian bump of TopoWts is available as well.
+// optionally).  A corresponding Gaussian bump of TopoWeights is available as well.
 // Makes for a good center-surround connectivity pattern.
 // 4D layers are automatically flattened to 2D for this connection.
 type Circle struct {
@@ -36,7 +36,7 @@ type Circle struct {
 	Wrap bool
 
 	// if true, this path should set gaussian topographic weights, according to following parameters
-	TopoWts bool
+	TopoWeights bool
 
 	// gaussian sigma (width) as a proportion of the radius of the circle
 	Sigma float32

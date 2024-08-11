@@ -7,22 +7,22 @@ package emer
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"strings"
 
 	"cogentcore.org/core/base/mpi"
-	"github.com/emer/emergent/v2/netparams"
 	"github.com/emer/emergent/v2/params"
 )
 
-// NetParams handles standard parameters for a Network only
-// (use econfig and a Config struct for other configuration params)
+// NetParams handles standard parameters for a Network
+// (use econfig and a Config struct for other configuration params).
 // Assumes a Set named "Base" has the base-level parameters, which are
 // always applied first, followed optionally by additional Set(s)
 // that can have different parameters to try.
 type NetParams struct {
 
 	// full collection of param sets to use
-	Params netparams.Sets `display:"no-inline"`
+	Params params.Sets `display:"no-inline"`
 
 	// optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)
 	ExtraSheets string
@@ -41,7 +41,7 @@ type NetParams struct {
 }
 
 // Config configures the ExtraSheets, Tag, and Network fields
-func (pr *NetParams) Config(pars netparams.Sets, extraSheets, tag string, net Network) {
+func (pr *NetParams) Config(pars params.Sets, extraSheets, tag string, net Network) {
 	pr.Params = pars
 	report := ""
 	if extraSheets != "" {
@@ -76,7 +76,7 @@ func (pr *NetParams) Name() string {
 // RunName returns standard name simulation run based on params Name()
 // and starting run number.
 func (pr *NetParams) RunName(startRun int) string {
-	return fmt.Sprintf("%s_%03d", pr.Name(), startRun)
+	return fmt.Sprintf("%s_%03d", pr.Name, startRun)
 }
 
 // Validate checks that the Network has been set
@@ -139,11 +139,78 @@ func (pr *NetParams) SetNetworkMap(net Network, vals map[string]any) error {
 
 // SetNetworkSheet applies params from given sheet
 func (pr *NetParams) SetNetworkSheet(net Network, sh *params.Sheet, setName string) {
-	net.ApplyParams(sh, pr.SetMsg)
+	net.AsEmer().ApplyParams(sh, pr.SetMsg)
 	hypers := NetworkHyperParams(net, sh)
 	if setName == "Base" {
 		pr.NetHypers = hypers
 	} else {
 		pr.NetHypers.CopyFrom(hypers)
 	}
+}
+
+// NetworkHyperParams returns the compiled hyper parameters from given Sheet
+// for each layer and pathway in the network -- applies the standard css
+// styling logic for the hyper parameters.
+func NetworkHyperParams(net Network, sheet *params.Sheet) params.Flex {
+	hypers := params.Flex{}
+	nl := net.NumLayers()
+	for li := range nl {
+		ly := net.EmerLayer(li)
+		nm := ly.StyleName()
+		hypers[nm] = &params.FlexVal{Nm: nm, Type: "Layer", Cls: ly.StyleClass(), Obj: params.Hypers{}}
+	}
+	// separate pathways
+	for li := range nl {
+		ly := net.EmerLayer(li)
+		np := ly.NumRecvPaths()
+		for pi := range np {
+			pj := ly.RecvPath(pi)
+			nm := pj.StyleName()
+			hypers[nm] = &params.FlexVal{Nm: nm, Type: "Path", Cls: pj.StyleClass(), Obj: params.Hypers{}}
+		}
+	}
+	for nm, vl := range hypers {
+		sheet.Apply(vl, false)
+		hv := vl.Obj.(params.Hypers)
+		hv.DeleteValOnly()
+		if len(hv) == 0 {
+			delete(hypers, nm)
+		}
+	}
+	return hypers
+}
+
+// SetFloatParam sets given float32 param value to layer or pathway
+// (typ = Layer or Path) of given name, at given path (which can start
+// with the typ name).
+// Returns an error (and logs it automatically) for any failure.
+func SetFloatParam(net Network, name, typ, path string, val float32) error {
+	rpath := params.PathAfterType(path)
+	prs := fmt.Sprintf("%g", val)
+	en := net.AsEmer()
+	switch typ {
+	case "Layer":
+		ly, err := en.EmerLayerByName(name)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		err = ly.SetParam(rpath, prs)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+	case "Path":
+		pj, err := en.EmerPathByName(name)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		err = pj.SetParam(rpath, prs)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+	}
+	return nil
 }

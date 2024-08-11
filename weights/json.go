@@ -10,8 +10,9 @@ import (
 	"log"
 )
 
-// Prec is the precision for weight output in text formats -- default is aggressive
-// for Leabra models -- may need to increase for other models.
+// Prec is the precision for weight output in text formats.
+// The default is aggressive for Leabra models.
+// May need to increase for other models.
 var Prec = 4
 
 // NetReadJSON reads weights for entire network in a JSON format into Network structure

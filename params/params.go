@@ -169,85 +169,33 @@ func (sh *Sheet) ParamValue(sel, param string) (string, error) {
 
 ///////////////////////////////////////////////////////////////////////
 
-// Sheets is a map of named sheets -- used in the Set
-type Sheets map[string]*Sheet //types:add
+// Sets is a collection of Sheets that can be chosen among
+// depending on different desired configurations etc.  Thus, each Set
+// represents a collection of different possible specific configurations,
+// and different such configurations can be chosen by name to apply as desired.
+type Sets map[string]*Sheet //git:add
 
-///////////////////////////////////////////////////////////////////////
-
-// Set is a collection of Sheets that constitute a coherent set of parameters --
-// a particular specific configuration of parameters, which the user selects to use.
-// The Set name is stored in the Sets map from which it is typically accessed.
-// A good strategy is to have a "Base" set that has all the best parameters so far,
-// and then other sets can modify relative to that one.  It is up to the Sim code to
-// apply parameter sets in whatever order is desired.
-//
-// Within a params.Set, multiple different params.Sheets can be organized,
-// with each CSS-style sheet achieving a relatively complete parameter styling
-// of a given element of the overal model, e.g., "Network", "Sim", "Env".
-// Or Network could be further broken down into "Learn" vs. "Act" etc,
-// or according to different brain areas ("Hippo", "PFC", "BG", etc).
-// Again, this is entirely at the discretion of the modeler and must be
-// performed under explict program control, especially because order is so critical.
-//
-// Note that there is NO deterministic ordering of the Sheets due to the use of
-// a Go map structure, which specifically randomizes order, so simply iterating over them
-// and applying may produce unexpected results -- it is better to lookup by name.
-type Set struct { //types:add
-
-	// description of this param set -- when should it be used?  how is it different from the other sets?
-	Desc string `width:"60"`
-
-	// Sheet's grouped according to their target and / or function. For example,
-	// "Network" for all the network params (or "Learn" vs. "Act" for more fine-grained), and "Sim" for overall simulation control parameters, "Env" for environment parameters, etc.  It is completely up to your program to lookup these names and apply them as appropriate.
-	Sheets Sheets
-}
-
-// SheetByNameTry tries to find given sheet by name, and returns error
+// SheetByNameTry tries to find given set by name, and returns error
 // if not found (also logs the error)
-func (ps *Set) SheetByNameTry(name string) (*Sheet, error) {
-	psht, ok := ps.Sheets[name]
-	if !ok {
-		err := fmt.Errorf("params.Set: Sheet named %v not found", name)
-		log.Println(err)
-		return nil, err
+func (ps *Sets) SheetByNameTry(name string) (*Sheet, error) {
+	st, ok := (*ps)[name]
+	if ok {
+		return st, nil
 	}
-	return psht, nil
+	err := fmt.Errorf("params.Sets: Param Sheet named %s not found", name)
+	log.Println(err)
+	return nil, err
 }
 
-// SheetByName finds given sheet by name -- returns nil if not found.
-// Use this when sure the sheet exists -- otherwise use Try version.
-func (ps *Set) SheetByName(name string) *Sheet {
-	return ps.Sheets[name]
-}
-
-// ValidateSheets ensures that the sheet names are among those listed -- returns
-// error message for any that are not.  Helps catch typos and makes sure params are
-// applied properly.    Automatically logs errors.
-func (ps *Set) ValidateSheets(valids []string) error {
-	var invalids []string
-	for nm := range ps.Sheets {
-		got := false
-		for _, vl := range valids {
-			if nm == vl {
-				got = true
-				break
-			}
-		}
-		if !got {
-			invalids = append(invalids, nm)
-		}
-	}
-	if len(invalids) > 0 {
-		err := fmt.Errorf("params.Set: Invalid sheet names: %v", invalids)
-		log.Println(err)
-		return err
-	}
-	return nil
+// SheetByName returns given sheet by name -- for use when confident
+// that it exists, as a nil will return if not found with no error
+func (ps *Sets) SheetByName(name string) *Sheet {
+	return (*ps)[name]
 }
 
 // SetFloat sets the value of given parameter, in selection sel,
-// in sheet
-func (ps *Set) SetFloat(sheet, sel, param string, val float64) error {
+// in sheet and set.
+func (ps *Sets) SetFloat(sheet, sel, param string, val float64) error {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return err
@@ -256,8 +204,8 @@ func (ps *Set) SetFloat(sheet, sel, param string, val float64) error {
 }
 
 // SetString sets the value of given parameter, in selection sel,
-// in sheet
-func (ps *Set) SetString(sheet, sel, param string, val string) error {
+// in sheet and set.  Returns error if anything is not found.
+func (ps *Sets) SetString(sheet, sel, param string, val string) error {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return err
@@ -266,86 +214,11 @@ func (ps *Set) SetString(sheet, sel, param string, val string) error {
 }
 
 // ParamVal returns the value of given parameter, in selection sel,
-// in sheet
-func (ps *Set) ParamValue(sheet, sel, param string) (string, error) {
+// in sheet and set.  Returns error if anything is not found.
+func (ps *Sets) ParamValue(sheet, sel, param string) (string, error) {
 	sp, err := ps.SheetByNameTry(sheet)
 	if err != nil {
 		return "", err
 	}
 	return sp.ParamValue(sel, param)
-}
-
-///////////////////////////////////////////////////////////////////////
-
-// Sets is a collection of Set's that can be chosen among
-// depending on different desired configurations etc.  Thus, each Set
-// represents a collection of different possible specific configurations,
-// and different such configurations can be chosen by name to apply as desired.
-type Sets map[string]*Set //types:add
-
-// SetByNameTry tries to find given set by name, and returns error
-// if not found (also logs the error)
-func (ps *Sets) SetByNameTry(name string) (*Set, error) {
-	st, ok := (*ps)[name]
-	if ok {
-		return st, nil
-	}
-	err := fmt.Errorf("params.Sets: Param Set named %s not found", name)
-	log.Println(err)
-	return nil, err
-}
-
-// SetByName returns given set by name -- for use when confident
-// that it exists, as a nil will return if not found with no error
-func (ps *Sets) SetByName(name string) *Set {
-	return (*ps)[name]
-}
-
-// ValidateSheets ensures that the sheet names are among those listed -- returns
-// error message for any that are not.  Helps catch typos and makes sure params are
-// applied properly.  Automatically logs errors.
-func (ps *Sets) ValidateSheets(valids []string) error {
-	var err error
-	for _, st := range *ps {
-		er := st.ValidateSheets(valids)
-		if er != nil {
-			err = er
-		}
-	}
-	return err
-}
-
-// // ElemLabel satisfies the core.SliceLabeler interface to provide labels for slice elements
-// func (ps *Sets) ElemLabel(idx int) string {
-// 	return (*ps)[idx].Name
-// }
-
-// SetFloat sets the value of given parameter, in selection sel,
-// in sheet and set.
-func (ps *Sets) SetFloat(set, sheet, sel, param string, val float64) error {
-	sp, err := ps.SetByNameTry(set)
-	if err != nil {
-		return err
-	}
-	return sp.SetFloat(sheet, sel, param, val)
-}
-
-// SetString sets the value of given parameter, in selection sel,
-// in sheet and set.  Returns error if anything is not found.
-func (ps *Sets) SetString(set, sheet, sel, param string, val string) error {
-	sp, err := ps.SetByNameTry(set)
-	if err != nil {
-		return err
-	}
-	return sp.SetString(sheet, sel, param, val)
-}
-
-// ParamVal returns the value of given parameter, in selection sel,
-// in sheet and set.  Returns error if anything is not found.
-func (ps *Sets) ParamValue(set, sheet, sel, param string) (string, error) {
-	sp, err := ps.SetByNameTry(set)
-	if err != nil {
-		return "", err
-	}
-	return sp.ParamValue(sheet, sel, param)
 }

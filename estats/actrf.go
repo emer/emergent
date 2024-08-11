@@ -24,21 +24,22 @@ import (
 // If Source is not a layer, it must be populated prior to these calls.
 func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error {
 	var err error
+	en := net.AsEmer()
 	for _, anm := range arfs {
 		sp := strings.Split(anm, ":")
 		lnm := sp[0]
-		_, err = net.LayerByNameTry(lnm)
+		_, err = en.EmerLayerByName(lnm)
 		if err != nil {
 			fmt.Printf("estats.InitActRFs: %s\n", err)
 			continue
 		}
 
-		lvt := st.SetLayerRepTensor(net, lnm, varnm, 0)
+		lvt := st.SetLayerSampleTensor(net, lnm, varnm, 0)
 		tnm := sp[1]
 		var tvt *tensor.Float32
-		_, err = net.LayerByNameTry(tnm)
+		_, err = en.EmerLayerByName(tnm)
 		if err == nil {
-			tvt = st.SetLayerRepTensor(net, tnm, varnm, 0)
+			tvt = st.SetLayerSampleTensor(net, tnm, varnm, 0)
 		} else {
 			ok := false
 			tvt, ok = st.F32Tensors[tnm]
@@ -61,20 +62,21 @@ func (st *Stats) InitActRFs(net emer.Network, arfs []string, varnm string) error
 // varnm, and given threshold (0.01 recommended)
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32, di int) {
+	en := net.AsEmer()
 	for _, rf := range st.ActRFs.RFs {
 		anm := rf.Name
 		sp := strings.Split(anm, ":")
 		lnm := sp[0]
-		_, err := net.LayerByNameTry(lnm)
+		_, err := en.EmerLayerByName(lnm)
 		if err != nil {
 			continue
 		}
-		lvt := st.SetLayerRepTensor(net, lnm, varnm, di)
+		lvt := st.SetLayerSampleTensor(net, lnm, varnm, di)
 		tnm := sp[1]
 		var tvt *tensor.Float32
-		_, err = net.LayerByNameTry(tnm)
+		_, err = en.EmerLayerByName(tnm)
 		if err == nil {
-			tvt = st.SetLayerRepTensor(net, tnm, varnm, di)
+			tvt = st.SetLayerSampleTensor(net, tnm, varnm, di)
 		} else { // random state
 			tvt = st.F32Tensor(tnm)
 		}

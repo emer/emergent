@@ -220,32 +220,32 @@ func (pt *PoolTile) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, re
 	return
 }
 
-// HasTopoWts returns true if some form of topographic weight patterns are set
-func (pt *PoolTile) HasTopoWts() bool {
+// HasTopoWeights returns true if some form of topographic weight patterns are set
+func (pt *PoolTile) HasTopoWeights() bool {
 	return pt.GaussFull.On || pt.GaussInPool.On || pt.SigFull.On || pt.SigInPool.On
 }
 
-// TopoWts sets values in given 4D or 6D tensor according to *Topo settings.
+// TopoWeights sets values in given 4D or 6D tensor according to *Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within layer / pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D or 4D is for receptive field Size by units within pool size for
 // sending layer.
-func (pt *PoolTile) TopoWts(send, recv *tensor.Shape, wts *tensor.Float32) error {
+func (pt *PoolTile) TopoWeights(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.GaussFull.On || pt.GaussInPool.On {
 		if send.NumDims() == 2 {
-			return pt.TopoWtsGauss2D(send, recv, wts)
+			return pt.TopoWeightsGauss2D(send, recv, wts)
 		} else {
-			return pt.TopoWtsGauss4D(send, recv, wts)
+			return pt.TopoWeightsGauss4D(send, recv, wts)
 		}
 	}
 	if pt.SigFull.On || pt.SigInPool.On {
 		if send.NumDims() == 2 {
-			return pt.TopoWtsSigmoid2D(send, recv, wts)
+			return pt.TopoWeightsSigmoid2D(send, recv, wts)
 		} else {
-			return pt.TopoWtsSigmoid4D(send, recv, wts)
+			return pt.TopoWeightsSigmoid4D(send, recv, wts)
 		}
 	}
-	err := fmt.Errorf("PoolTile:TopoWts no Gauss or Sig params turned on")
+	err := fmt.Errorf("PoolTile:TopoWeights no Gauss or Sig params turned on")
 	log.Println(err)
 	return err
 }
@@ -302,11 +302,11 @@ func (pt *PoolTile) GaussOff() {
 	pt.GaussInPool.On = false
 }
 
-// TopoWtsGauss2D sets values in given 4D tensor according to *Topo settings.
+// TopoWeightsGauss2D sets values in given 4D tensor according to *Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within layer / pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D is for sending layer size (2D = sender)
-func (pt *PoolTile) TopoWtsGauss2D(send, recv *tensor.Shape, wts *tensor.Float32) error {
+func (pt *PoolTile) TopoWeightsGauss2D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.GaussFull.Sigma == 0 {
 		pt.GaussFull.Defaults()
 	}
@@ -390,12 +390,12 @@ func (pt *PoolTile) TopoWtsGauss2D(send, recv *tensor.Shape, wts *tensor.Float32
 	return nil
 }
 
-// TopoWtsGauss4D sets values in given 6D tensor according to *Topo settings.
+// TopoWeightsGauss4D sets values in given 6D tensor according to *Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within layer / pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 4D is for receptive field Size by units within pool size for
 // sending layer.
-func (pt *PoolTile) TopoWtsGauss4D(send, recv *tensor.Shape, wts *tensor.Float32) error {
+func (pt *PoolTile) TopoWeightsGauss4D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.GaussFull.Sigma == 0 {
 		pt.GaussFull.Defaults()
 	}
@@ -512,11 +512,11 @@ func (gt *SigmoidTopo) ShouldDisplay(field string) bool {
 	}
 }
 
-// TopoWtsSigmoid2D sets values in given 4D tensor according to Topo settings.
+// TopoWeightsSigmoid2D sets values in given 4D tensor according to Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D is for sending layer (2D = sender).
-func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *tensor.Shape, wts *tensor.Float32) error {
+func (pt *PoolTile) TopoWeightsSigmoid2D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.SigFull.Gain == 0 {
 		pt.SigFull.Defaults()
 	}
@@ -602,12 +602,12 @@ func (pt *PoolTile) TopoWtsSigmoid2D(send, recv *tensor.Shape, wts *tensor.Float
 	return nil
 }
 
-// TopoWtsSigmoid4D sets values in given 6D tensor according to Topo settings.
+// TopoWeightsSigmoid4D sets values in given 6D tensor according to Topo settings.
 // wts is shaped with first 2 outer-most dims as Y, X of units within pool
 // of recv layer (these are units over which topography is defined)
 // and remaing 2D is for receptive field Size by units within pool size for
 // sending layer.
-func (pt *PoolTile) TopoWtsSigmoid4D(send, recv *tensor.Shape, wts *tensor.Float32) error {
+func (pt *PoolTile) TopoWeightsSigmoid4D(send, recv *tensor.Shape, wts *tensor.Float32) error {
 	if pt.SigFull.Gain == 0 {
 		pt.SigFull.Defaults()
 	}

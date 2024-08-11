@@ -12,32 +12,34 @@ import "strings"
 // Adding Set versions of Name and Class methods is a good idea but not
 // needed for this interface, so they are not included here.
 type Styler interface {
-	// TypeName returns the name of this type. CSS Sel selector with no prefix
-	// operates on type name.  This type is used *in addition* to the actual
-	// Go type name of the object, and is a kind of type-category (e.g., Layer
-	// or Path in emergent network objects)
-	TypeName() string
+	// StyleType returns the name of this type for CSS-style matching.
+	// This is used for CSS Sel selector with no prefix.
+	// This type is used *in addition* to the actual Go type name
+	// of the object, and is a kind of type-category (e.g., Layer
+	// or Path in emergent network objects).
+	StyleType() string
 
-	// Class returns the space-separated list of class selectors (tags).
+	// StyleClass returns the space-separated list of class selectors (tags).
 	// Parameters with a . prefix target class tags.
-	// Do NOT include the. in the Class tags on Styler objects however
-	// -- those are only in the Sel selector on the params.Sel.
-	Class() string
+	// Do NOT include the . in the Class tags on Styler objects;
+	// The . is only used in the Sel selector on the params.Sel.
+	StyleClass() string
 
-	// Name returns the name of this object.
+	// StyleName returns the name of this object.
 	// Parameters with a # prefix target object names, which are typically
-	// unique.  Note, do not include the # prefix in the Styler name.
-	Name() string
+	// unique.  Note, do not include the # prefix in the actual object name,
+	// only in the Sel selector on params.Sel.
+	StyleName() string
 }
 
-// The params.StylerObj interface extends Styler to include an arbitary
+// The params.StylerObject interface extends Styler to include an arbitary
 // function to access the underlying object type.
-type StylerObj interface {
+type StylerObject interface {
 	Styler
 
-	// Object returns the object that will have its field values set by
+	// StyleObject returns the object that will have its field values set by
 	// the params specifications.
-	Object() any
+	StyleObject() any
 }
 
 // AddClass adds given class(es) to current class string,

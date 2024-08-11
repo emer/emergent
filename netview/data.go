@@ -31,19 +31,19 @@ type LayData struct {
 // AllocSendPaths allocates Sending pathways for given layer.
 // does nothing if already allocated.
 func (ld *LayData) AllocSendPaths(ly emer.Layer) {
-	nsp := ly.NSendPaths()
+	nsp := ly.NumSendPaths()
 	if len(ld.SendPaths) == nsp {
-		for si := 0; si < ly.NSendPaths(); si++ {
-			pj := ly.SendPath(si)
+		for si := range ly.NumSendPaths() {
+			pt := ly.SendPath(si)
 			spd := ld.SendPaths[si]
-			spd.Path = pj
+			spd.Path = pt
 		}
 		return
 	}
 	ld.SendPaths = make([]*PathData, nsp)
-	for si := 0; si < ly.NSendPaths(); si++ {
-		pj := ly.SendPath(si)
-		pd := &PathData{Send: pj.SendLay().Name(), Recv: pj.RecvLay().Name(), Path: pj}
+	for si := range ly.NumSendPaths() {
+		pt := ly.SendPath(si)
+		pd := &PathData{Send: pt.SendLayer().StyleName(), Recv: pt.RecvLayer().StyleName(), Path: pt}
 		ld.SendPaths[si] = pd
 		pd.Alloc()
 	}
@@ -74,9 +74,9 @@ type PathData struct {
 // Alloc allocates SynData to hold number of variables * nsyn synapses.
 // If already has capacity, nothing happens.
 func (pd *PathData) Alloc() {
-	pj := pd.Path
-	nvar := pj.SynVarNum()
-	nsyn := pj.Syn1DNum()
+	pt := pd.Path
+	nvar := pt.SynVarNum()
+	nsyn := pt.NumSyns()
 	nt := nvar * nsyn
 	if cap(pd.SynData) < nt {
 		pd.SynData = make([]float32, nt)
@@ -88,15 +88,15 @@ func (pd *PathData) Alloc() {
 // RecordData records synaptic data from given paths.
 // must use sender or recv based depending on natural ordering.
 func (pd *PathData) RecordData(nd *NetData) {
-	pj := pd.Path
-	vnms := pj.SynVarNames()
-	nvar := pj.SynVarNum()
-	nsyn := pj.Syn1DNum()
+	pt := pd.Path
+	vnms := pt.SynVarNames()
+	nvar := pt.SynVarNum()
+	nsyn := pt.NumSyns()
 	for vi := 0; vi < nvar; vi++ {
 		vnm := vnms[vi]
 		si := vi * nsyn
 		sv := pd.SynData[si : si+nsyn]
-		pj.SynValues(&sv, vnm)
+		pt.SynValues(&sv, vnm)
 		nvi := nd.SynVarIndexes[vnm]
 		mn := &nd.SynMinVar[nvi]
 		mx := &nd.SynMaxVar[nvi]
