@@ -202,7 +202,7 @@ type LayerBase struct {
 
 	// Index is a 0..n-1 index of the position of the layer within
 	// the list of layers in the network.
-	Index int `display:"-" inactive:"-"`
+	Index int `display:"-" edit:"-"`
 
 	// SampleIndexes are the current set of "sample" unit indexes,
 	// which are a smaller subset of units that represent the behavior
@@ -211,7 +211,7 @@ type LayerBase struct {
 	// If none have been set, then all units are used.
 	// See utility function CenterPoolIndexes that returns indexes of
 	// units in the central pools of a 4D layer.
-	SampleIndexes []int
+	SampleIndexes []int `table:"-"`
 
 	// SampleShape is the shape to use for the subset of sample
 	// unit indexes, in terms of an array of dimensions.
@@ -220,7 +220,7 @@ type LayerBase struct {
 	// otherwise a 1D array of len SampleIndexes will be used.
 	// See utility function CenterPoolShape that returns shape of
 	// units in the central pools of a 4D layer.
-	SampleShape tensor.Shape
+	SampleShape tensor.Shape `table:"-"`
 }
 
 // InitLayer initializes the layer, setting the EmerLayer interface
@@ -370,7 +370,7 @@ func (ly *LayerBase) NumPools() int {
 // Returns error on invalid var name.
 func (ly *LayerBase) UnitValues(vals *[]float32, varNm string, di int) error {
 	nn := ly.NumUnits()
-	slicesx.SetLength(*vals, nn)
+	*vals = slicesx.SetLength(*vals, nn)
 	vidx, err := ly.EmerLayer.UnitVarIndex(varNm)
 	if err != nil {
 		nan := math32.NaN()

@@ -120,7 +120,7 @@ type NetworkBase struct {
 	// methods for functions defined in the NetworkBase type.
 	// Must set this with a pointer to the actual instance
 	// when created, using InitNetwork function.
-	EmerNetwork Network
+	EmerNetwork Network `display:"-"`
 
 	// overall name of network, which helps discriminate if there are multiple.
 	Name string
