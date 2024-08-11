@@ -167,14 +167,14 @@ type LayerBase struct {
 	// Layers are typically accessed directly by name, via a map.
 	Name string
 
-	// Info contains descriptive information about the layer.
-	// This is displayed in a tooltip in the network view.
-	Info string
-
 	// Class is for applying parameter styles across multiple layers
 	// that all get the same parameters.  This can be space separated
 	// with multple classes.
 	Class string
+
+	// Info contains descriptive information about the layer.
+	// This is displayed in a tooltip in the network view.
+	Info string
 
 	// Off turns off the layer, removing from all computations.
 	// This provides a convenient way to dynamically test for

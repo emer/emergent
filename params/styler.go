@@ -37,9 +37,9 @@ type Styler interface {
 type StylerObject interface {
 	Styler
 
-	// Object returns the object that will have its field values set by
+	// StyleObject returns the object that will have its field values set by
 	// the params specifications.
-	Object() any
+	StyleObject() any
 }
 
 // AddClass adds given class(es) to current class string,

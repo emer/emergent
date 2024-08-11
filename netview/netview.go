@@ -1227,25 +1227,25 @@ func (nv *NetView) MakeViewbar(p *tree.Plan) {
 
 // SaveWeights saves the network weights.
 func (nv *NetView) SaveWeights(filename core.Filename) { //types:add
-	nv.Net.SaveWtsJSON(filename)
+	nv.Net.AsEmer().SaveWeightsJSON(filename)
 }
 
 // OpenWeights opens the network weights.
 func (nv *NetView) OpenWeights(filename core.Filename) { //types:add
-	nv.Net.OpenWtsJSON(filename)
+	nv.Net.AsEmer().OpenWeightsJSON(filename)
 }
 
 // ShowNonDefaultParams shows a dialog of all the parameters that
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string { //types:add
-	nds := nv.Net.NonDefaultParams()
+	nds := nv.Net.AsEmer().NonDefaultParams()
 	texteditor.TextDialog(nv, "Non Default Params: "+nv.Name, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
 func (nv *NetView) ShowAllParams() string { //types:add
-	nds := nv.Net.AllParams()
+	nds := nv.Net.AsEmer().AllParams()
 	texteditor.TextDialog(nv, "All Params: "+nv.Name, nds)
 	return nds
 }

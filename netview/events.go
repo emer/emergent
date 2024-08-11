@@ -48,7 +48,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 	for _, n := range ns {
 		ln, ok := n.(*LayName)
 		if ok {
-			lay, _ := ln.NetView.Net.EmerLayerByName(ln.Text)
+			lay, _ := ln.NetView.Net.AsEmer().EmerLayerByName(ln.Text)
 			if lay != nil {
 				FormDialog(sw, lay, "Layer: "+lay.StyleName())
 			}

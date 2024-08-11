@@ -237,7 +237,7 @@ func (ctx *Context) ItemColTensorScope(scope etime.ScopeKey, itemNm string) tens
 // Layer returns layer by name as the emer.Layer interface.
 // May then need to convert to a concrete type depending.
 func (ctx *Context) Layer(layNm string) emer.Layer {
-	return errors.Log1(ctx.Net.EmerLayerByName(layNm))
+	return errors.Log1(ctx.Net.AsEmer().EmerLayerByName(layNm))
 }
 
 // GetLayerTensor gets tensor of Unit values on a layer for given variable

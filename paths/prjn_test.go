@@ -219,7 +219,7 @@ func TestPoolTile(t *testing.T) {
 	// send = tensor.NewShape([]int{4, 4, 3, 3})
 	// recv = tensor.NewShape([]int{2, 2, 2, 2})
 	// wts := &tensor.Float32{}
-	// pj.TopoWts(send, recv, wts)
+	// pj.TopoWeights(send, recv, wts)
 	// fmt.Printf("topo wts\n%v\n", wts)
 }
 
@@ -280,7 +280,7 @@ func TestPoolTileRecip(t *testing.T) {
 	// send = tensor.NewShape([]int{4, 4, 3, 3})
 	// recv = tensor.NewShape([]int{2, 2, 2, 2})
 	// wts := &tensor.Float32{}
-	// pj.TopoWts(send, recv, wts)
+	// pj.TopoWeights(send, recv, wts)
 	// fmt.Printf("topo wts\n%v\n", wts)
 }
 

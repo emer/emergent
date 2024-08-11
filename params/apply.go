@@ -49,7 +49,7 @@ func (pr *Params) Apply(obj any, setMsg bool) error {
 	if styler, has := obj.(Styler); has {
 		objNm = styler.StyleName()
 		if styob, has := obj.(StylerObject); has {
-			obj = styob.Object()
+			obj = styob.StyleObject()
 		}
 	} else if lblr, has := obj.(labels.Labeler); has {
 		objNm = lblr.Label()
@@ -107,7 +107,7 @@ func (pr *Hypers) Apply(obj any, setMsg bool) error {
 	if styler, has := obj.(Styler); has {
 		objNm = styler.StyleName()
 		if styob, has := obj.(StylerObject); has {
-			obj = styob.Object()
+			obj = styob.StyleObject()
 		}
 	} else if lblr, has := obj.(labels.Labeler); has {
 		objNm = lblr.Label()
@@ -186,7 +186,7 @@ func (ps *Sel) SelMatch(obj any) bool {
 		return true // default match if no styler..
 	}
 	if styob, has := obj.(StylerObject); has {
-		obj = styob.Object()
+		obj = styob.StyleObject()
 	}
 	gotyp := reflectx.NonPointerType(reflect.TypeOf(obj)).Name()
 	return SelMatch(ps.Sel, styler.StyleName(), styler.StyleClass(), styler.StyleType(), gotyp)

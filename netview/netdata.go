@@ -444,7 +444,7 @@ func (nd *NetData) RecvUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if nd.NoSynData || !ok || nd.PathLay == "" {
 		return 0, false
 	}
-	recvLay := errors.Ignore1(nd.Net.EmerLayerByName(nd.PathLay)).AsEmer()
+	recvLay := errors.Ignore1(nd.Net.AsEmer().EmerLayerByName(nd.PathLay)).AsEmer()
 	if recvLay == nil {
 		return 0, false
 	}
@@ -492,7 +492,7 @@ func (nd *NetData) SendUnitValue(laynm string, vnm string, uidx1d int) (float32,
 	if nd.NoSynData || !ok || nd.PathLay == "" {
 		return 0, false
 	}
-	sendLay := errors.Ignore1(nd.Net.EmerLayerByName(nd.PathLay)).AsEmer()
+	sendLay := errors.Ignore1(nd.Net.AsEmer().EmerLayerByName(nd.PathLay)).AsEmer()
 	if sendLay == nil {
 		return 0, false
 	}

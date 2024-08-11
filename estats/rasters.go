@@ -15,7 +15,7 @@ import (
 func (st *Stats) ConfigRasters(net emer.Network, maxCyc int, layers []string) {
 	st.Rasters = layers
 	for _, lnm := range st.Rasters {
-		ly := errors.Log1(net.EmerLayerByName(lnm)).AsEmer()
+		ly := errors.Log1(net.AsEmer().EmerLayerByName(lnm)).AsEmer()
 		sr := st.F32Tensor("Raster_" + lnm)
 		nu := len(ly.SampleIndexes)
 		if nu == 0 {

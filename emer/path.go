@@ -107,29 +107,29 @@ type Path interface {
 	// AllParams returns a listing of all parameters in the Pathway.
 	AllParams() string
 
-	// WriteWtsJSON writes the weights from this pathway
+	// WriteWeightsJSON writes the weights from this pathway
 	// from the receiver-side perspective in a JSON text format.
 	// We build in the indentation logic to make it much faster and
 	// more efficient.
-	WriteWtsJSON(w io.Writer, depth int)
+	WriteWeightsJSON(w io.Writer, depth int)
 
-	// ReadWtsJSON reads the weights from this pathway
+	// ReadWeightsJSON reads the weights from this pathway
 	// from the receiver-side perspective in a JSON text format.
 	// This is for a set of weights that were saved *for one path only*
-	// and is not used for the network-level ReadWtsJSON,
-	// which reads into a separate structure -- see SetWts method.
-	ReadWtsJSON(r io.Reader) error
+	// and is not used for the network-level ReadWeightsJSON,
+	// which reads into a separate structure -- see SetWeights method.
+	ReadWeightsJSON(r io.Reader) error
 
-	// SetWts sets the weights for this pathway from weights.Path
+	// SetWeights sets the weights for this pathway from weights.Path
 	// decoded values
-	SetWts(pw *weights.Path) error
+	SetWeights(pw *weights.Path) error
 }
 
 // PathBase defines the basic shared data for a pathway
 // which connects two layers, using a specific Pattern
 // of connectivity, and with its own set of parameters.
-// Name is set automatically to:
-// Nothing algorithm-specific is implemented here.
+// The same struct token is added to the Recv and Send
+// layer path lists,
 type PathBase struct {
 	// EmerPath provides access to the emer.Path interface
 	// methods for functions defined in the PathBase type.
@@ -147,17 +147,26 @@ type PathBase struct {
 	// with multple classes.
 	Class string
 
+	// Info contains descriptive information about the pathway.
+	// This is displayed in a tooltip in the network view.
+	Info string
+
+	// can record notes about this pathway here.
+	Notes string
+
 	// Pattern specifies the pattern of connectivity
 	// for interconnecting the sending and receiving layers.
 	Pattern paths.Pattern
+
+	// Off inactivates this pathway, allowing for easy experimentation.
+	Off bool
 }
 
 // InitPath initializes the path, setting the EmerPath interface
-// to provide access to it for PathBase methods, along with the name.
-func InitPath(l Path, name string) {
-	lb := l.AsEmer()
-	lb.EmerPath = l
-	lb.Name = name
+// to provide access to it for PathBase methods.
+func InitPath(pt Path) {
+	pb := pt.AsEmer()
+	pb.EmerPath = pt
 }
 
 func (pt *PathBase) AsEmer() *PathBase { return pt }
@@ -166,6 +175,7 @@ func (pt *PathBase) AsEmer() *PathBase { return pt }
 func (pt *PathBase) StyleType() string  { return "Path" }
 func (pt *PathBase) StyleClass() string { return pt.EmerPath.TypeName() + " " + pt.Class }
 func (pt *PathBase) StyleName() string  { return pt.Name }
+func (pt *PathBase) Label() string      { return pt.Name }
 
 // AddClass adds a CSS-style class name(s) for this path,
 // ensuring that it is not a duplicate, and properly space separated.
@@ -174,8 +184,6 @@ func (pt *PathBase) AddClass(cls ...string) *PathBase {
 	pt.Class = params.AddClass(pt.Class, cls...)
 	return pt
 }
-
-func (pt *PathBase) Label() string { return pt.Name }
 
 // SynValue returns value of given variable name on the synapse
 // between given send, recv unit indexes (1D, flat indexes).

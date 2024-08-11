@@ -76,7 +76,7 @@ func (pr *NetParams) Name() string {
 // RunName returns standard name simulation run based on params Name()
 // and starting run number.
 func (pr *NetParams) RunName(startRun int) string {
-	return fmt.Sprintf("%s_%03d", pr.Name(), startRun)
+	return fmt.Sprintf("%s_%03d", pr.Name, startRun)
 }
 
 // Validate checks that the Network has been set

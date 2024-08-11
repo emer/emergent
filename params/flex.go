@@ -46,7 +46,7 @@ func (fv *FlexVal) Name() string {
 	return fv.Nm
 }
 
-func (fv *FlexVal) Object() any {
+func (fv *FlexVal) StyleObject() any {
 	return fv.Obj
 }
 

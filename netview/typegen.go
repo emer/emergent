@@ -3,7 +3,11 @@
 package netview
 
 import (
-	"cogentcore.org/core/base/ordmap"
+	"sync"
+
+	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
 )
 

@@ -19,7 +19,7 @@ import (
 // to a F32Tensor with name = layNm
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int) *tensor.Float32 {
-	ly := errors.Log1(net.EmerLayerByName(layNm)).AsEmer()
+	ly := errors.Log1(net.AsEmer().EmerLayerByName(layNm)).AsEmer()
 	tsr := st.F32TensorDi(layNm, di)
 	ly.UnitValuesTensor(tsr, unitVar, di)
 	return tsr
@@ -29,7 +29,7 @@ func (st *Stats) SetLayerTensor(net emer.Network, layNm, unitVar string, di int)
 // for given variable to a F32Tensor with name = layNm
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) SetLayerSampleTensor(net emer.Network, layNm, unitVar string, di int) *tensor.Float32 {
-	ly := errors.Log1(net.EmerLayerByName(layNm)).AsEmer()
+	ly := errors.Log1(net.AsEmer().EmerLayerByName(layNm)).AsEmer()
 	tsr := st.F32TensorDi(layNm, di)
 	ly.UnitValuesSampleTensor(tsr, unitVar, di)
 	return tsr
@@ -38,7 +38,7 @@ func (st *Stats) SetLayerSampleTensor(net emer.Network, layNm, unitVar string, d
 // LayerVarsCorrel returns the correlation between two variables on a given layer
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
-	ly := errors.Log1(net.EmerLayerByName(layNm)).AsEmer()
+	ly := errors.Log1(net.AsEmer().EmerLayerByName(layNm)).AsEmer()
 	tsrA := st.F32TensorDi(layNm, di) // standard re-used storage tensor
 	ly.UnitValuesTensor(tsrA, unitVarA, di)
 	tsrB := st.F32TensorDi(layNm+"_alt", di) // alternative storage tensor
@@ -50,7 +50,7 @@ func (st *Stats) LayerVarsCorrel(net emer.Network, layNm, unitVarA, unitVarB str
 // Rep version uses representative units.
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB string, di int) float32 {
-	ly := errors.Log1(net.EmerLayerByName(layNm)).AsEmer()
+	ly := errors.Log1(net.AsEmer().EmerLayerByName(layNm)).AsEmer()
 	tsrA := st.F32TensorDi(layNm, di) // standard re-used storage tensor
 	ly.UnitValuesSampleTensor(tsrA, unitVarA, di)
 	tsrB := st.F32TensorDi(layNm+"_alt", di) // alternative storage tensor

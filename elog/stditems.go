@@ -293,10 +293,11 @@ func (lg *Logs) RunStats(stats ...string) {
 // to it so there aren't any duplicate items.
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.Modes, etm etime.Times, layClasses ...string) {
-	layers := net.AsEmer().LayersByClass(layClasses...)
+	en := net.AsEmer()
+	layers := en.LayersByClass(layClasses...)
 	for _, lnm := range layers {
 		clnm := lnm
-		cly := errors.Log1(net.EmerLayerByName(clnm))
+		cly := errors.Log1(en.EmerLayerByName(clnm))
 		itmNm := clnm + "_" + varNm
 		itm, has := lg.ItemByName(itmNm)
 		if has {
