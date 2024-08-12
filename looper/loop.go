@@ -15,8 +15,8 @@ package looper
 // See Stack for more details on how loops are combined.
 type Loop struct {
 
-	// Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Ctr.Max times, or until IsDone is satisfied, whichever ends first.
-	Counter Ctr
+	// Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Counter.Max times, or until IsDone is satisfied, whichever ends first.
+	Counter Counter
 
 	// OnStart is called at the beginning of each loop.
 	OnStart NamedFuncs
@@ -30,7 +30,7 @@ type Loop struct {
 	// If true, end loop. Maintained as an unordered map because they should not have side effects.
 	IsDone NamedFuncsBool
 
-	// Events occur when Ctr.Cur gets to their AtCtr.
+	// Events occur when Counter.Cur gets to their AtCounter.
 	Events []*Event
 }
 

@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestCppOpenWts(t *testing.T) {
+func TestCppOpenWeights(t *testing.T) {
 	fp, err := os.Open("FaceNetworkCpp.wts")
 	defer fp.Close()
 	if err != nil {

@@ -9,14 +9,14 @@ import (
 )
 
 // A Event has function(s) that can be called at a particular point
-// in the loop, when the counter is AtCtr value.
+// in the loop, when the counter is AtCounter value.
 type Event struct {
 
 	// Might be 'plus' or 'minus' for example.
 	Name string
 
 	// The counter value upon which this Event occurs.
-	AtCtr int
+	AtCounter int
 
 	// Callback function for the Event.
 	OnEvent NamedFuncs
@@ -25,7 +25,7 @@ type Event struct {
 // String describes the Event in human readable text.
 func (event *Event) String() string {
 	s := event.Name + ": "
-	s = s + "(at " + strconv.Itoa(event.AtCtr) + ") "
+	s = s + "(at " + strconv.Itoa(event.AtCounter) + ") "
 	if len(event.OnEvent) > 0 {
 		s = s + "\tEvents: " + event.OnEvent.String()
 	}
@@ -34,7 +34,7 @@ func (event *Event) String() string {
 
 // NewEvent returns a new event with given name, function, at given counter
 func NewEvent(name string, atCtr int, fun func()) *Event {
-	ev := &Event{Name: name, AtCtr: atCtr}
+	ev := &Event{Name: name, AtCounter: atCtr}
 	ev.OnEvent.Add(name, fun)
 	return ev
 }

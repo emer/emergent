@@ -4,10 +4,12 @@
 
 package env
 
-// Ctr is a counter that counts increments at a given time scale.
+import "github.com/emer/emergent/v2/etime"
+
+// Counter is a counter that counts increments at a given time scale.
 // It keeps track of when it has been incremented or not, and
 // retains the previous value.
-type Ctr struct {
+type Counter struct {
 
 	// current counter value
 	Cur int
@@ -22,11 +24,11 @@ type Ctr struct {
 	Max int
 
 	// the unit of time scale represented by this counter (just FYI)
-	Scale TimeScales `display:"-"`
+	Scale etime.Times `display:"-"`
 }
 
 // Init initializes counter -- Cur = 0, Prv = -1
-func (ct *Ctr) Init() {
+func (ct *Counter) Init() {
 	ct.Prv = -1
 	ct.Cur = 0
 	ct.Chg = false
@@ -34,13 +36,13 @@ func (ct *Ctr) Init() {
 
 // Same resets Chg = false -- good idea to call this on all counters at start of Step
 // or can put in an else statement, but that is more error-prone.
-func (ct *Ctr) Same() {
+func (ct *Counter) Same() {
 	ct.Chg = false
 }
 
 // Incr increments the counter by 1.  If Max > 0 then if Incr >= Max
 // the counter is reset to 0 and true is returned.  Otherwise false.
-func (ct *Ctr) Incr() bool {
+func (ct *Counter) Incr() bool {
 	ct.Chg = true
 	ct.Prv = ct.Cur
 	ct.Cur++
@@ -54,7 +56,7 @@ func (ct *Ctr) Incr() bool {
 // Set sets the Cur value if different from Cur, while preserving previous value
 // and setting Chg appropriately.  Returns true if changed.
 // does NOT check Cur vs. Max.
-func (ct *Ctr) Set(cur int) bool {
+func (ct *Counter) Set(cur int) bool {
 	if ct.Cur == cur {
 		ct.Chg = false
 		return false
@@ -66,6 +68,6 @@ func (ct *Ctr) Set(cur int) bool {
 }
 
 // Query returns the current, previous and changed values for this counter
-func (ct *Ctr) Query() (cur, prv int, chg bool) {
+func (ct *Counter) Query() (cur, prv int, chg bool) {
 	return ct.Cur, ct.Prv, ct.Chg
 }

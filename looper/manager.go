@@ -40,9 +40,9 @@ type Manager struct {
 	// Set to true while looping, false when done. Read only.
 	isRunning bool
 
-	// The Cur value of the Ctr associated with the last started level, for each timescale.
-	lastStartedCtr map[etime.ScopeKey]int
-	internalStop   bool
+	// The Cur value of the Counter associated with the last started level, for each timescale.
+	lastStartedCounter map[etime.ScopeKey]int
+	internalStop       bool
 }
 
 // GetLoop returns the Loop associated with an evaluation mode and timescale.
@@ -61,7 +61,7 @@ func NewManager() *Manager {
 func (man *Manager) Init() {
 	man.Stacks = map[etime.Modes]*Stack{}
 	man.Mode = etime.Train
-	man.lastStartedCtr = map[etime.ScopeKey]int{}
+	man.lastStartedCounter = map[etime.ScopeKey]int{}
 }
 
 // AddStack adds a new Stack for given mode
@@ -147,10 +147,10 @@ func (man *Manager) IsRunning() bool {
 
 // ResetCountersByMode resets counters for given mode.
 func (man *Manager) ResetCountersByMode(mode etime.Modes) {
-	for sk, _ := range man.lastStartedCtr {
+	for sk, _ := range man.lastStartedCounter {
 		skm, _ := sk.ModeAndTime()
 		if skm == mode {
-			delete(man.lastStartedCtr, sk)
+			delete(man.lastStartedCounter, sk)
 		}
 	}
 	for m, stack := range man.Stacks {
@@ -165,7 +165,7 @@ func (man *Manager) ResetCountersByMode(mode etime.Modes) {
 // ResetCounters resets the Cur on all loop Counters,
 // and resets the Manager's place in the loops.
 func (man *Manager) ResetCounters() {
-	man.lastStartedCtr = map[etime.ScopeKey]int{}
+	man.lastStartedCounter = map[etime.ScopeKey]int{}
 	for _, stack := range man.Stacks {
 		for _, loop := range stack.Loops {
 			loop.Counter.Cur = 0
@@ -186,7 +186,7 @@ func (man *Manager) ResetCountersBelow(mode etime.Modes, time etime.Times) {
 			}
 			loop.Counter.Cur = 0
 			sk := etime.Scope(mode, lt)
-			delete(man.lastStartedCtr, sk)
+			delete(man.lastStartedCounter, sk)
 		}
 	}
 }
@@ -273,9 +273,9 @@ func (man *Manager) runLevel(currentLevel int) bool {
 		}
 
 		// Don't ever Start the same iteration of the same level twice.
-		lastCtr, ok := man.lastStartedCtr[etime.Scope(man.Mode, time)]
-		if !ok || ctr.Cur > lastCtr {
-			man.lastStartedCtr[etime.Scope(man.Mode, time)] = ctr.Cur
+		lastCounter, ok := man.lastStartedCounter[etime.Scope(man.Mode, time)]
+		if !ok || ctr.Cur > lastCounter {
+			man.lastStartedCounter[etime.Scope(man.Mode, time)] = ctr.Cur
 			if PrintControlFlow && time >= NoPrintBelow {
 				fmt.Println(time.String() + ":Start:" + strconv.Itoa(ctr.Cur))
 			}
@@ -307,7 +307,7 @@ func (man *Manager) runLevel(currentLevel int) bool {
 			// Reset the counter at the next level. Do this here so that the counter number is visible during loop.OnEnd.
 			if currentLevel+1 < len(st.Order) {
 				st.Loops[st.Order[currentLevel+1]].Counter.Cur = 0
-				man.lastStartedCtr[etime.Scope(man.Mode, st.Order[currentLevel+1])] = -1
+				man.lastStartedCounter[etime.Scope(man.Mode, st.Order[currentLevel+1])] = -1
 			}
 
 			for name, fun := range loop.IsDone {
@@ -315,7 +315,7 @@ func (man *Manager) runLevel(currentLevel int) bool {
 					if PrintControlFlow {
 						fmt.Println("Stopping early with: " + name + " condition")
 					}
-					goto exitLoop // Exit IsDone and Ctr for-loops without flag variable.
+					goto exitLoop // Exit IsDone and Counter for-loops without flag variable.
 				}
 			}
 		}
@@ -330,7 +330,7 @@ exitLoop:
 func (man *Manager) eventLogic(loop *Loop) {
 	ctr := &loop.Counter
 	for _, phase := range loop.Events {
-		if ctr.Cur == phase.AtCtr {
+		if ctr.Cur == phase.AtCounter {
 			for _, function := range phase.OnEvent {
 				function.Func()
 			}

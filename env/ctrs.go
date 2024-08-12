@@ -8,56 +8,57 @@ import (
 	"fmt"
 
 	"github.com/emer/emergent/v2/estats"
+	"github.com/emer/emergent/v2/etime"
 )
 
-// Ctrs contains an ordered slice of timescales,
+// Counters contains an ordered slice of timescales,
 // and a lookup map of counters by timescale
 // used to manage counters in the Env.
-type Ctrs struct {
+type Counters struct {
 
 	// ordered list of the counter timescales, from outer-most (highest) to inner-most (lowest)
-	Order []TimeScales
+	Order []etime.Times
 
 	// map of the counters by timescale
-	Ctrs map[TimeScales]*Ctr
+	Counters map[etime.Times]*Counter
 }
 
-// SetTimes initializes Ctrs for given mode
+// SetTimes initializes Counters for given mode
 // and list of times ordered from highest to lowest
-func (cs *Ctrs) SetTimes(mode string, times ...TimeScales) {
+func (cs *Counters) SetTimes(mode string, times ...etime.Times) {
 	cs.Order = times
-	cs.Ctrs = make(map[TimeScales]*Ctr, len(times))
+	cs.Counters = make(map[etime.Times]*Counter, len(times))
 	for _, tm := range times {
-		cs.Ctrs[tm] = &Ctr{Scale: tm}
+		cs.Counters[tm] = &Counter{Scale: tm}
 	}
 }
 
 // ByTime returns counter by timescale key -- nil if not found
-func (cs *Ctrs) ByScope(tm TimeScales) *Ctr {
-	return cs.Ctrs[tm]
+func (cs *Counters) ByScope(tm etime.Times) *Counter {
+	return cs.Counters[tm]
 }
 
 // ByTimeTry returns counter by timescale key -- returns nil, error if not found
-func (cs *Ctrs) ByTimeTry(tm TimeScales) (*Ctr, error) {
-	ct, ok := cs.Ctrs[tm]
+func (cs *Counters) ByTimeTry(tm etime.Times) (*Counter, error) {
+	ct, ok := cs.Counters[tm]
 	if ok {
 		return ct, nil
 	}
-	err := fmt.Errorf("env.Ctrs: scope not found: %s", tm.String())
+	err := fmt.Errorf("env.Counters: scope not found: %s", tm.String())
 	return nil, err
 }
 
 // Init does Init on all the counters
-func (cs *Ctrs) Init() {
-	for _, ct := range cs.Ctrs {
+func (cs *Counters) Init() {
+	for _, ct := range cs.Counters {
 		ct.Init()
 	}
 }
 
-// CtrsToStats sets the current counter values to estats Int values
+// CountersToStats sets the current counter values to estats Int values
 // by their time names only (no eval Mode).
-func (cs *Ctrs) CtrsToStats(mode string, stats *estats.Stats) {
-	for _, ct := range cs.Ctrs {
+func (cs *Counters) CountersToStats(mode string, stats *estats.Stats) {
+	for _, ct := range cs.Counters {
 		tm := ct.Scale.String()
 		stats.SetInt(mode+":"+tm, ct.Cur)
 	}

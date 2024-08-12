@@ -76,7 +76,7 @@ type TestConfig struct {
 	NData int `default:"16"`
 
 	// if true, save final weights after each run
-	SaveWts bool
+	SaveWeights bool
 
 	// if true, save train epoch log to file, as .epc.tsv typically
 	EpochLog bool `default:"true"`
@@ -145,7 +145,7 @@ func TestArgs(t *testing.T) {
 	cfg := &TestConfig{}
 	SetFromDefaults(cfg)
 	// note: cannot use "-Includes=testcfg.toml",
-	args := []string{"-save-wts", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPath:Path.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "-Slice=[3.2, 2.4, 1.9]", "leftover1", "leftover2"}
+	args := []string{"-save-weights", "-nogui", "-no-epoch-log", "--NoRunLog", "--runs=5", "--run", "1", "--TAG", "nice", "--PatParams.Sparseness=0.1", "--Network", "{'.PFCLayer:Layer.Inhib.Gi' = '2.4', '#VSPatchPath:Path.Learn.LRate' = '0.01'}", "-Enum=TestValue2", "-Slice=[3.2, 2.4, 1.9]", "leftover1", "leftover2"}
 	allArgs := make(map[string]reflect.Value)
 	FieldArgNames(cfg, allArgs)
 	leftovers, err := ParseArgs(cfg, args, allArgs, true)
@@ -153,7 +153,7 @@ func TestArgs(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	fmt.Println(leftovers)
-	if cfg.Runs != 5 || cfg.Run != 1 || cfg.Tag != "nice" || cfg.PatParams.Sparseness != 0.1 || cfg.SaveWts != true || cfg.GUI != false || cfg.EpochLog != false || cfg.RunLog != false {
+	if cfg.Runs != 5 || cfg.Run != 1 || cfg.Tag != "nice" || cfg.PatParams.Sparseness != 0.1 || cfg.SaveWeights != true || cfg.GUI != false || cfg.EpochLog != false || cfg.RunLog != false {
 		t.Errorf("args not set properly: %#v", cfg)
 	}
 	if cfg.Enum != TestValue2 {

@@ -12,6 +12,7 @@ import (
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
+	"github.com/emer/emergent/v2/etime"
 )
 
 // FreqTable is an Env that manages patterns from an table.Table with frequency
@@ -26,10 +27,7 @@ import (
 type FreqTable struct {
 
 	// name of this environment
-	Nm string
-
-	// description of this environment
-	Dsc string
+	Name string
 
 	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
 	Table *table.IndexView
@@ -46,14 +44,8 @@ type FreqTable struct {
 	// list of items to present, with repetitions -- updated every time through the list
 	Order []int
 
-	// current run of model as provided during Init
-	Run Ctr `display:"inline"`
-
-	// number of times through entire set of patterns
-	Epoch Ctr `display:"inline"`
-
 	// current ordinal item in Table -- if Sequential then = row number in table, otherwise is index in Order list that then gives row number in Table
-	Trial Ctr `display:"inline"`
+	Trial Counter `display:"inline"`
 
 	// if Table has a Name column, this is the contents of that
 	TrialName CurPrvString
@@ -71,15 +63,12 @@ type FreqTable struct {
 	FreqCol string
 }
 
-func (ft *FreqTable) Name() string { return ft.Nm }
-func (ft *FreqTable) Desc() string { return ft.Dsc }
-
 func (ft *FreqTable) Validate() error {
 	if ft.Table == nil || ft.Table.Table == nil {
-		return fmt.Errorf("env.FreqTable: %v has no Table set", ft.Nm)
+		return fmt.Errorf("env.FreqTable: %v has no Table set", ft.Name)
 	}
 	if ft.Table.Table.NumColumns() == 0 {
-		return fmt.Errorf("env.FreqTable: %v Table has no columns -- Outputs will be invalid", ft.Nm)
+		return fmt.Errorf("env.FreqTable: %v Table has no columns -- Outputs will be invalid", ft.Name)
 	}
 	_, err := ft.Table.Table.ColumnByNameTry(ft.FreqCol)
 	if err != nil {
@@ -87,6 +76,8 @@ func (ft *FreqTable) Validate() error {
 	}
 	return nil
 }
+
+func (ft *FreqTable) Label() string { return ft.Name }
 
 func (ft *FreqTable) Init(run int) {
 	if ft.NameCol == "" {
@@ -98,13 +89,8 @@ func (ft *FreqTable) Init(run int) {
 	if ft.FreqCol == "" {
 		ft.FreqCol = "Freq"
 	}
-	ft.Run.Scale = Run
-	ft.Epoch.Scale = Epoch
-	ft.Trial.Scale = Trial
-	ft.Run.Init()
-	ft.Epoch.Init()
+	ft.Trial.Scale = etime.Trial
 	ft.Trial.Init()
-	ft.Run.Cur = run
 	ft.Sample()
 	ft.Trial.Max = len(ft.Order)
 	ft.Trial.Cur = -1 // init state -- key so that first Step() = 0
@@ -170,28 +156,13 @@ func (ft *FreqTable) SetGroupName() {
 }
 
 func (ft *FreqTable) Step() bool {
-	ft.Epoch.Same() // good idea to just reset all non-inner-most counters at start
-
 	if ft.Trial.Incr() { // if true, hit max, reset to 0
 		ft.Sample()
 		ft.Trial.Max = len(ft.Order)
-		ft.Epoch.Incr()
 	}
 	ft.SetTrialName()
 	ft.SetGroupName()
 	return true
-}
-
-func (ft *FreqTable) Counter(scale TimeScales) (cur, prv int, chg bool) {
-	switch scale {
-	case Run:
-		return ft.Run.Query()
-	case Epoch:
-		return ft.Epoch.Query()
-	case Trial:
-		return ft.Trial.Query()
-	}
-	return -1, -1, false
 }
 
 func (ft *FreqTable) State(element string) tensor.Tensor {
@@ -208,21 +179,3 @@ func (ft *FreqTable) Action(element string, input tensor.Tensor) {
 
 // Compile-time check that implements Env interface
 var _ Env = (*FreqTable)(nil)
-
-/////////////////////////////////////////////////////
-// EnvDesc -- optional but implemented here
-
-func (ft *FreqTable) Counters() []TimeScales {
-	return []TimeScales{Run, Epoch, Trial}
-}
-
-func (ft *FreqTable) States() Elements {
-	// els := Elements{}
-	// els.FromSchema(ft.Table.Table.Schema())
-	// return els
-	return nil
-}
-
-func (ft *FreqTable) Actions() Elements {
-	return nil
-}

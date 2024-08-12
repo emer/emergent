@@ -62,7 +62,7 @@ func (stack *Stack) Init(mode etime.Modes) {
 // as it adds loops in order from top to bottom.
 // Sets a default increment of 1 for the counter -- see AddTimeIncr for different increment.
 func (stack *Stack) AddTime(time etime.Times, ctrMax int) *Stack {
-	stack.Loops[time] = &Loop{Counter: Ctr{Max: ctrMax, Inc: 1}, IsDone: map[string]func() bool{}}
+	stack.Loops[time] = &Loop{Counter: Counter{Max: ctrMax, Inc: 1}, IsDone: map[string]func() bool{}}
 	stack.Order = append(stack.Order, time)
 	return stack
 }
@@ -72,7 +72,7 @@ func (stack *Stack) AddTime(time etime.Times, ctrMax int) *Stack {
 // The order in which this method is invoked is important,
 // as it adds loops in order from top to bottom.
 func (stack *Stack) AddTimeIncr(time etime.Times, ctrMax, ctrIncr int) *Stack {
-	stack.Loops[time] = &Loop{Counter: Ctr{Max: ctrMax, Inc: ctrIncr}, IsDone: map[string]func() bool{}}
+	stack.Loops[time] = &Loop{Counter: Counter{Max: ctrMax, Inc: ctrIncr}, IsDone: map[string]func() bool{}}
 	stack.Order = append(stack.Order, time)
 	return stack
 }
@@ -131,13 +131,13 @@ func (stack *Stack) TimeBelow(time etime.Times) etime.Times {
 	return etime.NoTime
 }
 
-// CtrsToStats sets the current counter values to estats Int values
+// CountersToStats sets the current counter values to estats Int values
 // by their time names only (no eval Mode).  These values can then
 // be read by elog LogItems to record the counters in logs.
 // Typically, a TrialName string is also expected to be set,
 // to describe the current trial (Step) contents in a useful way,
 // and other relevant info (e.g., group / category info) can also be set.
-func (stack *Stack) CtrsToStats(stats *estats.Stats) {
+func (stack *Stack) CountersToStats(stats *estats.Stats) {
 	for _, tm := range stack.Order {
 		lp := stack.Loops[tm]
 		stats.SetInt(tm.String(), lp.Counter.Cur)

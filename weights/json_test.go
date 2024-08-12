@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-func TestSaveWts(t *testing.T) {
+func TestSaveWeights(t *testing.T) {
 	nw := &Network{Network: "TestNet"}
 	nw.SetMetaData("Epoch", "100")
 	nw.SetMetaData("TrainEnv", "ra25")
@@ -57,7 +57,7 @@ func TestSaveWts(t *testing.T) {
 	}
 }
 
-func TestOpenWts(t *testing.T) {
+func TestOpenWeights(t *testing.T) {
 	nw := &Network{}
 	nb, err := ioutil.ReadFile("TestNet.wts")
 	if err != nil {

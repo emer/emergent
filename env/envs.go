@@ -21,11 +21,11 @@ func (es *Envs) Init() {
 	}
 }
 
-// Add adds Env(s), using its Name as the key
+// Add adds Env(s), using its Label as the key
 func (es *Envs) Add(evs ...Env) {
 	es.Init()
 	for _, ev := range evs {
-		(*es)[ev.Name()] = ev
+		(*es)[ev.Label()] = ev
 	}
 }
 
