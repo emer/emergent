@@ -23,7 +23,7 @@ import (
 // implemented specifically for a given algorithmic implementation,
 type Path interface {
 	// StyleType, StyleClass, and StyleName methods for parameter styling.
-	params.Styler
+	params.StylerObject
 
 	// AsEmer returns the path as an *emer.PathBase,
 	// to access base functionality.
@@ -87,22 +87,9 @@ type Path interface {
 	// based on any other params that might have changed.
 	UpdateParams()
 
-	// ApplyParams applies given parameter style Sheet to this pathway.
-	// Calls UpdateParams if anything set to ensure derived
-	// parameters are all updated.
-	// If setMsg is true, then a message is printed to confirm each
-	// parameter that is set.
-	// It always prints a message if a parameter fails to be set.
-	// returns true if any params were set, and error if there were any errors.
-	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
-
 	// SetParam sets parameter at given path to given value.
 	// returns error if path not found or value cannot be set.
 	SetParam(path, val string) error
-
-	// NonDefaultParams returns a listing of all parameters in the Pathway that
-	// are not at their default values -- useful for setting param styles etc.
-	NonDefaultParams() string
 
 	// AllParams returns a listing of all parameters in the Pathway.
 	AllParams() string
@@ -160,6 +147,9 @@ type PathBase struct {
 
 	// Off inactivates this pathway, allowing for easy experimentation.
 	Off bool
+
+	// provides a history of parameters applied to the layer
+	ParamsHistory params.HistoryImpl `table:"-"`
 }
 
 // InitPath initializes the path, setting the EmerPath interface
@@ -195,4 +185,47 @@ func (pt *PathBase) SynValue(varNm string, sidx, ridx int) float32 {
 	}
 	syi := pt.EmerPath.SynIndex(sidx, ridx)
 	return pt.EmerPath.SynValue1D(vidx, syi)
+}
+
+////////////////////////////////////////////////////////////////////
+//		Params
+
+// ParamsHistoryReset resets parameter application history
+func (pt *PathBase) ParamsHistoryReset() {
+	pt.ParamsHistory.ParamsHistoryReset()
+}
+
+// ParamsApplied is just to satisfy History interface so reset can be applied
+func (pt *PathBase) ParamsApplied(sel *params.Sel) {
+	pt.ParamsHistory.ParamsApplied(sel)
+}
+
+// SetParam sets parameter at given path to given value.
+// returns error if path not found or value cannot be set.
+func (pt *PathBase) SetParam(path, val string) error {
+	return params.SetParam(pt.EmerPath.StyleObject(), path, val)
+}
+
+// ApplyParams applies given parameter style Sheet to this pathway.
+// Calls UpdateParams if anything set to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+// returns true if any params were set, and error if there were any errors.
+func (pt *PathBase) ApplyParams(pars *params.Sheet, setMsg bool) (bool, error) {
+	app, err := pars.Apply(pt.EmerPath, setMsg)
+	// note: must use EmerPath to get to actual Path, which then uses Styler interface
+	// to return the Params struct.
+	if app {
+		pt.EmerPath.UpdateParams()
+	}
+	return app, err
+}
+
+// NonDefaultParams returns a listing of all parameters in the Layer that
+// are not at their default values -- useful for setting param styles etc.
+func (pt *PathBase) NonDefaultParams() string {
+	// nds := reflectx.NonDefaultFields(ly.Params) // todo:
+	nds := "non default field strings todo"
+	//Str(ly.AxonLay.AsAxon().Params, ly.Name)
+	return nds
 }

@@ -10,6 +10,7 @@ import (
 	"log"
 	"math"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/slicesx"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
@@ -35,7 +36,7 @@ var (
 // implemented specifically for a given algorithmic implementation.
 type Layer interface {
 	// StyleType, StyleClass, and StyleName methods for parameter styling.
-	params.Styler
+	params.StylerObject
 
 	// AsEmer returns the layer as an *emer.LayerBase,
 	// to access base functionality.
@@ -104,23 +105,10 @@ type Layer interface {
 	// Returns error on invalid var name or lack of recv path (vals always set to nan on path err).
 	SendPathValues(vals *[]float32, varNm string, recvLay Layer, recvIndex1D int, pathType string) error
 
-	// todo: do we need all of these:?
-
 	// UpdateParams() updates parameter values for all Layer
 	// and recv pathway parameters,
 	// based on any other params that might have changed.
 	UpdateParams()
-
-	// ApplyParams applies given parameter style Sheet to this
-	// layer and its recv pathways.
-	// Calls UpdateParams on anything set to ensure derived
-	// parameters are all updated.
-	// If setMsg is true, then a message is printed to confirm
-	// each parameter that is set.
-	// it always prints a message if a parameter fails to be set.
-	// returns true if any params were set, and error if
-	// there were any errors.
-	ApplyParams(pars *params.Sheet, setMsg bool) (bool, error)
 
 	// SetParam sets parameter at given path to given value.
 	// returns error if path not found or value cannot be set.
@@ -221,6 +209,9 @@ type LayerBase struct {
 	// See utility function CenterPoolShape that returns shape of
 	// units in the central pools of a 4D layer.
 	SampleShape tensor.Shape `table:"-"`
+
+	// provides a history of parameters applied to the layer
+	ParamsHistory params.HistoryImpl `table:"-"`
 }
 
 // InitLayer initializes the layer, setting the EmerLayer interface
@@ -586,4 +577,73 @@ func (ly *LayerBase) SendPathByRecvNameType(recv, typeName string) (Path, error)
 		}
 	}
 	return nil, fmt.Errorf("receiving layer named: %s, type: %s not found in list of sending pathways", recv, typeName)
+}
+
+////////////////////////////////////////////////////////////////////
+//		Params
+
+// ParamsHistoryReset resets parameter application history
+func (ly *LayerBase) ParamsHistoryReset() {
+	ly.ParamsHistory.ParamsHistoryReset()
+	el := ly.EmerLayer
+	for pi := range el.NumRecvPaths() {
+		pt := el.RecvPath(pi)
+		pt.AsEmer().ParamsHistoryReset()
+	}
+}
+
+// ParamsApplied is just to satisfy History interface so reset can be applied
+func (ly *LayerBase) ParamsApplied(sel *params.Sel) {
+	ly.ParamsHistory.ParamsApplied(sel)
+}
+
+// SetParam sets parameter at given path to given value.
+// returns error if path not found or value cannot be set.
+func (ly *LayerBase) SetParam(path, val string) error {
+	return params.SetParam(ly.EmerLayer.StyleObject(), path, val)
+}
+
+// ApplyParams applies given parameter style Sheet to this layer and its recv pathways.
+// Calls UpdateParams on anything set to ensure derived parameters are all updated.
+// If setMsg is true, then a message is printed to confirm each parameter that is set.
+// it always prints a message if a parameter fails to be set.
+// returns true if any params were set, and error if there were any errors.
+func (ly *LayerBase) ApplyParams(pars *params.Sheet, setMsg bool) (bool, error) {
+	applied := false
+	var errs []error
+	app, err := pars.Apply(ly.EmerLayer, setMsg) // essential to go through AxonLay
+	if app {
+		ly.EmerLayer.UpdateParams()
+		applied = true
+	}
+	if err != nil {
+		errs = append(errs, err)
+	}
+	el := ly.EmerLayer
+	for pi := range el.NumRecvPaths() {
+		pt := el.RecvPath(pi).AsEmer()
+		app, err = pt.ApplyParams(pars, setMsg)
+		if app {
+			applied = true
+		}
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return applied, errors.Join(errs...)
+}
+
+// NonDefaultParams returns a listing of all parameters in the Layer that
+// are not at their default values -- useful for setting param styles etc.
+func (ly *LayerBase) NonDefaultParams() string {
+	// nds := reflectx.NonDefaultFields(ly.Params) // todo:
+	nds := "non default field strings todo"
+	//Str(ly.AxonLay.AsAxon().Params, ly.Name)
+	el := ly.EmerLayer
+	for pi := range el.NumRecvPaths() {
+		pt := el.RecvPath(pi).AsEmer()
+		pnd := pt.NonDefaultParams()
+		nds += pnd
+	}
+	return nds
 }

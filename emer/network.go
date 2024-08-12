@@ -387,20 +387,20 @@ func (nt *NetworkBase) VarRange(varNm string) (min, max float32, err error) {
 // returns true if any params were set, and error if there were any errors.
 func (nt *NetworkBase) ApplyParams(pars *params.Sheet, setMsg bool) (bool, error) {
 	applied := false
-	var rerr error
+	var errs []error
 	en := nt.EmerNetwork
 	nlay := en.NumLayers()
 	for li := range nlay {
-		ly := en.EmerLayer(li)
+		ly := en.EmerLayer(li).AsEmer()
 		app, err := ly.ApplyParams(pars, setMsg)
 		if app {
 			applied = true
 		}
 		if err != nil {
-			rerr = err
+			errs = append(errs, err)
 		}
 	}
-	return applied, rerr
+	return applied, errors.Join(errs...)
 }
 
 // NonDefaultParams returns a listing of all parameters in the Network that
