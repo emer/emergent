@@ -7,16 +7,18 @@ package emer
 import (
 	"bufio"
 	"compress/gzip"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/indent"
 	"cogentcore.org/core/core"
 	"github.com/emer/emergent/v2/weights"
+	"golang.org/x/exp/maps"
 )
 
 // SaveWeightsJSON saves network weights (and any other state that adapts with learning)
@@ -66,9 +68,8 @@ func (nt *NetworkBase) OpenWeightsJSON(filename core.Filename) error { //types:a
 
 // todo: proper error handling here!
 
-// WriteWeightsJSON writes the weights from this layer from the receiver-side perspective
-// in a JSON text format.  We build in the indentation logic to make it much faster and
-// more efficient.
+// WriteWeightsJSON writes the weights from this network
+// from the receiver-side perspective in a JSON text format.
 func (nt *NetworkBase) WriteWeightsJSON(w io.Writer) error {
 	en := nt.EmerNetwork
 	nlay := en.NumLayers()
@@ -151,4 +152,120 @@ func (nt *NetworkBase) SetWeights(nw *weights.Network) error {
 		ly.SetWeights(lw)
 	}
 	return errors.Join(errs...)
+}
+
+// WriteWeightsJSONBase writes the weights from this layer
+// in a JSON text format.  Any values in the layer MetaData
+// will be written first, and unit-level variables in unitVars
+// are saved as well.  Then, all the receiving path data is saved.
+func (ly *LayerBase) WriteWeightsJSONBase(w io.Writer, depth int, unitVars ...string) {
+	el := ly.EmerLayer
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("{\n"))
+	depth++
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte(fmt.Sprintf("\"Layer\": %q,\n", ly.Name)))
+	if len(ly.MetaData) > 0 {
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("\"MetaData\": {\n")))
+		depth++
+		kys := maps.Keys(ly.MetaData)
+		sort.StringSlice(kys).Sort()
+		for i, k := range kys {
+			w.Write(indent.TabBytes(depth))
+			comma := ","
+			if i == len(kys)-1 { // note: last one has no comma
+				comma = ""
+			}
+			w.Write([]byte(fmt.Sprintf("%q: %q%s\n", k, ly.MetaData[k], comma)))
+		}
+		depth--
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte("},\n"))
+	}
+	if len(unitVars) > 0 {
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(fmt.Sprintf("\"Units\": {\n")))
+		depth++
+		for i, vname := range unitVars {
+			vidx, err := el.UnitVarIndex(vname)
+			if errors.Log(err) != nil {
+				continue
+			}
+			w.Write(indent.TabBytes(depth))
+			w.Write([]byte(fmt.Sprintf("%q: [ ", vname)))
+			nu := ly.NumUnits()
+			for ni := range nu {
+				val := el.UnitValue1D(vidx, ni, 0)
+				w.Write([]byte(fmt.Sprintf("%g", val)))
+				if ni < nu-1 {
+					w.Write([]byte(", "))
+				}
+			}
+			comma := ","
+			if i == len(unitVars)-1 { // note: last one has no comma
+				comma = ""
+			}
+			w.Write([]byte(fmt.Sprintf(" ]%s\n", comma)))
+		}
+		depth--
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte("},\n"))
+	}
+	w.Write(indent.TabBytes(depth))
+	onps := make([]Path, 0, el.NumRecvPaths())
+	for pi := range el.NumRecvPaths() {
+		pt := el.RecvPath(pi)
+		if !pt.AsEmer().Off {
+			onps = append(onps, pt)
+		}
+	}
+	np := len(onps)
+	if np == 0 {
+		w.Write([]byte(fmt.Sprintf("\"Paths\": null\n")))
+	} else {
+		w.Write([]byte(fmt.Sprintf("\"Paths\": [\n")))
+		depth++
+		for pi := range el.NumRecvPaths() {
+			pt := el.RecvPath(pi)
+			pt.WriteWeightsJSON(w, depth) // this leaves path unterminated
+			if pi == np-1 {
+				w.Write([]byte("\n"))
+			} else {
+				w.Write([]byte(",\n"))
+			}
+		}
+		depth--
+		w.Write(indent.TabBytes(depth))
+		w.Write([]byte(" ]\n"))
+	}
+	depth--
+	w.Write(indent.TabBytes(depth))
+	w.Write([]byte("}")) // note: leave unterminated as outer loop needs to add , or just \n depending
+}
+
+// ReadWeightsJSON reads the weights from this layer from the
+// receiver-side perspective in a JSON text format.
+// This is for a set of weights that were saved *for one layer only*
+// and is not used for the network-level ReadWeightsJSON,
+// which reads into a separate structure -- see SetWeights method.
+func (ly *LayerBase) ReadWeightsJSON(r io.Reader) error {
+	lw, err := weights.LayReadJSON(r)
+	if err != nil {
+		return err // note: already logged
+	}
+	return ly.EmerLayer.SetWeights(lw)
+}
+
+// ReadWeightsJSON reads the weights from this pathway from the
+// receiver-side perspective in a JSON text format.
+// This is for a set of weights that were saved *for one path only*
+// and is not used for the network-level ReadWeightsJSON,
+// which reads into a separate structure -- see SetWeights method.
+func (pt *PathBase) ReadWeightsJSON(r io.Reader) error {
+	pw, err := weights.PathReadJSON(r)
+	if err != nil {
+		return err // note: already logged
+	}
+	return pt.EmerPath.SetWeights(pw)
 }

@@ -96,16 +96,7 @@ type Path interface {
 
 	// WriteWeightsJSON writes the weights from this pathway
 	// from the receiver-side perspective in a JSON text format.
-	// We build in the indentation logic to make it much faster and
-	// more efficient.
 	WriteWeightsJSON(w io.Writer, depth int)
-
-	// ReadWeightsJSON reads the weights from this pathway
-	// from the receiver-side perspective in a JSON text format.
-	// This is for a set of weights that were saved *for one path only*
-	// and is not used for the network-level ReadWeightsJSON,
-	// which reads into a separate structure -- see SetWeights method.
-	ReadWeightsJSON(r io.Reader) error
 
 	// SetWeights sets the weights for this pathway from weights.Path
 	// decoded values
