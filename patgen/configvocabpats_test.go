@@ -311,7 +311,7 @@ func TestVocab(t *testing.T) {
 [5 2 2]:       0       0       0       1       0       0 
 `
 	// fmt.Println("Input Pats")
-	// fmt.Println(dt.ColumnByName("Input").Shape().Sizes)
+	// fmt.Println(dt.ColumnByName("Input").Shape.Sizes)
 	// fmt.Println(dt.ColumnByName("Input").String())
 	assert.Equal(t, []int{6, 3, 2, 3, 3}, dt.ColumnByName("Input").Shape().Sizes)
 	assert.Equal(t, exip, dt.ColumnByName("Input").String())
@@ -374,7 +374,7 @@ func TestVocab(t *testing.T) {
 `
 
 	// fmt.Println("ECout Pats")
-	// fmt.Println(dt.ColumnByName("ECout").Shape().Sizes)
+	// fmt.Println(dt.ColumnByName("ECout").Shape.Sizes)
 	// fmt.Println(dt.ColumnByName("ECout").String())
 
 	assert.Equal(t, []int{6, 3, 2, 3, 3}, dt.ColumnByName("ECout").Shape().Sizes)

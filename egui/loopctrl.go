@@ -10,6 +10,7 @@ import (
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
+	"cogentcore.org/core/system"
 	"cogentcore.org/core/tree"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
@@ -40,10 +41,15 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 				if !gui.IsRunning {
 					gui.IsRunning = true
 					tb.Restyle()
-					go func() {
+					f := func() {
 						loops.Run(mode)
 						gui.Stopped()
-					}()
+					}
+					if core.TheApp.Platform() == system.Web {
+						f()
+					} else {
+						go f()
+					}
 				}
 			})
 		})
@@ -68,11 +74,16 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 				if !gui.IsRunning {
 					gui.IsRunning = true
 					tb.Restyle()
-					go func() {
+					f := func() {
 						stack := loops.Stacks[mode]
 						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
 						gui.Stopped()
-					}()
+					}
+					if core.TheApp.Platform() == system.Web {
+						f()
+					} else {
+						go f()
+					}
 				}
 			})
 		})
