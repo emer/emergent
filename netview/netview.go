@@ -229,7 +229,7 @@ func (nv *NetView) GoUpdateView() {
 	sw.NeedsRender()
 	sw.Scene.AsyncUnlock()
 	if core.TheApp.Platform() == system.Web {
-		fmt.Println("nv rendering")
+		fmt.Println("nv rendering", nv.CurCtrs)
 		sw.WidgetBase.Scene.RenderUpdateWindow()
 	}
 }

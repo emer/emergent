@@ -89,6 +89,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 		})
 
 		var chs *core.Chooser
+		var sp *core.Spinner
 		tree.AddAt(p, mode.String()+"-level", func(w *core.Chooser) {
 			chs = w
 			stepStrs := []string{}
@@ -98,19 +99,20 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 			w.SetStrings(stepStrs...)
 			stack := loops.Stacks[mode]
 			w.SetCurrentValue(stack.StepLevel.String())
-		})
-
-		tree.AddAt(p, mode.String()+"-n", func(w *core.Spinner) {
-			w.SetStep(1).SetMin(1).SetValue(1)
-			w.SetTooltip("number of iterations per step").
-				OnChange(func(e events.Event) {
-					stepN[chs.CurrentItem.Value.(string)] = int(w.Value)
-				})
-
 			w.OnChange(func(e events.Event) {
 				stack := loops.Stacks[mode]
 				stack.StepLevel = stringToEnumTime[chs.CurrentItem.Value.(string)]
-				w.Value = float32(stepN[stack.StepLevel.String()])
+				sp.Value = float32(stepN[stack.StepLevel.String()])
+				sp.Update()
+			})
+		})
+
+		tree.AddAt(p, mode.String()+"-n", func(w *core.Spinner) {
+			sp = w
+			w.SetStep(1).SetMin(1).SetValue(1)
+			w.SetTooltip("number of iterations per step")
+			w.OnChange(func(e events.Event) {
+				stepN[chs.CurrentItem.Value.(string)] = int(w.Value)
 			})
 		})
 	}
