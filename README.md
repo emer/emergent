@@ -23,7 +23,7 @@ See the [ra25 example](https://github.com/emer/axon/tree/main/ra25/README.md) in
 
 * April 2020: Version 1.0 of GoGi GUI is now released, and we have updated all module dependencies accordingly. *We now recommend using the go modules instead of GOPATH* -- the [Wiki Install](https://github.com/emer/emergent/wiki/Install) instructions have been updated accordingly.
 
-* 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) that accompany the [CCN Textbook](https://github.com/CompCogNeuro/ed4) are now complete and have driven extensive testing and bugfixing.
+* 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) that accompany the [CCN Textbook](https://github.com/CompCogNeuro/book) are now complete and have driven extensive testing and bugfixing.
 
 * 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
 
