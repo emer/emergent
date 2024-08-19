@@ -64,7 +64,7 @@ func (gui *GUI) UpdateWindow() {
 		tb.Restyle()
 	}
 	gui.Body.Scene.NeedsRender()
-	// todo: could update other stuff but not really neccesary
+	// todo: could update other stuff but not really necessary
 }
 
 // GoUpdateWindow triggers an update on window body,
@@ -78,7 +78,7 @@ func (gui *GUI) GoUpdateWindow() {
 		tb.Restyle()
 	}
 	gui.Body.Scene.NeedsRender()
-	// todo: could update other stuff but not really neccesary
+	// todo: could update other stuff but not really necessary
 }
 
 // Stopped is called when a run method stops running,
