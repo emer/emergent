@@ -17,6 +17,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
@@ -28,6 +29,7 @@ import (
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
+	"cogentcore.org/core/system"
 	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
@@ -227,6 +229,9 @@ func (nv *NetView) GoUpdateView() {
 	se.SetNeedsRender()
 	sw.NeedsRender()
 	sw.Scene.AsyncUnlock()
+	if core.TheApp.Platform() == system.Web {
+		time.Sleep(time.Millisecond) // critical to prevent hanging!
+	}
 }
 
 // UpdateView updates the display based on last recorded state of network.
