@@ -4,8 +4,6 @@
 
 package egui
 
-//go:generate core generate
-
 // ToolGhosting the mode enum
 type ToolGhosting int32 //enums:enum
 

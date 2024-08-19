@@ -8,6 +8,7 @@ package egui
 
 import (
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/events"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor/tensorcore"
 	_ "cogentcore.org/core/vgpu/gosl/slbool/slboolcore" // include to get gui views
@@ -46,7 +47,7 @@ type GUI struct {
 	NetData *netview.NetData `display:"-"`
 
 	// displays Sim fields on left
-	StructView *core.Form `display:"-"`
+	SimForm *core.Form `display:"-"`
 
 	// tabs for different view elements: plots, rasters
 	Tabs *core.Tabs `display:"-"`
@@ -103,13 +104,13 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	// gui.Body.App().About = about
 	split := core.NewSplits(gui.Body)
 	split.Name = "split"
-	gui.StructView = core.NewForm(split).SetStruct(sim)
-	gui.StructView.Name = "sv"
+	gui.SimForm = core.NewForm(split).SetStruct(sim)
+	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
 		gui.Body.AddAppBar(tb.MakeToolbar)
 	}
 	gui.Tabs = core.NewTabs(split)
-	gui.Tabs.Name = "tv"
+	gui.Tabs.Name = "tabs"
 	split.SetSplits(.2, .8)
 }
 
@@ -124,46 +125,15 @@ func (gui *GUI) AddNetView(tabName string) *netview.NetView {
 // FinalizeGUI wraps the end functionality of the GUI
 func (gui *GUI) FinalizeGUI(closePrompt bool) {
 	if closePrompt {
-		/*
-			inQuitPrompt := false
-			core.SetQuitReqFunc(func() {
-				if inQuitPrompt {
-					return
-				}
-				inQuitPrompt = true
-				core.PromptDialog(vp, core.DlgOpts{Title: "Really Quit?",
-					Prompt: "Are you <i>sure</i> you want to quit and lose any unsaved params, weights, logs, etc?"}, core.AddOk, core.AddCancel,
-					gui.Win.This(), func(recv, send tree.Node, sig int64, data any) {
-						if sig == int64(core.DialogAccepted) {
-							core.Quit()
-						} else {
-							inQuitPrompt = false
-						}
-					})
+		gui.Body.AddCloseDialog(func(d *core.Body) bool {
+			d.AddTitle("Close?").AddText("Are you sure you want to close?")
+			d.AddBottomBar(func(parent core.Widget) {
+				d.AddOK(parent).SetText("Close").OnClick(func(e events.Event) {
+					gui.Body.Close()
+				})
 			})
-
-			inClosePrompt := false
-			gui.Win.SetCloseReqFunc(func(w *core.Window) {
-				if inClosePrompt {
-					return
-				}
-				inClosePrompt = true
-				core.PromptDialog(vp, core.DlgOpts{Title: "Really Close gui.Window?",
-					Prompt: "Are you <i>sure</i> you want to close the gui.Window?  This will Quit the App as well, losing all unsaved params, weights, logs, etc"}, core.AddOk, core.AddCancel,
-					gui.Win.This(), func(recv, send tree.Node, sig int64, data any) {
-						if sig == int64(core.DialogAccepted) {
-							core.Quit()
-						} else {
-							inClosePrompt = false
-						}
-					})
-			})
-		*/
+			return true
+		})
 	}
-
-	// gui.Win.SetCloseCleanFunc(func(w *core.Window) {
-	// 	go core.Quit() // once main gui.Window is closed, quit
-	// })
-
 	gui.Active = true
 }

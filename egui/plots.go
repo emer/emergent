@@ -100,8 +100,23 @@ func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotcore.PlotEditor) {
 	gui.Plots[scope] = plt
 }
 
-// UpdatePlot updates plot for given mode, time scope
+// UpdatePlot updates plot for given mode, time scope.
+// This version should be called in the GUI event loop, e.g., for direct
+// updating in a toolbar action.  Use [GoUpdatePlot] if being called from
+// a separate goroutine, when the sim is running.
 func (gui *GUI) UpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEditor {
+	plot := gui.Plot(mode, tm)
+	if plot != nil {
+		plot.UpdatePlot()
+	}
+	return plot
+}
+
+// GoUpdatePlot updates plot for given mode, time scope.
+// This version is for use in a running simulation, in a separate goroutine.
+// It will cause the GUI to hang if called from within the GUI event loop:
+// use [UpdatePlot] for that case.
+func (gui *GUI) GoUpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEditor {
 	plot := gui.Plot(mode, tm)
 	if plot != nil {
 		plot.GoUpdatePlot()
@@ -112,8 +127,23 @@ func (gui *GUI) UpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEdito
 	return plot
 }
 
-// UpdatePlotScope updates plot at given scope
+// UpdatePlotScope updates plot at given scope.
+// This version should be called in the GUI event loop, e.g., for direct
+// updating in a toolbar action.  Use [GoUpdatePlot] if being called from
+// a separate goroutine, when the sim is running.
 func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
+	plot := gui.PlotScope(scope)
+	if plot != nil {
+		plot.UpdatePlot()
+	}
+	return plot
+}
+
+// GoUpdatePlotScope updates plot at given scope.
+// This version is for use in a running simulation, in a separate goroutine.
+// It will cause the GUI to hang if called from within the GUI event loop:
+// use [UpdatePlotScope] for that case.
+func (gui *GUI) GoUpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
 		plot.GoUpdatePlot()
@@ -122,8 +152,27 @@ func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 }
 
 // UpdateCyclePlot updates cycle plot for given mode.
-// only updates every CycleUpdateInterval
+// only updates every CycleUpdateInterval.
+// This version should be called in the GUI event loop, e.g., for direct
+// updating in a toolbar action.  Use [GoUpdateCyclePlot] if being called from
+// a separate goroutine, when the sim is running.
 func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEditor {
+	plot := gui.Plot(mode, etime.Cycle)
+	if plot == nil {
+		return plot
+	}
+	if (gui.CycleUpdateInterval > 0) && (cycle%gui.CycleUpdateInterval == 0) {
+		plot.UpdatePlot()
+	}
+	return plot
+}
+
+// GoUpdateCyclePlot updates cycle plot for given mode.
+// only updates every CycleUpdateInterval.
+// This version is for use in a running simulation, in a separate goroutine.
+// It will cause the GUI to hang if called from within the GUI event loop:
+// use [UpdateCyclePlot] for that case.
+func (gui *GUI) GoUpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEditor {
 	plot := gui.Plot(mode, etime.Cycle)
 	if plot == nil {
 		return plot
