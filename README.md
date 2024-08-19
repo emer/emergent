@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/emer/emergent)](https://goreportcard.com/report/github.com/emer/emergent)
 [![Go Reference](https://pkg.go.dev/badge/github.com/emer/emergent.svg)](https://pkg.go.dev/github.com/emer/emergent)
 [![CI](https://github.com/emer/emergent/actions/workflows/ci.yml/badge.svg)](https://github.com/emer/emergent/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/emer/emergent/branch/master/graph/badge.svg?token=Hw5cInAxY3)](https://codecov.io/gh/emer/emergent)
+[![Codecov](https://codecov.io/gh/emer/emergent/branch/main/graph/badge.svg?token=Hw5cInAxY3)](https://codecov.io/gh/emer/emergent)
 
 The *emergent* neural network simulation framework provides a toolkit in the Go programming language (golang) for developing neural network models across multiple levels of complexity, from biologically-detailed spiking networks in the [axon](https://github.com/emer/axon) package, to PyTorch abstract deep networks in the [eTorch](https://github.com/emer/etorch) package.  It builds on the [Cogent Core](https://cogentcore.org/core) GUI framework to provide dynamic graphical interfaces for visualizing and manipulating networks and data, making the models uniquely accessible for teaching (e.g., see the [Computational Cognitive Neuroscience](https://github.com/CompCogNeuro/sims) simulations) and supporting the development of complex dynamical models for research.
 
@@ -25,7 +25,7 @@ See the [ra25 example](https://github.com/emer/axon/tree/main/ra25/README.md) in
 
 * 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) that accompany the [CCN Textbook](https://github.com/CompCogNeuro/book) are now complete and have driven extensive testing and bugfixing.
 
-* 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/master/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
+* 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/main/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
 
 * 2/2019: Initial implementation and benchmarking (see `examples/bench` for details -- shows that the Go version is comparable in speed to C++).
 

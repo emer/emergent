@@ -8,5 +8,5 @@ This results in a nice standard RF plot that can be visualized in a tensor grid 
 
 There is a standard ActRF which is cumulative over a user-defined interval and a RunningAvg version which is computed online and continuously updated but is more susceptible to sampling bias (i.e., more sampled areas are more active in general), and a recency bias.
 
-See [objrec CCN sim](https://github.com/CompCogNeuro/sims/blob/master/ch6/objrec) for example usage.
+See [objrec CCN sim](https://github.com/CompCogNeuro/sims/blob/main/ch6/objrec) for example usage.
 

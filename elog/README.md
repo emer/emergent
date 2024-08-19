@@ -40,7 +40,7 @@ Other arbitrary scope values can be used -- there are `Scope` versions of every 
 
 # Examples
 
-The [ra25](https://github.com/emer/axon/tree/master/examples/ra25) example has a fully updated implementation of this new logging infrastructure.  The individual log Items are added in the `logitems.go` file, which keeps the main sim file smaller and easier to navigate.  It is also a good idea to put the params in a separate `params.go` file, as we now do in this example.
+The [ra25](https://github.com/emer/axon/tree/main/examples/ra25) example has a fully updated implementation of this new logging infrastructure.  The individual log Items are added in the `logitems.go` file, which keeps the main sim file smaller and easier to navigate.  It is also a good idea to put the params in a separate `params.go` file, as we now do in this example.
 
 ## Main Config and Log functions
 
@@ -143,7 +143,7 @@ func (ss *Sim) LogRunStats() {
 
 ## Counter Items
 
-All counters of interest should be written to [estats](https://github.com/emer/emergent/tree/master/estats) `Stats` elements, whenever the counters might be updated, and then logging just reads those stats.  Here's a `StatCounters` function:
+All counters of interest should be written to [estats](https://github.com/emer/emergent/tree/main/estats) `Stats` elements, whenever the counters might be updated, and then logging just reads those stats.  Here's a `StatCounters` function:
 
 ```Go
 // StatCounters saves current counters to Stats, so they are available for logging etc
@@ -302,7 +302,7 @@ A log column can be a tensor of any shape -- the `SetLayerTensor` method on the 
 
 ## PCA on Activity
 
-Computing stats on the principal components of variance (PCA) across different input patterns is very informative about the nature of the internal representations in hidden layers.  The [estats](https://github.com/emer/emergent/tree/master/estats) package has support for this -- it is fairly expensive computationally so we only do this every N epochs (10 or so), calling this method:
+Computing stats on the principal components of variance (PCA) across different input patterns is very informative about the nature of the internal representations in hidden layers.  The [estats](https://github.com/emer/emergent/tree/main/estats) package has support for this -- it is fairly expensive computationally so we only do this every N epochs (10 or so), calling this method:
 
 ```Go
 // PCAStats computes PCA statistics on recorded hidden activation patterns
@@ -372,11 +372,11 @@ This item creates a tensor column that records the average error for each catego
 
 ## Confusion matricies
 
-The [estats](https://github.com/emer/emergent/tree/master/estats) package has a `Confusion` object to manage computation of a confusion matirx -- see [confusion](https://github.com/emer/emergent/tree/master/confusion)  for more info.
+The [estats](https://github.com/emer/emergent/tree/main/estats) package has a `Confusion` object to manage computation of a confusion matirx -- see [confusion](https://github.com/emer/emergent/tree/main/confusion)  for more info.
 
 ## Closest Pattern Stat
 
-The [estats](https://github.com/emer/emergent/tree/master/estats) package has a `ClosestPat` function that grabs the activity from a given variable in a given layer, and compares it to a list of patterns in a table, returning the pattern that is closest to the layer activity pattern, using the Correlation metric, which is the most robust metric in terms of ignoring differences in overall activity levels.  You can also compare that closest pattern name to a (list of) acceptable target names and use that as an error measure.
+The [estats](https://github.com/emer/emergent/tree/main/estats) package has a `ClosestPat` function that grabs the activity from a given variable in a given layer, and compares it to a list of patterns in a table, returning the pattern that is closest to the layer activity pattern, using the Correlation metric, which is the most robust metric in terms of ignoring differences in overall activity levels.  You can also compare that closest pattern name to a (list of) acceptable target names and use that as an error measure.
 
 ```Go
     row, cor, cnm := ss.Stats.ClosestPat(ss.Net, "Output", "ActM", ss.Pats, "Output", "Name")
@@ -392,7 +392,7 @@ The [estats](https://github.com/emer/emergent/tree/master/estats) package has a 
 
 ## Activation-based Receptive Fields
 
-The [estats](https://github.com/emer/emergent/tree/master/estats) package has support for recording activation-based receptive fields ([actrf](https://github.com/emer/emergent/tree/master/actrf)), which are very useful for decoding what units represent.
+The [estats](https://github.com/emer/emergent/tree/main/estats) package has support for recording activation-based receptive fields ([actrf](https://github.com/emer/emergent/tree/main/actrf)), which are very useful for decoding what units represent.
 
 First, initialize the ActRFs in the `ConfigLogs` function, using strings that specify the layer name to record activity from, followed by the source data for the receptive field, which can be *anything* that might help you understand what the units are responding to, including the name of another layer.  If it is not another layer name, then the code will look for the name in the `Stats.F32Tensors` map of named tensors.
 

@@ -11,4 +11,4 @@ Pattern generator is capable of flexibly making patterns for models. To configur
 3) mix different pools in the vocabulary into one pattern (e.g., A+B+context-->input pattern), which is stored in the big pattern; 
 4) repeat 3) for the output pattern.
 
-Example code could be found in `ConfigPats()` in [hip bench](https://github.com/emer/leabra/blob/master/examples/hip_bench/hip_bench.go).
+Example code could be found in `ConfigPats()` in [hip bench](https://github.com/emer/leabra/blob/main/examples/hip_bench/hip_bench.go).

@@ -20,7 +20,7 @@ This code is based on [Kinetikit](https://www.ncbs.res.in/faculty/bhalla-kinetik
 
 * Bhalla, U. S., & Iyengar, R. (1999). Emergent Properties of Networks of Biological Signaling Pathways. Science. https://doi.org/10.1126/science.283.5400.381
 
-See the [axon urakubo](https://github.com/emer/axon/tree/master/examples/urakubo) model of LTP / LTD for a re-implementation of the Urakubo et al, 2008 model using this code.
+See the [axon urakubo](https://github.com/emer/axon/tree/main/examples/urakubo) model of LTP / LTD for a re-implementation of the Urakubo et al, 2008 model using this code.
 
 * Urakubo, H., Honda, M., Froemke, R. C., & Kuroda, S. (2008). Requirement of an allosteric kinetics of NMDA receptors for spike timing-dependent plasticity. The Journal of Neuroscience, 28(13), 3310–3323. http://www.ncbi.nlm.nih.gov/pubmed/18367598
 

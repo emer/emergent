@@ -1,6 +1,6 @@
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/estats)
 
-`estats.Stats` provides maps for storing statistics as named scalar and tensor values.  These stats are available in the `elog.Context` for use during logging -- see [elog](https://github.com/emer/emergent/tree/master/elog) for example code.
+`estats.Stats` provides maps for storing statistics as named scalar and tensor values.  These stats are available in the `elog.Context` for use during logging -- see [elog](https://github.com/emer/emergent/tree/main/elog) for example code.
 
 To make relevant stats visible to users, call the `Print` function with a list of stat names -- this can be passed to the `Netview` Record method to show these stats at the bottom of the network view, and / or displayed in a Sims field.
 

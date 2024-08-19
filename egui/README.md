@@ -2,7 +2,7 @@ Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/egui)
 
 `egui` handles all the GUI elements for a typical simulation, reducing boilerplate code in models.
 
-The [ra25](https://github.com/emer/axon/tree/master/examples/ra25) example has a fully updated implementation of this new GUI infrastructure. 
+The [ra25](https://github.com/emer/axon/tree/main/examples/ra25) example has a fully updated implementation of this new GUI infrastructure.
 
 # Examples
 
