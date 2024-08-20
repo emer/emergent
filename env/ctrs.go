@@ -38,14 +38,13 @@ func (cs *Counters) ByScope(tm etime.Times) *Counter {
 	return cs.Counters[tm]
 }
 
-// ByTimeTry returns counter by timescale key -- returns nil, error if not found
-func (cs *Counters) ByTimeTry(tm etime.Times) (*Counter, error) {
+// ByTime returns counter by timescale key. returns nil, error if not found.
+func (cs *Counters) ByTime(tm etime.Times) (*Counter, error) {
 	ct, ok := cs.Counters[tm]
 	if ok {
 		return ct, nil
 	}
-	err := fmt.Errorf("env.Counters: scope not found: %s", tm.String())
-	return nil, err
+	return nil, fmt.Errorf("env.Counters: scope not found: %s", tm.String())
 }
 
 // Init does Init on all the counters

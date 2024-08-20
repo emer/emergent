@@ -6,7 +6,7 @@ package econfig
 
 import "cogentcore.org/core/base/reflectx"
 
-// SetFromDefaults sets Config values from field tag `def:` values.
+// SetFromDefaults sets Config values from field tag `default:` values.
 // Parsing errors are automatically logged.
 func SetFromDefaults(cfg any) error {
 	return reflectx.SetFromDefaultTags(cfg)

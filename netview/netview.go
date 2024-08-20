@@ -152,6 +152,7 @@ func (nv *NetView) SetNet(net emer.Network) {
 	nv.DataMu.Unlock()
 	nv.UpdateTree() // need children
 	nv.UpdateLayers()
+	nv.Current()
 }
 
 // SetVar sets the variable to view and updates the display

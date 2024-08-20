@@ -8,7 +8,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+
+	"cogentcore.org/core/base/errors"
 )
 
 // HyperValues is a string-value map for storing hyperparameter values
@@ -43,22 +44,14 @@ func (hv *HyperValues) CopyFrom(cp HyperValues) {
 // Params. "Min" and "Max" guid the range, and "Sigma" describes a Gaussian.
 type Hypers map[string]HyperValues //types:add
 
-// ParamByNameTry returns given parameter, by name.
-// Returns error if not found.
-func (pr *Hypers) ParamByNameTry(name string) (map[string]string, error) {
+// ParamByName returns given parameter, by name.
+// Returns and logs error if not found.
+func (pr *Hypers) ParamByName(name string) (map[string]string, error) {
 	vl, ok := (*pr)[name]
 	if !ok {
-		err := fmt.Errorf("params.Params: parameter named %v not found", name)
-		log.Println(err)
-		return map[string]string{}, err
+		return vl, errors.Log(fmt.Errorf("params.Params: parameter named %v not found", name))
 	}
 	return vl, nil
-}
-
-// ParamByName returns given parameter by name (just does the map access)
-// Returns "" if not found -- use Try version for error
-func (pr *Hypers) ParamByName(name string) map[string]string {
-	return (*pr)[name]
 }
 
 // SetByName sets given parameter by name to given value.

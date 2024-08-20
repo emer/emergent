@@ -152,7 +152,7 @@ func (cd *Cond) Validate(rl *Rule, it *Item, rls *Rules) []error {
 			return []error{fmt.Errorf("Rule: %v Item: %v Rule Condition has empty Rule", rl.Name, it.String())}
 		}
 		if cd.Rule[0] != '\'' {
-			_, err := rls.RuleTry(cd.Rule)
+			_, err := rls.Rule(cd.Rule)
 			if err != nil {
 				return []error{err}
 			}

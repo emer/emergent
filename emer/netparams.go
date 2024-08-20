@@ -115,7 +115,7 @@ func (pr *NetParams) SetAllSheet(sheetName string) error {
 	if err != nil {
 		return err
 	}
-	psheet, err := pr.Params.SheetByNameTry(sheetName)
+	psheet, err := pr.Params.SheetByName(sheetName)
 	if err != nil {
 		return err
 	}

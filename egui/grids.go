@@ -67,7 +67,7 @@ func (gui *GUI) ViewActRFs(atf *actrf.RFs) {
 		nm := rf.Name
 		tg := gui.Grid(nm)
 		if tg.Tensor == nil {
-			rf := atf.RFByName(nm)
+			rf, _ := atf.RFByName(nm)
 			tg.SetTensor(&rf.NormRF)
 		} else {
 			tg.NeedsRender()

@@ -8,7 +8,8 @@ package params
 
 import (
 	"fmt"
-	"log"
+
+	"cogentcore.org/core/base/errors"
 )
 
 // Params is a name-value map for parameter values that can be applied
@@ -24,22 +25,14 @@ import (
 // parameters to.
 type Params map[string]string //types:add
 
-// ParamByNameTry returns given parameter, by name.
-// Returns error if not found.
-func (pr *Params) ParamByNameTry(name string) (string, error) {
+// ParamByName returns given parameter, by name.
+// Returns and logs error if not found.
+func (pr *Params) ParamByName(name string) (string, error) {
 	vl, ok := (*pr)[name]
 	if !ok {
-		err := fmt.Errorf("params.Params: parameter named %v not found", name)
-		log.Println(err)
-		return "", err
+		return "", errors.Log(fmt.Errorf("params.Params: parameter named %v not found", name))
 	}
 	return vl, nil
-}
-
-// ParamByName returns given parameter by name (just does the map access)
-// Returns "" if not found -- use Try version for error
-func (pr *Params) ParamByName(name string) string {
-	return (*pr)[name]
 }
 
 // SetByName sets given parameter by name to given value.
@@ -86,7 +79,7 @@ func (sl *Sel) SetString(param string, val string) {
 
 // ParamVal returns the value of given parameter
 func (sl *Sel) ParamValue(param string) (string, error) {
-	return sl.Params.ParamByNameTry(param)
+	return sl.Params.ParamByName(param)
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -115,32 +108,20 @@ func (sh *Sheet) ElemLabel(idx int) string {
 	return (*sh)[idx].Sel
 }
 
-// SelByNameTry returns given selector within the Sheet, by Name.
-// Returns nil and error if not found.
-func (sh *Sheet) SelByNameTry(sel string) (*Sel, error) {
-	sl := sh.SelByName(sel)
-	if sl == nil {
-		err := fmt.Errorf("params.Sheet: Sel named %v not found", sel)
-		log.Println(err)
-		return nil, err
-	}
-	return sl, nil
-}
-
 // SelByName returns given selector within the Sheet, by Name.
-// Returns nil if not found -- use Try version for error
-func (sh *Sheet) SelByName(sel string) *Sel {
+// Returns and logs error if not found.
+func (sh *Sheet) SelByName(sel string) (*Sel, error) {
 	for _, sl := range *sh {
 		if sl.Sel == sel {
-			return sl
+			return sl, nil
 		}
 	}
-	return nil
+	return nil, errors.Log(fmt.Errorf("params.Sheet: Sel named %v not found", sel))
 }
 
 // SetFloat sets the value of given parameter, in selection sel
 func (sh *Sheet) SetFloat(sel, param string, val float64) error {
-	sp, err := sh.SelByNameTry(sel)
+	sp, err := sh.SelByName(sel)
 	if err != nil {
 		return err
 	}
@@ -150,7 +131,7 @@ func (sh *Sheet) SetFloat(sel, param string, val float64) error {
 
 // SetString sets the value of given parameter, in selection sel
 func (sh *Sheet) SetString(sel, param string, val string) error {
-	sp, err := sh.SelByNameTry(sel)
+	sp, err := sh.SelByName(sel)
 	if err != nil {
 		return err
 	}
@@ -160,7 +141,7 @@ func (sh *Sheet) SetString(sel, param string, val string) error {
 
 // ParamVal returns the value of given parameter, in selection sel
 func (sh *Sheet) ParamValue(sel, param string) (string, error) {
-	sp, err := sh.SelByNameTry(sel)
+	sp, err := sh.SelByName(sel)
 	if err != nil {
 		return "", err
 	}
@@ -175,28 +156,20 @@ func (sh *Sheet) ParamValue(sel, param string) (string, error) {
 // and different such configurations can be chosen by name to apply as desired.
 type Sets map[string]*Sheet //git:add
 
-// SheetByNameTry tries to find given set by name, and returns error
-// if not found (also logs the error)
-func (ps *Sets) SheetByNameTry(name string) (*Sheet, error) {
+// SheetByName tries to find given set by name.
+// Returns and logs error if not found.
+func (ps *Sets) SheetByName(name string) (*Sheet, error) {
 	st, ok := (*ps)[name]
 	if ok {
 		return st, nil
 	}
-	err := fmt.Errorf("params.Sets: Param Sheet named %s not found", name)
-	log.Println(err)
-	return nil, err
-}
-
-// SheetByName returns given sheet by name -- for use when confident
-// that it exists, as a nil will return if not found with no error
-func (ps *Sets) SheetByName(name string) *Sheet {
-	return (*ps)[name]
+	return nil, errors.Log(fmt.Errorf("params.Sets: Param Sheet named %s not found", name))
 }
 
 // SetFloat sets the value of given parameter, in selection sel,
 // in sheet and set.
 func (ps *Sets) SetFloat(sheet, sel, param string, val float64) error {
-	sp, err := ps.SheetByNameTry(sheet)
+	sp, err := ps.SheetByName(sheet)
 	if err != nil {
 		return err
 	}
@@ -206,7 +179,7 @@ func (ps *Sets) SetFloat(sheet, sel, param string, val float64) error {
 // SetString sets the value of given parameter, in selection sel,
 // in sheet and set.  Returns error if anything is not found.
 func (ps *Sets) SetString(sheet, sel, param string, val string) error {
-	sp, err := ps.SheetByNameTry(sheet)
+	sp, err := ps.SheetByName(sheet)
 	if err != nil {
 		return err
 	}
@@ -216,7 +189,7 @@ func (ps *Sets) SetString(sheet, sel, param string, val string) error {
 // ParamVal returns the value of given parameter, in selection sel,
 // in sheet and set.  Returns error if anything is not found.
 func (ps *Sets) ParamValue(sheet, sel, param string) (string, error) {
-	sp, err := ps.SheetByNameTry(sheet)
+	sp, err := ps.SheetByName(sheet)
 	if err != nil {
 		return "", err
 	}

@@ -100,18 +100,13 @@ func (rls *Rules) Init() {
 	}
 }
 
-// Rule returns rule of given name (nil if not found)
-func (rls *Rules) Rule(name string) *Rule {
-	return rls.Map[name]
-}
-
-// RuleTry returns rule of given name, and error if not found
-func (rls *Rules) RuleTry(name string) (*Rule, error) {
+// Rule returns rule of given name, and error if not found
+func (rls *Rules) Rule(name string) (*Rule, error) {
 	rl, ok := rls.Map[name]
-	if !ok {
-		return nil, fmt.Errorf("Rule: %v not found in Rules: %v", name, rls.Name)
+	if ok {
+		return rl, nil
 	}
-	return rl, nil
+	return nil, fmt.Errorf("Rule: %v not found in Rules: %v", name, rls.Name)
 }
 
 // HasFired returns true if rule of given name has fired

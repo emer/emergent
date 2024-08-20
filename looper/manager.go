@@ -47,7 +47,11 @@ type Manager struct {
 
 // GetLoop returns the Loop associated with an evaluation mode and timescale.
 func (man *Manager) GetLoop(modes etime.Modes, times etime.Times) *Loop {
-	return man.Stacks[modes].Loops[times]
+	st := man.Stacks[modes]
+	if st == nil {
+		return nil
+	}
+	return st.Loops[times]
 }
 
 // NewManager returns a new initialized manager

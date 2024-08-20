@@ -6,8 +6,8 @@ package actrf
 
 import (
 	"fmt"
-	"log"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor"
 )
 
@@ -22,25 +22,15 @@ type RFs struct {
 	RFs []*RF
 }
 
-// RFByName returns RF of given name, nil if not found
-func (af *RFs) RFByName(name string) *RF {
-	if af.NameMap == nil {
-		return nil
+// RFByName returns RF of given name, nil and error msg if not found.
+func (af *RFs) RFByName(name string) (*RF, error) {
+	if af.NameMap != nil {
+		idx, ok := af.NameMap[name]
+		if ok {
+			return af.RFs[idx], nil
+		}
 	}
-	idx, ok := af.NameMap[name]
-	if ok {
-		return af.RFs[idx]
-	}
-	return nil
-}
-
-// RFByNameTry returns RF of given name, nil and error msg if not found
-func (af *RFs) RFByNameTry(name string) (*RF, error) {
-	rf := af.RFByName(name)
-	if rf == nil {
-		return nil, fmt.Errorf("Name: %s not found in list of named RFs", name)
-	}
-	return rf, nil
+	return nil, fmt.Errorf("Name: %s not found in list of named RFs", name)
 }
 
 // AddRF adds a new RF, calling Init on it using given act, src tensors
@@ -58,9 +48,8 @@ func (af *RFs) AddRF(name string, act, src tensor.Tensor) *RF {
 
 // Add adds a new act sample to the accumulated data for given named rf
 func (af *RFs) Add(name string, act, src tensor.Tensor, thr float32) error {
-	rf, err := af.RFByNameTry(name)
-	if err != nil {
-		log.Println(err)
+	rf, err := af.RFByName(name)
+	if errors.Log(err) != nil {
 		return err
 	}
 	rf.Add(act, src, thr)

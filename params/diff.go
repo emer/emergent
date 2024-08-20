@@ -65,7 +65,7 @@ func (ps *Sets) DiffsFirst() string {
 // DiffsWithin reports all the cases where the same param path is being set
 // to different values within given sheet.
 func (ps *Sets) DiffsWithin(sheetName string) string {
-	sht, err := ps.SheetByNameTry(sheetName)
+	sht, err := ps.SheetByName(sheetName)
 	if err != nil {
 		return err.Error()
 	}

@@ -114,7 +114,7 @@ func (el *Elem) String() string {
 func (el *Elem) Gen(rl *Rule, rls *Rules) {
 	switch el.El {
 	case RuleEl:
-		rl := rls.Rule(el.Value)
+		rl, _ := rls.Rule(el.Value)
 		rl.Gen(rls)
 	case TokenEl:
 		if rls.Trace {
@@ -128,7 +128,7 @@ func (el *Elem) Gen(rl *Rule, rls *Rules) {
 func (el *Elem) Validate(it *Item, rl *Rule, rls *Rules) []error {
 	switch el.El {
 	case RuleEl:
-		_, err := rls.RuleTry(el.Value)
+		_, err := rls.Rule(el.Value)
 		if err != nil {
 			return []error{err}
 		}
