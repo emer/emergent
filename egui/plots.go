@@ -7,13 +7,10 @@ package egui
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors/gradient"
-	"cogentcore.org/core/core"
 	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/system"
 	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
@@ -120,9 +117,6 @@ func (gui *GUI) GoUpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEdi
 	plot := gui.Plot(mode, tm)
 	if plot != nil {
 		plot.GoUpdatePlot()
-		if core.TheApp.Platform() == system.Web {
-			time.Sleep(time.Millisecond) // critical to prevent hanging!
-		}
 	}
 	return plot
 }
