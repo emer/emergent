@@ -22,7 +22,7 @@ import (
 type NetParams struct {
 
 	// full collection of param sets to use
-	Params params.Sets `display:"no-inline"`
+	Params params.Sets `new-window:"+" display:"no-inline"`
 
 	// optional additional sheets of parameters to apply after Base -- can use multiple names separated by spaces (don't put spaces in Sheet names!)
 	ExtraSheets string
