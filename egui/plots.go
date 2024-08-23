@@ -40,6 +40,15 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 	}
 }
 
+// AddMiscPlotTab adds a misc (non log-generated) plot with a new
+// tab and plot of given name.
+func (gui *GUI) AddMiscPlotTab(name string) *plotcore.PlotEditor {
+	tab := gui.Tabs.NewTab(name)
+	plt := plotcore.NewSubPlot(tab)
+	gui.SetPlotByName(name, plt)
+	return plt
+}
+
 func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, key etime.ScopeKey) {
 	_, times := key.ModesAndTimes()
 	time := times[0]
@@ -89,12 +98,22 @@ func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 	return plot
 }
 
-// SetPlot stores given plot in Plots map
+// PlotByName returns a misc plot by name (instead of scope key).
+func (gui *GUI) PlotByName(name string) *plotcore.PlotEditor {
+	return gui.PlotScope(etime.ScopeKey(name))
+}
+
+// SetPlot stores given plot in Plots map.
 func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotcore.PlotEditor) {
 	if gui.Plots == nil {
 		gui.Plots = make(map[etime.ScopeKey]*plotcore.PlotEditor)
 	}
 	gui.Plots[scope] = plt
+}
+
+// SetPlotByName stores given misc plot by name (instead of scope key) in Plots map.
+func (gui *GUI) SetPlotByName(name string, plt *plotcore.PlotEditor) {
+	gui.SetPlot(etime.ScopeKey(name), plt)
 }
 
 // UpdatePlot updates plot for given mode, time scope.

@@ -308,7 +308,7 @@ func (lg *Logs) AddLayerTensorItems(net emer.Network, varNm string, mode etime.M
 			lg.AddItem(&Item{
 				Name:      itmNm,
 				Type:      reflect.Float32,
-				CellShape: cly.AsEmer().SampleShape.Sizes,
+				CellShape: cly.AsEmer().GetSampleShape().Sizes,
 				FixMin:    true,
 				Range:     minmax.F32{Max: 1},
 				Write: WriteMap{

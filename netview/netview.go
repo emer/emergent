@@ -617,7 +617,6 @@ func (nv *NetView) UpdateLayers() {
 		txt.NetView = nv
 		txt.SetText(ly.StyleName())
 		txt.Pose.Scale = math32.Vector3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
-		txt.Pose.RotateOnAxis(0, 1, 0, 180)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start

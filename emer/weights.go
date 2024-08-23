@@ -9,6 +9,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -53,6 +54,30 @@ func (nt *NetworkBase) OpenWeightsJSON(filename core.Filename) error { //types:a
 		return err
 	}
 	ext := filepath.Ext(string(filename))
+	if ext == ".gz" {
+		gzr, err := gzip.NewReader(fp)
+		defer gzr.Close()
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		return nt.ReadWeightsJSON(gzr)
+	} else {
+		return nt.ReadWeightsJSON(bufio.NewReader(fp))
+	}
+}
+
+// OpenWeightsFS opens network weights (and any other state that adapts with learning)
+// from a JSON-formatted file, in filesystem.
+// If filename has .gz extension, then file is gzip uncompressed.
+func (nt *NetworkBase) OpenWeightsFS(fsys fs.FS, filename string) error {
+	fp, err := fsys.Open(filename)
+	defer fp.Close()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	ext := filepath.Ext(filename)
 	if ext == ".gz" {
 		gzr, err := gzip.NewReader(fp)
 		defer gzr.Close()
