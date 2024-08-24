@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"log/slog"
 	"reflect"
 	"strings"
 	"sync"
@@ -111,16 +112,7 @@ func (nv *NetView) Init() {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
 		})
-		tree.AddChildAt(w, "vars", func(w *core.Frame) {
-			w.Styler(func(s *styles.Style) {
-				s.Display = styles.Grid
-				s.Columns = nv.Params.NVarCols
-				s.Grow.Set(0, 1)
-				s.Overflow.Y = styles.OverflowAuto
-				s.Background = colors.Scheme.SurfaceContainerLow
-			})
-			w.Maker(nv.makeVars)
-		})
+		nv.makeVars(w)
 		tree.AddChildAt(w, "scene", func(w *Scene) {
 			w.NetView = nv
 			se := w.SceneXYZ()
@@ -132,7 +124,7 @@ func (nv *NetView) Init() {
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
 		w.SetText("Counters: " + strings.Repeat(" ", 200)).
 			Styler(func(s *styles.Style) {
-				s.Min.X.Ch(200)
+				s.Grow.Set(1, 0)
 			})
 		w.Updater(func() {
 			if w.Text != nv.CurCtrs && nv.CurCtrs != "" {
@@ -342,8 +334,8 @@ func (nv *NetView) SceneXYZ() *xyz.Scene {
 	return nv.SceneWidget().SceneXYZ()
 }
 
-func (nv *NetView) VarsFrame() *core.Frame {
-	return nv.NetFrame().ChildByName("vars", 0).(*core.Frame)
+func (nv *NetView) VarsFrame() *core.Tabs {
+	return nv.NetFrame().ChildByName("vars", 0).(*core.Tabs)
 }
 
 // SetCounters sets the counters widget view display at bottom of netview
@@ -457,11 +449,11 @@ func (nv *NetView) NetVarsList(net emer.Network, layEven bool) (nvars, synvars [
 	unvars := net.UnitVarNames()
 	synvars = net.SynVarNames()
 	ulen := len(unvars)
-	ncols := NVarCols // nv.Params.NVarCols
-	nr := ulen % ncols
-	if layEven && nr != 0 { // make it an even number
-		ulen += ncols - nr
-	}
+	// ncols := NVarCols // nv.Params.NVarCols
+	// nr := ulen % ncols
+	// if layEven && nr != 0 { // make it an even number
+	// 	ulen += ncols - nr
+	// }
 
 	tlen := ulen + 2*len(synvars)
 	nvars = make([]string, tlen)
@@ -508,36 +500,73 @@ func (nv *NetView) VarsListUpdate() {
 }
 
 // makeVars configures the variables
-func (nv *NetView) makeVars(p *tree.Plan) {
+func (nv *NetView) makeVars(netframe *core.Frame) {
 	nv.VarsListUpdate()
 	if nv.Net == nil {
 		return
 	}
 	unprops := nv.Net.UnitVarProps()
 	pathprops := nv.Net.SynVarProps()
-	for _, vn := range nv.Vars {
-		tree.AddAt(p, vn, func(w *core.Button) {
-			w.SetText(vn).SetType(core.ButtonAction)
+	cats := nv.Net.VarCategories()
+	if len(cats) == 0 {
+		cats = []emer.VarCategory{
+			{"Unit", "unit variables"},
+			{"Wt", "connection weight variables"},
+		}
+	}
+	tree.AddChildAt(netframe, "vars", func(w *core.Tabs) {
+		w.Styler(func(s *styles.Style) {
+			s.Grow.Set(0, 1)
+			s.Overflow.Y = styles.OverflowAuto
+		})
+		tabs := make(map[string]*core.Frame)
+		for _, ct := range cats {
+			tf := w.NewTab(ct.Cat)
+			// todo: no way to set tooltip!?
+			tabs[ct.Cat] = tf
+			tf.Styler(func(s *styles.Style) {
+				s.Display = styles.Grid
+				s.Columns = nv.Params.NVarCols
+				s.Grow.Set(1, 1)
+				s.Overflow.Y = styles.OverflowAuto
+				s.Background = colors.Scheme.SurfaceContainerLow
+			})
+		}
+		for _, vn := range nv.Vars {
+			cat := ""
 			pstr := ""
+			desc := ""
 			if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
 				pstr = pathprops[vn[2:]]
+				cat = "Wt" // default
 			} else {
 				pstr = unprops[vn]
+				cat = "Unit"
 			}
 			if pstr != "" {
 				rstr := reflect.StructTag(pstr)
-				if desc, ok := rstr.Lookup("desc"); ok {
-					w.Tooltip = vn + ": " + desc
-				}
+				desc = rstr.Get("desc")
+				cat = rstr.Get("cat")
 			}
+			tf, ok := tabs[cat]
+			if !ok {
+				slog.Error("emergent.NetView UnitVarProps 'cat' name not found in VarCategories list", "cat", cat, "variable", vn)
+				cat = cats[0].Cat
+				tf = tabs[cat]
+			}
+			w := core.NewButton(tf).SetText(vn)
+			if desc != "" {
+				w.Tooltip = vn + ": " + desc
+			}
+			w.SetText(vn).SetType(core.ButtonAction)
 			w.OnClick(func(e events.Event) {
 				nv.SetVar(vn)
 			})
 			w.Updater(func() {
 				w.SetSelected(w.Text == nv.Var)
 			})
-		})
-	}
+		}
+	})
 }
 
 // UpdateLayers updates the layer display with any structural or

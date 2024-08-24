@@ -20,6 +20,14 @@ import (
 	"github.com/emer/emergent/v2/relpos"
 )
 
+// VarCategory represents one category of unit, synapse variables.
+type VarCategory struct {
+	// Category name.
+	Cat string
+	// Description of the category, used as a tooltip.
+	Desc string
+}
+
 // Network defines the minimal interface for a neural network,
 // used for managing the structural elements of a network,
 // and for visualization, I/O, etc.
@@ -81,13 +89,21 @@ type Network interface {
 	// and the value gives a space-separated list of
 	// go-tag-style properties for that variable.
 	// The NetView recognizes the following properties:
-	// range:"##" = +- range around 0 for default display scaling
-	// min:"##" max:"##" = min, max display range
-	// auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
-	// zeroctr:"+" or "-" = control whether zero-centering is used
-	// desc:"txt" tooltip description of the variable
-	// Note: this is typically a global list so do not modify!
+	//	- range:"##" = +- range around 0 for default display scaling
+	//	- min:"##" max:"##" = min, max display range
+	//	- auto-scale:"+" or "-" = use automatic scaling instead of fixed range or not.
+	//	- zeroctr:"+" or "-" = control whether zero-centering is used
+	//	- desc:"txt" tooltip description of the variable
+	//	- cat:"cat" variable category, for category tabs
 	UnitVarProps() map[string]string
+
+	// VarCategories is a list of unit & synapse variable categories,
+	// which organizes the variables into separate tabs in the network view.
+	// Using categories results in a more compact display and makes it easier
+	// to find variables.
+	// Set the 'cat' property in the UnitVarProps, SynVarProps for each variable.
+	// If no categories returned, the default is Unit, Wt.
+	VarCategories() []VarCategory
 
 	// SynVarNames returns the names of all the variables
 	// on the synapses in this network.
