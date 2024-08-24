@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/rand"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
@@ -115,7 +116,7 @@ func (ft *FixedTable) Row() int {
 }
 
 func (ft *FixedTable) SetTrialName() {
-	if nms := ft.Table.Table.ColumnByName(ft.NameCol); nms != nil {
+	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.NameCol)); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
 			ft.TrialName.Set(nms.String1D(rw))
@@ -124,7 +125,7 @@ func (ft *FixedTable) SetTrialName() {
 }
 
 func (ft *FixedTable) SetGroupName() {
-	if nms := ft.Table.Table.ColumnByName(ft.GroupCol); nms != nil {
+	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.GroupCol)); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
 			ft.GroupName.Set(nms.String1D(rw))

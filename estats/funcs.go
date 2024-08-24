@@ -65,7 +65,7 @@ func (st *Stats) LayerVarsCorrelRep(net emer.Network, layNm, unitVarA, unitVarB 
 // di is a data parallel index di, for networks capable of processing input patterns in parallel.
 func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, di int, pats *table.Table, colnm, namecol string) (int, float32, string) {
 	tsr := st.SetLayerTensor(net, layNm, unitVar, di)
-	col := pats.ColumnByName(colnm)
+	col := errors.Log1(pats.ColumnByName(colnm))
 	// note: requires Increasing metric so using Inv
 	row, cor := metric.ClosestRow32(tsr, col.(*tensor.Float32), metric.InvCorrelation32)
 	cor = 1 - cor // convert back to correl

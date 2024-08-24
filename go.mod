@@ -3,7 +3,7 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.3.3-0.20240823053213-f975eb9c487c
+	cogentcore.org/core v0.3.3-0.20240824041409-a3b72b4e5b61
 	github.com/BurntSushi/toml v1.3.2
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/iancoleman/strcase v0.3.0

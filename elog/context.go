@@ -6,7 +6,6 @@ package elog
 
 import (
 	"fmt"
-	"log"
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor"
@@ -152,14 +151,13 @@ func (ctx *Context) SetAggItem(mode etime.Modes, time etime.Times, itemNm string
 // returns aggregated value(s).
 func (ctx *Context) SetAggItemScope(scope etime.ScopeKey, itemNm string, ag stats.Stats) []float64 {
 	ix := ctx.Logs.IndexViewScope(scope)
-	vals := stats.StatColumn(ix, itemNm, ag)
-	if len(vals) == 0 {
-		fmt.Printf("elog.Context SetAggItemScope for item: %s in scope: %s -- could not aggregate item: %s from scope: %s -- check names\n", ctx.Item.Name, ctx.Scope, itemNm, scope)
+	vals, err := stats.StatColumn(ix, itemNm, ag)
+	if err != nil {
+		fmt.Printf("elog.Context SetAggItemScope for item: %s in scope: %s: could not aggregate item: %s from scope: %s: %s\n", ctx.Item.Name, ctx.Scope, itemNm, scope, err.Error())
 		return nil
 	}
-	cl, err := ctx.Table.ColumnByNameTry(ctx.Item.Name)
-	if err != nil {
-		log.Println(err)
+	cl, err := ctx.Table.ColumnByName(ctx.Item.Name)
+	if errors.Log(err) != nil {
 		return vals
 	}
 	if cl.NumDims() > 1 {
@@ -228,7 +226,7 @@ func (ctx *Context) ItemColTensor(mode etime.Modes, time etime.Times, itemNm str
 // in log for given scope.
 func (ctx *Context) ItemColTensorScope(scope etime.ScopeKey, itemNm string) tensor.Tensor {
 	dt := ctx.Logs.TableScope(scope)
-	return dt.ColumnByName(itemNm)
+	return errors.Log1(dt.ColumnByName(itemNm))
 }
 
 ///////////////////////////////////////////////////
@@ -280,7 +278,7 @@ func (ctx *Context) SetLayerSampleTensor(layNm, unitVar string) *tensor.Float32 
 // Column must be tensor.Float32
 func (ctx *Context) ClosestPat(layNm, unitVar string, pats *table.Table, colnm, namecol string) (int, float32, string) {
 	tsr := ctx.SetLayerTensor(layNm, unitVar)
-	col := pats.ColumnByName(colnm)
+	col := errors.Log1(pats.ColumnByName(colnm))
 	// note: requires Increasing metric so using Inv
 	row, cor := metric.ClosestRow32(tsr, col.(*tensor.Float32), metric.InvCorrelation32)
 	cor = 1 - cor // convert back to correl

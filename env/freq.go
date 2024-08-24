@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
@@ -70,7 +71,7 @@ func (ft *FreqTable) Validate() error {
 	if ft.Table.Table.NumColumns() == 0 {
 		return fmt.Errorf("env.FreqTable: %v Table has no columns -- Outputs will be invalid", ft.Name)
 	}
-	_, err := ft.Table.Table.ColumnByNameTry(ft.FreqCol)
+	_, err := ft.Table.Table.ColumnByName(ft.FreqCol)
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func (ft *FreqTable) Sample() {
 	} else {
 		ft.Order = ft.Order[:0]
 	}
-	frqs := ft.Table.Table.ColumnByName(ft.FreqCol)
+	frqs := errors.Log1(ft.Table.Table.ColumnByName(ft.FreqCol))
 
 	for ri := 0; ri < np; ri++ {
 		ti := ft.Table.Indexes[ri]
@@ -138,7 +139,7 @@ func (ft *FreqTable) Row() int {
 }
 
 func (ft *FreqTable) SetTrialName() {
-	if nms := ft.Table.Table.ColumnByName(ft.NameCol); nms != nil {
+	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.NameCol)); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
 			ft.TrialName.Set(nms.String1D(rw))
@@ -147,7 +148,7 @@ func (ft *FreqTable) SetTrialName() {
 }
 
 func (ft *FreqTable) SetGroupName() {
-	if nms := ft.Table.Table.ColumnByName(ft.GroupCol); nms != nil {
+	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.GroupCol)); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
 			ft.GroupName.Set(nms.String1D(rw))

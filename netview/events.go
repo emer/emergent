@@ -44,20 +44,13 @@ func (sw *Scene) Init() {
 
 func (sw *Scene) MouseDownEvent(e events.Event) {
 	pos := e.Pos().Sub(sw.Geom.ContentBBox.Min)
-	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), pos)
-	for _, n := range ns {
-		ln, ok := n.(*LayName)
-		if ok {
-			lay, _ := ln.NetView.Net.AsEmer().EmerLayerByName(ln.Text)
-			if lay != nil {
-				FormDialog(sw, lay, "Layer: "+lay.StyleName())
-			}
-			e.SetHandled()
-			return
-		}
+	lay := sw.LayerLabelAtPoint(pos)
+	if lay != nil {
+		FormDialog(sw, lay, "Layer: "+lay.StyleName())
+		e.SetHandled()
+		return
 	}
-
-	lay, _, _, unIndex := sw.LayerUnitAtPoint(e.Pos())
+	lay, _, _, unIndex := sw.LayerUnitAtPoint(pos)
 	if lay == nil {
 		return
 	}
@@ -72,8 +65,18 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 	if pos == image.Pt(-1, -1) {
 		return "_", image.Point{}
 	}
+	lpos := pos.Sub(sw.Geom.ContentBBox.Min)
+	lay := sw.LayerLabelAtPoint(lpos)
+	if lay != nil {
+		le := lay.AsEmer()
+		tt := "[Click to edit]"
+		if le.Info != "" {
+			tt += " " + le.Info
+		}
+		return tt, pos
+	}
 
-	lay, lx, ly, _ := sw.LayerUnitAtPoint(pos)
+	lay, lx, ly, _ := sw.LayerUnitAtPoint(lpos)
 	if lay == nil {
 		return "", pos
 	}
@@ -106,8 +109,21 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 	return tt, pos
 }
 
+func (sw *Scene) LayerLabelAtPoint(pos image.Point) emer.Layer {
+	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), pos)
+	for _, n := range ns {
+		ln, ok := n.(*LayName)
+		if ok {
+			lay, _ := ln.NetView.Net.AsEmer().EmerLayerByName(ln.Text)
+			if lay != nil {
+				return lay
+			}
+		}
+	}
+	return nil
+}
+
 func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIndex int) {
-	pos = pos.Sub(sw.Geom.ContentBBox.Min)
 	sc := sw.SceneXYZ()
 	laysGpi := sc.ChildByName("Layers", 0)
 	if laysGpi == nil {

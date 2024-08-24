@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
 	"cogentcore.org/core/core"
@@ -566,7 +567,7 @@ func (nv *NetView) UpdateLayers() {
 	if !tree.Update(laysGp, layConfig) {
 		for li := range laysGp.Children {
 			ly := nv.Net.EmerLayer(li)
-			lmesh := se.MeshByName(ly.StyleName())
+			lmesh := errors.Log1(se.MeshByName(ly.StyleName()))
 			se.SetMesh(lmesh) // does update
 		}
 		return
@@ -585,7 +586,7 @@ func (nv *NetView) UpdateLayers() {
 	for li, lgi := range laysGp.Children {
 		ly := nv.Net.EmerLayer(li)
 		lb := ly.AsEmer()
-		lmesh := se.MeshByName(ly.StyleName())
+		lmesh, _ := se.MeshByName(ly.StyleName())
 		if lmesh == nil {
 			NewLayMesh(se, nv, ly)
 		} else {

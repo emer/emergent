@@ -9,6 +9,7 @@ import (
 	"log"
 	"reflect"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor/table"
 )
 
@@ -27,9 +28,9 @@ func InitPats(dt *table.Table, name, desc, inputName, outputName string, listSiz
 // poolSource order: left right, bottom up
 func MixPats(dt *table.Table, mp Vocab, colName string, poolSource []string) error {
 	name := dt.MetaData["name"]
-	listSize := dt.ColumnByName(colName).Shape().Sizes[0]
-	ySize := dt.ColumnByName(colName).Shape().Sizes[1]
-	xSize := dt.ColumnByName(colName).Shape().Sizes[2]
+	listSize := errors.Log1(dt.ColumnByName(colName)).Shape().Sizes[0]
+	ySize := errors.Log1(dt.ColumnByName(colName)).Shape().Sizes[1]
+	xSize := errors.Log1(dt.ColumnByName(colName)).Shape().Sizes[2]
 	for row := 0; row < listSize; row++ {
 		dt.SetString("Name", row, fmt.Sprint(name, row))
 		npool := 0
@@ -65,8 +66,8 @@ func MixPats(dt *table.Table, mp Vocab, colName string, poolSource []string) err
 func MixPatsN(dt *table.Table, mp Vocab, colName string, poolSource []string, targRow, vocabStart, vocabN int) error {
 	name := dt.MetaData["name"]
 	_ = name
-	ySize := dt.ColumnByName(colName).Shape().Sizes[1]
-	xSize := dt.ColumnByName(colName).Shape().Sizes[2]
+	ySize := errors.Log1(dt.ColumnByName(colName)).Shape().Sizes[1]
+	xSize := errors.Log1(dt.ColumnByName(colName)).Shape().Sizes[2]
 	for ri := 0; ri < vocabN; ri++ {
 		row := targRow + ri
 		vocIndex := vocabStart + ri

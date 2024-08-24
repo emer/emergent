@@ -5,6 +5,7 @@ import (
 	"slices"
 	"testing"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor/table"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
@@ -313,8 +314,8 @@ func TestVocab(t *testing.T) {
 	// fmt.Println("Input Pats")
 	// fmt.Println(dt.ColumnByName("Input").Shape.Sizes)
 	// fmt.Println(dt.ColumnByName("Input").String())
-	assert.Equal(t, []int{6, 3, 2, 3, 3}, dt.ColumnByName("Input").Shape().Sizes)
-	assert.Equal(t, exip, dt.ColumnByName("Input").String())
+	assert.Equal(t, []int{6, 3, 2, 3, 3}, errors.Log1(dt.ColumnByName("Input")).Shape().Sizes)
+	assert.Equal(t, exip, errors.Log1(dt.ColumnByName("Input")).String())
 
 	exop := `Tensor: [Row: 6, ySize: 3, xSize: 2, poolY: 3, poolX: 3]
 [0 0 0]:       0       0       0       0       1       0 
@@ -377,6 +378,6 @@ func TestVocab(t *testing.T) {
 	// fmt.Println(dt.ColumnByName("ECout").Shape.Sizes)
 	// fmt.Println(dt.ColumnByName("ECout").String())
 
-	assert.Equal(t, []int{6, 3, 2, 3, 3}, dt.ColumnByName("ECout").Shape().Sizes)
-	assert.Equal(t, exop, dt.ColumnByName("ECout").String())
+	assert.Equal(t, []int{6, 3, 2, 3, 3}, errors.Log1(dt.ColumnByName("ECout")).Shape().Sizes)
+	assert.Equal(t, exop, errors.Log1(dt.ColumnByName("ECout")).String())
 }
