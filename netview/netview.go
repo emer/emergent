@@ -449,12 +449,6 @@ func (nv *NetView) NetVarsList(net emer.Network, layEven bool) (nvars, synvars [
 	unvars := net.UnitVarNames()
 	synvars = net.SynVarNames()
 	ulen := len(unvars)
-	// ncols := NVarCols // nv.Params.NVarCols
-	// nr := ulen % ncols
-	// if layEven && nr != 0 { // make it an even number
-	// 	ulen += ncols - nr
-	// }
-
 	tlen := ulen + 2*len(synvars)
 	nvars = make([]string, tlen)
 	copy(nvars, unvars)
