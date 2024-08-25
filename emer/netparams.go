@@ -37,7 +37,7 @@ type NetParams struct {
 	NetHypers params.Flex `display:"-"`
 
 	// print out messages for each parameter that is set
-	SetMsg bool
+	SetMsg bool `display:"-"`
 }
 
 // Config configures the ExtraSheets, Tag, and Network fields
