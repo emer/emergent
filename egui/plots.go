@@ -43,7 +43,7 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 // AddMiscPlotTab adds a misc (non log-generated) plot with a new
 // tab and plot of given name.
 func (gui *GUI) AddMiscPlotTab(name string) *plotcore.PlotEditor {
-	tab := gui.Tabs.NewTab(name)
+	tab, _ := gui.Tabs.NewTab(name)
 	plt := plotcore.NewSubPlot(tab)
 	gui.SetPlotByName(name, plt)
 	return plt
@@ -200,7 +200,8 @@ func (gui *GUI) GoUpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEdi
 // and using given tab label.  For ad-hoc plots, you can
 // construct a ScopeKey from any two strings using etime.ScopeStr.
 func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotcore.PlotEditor {
-	plt := plotcore.NewSubPlot(gui.Tabs.NewTab(tabLabel))
+	tab, _ := gui.Tabs.NewTab(tabLabel)
+	plt := plotcore.NewSubPlot(tab)
 	gui.Plots[key] = plt
 	return plt
 }
@@ -219,7 +220,7 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 		return nil
 	}
 
-	tt := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
+	tt, _ := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
 	tv := tensorcore.NewTable(tt)
 	gui.TableViews[key] = tv
 	tv.SetReadOnly(true)

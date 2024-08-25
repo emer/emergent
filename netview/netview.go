@@ -515,8 +515,8 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 		})
 		tabs := make(map[string]*core.Frame)
 		for _, ct := range cats {
-			tf := w.NewTab(ct.Cat)
-			// todo: no way to set tooltip!?
+			tf, tb := w.NewTab(ct.Cat)
+			tb.Tooltip = ct.Desc
 			tabs[ct.Cat] = tf
 			tf.Styler(func(s *styles.Style) {
 				s.Display = styles.Grid
@@ -541,6 +541,9 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 				rstr := reflect.StructTag(pstr)
 				desc = rstr.Get("desc")
 				cat = rstr.Get("cat")
+				if rstr.Get("display") == "-" {
+					continue
+				}
 			}
 			tf, ok := tabs[cat]
 			if !ok {

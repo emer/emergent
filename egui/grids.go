@@ -55,7 +55,7 @@ func (gui *GUI) SaveActRFGrid(tg *tensorcore.TensorGrid, name string) {
 func (gui *GUI) AddActRFGridTabs(arfs *actrf.RFs) {
 	for _, rf := range arfs.RFs {
 		nm := rf.Name
-		tf := gui.Tabs.NewTab(nm)
+		tf, _ := gui.Tabs.NewTab(nm)
 		tg := tensorcore.NewTensorGrid(tf)
 		gui.SaveActRFGrid(tg, nm)
 	}

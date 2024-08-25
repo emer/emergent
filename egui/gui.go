@@ -116,7 +116,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
-	nvt := gui.Tabs.NewTab(tabName)
+	nvt, _ := gui.Tabs.NewTab(tabName)
 	nv := netview.NewNetView(nvt)
 	nv.Var = "Act"
 	return nv
