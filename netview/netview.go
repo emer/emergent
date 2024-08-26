@@ -15,6 +15,7 @@ import (
 	"image/color"
 	"log"
 	"log/slog"
+	"math"
 	"reflect"
 	"strings"
 	"sync"
@@ -91,6 +92,8 @@ type NetView struct {
 
 	// mutex on data access
 	DataMu sync.RWMutex `display:"-" copier:"-" json:"-" xml:"-"`
+
+	hasPaths bool // to detect if paths changes
 }
 
 func (nv *NetView) Init() {
@@ -119,6 +122,8 @@ func (nv *NetView) Init() {
 			nv.ViewDefaults(se)
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
+			pathsGp := xyz.NewGroup(se)
+			pathsGp.Name = "Paths"
 		})
 	})
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
@@ -516,7 +521,7 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 		tabs := make(map[string]*core.Frame)
 		for _, ct := range cats {
 			tf, tb := w.NewTab(ct.Cat)
-			tb.Tooltip = ct.Desc
+			tb.Tooltip = ct.Doc
 			tabs[ct.Cat] = tf
 			tf.Styler(func(s *styles.Style) {
 				s.Display = styles.Grid
@@ -529,7 +534,7 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 		for _, vn := range nv.Vars {
 			cat := ""
 			pstr := ""
-			desc := ""
+			doc := ""
 			if strings.HasPrefix(vn, "r.") || strings.HasPrefix(vn, "s.") {
 				pstr = pathprops[vn[2:]]
 				cat = "Wt" // default
@@ -539,7 +544,7 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 			}
 			if pstr != "" {
 				rstr := reflect.StructTag(pstr)
-				desc = rstr.Get("desc")
+				doc = rstr.Get("doc")
 				cat = rstr.Get("cat")
 				if rstr.Get("display") == "-" {
 					continue
@@ -552,8 +557,8 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 				tf = tabs[cat]
 			}
 			w := core.NewButton(tf).SetText(vn)
-			if desc != "" {
-				w.Tooltip = vn + ": " + desc
+			if doc != "" {
+				w.Tooltip = vn + ": " + doc
 			}
 			w.SetText(vn).SetType(core.ButtonAction)
 			w.OnClick(func(e events.Event) {
@@ -595,6 +600,9 @@ func (nv *NetView) UpdateLayers() {
 			ly := nv.Net.EmerLayer(li)
 			lmesh := errors.Log1(se.MeshByName(ly.StyleName()))
 			se.SetMesh(lmesh) // does update
+		}
+		if nv.hasPaths != nv.Params.Paths {
+			nv.UpdatePaths()
 		}
 		return
 	}
@@ -648,8 +656,122 @@ func (nv *NetView) UpdateLayers() {
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
 	}
+	nv.UpdatePaths()
 	sw.XYZ.SetNeedsUpdate()
 	sw.NeedsRender()
+}
+
+// UpdatePaths updates the path display.
+// Only called when layers have structural changes.
+func (nv *NetView) UpdatePaths() {
+	sw := nv.SceneWidget()
+	se := sw.SceneXYZ()
+
+	nb := nv.Net.AsEmer()
+	nlay := nv.Net.NumLayers()
+	pathsGp := se.ChildByName("Paths", 0).(*xyz.Group)
+	pathsGp.DeleteChildren()
+
+	if !nv.Params.Paths {
+		nv.hasPaths = false
+		return
+	}
+	nv.hasPaths = true
+
+	nmin, nmax := nb.MinPos, nb.MaxPos
+	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
+	nsc := math32.Vec3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
+	poff := math32.Vector3Scalar(0.5)
+	poff.Y = -0.5
+
+	lineWidth := nv.Params.PathWidth
+
+	layPosSize := func(lb *emer.LayerBase) (math32.Vector3, math32.Vector3) {
+		lp := lb.Pos.Pos
+		lp.Y = -lp.Y
+		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)
+		lp.Y, lp.Z = lp.Z, lp.Y
+		dsz := lb.DisplaySize()
+		lsz := math32.Vector3{dsz.X * nsc.X, 0, dsz.Y * nsc.Y}
+		return lp, lsz
+	}
+
+	// L, R, F, B -- center of each side, z is negative
+	sideMids := []math32.Vector3{{0, 0, -0.5}, {1, 0, -0.5}, {0.5, 0, 0}, {0.5, 0, -1}}
+	sideDims := []math32.Dims{math32.Z, math32.Z, math32.X, math32.X}
+
+	sideMtx := func(side int, prop float32) math32.Vector3 {
+		dim := sideDims[side]
+		smat := sideMids[side]
+		smat.SetDim(dim, prop)
+		if dim == math32.Z {
+			smat.Z *= -1
+		}
+		return smat
+	}
+
+	yprop := func(rLayY, sLayY float32) float32 {
+		if rLayY < sLayY {
+			return 0.6667
+		} else if rLayY == sLayY {
+			return 0.3333
+		}
+		return 0
+	}
+
+	for li := range nlay {
+		ly := nv.Net.EmerLayer(li)
+		lb := ly.AsEmer()
+		sLayPos, sLaySz := layPosSize(lb)
+
+		var sides [16][]emer.Path
+		nsp := ly.NumSendPaths()
+		for pi := range nsp {
+			sp := ly.SendPath(pi)
+			rb := sp.RecvLayer().AsEmer()
+			rLayPos, rLaySz := layPosSize(rb)
+			minDist := float32(math.MaxFloat32)
+			minSidx := 0
+			for sSide := range 4 {
+				for rSide := range 4 {
+					prop := yprop(rLayPos.Y, sLayPos.Y) + 0.5*.3333
+					smat := sideMtx(sSide, prop)
+					rmat := sideMtx(rSide, prop)
+					spos := sLayPos.Add(sLaySz.Mul(smat))
+					rpos := rLayPos.Add(rLaySz.Mul(rmat))
+					dist := rpos.Sub(spos).Length()
+					if dist < minDist {
+						minDist = dist
+						minSidx = sSide*4 + rSide
+					}
+				}
+			}
+			sides[minSidx] = append(sides[minSidx], sp)
+		}
+		for sSide := range 4 {
+			for rSide := range 4 {
+				minSidx := sSide*4 + rSide
+				pths := sides[minSidx]
+				nsp := len(pths)
+				if nsp == 0 {
+					continue
+				}
+				for pi, sp := range pths {
+					rb := sp.RecvLayer().AsEmer()
+					sb := sp.AsEmer()
+					rLayPos, rLaySz := layPosSize(rb)
+					prop := 0.3333*(float32(pi)+.5)/float32(nsp) + yprop(rLayPos.Y, sLayPos.Y)
+					smat := sideMtx(sSide, prop)
+					rmat := sideMtx(rSide, prop)
+					spos := sLayPos.Add(sLaySz.Mul(smat))
+					rpos := rLayPos.Add(rLaySz.Mul(rmat))
+					// xyz.NewLine(se, pathsGp, sb.Name, spos, rpos, lineWidth, clr)
+					clr := colors.Spaced(sp.TypeNumber())
+					xyz.NewArrow(se, pathsGp, sb.Name, spos, rpos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
+				}
+			}
+		}
+	}
 }
 
 // ViewDefaults are the default 3D view params
@@ -837,7 +959,6 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 			})
 	})
 	tree.Add(p, func(w *core.Separator) {})
-	tree.Add(p, func(w *core.Separator) {})
 	tree.Add(p, func(w *core.Button) {
 		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
 			fb := core.NewFuncButton(m).SetFunc(nv.SaveWeights)
@@ -865,6 +986,14 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		})
 	})
 	tree.Add(p, func(w *core.Separator) {})
+	tree.Add(p, func(w *core.Switch) {
+		w.SetText("Paths").SetChecked(nv.Params.Paths).
+			SetTooltip("Toggles whether pathways between layers are shown or not").
+			OnChange(func(e events.Event) {
+				nv.Params.Paths = w.IsChecked()
+				nv.UpdateView()
+			})
+	})
 	ditp := "data parallel index -- for models running multiple input patterns in parallel, this selects which one is viewed"
 	tree.Add(p, func(w *core.Text) {
 		w.SetText("Di:").SetTooltip(ditp)

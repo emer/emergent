@@ -44,6 +44,12 @@ func (sw *Scene) Init() {
 
 func (sw *Scene) MouseDownEvent(e events.Event) {
 	pos := e.Pos().Sub(sw.Geom.ContentBBox.Min)
+	pt := sw.PathAtPoint(pos)
+	if pt != nil {
+		FormDialog(sw, pt, "Path: "+pt.StyleName())
+		e.SetHandled()
+		return
+	}
 	lay := sw.LayerLabelAtPoint(pos)
 	if lay != nil {
 		FormDialog(sw, lay, "Layer: "+lay.StyleName())
@@ -65,13 +71,25 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 	if pos == image.Pt(-1, -1) {
 		return "_", image.Point{}
 	}
+	nv := sw.NetView
 	lpos := pos.Sub(sw.Geom.ContentBBox.Min)
+
+	pt := sw.PathAtPoint(lpos)
+	if pt != nil {
+		pe := pt.AsEmer()
+		tt := "[Click to edit] " + pe.Name + " " + pt.TypeName()
+		if pe.Doc != "" {
+			tt += ": " + pe.Doc
+		}
+		return tt, pos
+	}
+
 	lay := sw.LayerLabelAtPoint(lpos)
 	if lay != nil {
 		le := lay.AsEmer()
 		tt := "[Click to edit]"
-		if le.Info != "" {
-			tt += " " + le.Info
+		if le.Doc != "" {
+			tt += " " + le.Doc
 		}
 		return tt, pos
 	}
@@ -81,7 +99,6 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 		return "", pos
 	}
 	lb := lay.AsEmer()
-	nv := sw.NetView
 
 	tt := ""
 	if lb.Is2D() {
@@ -117,6 +134,21 @@ func (sw *Scene) LayerLabelAtPoint(pos image.Point) emer.Layer {
 			lay, _ := ln.NetView.Net.AsEmer().EmerLayerByName(ln.Text)
 			if lay != nil {
 				return lay
+			}
+		}
+	}
+	return nil
+}
+
+func (sw *Scene) PathAtPoint(pos image.Point) emer.Path {
+	ns := xyz.NodesUnderPoint(sw.SceneXYZ(), pos)
+	for _, n := range ns {
+		ln, ok := n.(*xyz.Solid)
+		if ok && ln.Parent != nil {
+			gpnm := ln.Parent.AsTree().Name
+			pt, _ := sw.NetView.Net.AsEmer().EmerPathByName(gpnm)
+			if pt != nil {
+				return pt
 			}
 		}
 	}

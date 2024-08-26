@@ -50,6 +50,12 @@ func (nv *RasterParams) Defaults() {
 // Params holds parameters controlling how the view is rendered
 type Params struct { //types:add
 
+	// whether to display the pathways between layers as arrows
+	Paths bool
+
+	// width of the path arrows, in normalized units
+	PathWidth float32 `default:"0.002"`
+
 	// raster plot parameters
 	Raster RasterParams `display:"inline"`
 
@@ -88,6 +94,8 @@ func (nv *Params) Defaults() {
 	nv.Raster.Defaults()
 	if nv.NVarCols == 0 {
 		nv.NVarCols = NVarCols
+		nv.Paths = true
+		nv.PathWidth = 0.002
 	}
 	if nv.MaxRecs == 0 {
 		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..

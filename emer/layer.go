@@ -50,6 +50,10 @@ type Layer interface {
 	// by the algorithm (and usually set by an enum).
 	TypeName() string
 
+	// TypeNumber is the numerical value for the type or category
+	// of layer, defined by the algorithm (and usually set by an enum).
+	TypeNumber() int
+
 	// UnitVarIndex returns the index of given variable within
 	// the Neuron, according to *this layer's* UnitVarNames() list
 	// (using a map to lookup index), or -1 and error message if
@@ -150,9 +154,9 @@ type LayerBase struct {
 	// with multple classes.
 	Class string
 
-	// Info contains descriptive information about the layer.
+	// Doc contains documentation about the layer.
 	// This is displayed in a tooltip in the network view.
-	Info string
+	Doc string
 
 	// Off turns off the layer, removing from all computations.
 	// This provides a convenient way to dynamically test for

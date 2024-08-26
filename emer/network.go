@@ -24,8 +24,8 @@ import (
 type VarCategory struct {
 	// Category name.
 	Cat string
-	// Description of the category, used as a tooltip.
-	Desc string
+	// Documentation of the category, used as a tooltip.
+	Doc string
 }
 
 // Network defines the minimal interface for a neural network,

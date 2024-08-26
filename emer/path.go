@@ -37,6 +37,10 @@ type Path interface {
 	// by the algorithm (and usually set by an enum).
 	TypeName() string
 
+	// TypeNumber is the numerical value for the type or category
+	// of path, defined by the algorithm (and usually set by an enum).
+	TypeNumber() int
+
 	// SendLayer returns the sending layer for this pathway,
 	// as an emer.Layer interface.  The actual Path implmenetation
 	// can use a Send field with the actual Layer struct type.
@@ -125,9 +129,9 @@ type PathBase struct {
 	// with multple classes.
 	Class string
 
-	// Info contains descriptive information about the pathway.
+	// Doc contains documentation about the pathway.
 	// This is displayed in a tooltip in the network view.
-	Info string
+	Doc string
 
 	// can record notes about this pathway here.
 	Notes string
