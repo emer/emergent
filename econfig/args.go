@@ -16,7 +16,7 @@ import (
 	"cogentcore.org/core/base/iox/tomlx"
 	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/base/reflectx"
-	"github.com/iancoleman/strcase"
+	"cogentcore.org/core/base/strcase"
 )
 
 // SetFromArgs sets Config values from command-line args,

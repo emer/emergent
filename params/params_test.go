@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/andreyvit/diff"
+	"github.com/stretchr/testify/assert"
 )
 
 var paramSets = Sets{
@@ -111,10 +111,8 @@ func TestParamSetsWriteGo(t *testing.T) {
 	dfb := buf.Bytes()
 	dfs := string(dfb)
 	// fmt.Printf("%v", dfs)
-	if dfs != trgCode {
-		t.Errorf("ParamStyle output incorrect at: %v!\n", diff.LineDiff(dfs, trgCode))
-		// t.Errorf("ParamStyle output incorrect!\n%v\n", dfs)
-	}
+
+	assert.Equal(t, trgCode, dfs)
 }
 
 func TestParamSetsSet(t *testing.T) {
@@ -288,8 +286,5 @@ func TestFlexHypers(t *testing.T) {
 
 	dfs := hypers.JSONString()
 	// fmt.Printf("%s", dfs)
-	if dfs != trgHypers {
-		t.Errorf("Param hypers output incorrect at: %v!\n", diff.LineDiff(dfs, trgHypers))
-		// t.Errorf("ParamStyle output incorrect!\n%v\n", dfs)
-	}
+	assert.Equal(t, trgHypers, dfs)
 }
