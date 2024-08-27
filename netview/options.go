@@ -16,8 +16,8 @@ import (
 // NVarCols is the default number of variable columns in the NetView
 var NVarCols = 2
 
-// RasterParams holds parameters controlling the raster plot view
-type RasterParams struct { //types:add
+// RasterOptions holds parameters controlling the raster plot view
+type RasterOptions struct { //types:add
 
 	// if true, show a raster plot over time, otherwise units
 	On bool
@@ -35,7 +35,7 @@ type RasterParams struct { //types:add
 	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" default:"0.2"`
 }
 
-func (nv *RasterParams) Defaults() {
+func (nv *RasterOptions) Defaults() {
 	if nv.Max == 0 {
 		nv.Max = 200
 	}
@@ -47,23 +47,25 @@ func (nv *RasterParams) Defaults() {
 	}
 }
 
-// Params holds parameters controlling how the view is rendered
-type Params struct { //types:add
+// Options holds parameters controlling how the view is rendered
+type Options struct { //types:add
 
 	// whether to display the pathways between layers as arrows
 	Paths bool
+
+	// path type name(s) to display (space separated),
+	// for path arrows, and when there are multiple pathways from the same layer.
+	// Uses case insensitive contains logic for each name.
+	PathType string
 
 	// width of the path arrows, in normalized units
 	PathWidth float32 `default:"0.002"`
 
 	// raster plot parameters
-	Raster RasterParams `display:"inline"`
+	Raster RasterOptions `display:"inline"`
 
 	// do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
 	NoSynData bool
-
-	// if non-empty, this is the type pathway to show when there are multiple pathways from the same layer -- e.g., Inhib, Lateral, Forward, etc
-	PathType string
 
 	// maximum number of records to store to enable rewinding through prior states
 	MaxRecs int `min:"1"`
@@ -75,7 +77,7 @@ type Params struct { //types:add
 	UnitSize float32 `min:"0.1" max:"1" step:"0.1" default:"0.9"`
 
 	// size of the layer name labels -- entire network view is unit sized
-	LayNmSize float32 `min:"0.01" max:".1" step:"0.01" default:"0.05"`
+	LayerNameSize float32 `min:"0.01" max:".1" step:"0.01" default:"0.05"`
 
 	// name of color map to use
 	ColorMap core.ColorMapName
@@ -83,14 +85,11 @@ type Params struct { //types:add
 	// opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
 	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`
 
-	// our netview, for update method
-	NetView *NetView `copier:"-" json:"-" xml:"-" display:"-"`
-
 	// the number of records to jump for fast forward/backward
 	NFastSteps int
 }
 
-func (nv *Params) Defaults() {
+func (nv *Options) Defaults() {
 	nv.Raster.Defaults()
 	if nv.NVarCols == 0 {
 		nv.NVarCols = NVarCols
@@ -103,8 +102,8 @@ func (nv *Params) Defaults() {
 	if nv.UnitSize == 0 {
 		nv.UnitSize = .9
 	}
-	if nv.LayNmSize == 0 {
-		nv.LayNmSize = .05
+	if nv.LayerNameSize == 0 {
+		nv.LayerNameSize = .05
 	}
 	if nv.ZeroAlpha == 0 {
 		nv.ZeroAlpha = 0.5
@@ -117,15 +116,8 @@ func (nv *Params) Defaults() {
 	}
 }
 
-// Update satisfies the core.Updater interface and will trigger display update on edits
-func (nv *Params) Update() {
-	if nv.NetView != nil {
-		nv.NetView.Update()
-	}
-}
-
-// VarParams holds parameters for display of each variable
-type VarParams struct { //types:add
+// VarOptions holds parameters for display of each variable
+type VarOptions struct { //types:add
 
 	// name of the variable
 	Var string
@@ -141,7 +133,7 @@ type VarParams struct { //types:add
 }
 
 // Defaults sets default values if otherwise not set
-func (vp *VarParams) Defaults() {
+func (vp *VarOptions) Defaults() {
 	if vp.Range.Max == 0 && vp.Range.Min == 0 {
 		vp.ZeroCtr = true
 		vp.Range.SetMin(-1)
@@ -151,12 +143,12 @@ func (vp *VarParams) Defaults() {
 
 // SetProps parses Go struct-tag style properties for variable and sets values accordingly
 // for customized defaults
-func (vp *VarParams) SetProps(pstr string) {
+func (vp *VarOptions) SetProps(pstr string) {
 	rstr := reflect.StructTag(pstr)
 	if tv, ok := rstr.Lookup("range"); ok {
 		rg, err := strconv.ParseFloat(tv, 32)
 		if err != nil {
-			log.Printf("NetView.VarParams.SetProps for Var: %v 'range:' err: %v on val: %v\n", vp.Var, err, tv)
+			log.Printf("NetView.VarOptions.SetProps for Var: %v 'range:' err: %v on val: %v\n", vp.Var, err, tv)
 		} else {
 			vp.Range.Max = float32(rg)
 			vp.Range.Min = -float32(rg)
@@ -166,7 +158,7 @@ func (vp *VarParams) SetProps(pstr string) {
 	if tv, ok := rstr.Lookup("min"); ok {
 		rg, err := strconv.ParseFloat(tv, 32)
 		if err != nil {
-			log.Printf("NetView.VarParams.SetProps for Var: %v 'min:' err: %v on val: %v\n", vp.Var, err, tv)
+			log.Printf("NetView.VarOptions.SetProps for Var: %v 'min:' err: %v on val: %v\n", vp.Var, err, tv)
 		} else {
 			vp.Range.Min = float32(rg)
 			vp.ZeroCtr = false
@@ -175,7 +167,7 @@ func (vp *VarParams) SetProps(pstr string) {
 	if tv, ok := rstr.Lookup("max"); ok {
 		rg, err := strconv.ParseFloat(tv, 32)
 		if err != nil {
-			log.Printf("NetView.VarParams.SetProps for Var: %v 'max:' err: %v on val: %v\n", vp.Var, err, tv)
+			log.Printf("NetView.VarOptions.SetProps for Var: %v 'max:' err: %v on val: %v\n", vp.Var, err, tv)
 		} else {
 			vp.Range.Max = float32(rg)
 			vp.ZeroCtr = false

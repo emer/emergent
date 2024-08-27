@@ -103,7 +103,7 @@ func (vu *ViewUpdate) UpdateWhenStopped() {
 		vu.View.RecordCounters(vu.Text)
 		return
 	}
-	if !vu.View.Params.Raster.On { // always record when not in raster mode
+	if !vu.View.Options.Raster.On { // always record when not in raster mode
 		vu.View.Record(vu.Text, -1) // -1 = use a dummy counter
 	}
 	// todo: updating is not available here -- needed?
@@ -123,7 +123,7 @@ func (vu *ViewUpdate) UpdateTime(time etime.Times) {
 		vu.GoUpdate()
 	} else {
 		if viewUpdate < etime.Trial && time == etime.Trial {
-			if vu.View.Params.Raster.On { // no extra rec here
+			if vu.View.Options.Raster.On { // no extra rec here
 				vu.View.Data.RecordLastCtrs(vu.Text)
 				if vu.View.IsVisible() {
 					vu.View.GoUpdateView()
@@ -148,7 +148,7 @@ func (vu *ViewUpdate) IsCycleUpdating() bool {
 	if viewUpdate == etime.Cycle {
 		return true
 	}
-	if vu.View.Params.Raster.On {
+	if vu.View.Options.Raster.On {
 		return true
 	}
 	return false
@@ -176,7 +176,7 @@ func (vu *ViewUpdate) UpdateCycle(cyc int) {
 	if viewUpdate > etime.ThetaCycle {
 		return
 	}
-	if vu.View.Params.Raster.On {
+	if vu.View.Options.Raster.On {
 		vu.UpdateCycleRaster(cyc)
 		return
 	}

@@ -25,10 +25,15 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.SetFunc(nv.Current).SetIcon(icons.Update)
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetText("Config").SetIcon(icons.Settings).
+		w.SetText("Options").SetIcon(icons.Settings).
 			SetTooltip("set parameters that control display (font size etc)").
 			OnClick(func(e events.Event) {
-				FormDialog(nv, &nv.Params, nv.Name+" Params")
+				d := core.NewBody().AddTitle(nv.Name + " Options")
+				core.NewForm(d).SetStruct(&nv.Options).
+					OnChange(func(e events.Event) {
+						nv.GoUpdateView()
+					})
+				d.RunWindowDialog(nv)
 			})
 	})
 	tree.Add(p, func(w *core.Separator) {})
@@ -60,10 +65,10 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	})
 	tree.Add(p, func(w *core.Separator) {})
 	tree.Add(p, func(w *core.Switch) {
-		w.SetText("Paths").SetChecked(nv.Params.Paths).
+		w.SetText("Paths").SetChecked(nv.Options.Paths).
 			SetTooltip("Toggles whether pathways between layers are shown or not").
 			OnChange(func(e events.Event) {
-				nv.Params.Paths = w.IsChecked()
+				nv.Options.Paths = w.IsChecked()
 				nv.UpdateView()
 			})
 	})
@@ -87,25 +92,25 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	tree.Add(p, func(w *core.Separator) {})
 
 	tree.Add(p, func(w *core.Switch) {
-		w.SetText("Raster").SetChecked(nv.Params.Raster.On).
+		w.SetText("Raster").SetChecked(nv.Options.Raster.On).
 			SetTooltip("Toggles raster plot mode -- displays values on one axis (Z by default) and raster counter (time) along the other (X by default)").
 			OnChange(func(e events.Event) {
-				nv.Params.Raster.On = w.IsChecked()
+				nv.Options.Raster.On = w.IsChecked()
 				// nv.ReconfigMeshes()
 				nv.UpdateView()
 			})
 	})
 	tree.Add(p, func(w *core.Switch) {
-		w.SetText("X").SetType(core.SwitchCheckbox).SetChecked(nv.Params.Raster.XAxis).
+		w.SetText("X").SetType(core.SwitchCheckbox).SetChecked(nv.Options.Raster.XAxis).
 			SetTooltip("If checked, the raster (time) dimension is plotted along the X (horizontal) axis of the layers, otherwise it goes in the depth (Z) dimension").
 			OnChange(func(e events.Event) {
-				nv.Params.Raster.XAxis = w.IsChecked()
+				nv.Options.Raster.XAxis = w.IsChecked()
 				nv.UpdateView()
 			})
 	})
-	vp, ok := nv.VarParams[nv.Var]
+	vp, ok := nv.VarOptions[nv.Var]
 	if !ok {
-		vp = &VarParams{}
+		vp = &VarOptions{}
 		vp.Defaults()
 	}
 
@@ -118,13 +123,13 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.SetText("Min").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMin).
 			SetTooltip("Fix the minimum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 			OnChange(func(e events.Event) {
-				vp := nv.VarParams[nv.Var]
+				vp := nv.VarOptions[nv.Var]
 				vp.Range.FixMin = w.IsChecked()
 				minSpin.UpdateWidget().NeedsRender()
 				nv.UpdateView()
 			})
 		w.Updater(func() {
-			vp := nv.VarParams[nv.Var]
+			vp := nv.VarOptions[nv.Var]
 			if vp != nil {
 				w.SetChecked(vp.Range.FixMin)
 			}
@@ -134,7 +139,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		minSpin = w
 		w.SetValue(vp.Range.Min).
 			OnChange(func(e events.Event) {
-				vp := nv.VarParams[nv.Var]
+				vp := nv.VarOptions[nv.Var]
 				vp.Range.SetMin(w.Value)
 				vp.Range.FixMin = true
 				minSwitch.UpdateWidget().NeedsRender()
@@ -147,7 +152,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 				nv.UpdateView()
 			})
 		w.Updater(func() {
-			vp := nv.VarParams[nv.Var]
+			vp := nv.VarOptions[nv.Var]
 			if vp != nil {
 				w.SetValue(vp.Range.Min)
 			}
@@ -156,7 +161,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 
 	tree.AddAt(p, "cmap", func(w *core.ColorMapButton) {
 		nv.ColorMapButton = w
-		w.MapName = string(nv.Params.ColorMap)
+		w.MapName = string(nv.Options.ColorMap)
 		w.SetTooltip("Color map for translating values into colors -- click to select alternative.")
 		w.Styler(func(s *styles.Style) {
 			s.Min.X.Em(10)
@@ -177,13 +182,13 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.SetText("Max").SetType(core.SwitchCheckbox).SetChecked(vp.Range.FixMax).
 			SetTooltip("Fix the maximum end of the displayed value range to value shown in next box.  Having both min and max fixed is recommended where possible for speed and consistent interpretability of the colors.").
 			OnChange(func(e events.Event) {
-				vp := nv.VarParams[nv.Var]
+				vp := nv.VarOptions[nv.Var]
 				vp.Range.FixMax = w.IsChecked()
 				maxSpin.UpdateWidget().NeedsRender()
 				nv.UpdateView()
 			})
 		w.Updater(func() {
-			vp := nv.VarParams[nv.Var]
+			vp := nv.VarOptions[nv.Var]
 			if vp != nil {
 				w.SetChecked(vp.Range.FixMax)
 			}
@@ -193,7 +198,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	tree.AddAt(p, "maxSpin", func(w *core.Spinner) {
 		maxSpin = w
 		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
-			vp := nv.VarParams[nv.Var]
+			vp := nv.VarOptions[nv.Var]
 			vp.Range.SetMax(w.Value)
 			vp.Range.FixMax = true
 			maxSwitch.UpdateWidget().NeedsRender()
@@ -206,7 +211,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 			nv.UpdateView()
 		})
 		w.Updater(func() {
-			vp := nv.VarParams[nv.Var]
+			vp := nv.VarOptions[nv.Var]
 			if vp != nil {
 				w.SetValue(vp.Range.Max)
 			}
@@ -217,12 +222,12 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.SetText("ZeroCtr").SetChecked(vp.ZeroCtr).
 			SetTooltip("keep Min - Max centered around 0, and use negative heights for units -- else use full min-max range for height (no negative heights)").
 			OnChange(func(e events.Event) {
-				vp := nv.VarParams[nv.Var]
+				vp := nv.VarOptions[nv.Var]
 				vp.ZeroCtr = w.IsChecked()
 				nv.UpdateView()
 			})
 		w.Updater(func() {
-			vp := nv.VarParams[nv.Var]
+			vp := nv.VarOptions[nv.Var]
 			if vp != nil {
 				w.SetChecked(vp.ZeroCtr)
 			}

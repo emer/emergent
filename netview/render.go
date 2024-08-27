@@ -5,7 +5,9 @@
 package netview
 
 import (
+	"fmt"
 	"math"
+	"strings"
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors"
@@ -41,17 +43,19 @@ func (nv *NetView) UpdateLayers() {
 		layConfig.Add(types.For[xyz.Group](), ly.StyleName())
 	}
 
-	if !tree.Update(laysGp, layConfig) {
+	if !tree.Update(laysGp, layConfig) && nv.layerNameSizeShown == nv.Options.LayerNameSize {
 		for li := range laysGp.Children {
 			ly := nv.Net.EmerLayer(li)
 			lmesh := errors.Log1(se.MeshByName(ly.StyleName()))
 			se.SetMesh(lmesh) // does update
 		}
-		if nv.hasPaths != nv.Params.Paths {
+		if nv.hasPaths != nv.Options.Paths || nv.pathTypeShown != nv.Options.PathType ||
+			nv.pathWidthShown != nv.Options.PathWidth {
 			nv.UpdatePaths()
 		}
 		return
 	}
+	nv.layerNameSizeShown = nv.Options.LayerNameSize
 
 	gpConfig := tree.TypePlan{}
 	gpConfig.Add(types.For[LayObj](), "layer")
@@ -97,7 +101,7 @@ func (nv *NetView) UpdateLayers() {
 		txt.Defaults()
 		txt.NetView = nv
 		txt.SetText(ly.StyleName())
-		txt.Pose.Scale = math32.Vector3Scalar(nv.Params.LayNmSize).Div(lg.Pose.Scale)
+		txt.Pose.Scale = math32.Vector3Scalar(nv.Options.LayerNameSize).Div(lg.Pose.Scale)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
 		txt.Styles.Text.AlignV = styles.Start
@@ -118,11 +122,13 @@ func (nv *NetView) UpdatePaths() {
 	pathsGp := se.ChildByName("Paths", 0).(*xyz.Group)
 	pathsGp.DeleteChildren()
 
-	if !nv.Params.Paths {
+	if !nv.Options.Paths {
 		nv.hasPaths = false
 		return
 	}
 	nv.hasPaths = true
+	nv.pathTypeShown = nv.Options.PathType
+	nv.pathWidthShown = nv.Options.PathWidth
 
 	nmin, nmax := nb.MinPos, nb.MaxPos
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
@@ -130,7 +136,7 @@ func (nv *NetView) UpdatePaths() {
 	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 
-	lineWidth := nv.Params.PathWidth
+	lineWidth := nv.Options.PathWidth
 
 	layPosSize := func(lb *emer.LayerBase) (math32.Vector3, math32.Vector3) {
 		lp := lb.Pos.Pos
@@ -180,6 +186,9 @@ func (nv *NetView) UpdatePaths() {
 		npt := ly.NumSendPaths()
 		for pi := range npt {
 			pt := ly.SendPath(pi)
+			if !nv.pathTypeNameMatch(pt.TypeName()) {
+				continue
+			}
 			rb := pt.RecvLayer().AsEmer()
 			rLayPos, rLaySz := layPosSize(rb)
 			minDist := float32(math.MaxFloat32)
@@ -220,17 +229,57 @@ func (nv *NetView) UpdatePaths() {
 					off := float32(0.4)
 					if rb.Index < lb.Index {
 						off = 0.6
+					} else if rb.Index == lb.Index {
+						off = 0.2
 					}
 					prop := 0.3333 * (float32(cat) + float32(pi) + off) / float32(npt)
 					smat := sideMtx(sSide, prop)
 					rmat := sideMtx(rSide, prop)
 					spos := sLayPos.Add(sLaySz.Mul(smat))
 					rpos := rLayPos.Add(rLaySz.Mul(rmat))
-					// xyz.NewLine(se, pathsGp, sb.Name, spos, rpos, lineWidth, clr)
 					clr := colors.Spaced(pt.TypeNumber())
-					xyz.NewArrow(se, pathsGp, sb.Name, spos, rpos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
+					if rb.Index == lb.Index { // self prjn
+						spm := nv.selfPrjn(se, sSide)
+						sfgp := xyz.NewGroup(pathsGp)
+						sfgp.SetName(sb.Name)
+						sfp := xyz.NewSolid(sfgp).SetMesh(spm).SetColor(clr)
+						sfp.SetName(sb.Name)
+						sfp.Pose.Pos = spos
+					} else {
+						xyz.NewArrow(se, pathsGp, sb.Name, spos, rpos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
+					}
 				}
 			}
 		}
 	}
+}
+
+func (nv *NetView) pathTypeNameMatch(ptyp string) bool {
+	if len(nv.Options.PathType) == 0 {
+		return true
+	}
+	ptyp = strings.ToLower(ptyp)
+	fs := strings.Fields(nv.Options.PathType)
+	for _, pt := range fs {
+		pt = strings.ToLower(pt)
+		if strings.Contains(ptyp, pt) {
+			return true
+		}
+	}
+	return false
+}
+
+func (nv *NetView) selfPrjn(se *xyz.Scene, side int) xyz.Mesh {
+	selfnm := fmt.Sprintf("selfPathSide%d", side) // should always be F right?
+	sm, err := se.MeshByName(selfnm)
+	if err == nil {
+		return sm
+	}
+	lineWidth := 1.5 * nv.Options.PathWidth
+	size := float32(0.015)
+	// switch side {
+	// case 0: // F
+	sm = xyz.NewLines(se, selfnm, []math32.Vector3{{-size, 0, 0}, {-size, 0, 1.5 * size}, {size, 0, 1.5 * size}, {size, 0, 0}}, math32.Vec2(lineWidth, lineWidth), xyz.OpenLines)
+	// }
+	return sm
 }

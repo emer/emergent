@@ -645,7 +645,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 	plt.SetTable(dt)
 
 	for _, vnm := range nd.UnVars {
-		vp, ok := nv.VarParams[vnm]
+		vp, ok := nv.VarOptions[vnm]
 		if !ok {
 			continue
 		}

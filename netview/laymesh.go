@@ -48,7 +48,7 @@ func (lm *LayMesh) MeshSize() (nVtx, nIndex int, hasColor bool) {
 	}
 	shp := &lm.Lay.AsEmer().Shape
 	lm.Shape.CopyShape(shp)
-	if lm.View.Params.Raster.On {
+	if lm.View.Options.Raster.On {
 		if shp.NumDims() == 4 {
 			lm.NumVertex, lm.NumIndex = lm.RasterSize4D()
 		} else {
@@ -93,8 +93,8 @@ func (lm *LayMesh) Set(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry m
 	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
-	if lm.View.Params.Raster.On {
-		if lm.View.Params.Raster.XAxis {
+	if lm.View.Options.Raster.On {
+		if lm.View.Options.Raster.XAxis {
 			if lm.Shape.NumDims() == 4 {
 				lm.RasterSet4DX(vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
@@ -127,7 +127,7 @@ func (lm *LayMesh) Set2D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	uw := lm.View.Params.UnitSize
+	uw := lm.View.Options.UnitSize
 	uo := (1.0 - uw)
 	segs := 1
 
@@ -181,7 +181,7 @@ func (lm *LayMesh) Set4D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 	fnuz := float32(nuz)
 	fnux := float32(nux)
 
-	usz := lm.View.Params.UnitSize
+	usz := lm.View.Options.UnitSize
 	uo := (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer

@@ -14,7 +14,7 @@ func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Params.Raster.Max + 1
+	nx := lm.View.Options.Raster.Max + 1
 	segs := 1
 
 	vtxSz, idxSz := shape.PlaneN(segs, segs)
@@ -31,7 +31,7 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 	nux := ss.DimSize(3)
 
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Params.Raster.Max + 1
+	nx := lm.View.Options.Raster.Max + 1
 
 	segs := 1
 
@@ -46,8 +46,8 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Params.Raster.Max + 1
-	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
+	nx := lm.View.Options.Raster.Max + 1
+	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
 
 	fnoz := float32(lm.Shape.DimSize(0))
 	fnox := float32(lm.Shape.DimSize(1))
@@ -56,7 +56,7 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	usz := lm.View.Params.Raster.UnitSize
+	usz := lm.View.Options.Raster.UnitSize
 	uo := (1.0 - usz)
 
 	xsc := fnux / fnx
@@ -127,8 +127,8 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nx := nuz*nux + nuz - 1
-	nz := lm.View.Params.Raster.Max + 1
-	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
+	nz := lm.View.Options.Raster.Max + 1
+	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
 
 	fnoz := float32(lm.Shape.DimSize(0))
 	fnox := float32(lm.Shape.DimSize(1))
@@ -137,7 +137,7 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	usz := lm.View.Params.Raster.UnitSize
+	usz := lm.View.Options.Raster.UnitSize
 	uo := (1.0 - usz)
 
 	xsc := fnux / fnx
@@ -210,8 +210,8 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nux := ss.DimSize(3)
 
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Params.Raster.Max + 1
-	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
+	nx := lm.View.Options.Raster.Max + 1
+	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
 
 	fnpoz := float32(lm.Shape.DimSize(0))
 	fnpox := float32(lm.Shape.DimSize(1))
@@ -222,7 +222,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnx := float32(nx)
 	fnz := float32(nz)
 
-	usz := lm.View.Params.UnitSize
+	usz := lm.View.Options.UnitSize
 	uo := 2.0 * (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer
@@ -239,7 +239,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	xscr := xsc * (fnux / fnx)
 	zscr := zsc * (fnuz / fnz)
 
-	uszr := lm.View.Params.Raster.UnitSize
+	uszr := lm.View.Options.Raster.UnitSize
 	uor := (1.0 - uszr) // offset = space
 
 	xuw := xscr * uszr
@@ -311,8 +311,8 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nux := ss.DimSize(3)
 
 	nx := nuz*nux + nuz - 1
-	nz := lm.View.Params.Raster.Max + 1
-	htsc := 0.5 * lm.View.Params.Raster.UnitHeight
+	nz := lm.View.Options.Raster.Max + 1
+	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
 
 	fnpoz := float32(lm.Shape.DimSize(0))
 	fnpox := float32(lm.Shape.DimSize(1))
@@ -323,7 +323,7 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnx := float32(nx)
 	fnz := float32(nz)
 
-	usz := lm.View.Params.UnitSize
+	usz := lm.View.Options.UnitSize
 	uo := 2.0 * (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer
@@ -340,7 +340,7 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	xscr := xsc * (fnux / fnx)
 	zscr := zsc * (fnuz / fnz)
 
-	uszr := lm.View.Params.Raster.UnitSize
+	uszr := lm.View.Options.Raster.UnitSize
 	uor := (1.0 - uszr) // offset = space
 
 	xuw := xscr * uszr
