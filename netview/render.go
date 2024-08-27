@@ -138,6 +138,41 @@ func (nv *NetView) UpdatePaths() {
 
 	lineWidth := nv.Options.PathWidth
 
+	// weight factors applied to distance for the different sides,
+	// to encourage / discourage choice of sides.
+	// In general the sides are preferred, and back is discouraged.
+	sideWeights := [4]float32{1.1, 1, 1, 1.1}
+
+	type pathData struct {
+		path               emer.Path
+		sSide, rSide, cat  int
+		sIdx, sN, rIdx, rN int // indexes and numbers for each side
+		sPos, rPos         math32.Vector3
+	}
+
+	pdIdx := func(side, cat int) int {
+		return side*3 + cat
+	}
+
+	type layerData struct {
+		paths     [12][]*pathData // by side * category
+		selfPaths []*pathData
+	}
+
+	layPaths := make([]layerData, nlay)
+
+	// 0 = forward, "left" side; 1 = lateral, "middle"; 2 = back, "right"
+	sideCat := func(rLayY, sLayY float32) int {
+		if rLayY < sLayY {
+			return 2
+		} else if rLayY == sLayY {
+			return 1
+		}
+		return 0
+	}
+
+	// returns layer position and size in normalized display coordinates (NDC)
+	// using the correct rendering coordinate system: X = X, Y <-> Z
 	layPosSize := func(lb *emer.LayerBase) (math32.Vector3, math32.Vector3) {
 		lp := lb.Pos.Pos
 		lp.Y = -lp.Y
@@ -152,6 +187,7 @@ func (nv *NetView) UpdatePaths() {
 	sideMids := []math32.Vector3{{0.5, 0, 0}, {0, 0, -0.5}, {1, 0, -0.5}, {0.5, 0, -1}}
 	sideDims := []math32.Dims{math32.X, math32.Z, math32.Z, math32.X}
 
+	// returns the matrix
 	sideMtx := func(side int, prop float32) math32.Vector3 {
 		dim := sideDims[side]
 		smat := sideMids[side]
@@ -162,94 +198,159 @@ func (nv *NetView) UpdatePaths() {
 		return smat
 	}
 
-	// 0 = forward, "left" side; 1 = lateral, "middle"; 2 = back, "right"
-	sideCat := func(rLayY, sLayY float32) int {
-		if rLayY < sLayY {
-			return 2
-		} else if rLayY == sLayY {
-			return 1
+	laySidePos := func(lb *emer.LayerBase, side, cat, idx, n int, off float32) math32.Vector3 {
+		prop := (float32(cat) / 3) + (float32(idx)+off)/float32(3*n)
+		pos, sz := layPosSize(lb)
+		mat := sideMtx(side, prop)
+		return pos.Add(sz.Mul(mat))
+	}
+
+	// returns the sending, recv positions of the path,
+	// for point at given index along side, cat
+	setPathPos := func(pd *pathData) {
+		pt := pd.path
+		sb := pt.SendLayer().AsEmer()
+		rb := pt.RecvLayer().AsEmer()
+		off := float32(0.4)
+		if rb.Index < sb.Index {
+			off = 0.6
 		}
-		return 0
+		pd.sPos = laySidePos(sb, pd.sSide, pd.cat, pd.sIdx, pd.sN, off)
+		pd.rPos = laySidePos(rb, pd.rSide, pd.cat, pd.rIdx, pd.rN, off)
+		return
 	}
 
-	type sideData struct {
-		pth   emer.Path
-		rSide int
-	}
+	// first pass: find the side to make connections on, based on shortest weighted length
+	for si := range nlay {
+		sl := nv.Net.EmerLayer(si)
+		sb := sl.AsEmer()
+		slayData := &layPaths[sb.Index]
+		sLayPos, _ := layPosSize(sb)
 
-	for li := range nlay {
-		ly := nv.Net.EmerLayer(li)
-		lb := ly.AsEmer()
-		sLayPos, sLaySz := layPosSize(lb)
-
-		var sides [12][]sideData // by sending side * category
-		npt := ly.NumSendPaths()
+		npt := sl.NumSendPaths()
 		for pi := range npt {
-			pt := ly.SendPath(pi)
+			pt := sl.SendPath(pi)
 			if !nv.pathTypeNameMatch(pt.TypeName()) {
 				continue
 			}
 			rb := pt.RecvLayer().AsEmer()
-			rLayPos, rLaySz := layPosSize(rb)
+			if sb.Index == rb.Index { // self
+				slayData.selfPaths = append(slayData.selfPaths, &pathData{path: pt, cat: 1})
+				continue
+			}
 			minDist := float32(math.MaxFloat32)
-			minSidx := 0
-			minRside := 0
+			var minData *pathData
 			for sSide := range 4 {
+				swt := sideWeights[sSide]
 				for rSide := range 4 {
+					rwt := sideWeights[rSide]
+					rLayPos, _ := layPosSize(rb)
 					cat := sideCat(rLayPos.Y, sLayPos.Y)
-					prop := (float32(cat) + 0.5) * .3333
-					smat := sideMtx(sSide, prop)
-					rmat := sideMtx(rSide, prop)
-					spos := sLayPos.Add(sLaySz.Mul(smat))
-					rpos := rLayPos.Add(rLaySz.Mul(rmat))
-					dist := rpos.Sub(spos).Length()
+					pd := &pathData{path: pt, sSide: sSide, rSide: rSide, cat: cat, sN: 1, rN: 1}
+					setPathPos(pd)
+					dist := pd.rPos.Sub(pd.sPos).Length() * swt * rwt
 					if dist < minDist {
 						minDist = dist
-						minSidx = sSide*3 + cat
-						minRside = rSide
+						minData = pd
 					}
 				}
 			}
-			sides[minSidx] = append(sides[minSidx], sideData{pth: pt, rSide: minRside})
+			i := pdIdx(minData.sSide, minData.cat)
+			minData.sIdx = len(slayData.paths[i])
+			slayData.paths[i] = append(slayData.paths[i], minData)
+			for _, pd := range slayData.paths[i] {
+				pd.sN = len(slayData.paths[i])
+			}
+			rlayData := &layPaths[rb.Index]
+			i = pdIdx(minData.rSide, minData.cat)
+			minData.rIdx = len(rlayData.paths[i])
+			rlayData.paths[i] = append(rlayData.paths[i], minData)
+			for _, pd := range rlayData.paths[i] {
+				pd.rN = len(rlayData.paths[i])
+			}
 		}
-		for sSide := range 4 {
-			for cat := range 3 {
-				sidx := sSide*3 + cat
-				pths := sides[sidx]
-				npt := len(pths)
-				if npt == 0 {
-					continue
-				}
-				for pi, pd := range pths {
-					pt := pd.pth
-					rSide := pd.rSide
-					rb := pt.RecvLayer().AsEmer()
-					sb := pt.AsEmer()
-					rLayPos, rLaySz := layPosSize(rb)
-					off := float32(0.4)
-					if rb.Index < lb.Index {
-						off = 0.6
-					} else if rb.Index == lb.Index {
-						off = 0.2
+	}
+	// now we have the full set of data, sort positions
+	// orderChanged := false
+	for range 1 {
+		for li := range nlay {
+			ly := nv.Net.EmerLayer(li)
+			lb := ly.AsEmer()
+			layData := &layPaths[lb.Index]
+			for side := range 4 {
+				for cat := range 3 {
+					pidx := pdIdx(side, cat)
+					pths := layData.paths[pidx]
+					npt := len(pths)
+					if npt == 0 {
+						continue
 					}
-					prop := 0.3333 * (float32(cat) + float32(pi) + off) / float32(npt)
-					smat := sideMtx(sSide, prop)
-					rmat := sideMtx(rSide, prop)
-					spos := sLayPos.Add(sLaySz.Mul(smat))
-					rpos := rLayPos.Add(rLaySz.Mul(rmat))
-					clr := colors.Spaced(pt.TypeNumber())
-					if rb.Index == lb.Index { // self prjn
-						spm := nv.selfPrjn(se, sSide)
-						sfgp := xyz.NewGroup(pathsGp)
-						sfgp.SetName(sb.Name)
-						sfp := xyz.NewSolid(sfgp).SetMesh(spm).SetColor(clr)
-						sfp.SetName(sb.Name)
-						sfp.Pose.Pos = spos
-					} else {
-						xyz.NewArrow(se, pathsGp, sb.Name, spos, rpos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
+					for _, pd := range pths {
+						if pd.path.RecvLayer() != ly {
+							continue
+						}
+						setPathPos(pd)
 					}
+					// slices.SortStableFunc(pths, func(a, b *pathData) int {
+					// 	return -cmp.Compare(a.spos.Dim(sideDims[rSide]), b.spos.Dim(sideDims[rSide]))
+					// })
 				}
 			}
+		}
+	}
+
+	// final render
+	for li := range nlay {
+		ly := nv.Net.EmerLayer(li)
+		lb := ly.AsEmer()
+		layData := &layPaths[lb.Index]
+		for side := range 4 {
+			for cat := range 3 {
+				pidx := pdIdx(side, cat)
+				pths := layData.paths[pidx]
+				for _, pd := range pths {
+					if pd.path.RecvLayer() != ly {
+						continue
+					}
+					pt := pd.path
+					pb := pt.AsEmer()
+					clr := colors.Spaced(pt.TypeNumber())
+					xyz.NewArrow(se, pathsGp, pb.Name, pd.sPos, pd.rPos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
+				}
+			}
+		}
+		npt := len(layData.selfPaths)
+		if npt == 0 {
+			continue
+		}
+		// determine which side to put the self connections on.
+		// they will show up in the front by default.
+		var totLeft, totRight int
+		for side := 1; side <= 2; side++ { // left, right
+			for cat := range 3 {
+				pidx := pdIdx(side, cat)
+				if side == 1 {
+					totLeft += len(layData.paths[pidx])
+				} else {
+					totRight += len(layData.paths[pidx])
+				}
+			}
+		}
+		selfSide := 1 // left
+		if totRight < totLeft {
+			selfSide = 2 // right
+		}
+		for pi, pd := range layData.selfPaths {
+			pt := pd.path
+			pb := pt.AsEmer()
+			pd.sSide, pd.rSide = selfSide, selfSide
+			clr := colors.Spaced(pt.TypeNumber())
+			spm := nv.selfPrjn(se, pd.sSide)
+			sfgp := xyz.NewGroup(pathsGp)
+			sfgp.SetName(pb.Name)
+			sfp := xyz.NewSolid(sfgp).SetMesh(spm).SetColor(clr)
+			sfp.SetName(pb.Name)
+			sfp.Pose.Pos = laySidePos(lb, selfSide, 1, pi, npt, 0.2)
 		}
 	}
 }
@@ -269,17 +370,19 @@ func (nv *NetView) pathTypeNameMatch(ptyp string) bool {
 	return false
 }
 
+// returns the self projection mesh, either left = 1 or right = 2
 func (nv *NetView) selfPrjn(se *xyz.Scene, side int) xyz.Mesh {
-	selfnm := fmt.Sprintf("selfPathSide%d", side) // should always be F right?
+	selfnm := fmt.Sprintf("selfPathSide%d", side)
 	sm, err := se.MeshByName(selfnm)
 	if err == nil {
 		return sm
 	}
 	lineWidth := 1.5 * nv.Options.PathWidth
 	size := float32(0.015)
-	// switch side {
-	// case 0: // F
-	sm = xyz.NewLines(se, selfnm, []math32.Vector3{{-size, 0, 0}, {-size, 0, 1.5 * size}, {size, 0, 1.5 * size}, {size, 0, 0}}, math32.Vec2(lineWidth, lineWidth), xyz.OpenLines)
-	// }
+	sideFact := float32(1.5)
+	if side == 1 {
+		sideFact = -1.5
+	}
+	sm = xyz.NewLines(se, selfnm, []math32.Vector3{{0, 0, -size}, {sideFact * size, 0, -size}, {sideFact * size, 0, size}, {0, 0, size}}, math32.Vec2(lineWidth, lineWidth), xyz.OpenLines)
 	return sm
 }

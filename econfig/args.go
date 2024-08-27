@@ -196,7 +196,7 @@ func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect
 	allArgs[strings.ToLower(nm)] = pval
 	allArgs[strcase.ToKebab(nm)] = pval
 	allArgs[strcase.ToSnake(nm)] = pval
-	allArgs[strcase.ToScreamingSnake(nm)] = pval
+	allArgs[strcase.ToSNAKE(nm)] = pval
 }
 
 // fieldArgNamesStruct returns map of all the different ways the field names
