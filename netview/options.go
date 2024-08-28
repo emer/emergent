@@ -53,13 +53,15 @@ type Options struct { //types:add
 	// whether to display the pathways between layers as arrows
 	Paths bool
 
-	// path type name(s) to display (space separated),
-	// for path arrows, and when there are multiple pathways from the same layer.
+	// path type name(s) to display (space separated), for path arrows,
+	// and when there are multiple pathways from the same layer.
+	// For arrows, uses the style class names to match, which includes type name
+	// and other factors.
 	// Uses case insensitive contains logic for each name.
 	PathType string
 
 	// width of the path arrows, in normalized units
-	PathWidth float32 `default:"0.002"`
+	PathWidth float32 `min:"0.0001" max:".05" step:"0.001" default:"0.002"`
 
 	// raster plot parameters
 	Raster RasterOptions `display:"inline"`

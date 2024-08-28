@@ -77,7 +77,7 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 	pt := sw.PathAtPoint(lpos)
 	if pt != nil {
 		pe := pt.AsEmer()
-		tt := "[Click to edit] " + pe.Name + " " + pt.TypeName()
+		tt := "[Click to edit] " + pe.Name + " " + pt.StyleClass()
 		if pe.Doc != "" {
 			tt += ": " + pe.Doc
 		}

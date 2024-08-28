@@ -5,8 +5,10 @@
 package netview
 
 import (
+	"cmp"
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 
 	"cogentcore.org/core/base/errors"
@@ -230,7 +232,7 @@ func (nv *NetView) UpdatePaths() {
 		npt := sl.NumSendPaths()
 		for pi := range npt {
 			pt := sl.SendPath(pi)
-			if !nv.pathTypeNameMatch(pt.TypeName()) {
+			if !nv.pathTypeNameMatch(pt.StyleClass()) {
 				continue
 			}
 			rb := pt.RecvLayer().AsEmer()
@@ -256,23 +258,38 @@ func (nv *NetView) UpdatePaths() {
 				}
 			}
 			i := pdIdx(minData.sSide, minData.cat)
-			minData.sIdx = len(slayData.paths[i])
 			slayData.paths[i] = append(slayData.paths[i], minData)
-			for _, pd := range slayData.paths[i] {
-				pd.sN = len(slayData.paths[i])
-			}
 			rlayData := &layPaths[rb.Index]
 			i = pdIdx(minData.rSide, minData.cat)
-			minData.rIdx = len(rlayData.paths[i])
 			rlayData.paths[i] = append(rlayData.paths[i], minData)
-			for _, pd := range rlayData.paths[i] {
-				pd.rN = len(rlayData.paths[i])
+		}
+	}
+	for li := range nlay {
+		ly := nv.Net.EmerLayer(li)
+		lb := ly.AsEmer()
+		layData := &layPaths[lb.Index]
+		for side := range 4 {
+			for cat := range 3 {
+				pidx := pdIdx(side, cat)
+				pths := layData.paths[pidx]
+				npt := len(pths)
+				if npt == 0 {
+					continue
+				}
+				for pi, pd := range pths {
+					if pd.path.RecvLayer() == ly {
+						pd.rIdx = pi
+						pd.rN = npt
+					} else {
+						pd.sIdx = pi
+						pd.sN = npt
+					}
+				}
 			}
 		}
 	}
 	// now we have the full set of data, sort positions
-	// orderChanged := false
-	for range 1 {
+	for range 10 { // 10 seems to get as much as 100 on complex networks
 		for li := range nlay {
 			ly := nv.Net.EmerLayer(li)
 			lb := ly.AsEmer()
@@ -286,16 +303,51 @@ func (nv *NetView) UpdatePaths() {
 						continue
 					}
 					for _, pd := range pths {
-						if pd.path.RecvLayer() != ly {
-							continue
+						if pd.path.RecvLayer() == ly {
+							setPathPos(pd)
 						}
-						setPathPos(pd)
 					}
-					// slices.SortStableFunc(pths, func(a, b *pathData) int {
-					// 	return -cmp.Compare(a.spos.Dim(sideDims[rSide]), b.spos.Dim(sideDims[rSide]))
-					// })
 				}
 			}
+		}
+		orderChanged := false
+		for li := range nlay {
+			ly := nv.Net.EmerLayer(li)
+			lb := ly.AsEmer()
+			layData := &layPaths[lb.Index]
+			for side := range 4 {
+				for cat := range 3 {
+					pidx := pdIdx(side, cat)
+					pths := layData.paths[pidx]
+					npt := len(pths)
+					if npt == 0 {
+						continue
+					}
+					slices.SortStableFunc(pths, func(a, b *pathData) int {
+						if a.path.RecvLayer() == ly {
+							return -cmp.Compare(a.sPos.Dim(sideDims[a.rSide]), b.sPos.Dim(sideDims[b.rSide]))
+						} else {
+							return -cmp.Compare(a.rPos.Dim(sideDims[a.sSide]), b.rPos.Dim(sideDims[b.sSide]))
+						}
+					})
+					for pi, pd := range pths {
+						if pd.path.RecvLayer() == ly {
+							if pi != pd.rIdx {
+								orderChanged = true
+								pd.rIdx = pi
+							}
+						} else {
+							if pi != pd.sIdx {
+								orderChanged = true
+								pd.sIdx = pi
+							}
+						}
+					}
+				}
+			}
+		}
+		if !orderChanged {
+			break
 		}
 	}
 
@@ -350,21 +402,22 @@ func (nv *NetView) UpdatePaths() {
 			sfgp.SetName(pb.Name)
 			sfp := xyz.NewSolid(sfgp).SetMesh(spm).SetColor(clr)
 			sfp.SetName(pb.Name)
-			sfp.Pose.Pos = laySidePos(lb, selfSide, 1, pi, npt, 0.2)
+			sfp.Pose.Pos = laySidePos(lb, selfSide, 1, pi, npt, 0)
 		}
 	}
 }
 
-func (nv *NetView) pathTypeNameMatch(ptyp string) bool {
+func (nv *NetView) pathTypeNameMatch(pcls string) bool {
 	if len(nv.Options.PathType) == 0 {
 		return true
 	}
-	ptyp = strings.ToLower(ptyp)
-	fs := strings.Fields(nv.Options.PathType)
+	cls := strings.Fields(strings.ToLower(pcls))
+	fs := strings.Fields(strings.ToLower(nv.Options.PathType))
 	for _, pt := range fs {
-		pt = strings.ToLower(pt)
-		if strings.Contains(ptyp, pt) {
-			return true
+		for _, cl := range cls {
+			if strings.Contains(cl, pt) {
+				return true
+			}
 		}
 	}
 	return false
