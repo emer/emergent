@@ -48,14 +48,14 @@ func (lp *Loop) AddNewEvent(name string, atCtr int, fun func()) *Event {
 	return ev
 }
 
-// EventByName returns event by name, false if not found
-func (lp *Loop) EventByName(name string) (*Event, bool) {
+// EventByName returns event by name, nil if not found
+func (lp *Loop) EventByName(name string) *Event {
 	for _, ev := range lp.Events {
 		if ev.Name == name {
-			return ev, true
+			return ev
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // SkipToMax sets the counter to its Max value for this level.
