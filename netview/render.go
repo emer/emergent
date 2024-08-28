@@ -129,8 +129,6 @@ func (nv *NetView) UpdatePaths() {
 		return
 	}
 	nv.hasPaths = true
-	nv.pathTypeShown = nv.Options.PathType
-	nv.pathWidthShown = nv.Options.PathWidth
 
 	nmin, nmax := nb.MinPos, nb.MaxPos
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
@@ -405,6 +403,8 @@ func (nv *NetView) UpdatePaths() {
 			sfp.Pose.Pos = laySidePos(lb, selfSide, 1, pi, npt, 0)
 		}
 	}
+	nv.pathTypeShown = nv.Options.PathType
+	nv.pathWidthShown = nv.Options.PathWidth
 }
 
 func (nv *NetView) pathTypeNameMatch(pcls string) bool {
@@ -427,11 +427,12 @@ func (nv *NetView) pathTypeNameMatch(pcls string) bool {
 func (nv *NetView) selfPrjn(se *xyz.Scene, side int) xyz.Mesh {
 	selfnm := fmt.Sprintf("selfPathSide%d", side)
 	sm, err := se.MeshByName(selfnm)
-	if err == nil {
+	if err == nil && nv.pathWidthShown == nv.Options.PathWidth {
 		return sm
 	}
+	szm := max(nv.Options.PathWidth/0.002, 1)
 	lineWidth := 1.5 * nv.Options.PathWidth
-	size := float32(0.015)
+	size := float32(0.015) * szm
 	sideFact := float32(1.5)
 	if side == 1 {
 		sideFact = -1.5

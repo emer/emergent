@@ -23,7 +23,7 @@ type WriteMap map[etime.ScopeKey]WriteFunc
 
 // Item describes one item to be logged -- has all the info
 // for this item, across all scopes where it is relevant.
-type Item struct {
+type Item struct { //types:add -setters
 
 	// name of column -- must be unique for a table
 	Name string

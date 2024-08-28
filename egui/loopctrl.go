@@ -17,8 +17,12 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stack
 // with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime.Modes) {
-	gui.AddToolbarItem(p, ToolbarItem{Label: "Stop",
+func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime.Modes, prefix ...string) {
+	pfx := ""
+	if len(prefix) == 1 {
+		pfx = prefix[0] + ": "
+	}
+	gui.AddToolbarItem(p, ToolbarItem{Label: pfx + "Stop",
 		Icon:    icons.Stop,
 		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
 		Active:  ActiveRunning,
@@ -31,10 +35,10 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 
 	for _, m := range modes {
 		mode := m
-		tree.AddAt(p, mode.String()+"-run", func(w *core.Button) {
+		tree.AddAt(p, pfx+mode.String()+"-run", func(w *core.Button) {
 			tb := p.Parent.(*core.Toolbar)
-			w.SetText(mode.String() + " Run").SetIcon(icons.PlayArrow).
-				SetTooltip("Run the " + mode.String() + " process")
+			w.SetText(pfx + mode.String() + " Run").SetIcon(icons.PlayArrow).
+				SetTooltip("Run the " + pfx + mode.String() + " process")
 			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
 			w.OnClick(func(e events.Event) {
 				if !gui.IsRunning {
@@ -56,10 +60,10 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 			stringToEnumTime[st.String()] = st
 		}
 
-		tree.AddAt(p, mode.String()+"-step", func(w *core.Button) {
+		tree.AddAt(p, pfx+mode.String()+"-step", func(w *core.Button) {
 			tb := p.Parent.(*core.Toolbar)
-			w.SetText("Step").SetIcon(icons.SkipNext).
-				SetTooltip("Step the " + mode.String() + " process according to the following step level and N")
+			w.SetText(pfx + "Step").SetIcon(icons.SkipNext).
+				SetTooltip("Step the " + pfx + mode.String() + " process according to the following step level and N")
 			w.FirstStyler(func(s *styles.Style) {
 				s.SetEnabled(!gui.IsRunning)
 				s.SetAbilities(true, abilities.RepeatClickable)
@@ -79,7 +83,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 
 		var chs *core.Chooser
 		var sp *core.Spinner
-		tree.AddAt(p, mode.String()+"-level", func(w *core.Chooser) {
+		tree.AddAt(p, pfx+mode.String()+"-level", func(w *core.Chooser) {
 			chs = w
 			stepStrs := []string{}
 			for _, s := range steps {
@@ -96,7 +100,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 			})
 		})
 
-		tree.AddAt(p, mode.String()+"-n", func(w *core.Spinner) {
+		tree.AddAt(p, pfx+mode.String()+"-n", func(w *core.Spinner) {
 			sp = w
 			w.SetStep(1).SetMin(1).SetValue(1)
 			w.SetTooltip("number of iterations per step")
