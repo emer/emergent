@@ -3,7 +3,7 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.3.3-0.20240827145413-7c85088fc7ce
+	cogentcore.org/core v0.3.3-0.20240828192310-4322e1aa7196
 	github.com/BurntSushi/toml v1.3.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
