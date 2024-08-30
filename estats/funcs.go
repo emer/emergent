@@ -98,7 +98,7 @@ func (st *Stats) PCAStats(ix *table.IndexView, varNm string, layers []string) {
 	svd := &st.SVD
 	svd.Cond = PCAStrongThr
 	for _, lnm := range layers {
-		svd.TableCol(ix, lnm+"_"+varNm, metric.Covariance64)
+		svd.TableColumn(ix, lnm+"_"+varNm, metric.Covariance64)
 		ln := len(svd.Values)
 		var nstr float64 // nstr := float64(svd.Rank)  this didn't work..
 		for i, v := range svd.Values {
