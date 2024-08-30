@@ -32,6 +32,15 @@ func (gui *GUI) SetGrid(name string, tg *tensorcore.TensorGrid) {
 	gui.Grids[name] = tg
 }
 
+// AddGridTab adds TensorGrid with a new
+// tab and plot of given name.
+func (gui *GUI) AddGridTab(name string) *tensorcore.TensorGrid {
+	tab, _ := gui.Tabs.NewTab(name)
+	grid := tensorcore.NewTensorGrid(tab)
+	gui.SetGrid(name, grid)
+	return grid
+}
+
 // ConfigRasterGrid configures a raster grid for given layer name.
 // Uses Raster_laynm and given Tensor that has the raster data.
 func (gui *GUI) ConfigRasterGrid(lay *core.Frame, laynm string, rast *tensor.Float32) *tensorcore.TensorGrid {
