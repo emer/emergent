@@ -28,7 +28,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.SetText("Options").SetIcon(icons.Settings).
 			SetTooltip("set parameters that control display (font size etc)").
 			OnClick(func(e events.Event) {
-				d := core.NewBody().AddTitle(nv.Name + " Options")
+				d := core.NewBody(nv.Name + " Options")
 				core.NewForm(d).SetStruct(&nv.Options).
 					OnChange(func(e events.Event) {
 						nv.GoUpdateView()

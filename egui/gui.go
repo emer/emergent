@@ -54,15 +54,17 @@ type GUI struct {
 
 	// Body is the content of the sim window
 	Body *core.Body `display:"-"`
+
+	//	Toolbar is the overall sim toolbar
+	Toolbar *core.Toolbar `display:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
 // to be called from within the normal event processing loop.
 // See GoUpdateWindow for version to call from separate goroutine.
 func (gui *GUI) UpdateWindow() {
-	tb := gui.Body.GetTopAppBar()
-	if tb != nil {
-		tb.Restyle()
+	if gui.Toolbar != nil {
+		gui.Toolbar.Restyle()
 	}
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really necessary
@@ -73,13 +75,7 @@ func (gui *GUI) UpdateWindow() {
 func (gui *GUI) GoUpdateWindow() {
 	gui.Body.Scene.AsyncLock()
 	defer gui.Body.Scene.AsyncUnlock()
-
-	tb := gui.Body.GetTopAppBar()
-	if tb != nil {
-		tb.Restyle()
-	}
-	gui.Body.Scene.NeedsRender()
-	// todo: could update other stuff but not really necessary
+	gui.UpdateWindow()
 }
 
 // Stopped is called when a run method stops running,
@@ -107,7 +103,10 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	gui.SimForm = core.NewForm(split).SetStruct(sim)
 	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
-		gui.Body.AddAppBar(tb.MakeToolbar)
+		gui.Body.AddTopBar(func(bar *core.Frame) {
+			gui.Toolbar = core.NewToolbar(bar)
+			gui.Toolbar.Maker(tb.MakeToolbar)
+		})
 	}
 	gui.Tabs = core.NewTabs(split)
 	gui.Tabs.Name = "tabs"
@@ -116,9 +115,13 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
-	nvt, _ := gui.Tabs.NewTab(tabName)
+	nvt, tb := gui.Tabs.NewTab(tabName)
 	nv := netview.NewNetView(nvt)
 	nv.Var = "Act"
+	tb.OnFinal(events.Click, func(e events.Event) {
+		nv.Current()
+		nv.Update()
+	})
 	return nv
 }
 
@@ -126,9 +129,10 @@ func (gui *GUI) AddNetView(tabName string) *netview.NetView {
 func (gui *GUI) FinalizeGUI(closePrompt bool) {
 	if closePrompt {
 		gui.Body.AddCloseDialog(func(d *core.Body) bool {
-			d.AddTitle("Close?").AddText("Are you sure you want to close?")
-			d.AddBottomBar(func(parent core.Widget) {
-				d.AddOK(parent).SetText("Close").OnClick(func(e events.Event) {
+			d.SetTitle("Close?")
+			core.NewText(d).SetType(core.TextSupporting).SetText("Are you sure you want to close?")
+			d.AddBottomBar(func(bar *core.Frame) {
+				d.AddOK(bar).SetText("Close").OnClick(func(e events.Event) {
 					gui.Body.Close()
 				})
 			})

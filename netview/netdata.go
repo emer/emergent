@@ -639,7 +639,9 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 	plt.Options.Title = "NetView " + selnm
 	plt.Options.XAxis = "Rec"
 
-	b.AddAppBar(plt.MakeToolbar)
+	b.AddTopBar(func(bar *core.Frame) {
+		core.NewToolbar(bar).Maker(plt.MakeToolbar)
+	})
 	dt := nd.SelectedUnitTable(nv.Di)
 
 	plt.SetTable(dt)

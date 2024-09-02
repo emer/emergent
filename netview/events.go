@@ -221,10 +221,12 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 // for viewing / editing the given struct object, in
 // the context of the given ctx widget.
 func FormDialog(ctx core.Widget, v any, title string) {
-	d := core.NewBody().AddTitle(title)
+	d := core.NewBody(title)
 	core.NewForm(d).SetStruct(v)
 	if tb, ok := v.(core.ToolbarMaker); ok {
-		d.AddAppBar(tb.MakeToolbar)
+		d.AddTopBar(func(bar *core.Frame) {
+			core.NewToolbar(bar).Maker(tb.MakeToolbar)
+		})
 	}
 	d.RunWindowDialog(ctx)
 }

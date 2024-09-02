@@ -36,7 +36,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 	for _, m := range modes {
 		mode := m
 		tree.AddAt(p, pfx+mode.String()+"-run", func(w *core.Button) {
-			tb := p.Parent.(*core.Toolbar)
+			tb := gui.Toolbar
 			w.SetText(pfx + mode.String() + " Run").SetIcon(icons.PlayArrow).
 				SetTooltip("Run the " + pfx + mode.String() + " process")
 			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
@@ -61,7 +61,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 		}
 
 		tree.AddAt(p, pfx+mode.String()+"-step", func(w *core.Button) {
-			tb := p.Parent.(*core.Toolbar)
+			tb := gui.Toolbar
 			w.SetText(pfx + "Step").SetIcon(icons.SkipNext).
 				SetTooltip("Step the " + pfx + mode.String() + " process according to the following step level and N")
 			w.FirstStyler(func(s *styles.Style) {
