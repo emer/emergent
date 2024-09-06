@@ -7,7 +7,7 @@
 
 The *emergent* neural network simulation framework provides a toolkit in the Go programming language (golang) for developing neural network models across multiple levels of complexity, from biologically-detailed spiking networks in the [axon](https://github.com/emer/axon) package, to PyTorch abstract deep networks in the [eTorch](https://github.com/emer/etorch) package.  It builds on the [Cogent Core](https://cogentcore.org/core) GUI framework to provide dynamic graphical interfaces for visualizing and manipulating networks and data, making the models uniquely accessible for teaching (e.g., see the [Computational Cognitive Neuroscience](https://github.com/CompCogNeuro/sims) simulations) and supporting the development of complex dynamical models for research.
 
-See [cogent core install](https://www.cogentcore.org/core/setup/install) instructions for general installation instructions. 
+See [cogent core install](https://www.cogentcore.org/core/setup/install) instructions for general installation instructions.  The [emergent wiki install](https://github.com/emer/emergent/wiki/Install) page has a tutorial for how to create your own simulation based on the leabra ra25 example.
 
 The [Wiki Rationale](https://github.com/emer/emergent/wiki/Rationale) and [History](https://github.com/emer/emergent/wiki/History) pages for a more detailed rationale for this version of emergent, and a history of emergent (and its predecessors).  The Wiki tends to be a bit out of date, but can have some useful information.  In general it is best to take the plunge and "use the source" directly :)
 
