@@ -9,9 +9,9 @@ package egui
 import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
+	_ "cogentcore.org/core/gpu/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor/tensorcore"
-	_ "cogentcore.org/core/vgpu/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
 )
