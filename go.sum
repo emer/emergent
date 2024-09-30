@@ -1,5 +1,5 @@
-cogentcore.org/core v0.3.3-0.20240902230139-2dc02ce70fcc h1:ox22jCL/KbK6NEJrpwl9Weaiw5HaHd42JBUPYByRCXU=
-cogentcore.org/core v0.3.3-0.20240902230139-2dc02ce70fcc/go.mod h1:dg3uRsPcd8S1ZYvRD2TztCtjopRkrB5V/lbl54xsQd4=
+cogentcore.org/core v0.3.4-0.20240930192154-b607f64b05fc h1:mY+z38ytZNyeW8mIdK7iIiVS3yhhTT7USGEMQlV36OE=
+cogentcore.org/core v0.3.4-0.20240930192154-b607f64b05fc/go.mod h1:HiWp9KXOQmYNaW5wdGpMBEHQTVprdsfBzVmTJ8OPk1A=
 github.com/Bios-Marcel/wastebasket v0.0.4-0.20240213135800-f26f1ae0a7c4 h1:6lx9xzJAhdjq0LvVfbITeC3IH9Fzvo1aBahyPu2FuG8=
 github.com/Bios-Marcel/wastebasket v0.0.4-0.20240213135800-f26f1ae0a7c4/go.mod h1:FChzXi1izqzdPb6BiNZmcZLGyTYiT61iGx9Rxx9GNeI=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
@@ -22,8 +22,8 @@ github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuP
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
 github.com/chewxy/math32 v1.10.1 h1:LFpeY0SLJXeaiej/eIp2L40VYfscTvKh/FSEZ68uMkU=
 github.com/chewxy/math32 v1.10.1/go.mod h1:dOB2rcuFrCn6UHrze36WSLVPKtzPMRAQvBvUwkSsLqs=
-github.com/cogentcore/webgpu v0.0.0-20240812054109-ca2e8adebe15 h1:Yg1VobUl2PWHzNsNVm5ong4u/zWDkucgwLvv7/qf1PU=
-github.com/cogentcore/webgpu v0.0.0-20240812054109-ca2e8adebe15/go.mod h1:ciqaxChrmRRMU1SnI5OE12Cn3QWvOKO+e5nSy+N9S1o=
+github.com/cogentcore/webgpu v0.0.0-20240906154609-e35089e9a725 h1:Zf2ixJY1PsN3huZa0Uof7VKYuoBbdxJCEbKdhKhHqwE=
+github.com/cogentcore/webgpu v0.0.0-20240906154609-e35089e9a725/go.mod h1:ciqaxChrmRRMU1SnI5OE12Cn3QWvOKO+e5nSy+N9S1o=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=

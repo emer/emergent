@@ -3,7 +3,7 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.3.3-0.20240902230139-2dc02ce70fcc
+	cogentcore.org/core v0.3.4-0.20240930192154-b607f64b05fc
 	github.com/BurntSushi/toml v1.3.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
@@ -17,7 +17,7 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/chewxy/math32 v1.10.1 // indirect
-	github.com/cogentcore/webgpu v0.0.0-20240812054109-ca2e8adebe15 // indirect
+	github.com/cogentcore/webgpu v0.0.0-20240906154609-e35089e9a725 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
