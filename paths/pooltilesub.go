@@ -100,7 +100,7 @@ func (pt *PoolTileSub) Name() string {
 	return "PoolTileSub"
 }
 
-func (pt *PoolTileSub) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (pt *PoolTileSub) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	if pt.Recip {
 		return pt.ConnectRecip(send, recv, same)
 	}
@@ -164,7 +164,7 @@ func (pt *PoolTileSub) Connect(send, recv *tensor.Shape, same bool) (sendn, recv
 								// if !pt.SelfCon && same && ri == si {
 								// 	continue
 								// }
-								cons.Values.Set(off, true)
+								cons.Values.Set(true, off)
 								rnv[ri]++
 								snv[si]++
 							}
@@ -177,7 +177,7 @@ func (pt *PoolTileSub) Connect(send, recv *tensor.Shape, same bool) (sendn, recv
 	return
 }
 
-func (pt *PoolTileSub) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (pt *PoolTileSub) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	// all these variables are swapped: s from recv, r from send
 	rNtot := send.Len()
@@ -236,7 +236,7 @@ func (pt *PoolTileSub) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn,
 							ri := ris + rui
 							off := si*rNtot + ri
 							if off < cons.Len() && si < len(snv) && ri < len(rnv) {
-								cons.Values.Set(off, true)
+								cons.Values.Set(true, off)
 								snv[si]++
 								rnv[ri]++
 							}
@@ -304,8 +304,7 @@ func (pt *PoolTileSub) TopoWeightsGauss2D(send, recv *tensor.Shape, wts *tensor.
 		rNuY = recv.DimSize(2)
 		rNuX = recv.DimSize(3)
 	}
-	wshp := []int{rNuY, rNuX, sNuY, sNuX}
-	wts.SetShape(wshp, "rNuY", "rNuX", "szY", "szX")
+	wts.SetShapeSizes(rNuY, rNuX, sNuY, sNuX)
 
 	fsz := math32.Vec2(float32(sNuX-1), float32(sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                           // half rf
@@ -365,7 +364,7 @@ func (pt *PoolTileSub) TopoWeightsGauss2D(send, recv *tensor.Shape, wts *tensor.
 					}
 					wt := fwt * pwt
 					rwt := pt.TopoRange.ProjValue(wt)
-					wts.Set([]int{ruy, rux, suy, sux}, rwt)
+					wts.Set(rwt, ruy, rux, suy, sux)
 				}
 			}
 		}
@@ -393,8 +392,7 @@ func (pt *PoolTileSub) TopoWeightsGauss4D(send, recv *tensor.Shape, wts *tensor.
 		rNuY = recv.DimSize(2)
 		rNuX = recv.DimSize(3)
 	}
-	wshp := []int{rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX}
-	wts.SetShape(wshp, "rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX")
+	wts.SetShapeSizes(rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX)
 
 	fsz := math32.Vec2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                                               // half rf
@@ -455,7 +453,7 @@ func (pt *PoolTileSub) TopoWeightsGauss4D(send, recv *tensor.Shape, wts *tensor.
 							}
 							wt := fwt * pwt
 							rwt := pt.TopoRange.ProjValue(wt)
-							wts.Set([]int{ruy, rux, fy, fx, suy, sux}, rwt)
+							wts.Set(rwt, ruy, rux, fy, fx, suy, sux)
 						}
 					}
 				}
@@ -487,8 +485,7 @@ func (pt *PoolTileSub) TopoWeightsSigmoid2D(send, recv *tensor.Shape, wts *tenso
 		rNuY = recv.DimSize(2)
 		rNuX = recv.DimSize(3)
 	}
-	wshp := []int{rNuY, rNuX, sNuY, sNuX}
-	wts.SetShape(wshp, "rNuY", "rNuX", "sNuY", "sNuX")
+	wts.SetShapeSizes(rNuY, rNuX, sNuY, sNuX)
 
 	fsz := math32.Vec2(float32(sNuX-1), float32(sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                           // half rf
@@ -550,7 +547,7 @@ func (pt *PoolTileSub) TopoWeightsSigmoid2D(send, recv *tensor.Shape, wts *tenso
 					}
 					wt := fwt * pwt
 					rwt := pt.TopoRange.ProjValue(wt)
-					wts.Set([]int{ruy, rux, suy, sux}, rwt)
+					wts.Set(rwt, ruy, rux, suy, sux)
 				}
 			}
 		}
@@ -578,8 +575,7 @@ func (pt *PoolTileSub) TopoWeightsSigmoid4D(send, recv *tensor.Shape, wts *tenso
 		rNuY = recv.DimSize(2)
 		rNuX = recv.DimSize(3)
 	}
-	wshp := []int{rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX}
-	wts.SetShape(wshp, "rNuY", "rNuX", "szY", "szX", "sNuY", "sNuX")
+	wts.SetShapeSizes(rNuY, rNuX, pt.Size.Y, pt.Size.X, sNuY, sNuX)
 
 	fsz := math32.Vec2(float32(pt.Size.X*sNuX-1), float32(pt.Size.Y*sNuY-1)) // full rf size
 	hfsz := fsz.MulScalar(0.5)                                               // half rf
@@ -643,7 +639,7 @@ func (pt *PoolTileSub) TopoWeightsSigmoid4D(send, recv *tensor.Shape, wts *tenso
 							}
 							wt := fwt * pwt
 							rwt := pt.TopoRange.ProjValue(wt)
-							wts.Set([]int{ruy, rux, fy, fx, suy, sux}, rwt)
+							wts.Set(rwt, ruy, rux, fy, fx, suy, sux)
 						}
 					}
 				}

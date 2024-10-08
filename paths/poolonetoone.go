@@ -32,7 +32,7 @@ func (ot *PoolOneToOne) Name() string {
 	return "PoolOneToOne"
 }
 
-func (ot *PoolOneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolOneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	switch {
 	case send.NumDims() == 4 && recv.NumDims() == 4:
 		return ot.ConnectPools(send, recv, same)
@@ -47,7 +47,7 @@ func (ot *PoolOneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, rec
 }
 
 // ConnectPools is when both recv and send have pools
-func (ot *PoolOneToOne) ConnectPools(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolOneToOne) ConnectPools(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	// rNtot := recv.Len()
@@ -72,7 +72,7 @@ func (ot *PoolOneToOne) ConnectPools(send, recv *tensor.Shape, same bool) (sendn
 			for sui := 0; sui < sNu; sui++ {
 				si := spi*sNu + sui
 				off := ri*sNtot + si
-				cons.Values.Set(off, true)
+				cons.Values.Set(true, off)
 				rnv[ri] = int32(sNu)
 				snv[si] = int32(rNu)
 			}
@@ -82,7 +82,7 @@ func (ot *PoolOneToOne) ConnectPools(send, recv *tensor.Shape, same bool) (sendn
 }
 
 // ConnectRecvPool is when recv has pools but send doesn't
-func (ot *PoolOneToOne) ConnectRecvPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolOneToOne) ConnectRecvPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	rNp := recv.DimSize(0) * recv.DimSize(1)
@@ -104,7 +104,7 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *tensor.Shape, same bool) (se
 			for rui := 0; rui < rNu; rui++ {
 				ri := rpi*rNu + rui
 				off := ri*sNtot + si
-				cons.Values.Set(off, true)
+				cons.Values.Set(true, off)
 				rnv[ri] = int32(1)
 				snv[si] = int32(rNu)
 			}
@@ -119,7 +119,7 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *tensor.Shape, same bool) (se
 				ri := rpi*rNu + rui
 				for si := 0; si < sNtot; si++ {
 					off := ri*sNtot + si
-					cons.Values.Set(off, true)
+					cons.Values.Set(true, off)
 					rnv[ri] = int32(sNtot)
 					snv[si] = int32(npl * rNu)
 				}
@@ -130,7 +130,7 @@ func (ot *PoolOneToOne) ConnectRecvPool(send, recv *tensor.Shape, same bool) (se
 }
 
 // ConnectSendPool is when send has pools but recv doesn't
-func (ot *PoolOneToOne) ConnectSendPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolOneToOne) ConnectSendPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -153,7 +153,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *tensor.Shape, same bool) (se
 			for sui := 0; sui < sNu; sui++ {
 				si := spi*sNu + sui
 				off := ri*sNtot + si
-				cons.Values.Set(off, true)
+				cons.Values.Set(true, off)
 				rnv[ri] = int32(sNu)
 				snv[si] = int32(1)
 			}
@@ -168,7 +168,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *tensor.Shape, same bool) (se
 				for sui := 0; sui < sNu; sui++ {
 					si := spi*sNu + sui
 					off := ri*sNtot + si
-					cons.Values.Set(off, true)
+					cons.Values.Set(true, off)
 					rnv[ri] = int32(npl * sNu)
 					snv[si] = int32(rNtot)
 				}
@@ -179,7 +179,7 @@ func (ot *PoolOneToOne) ConnectSendPool(send, recv *tensor.Shape, same bool) (se
 }
 
 // copy of OneToOne.Connect
-func (ot *PoolOneToOne) ConnectOneToOne(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolOneToOne) ConnectOneToOne(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	rNtot := recv.Len()
@@ -196,7 +196,7 @@ func (ot *PoolOneToOne) ConnectOneToOne(send, recv *tensor.Shape, same bool) (se
 			break
 		}
 		off := ri*sNtot + si
-		cons.Values.Set(off, true)
+		cons.Values.Set(true, off)
 		rnv[ri] = 1
 		snv[si] = 1
 	}

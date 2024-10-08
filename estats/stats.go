@@ -12,7 +12,6 @@ import (
 	"cogentcore.org/core/base/timer"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/pca"
 	"cogentcore.org/core/tensor/stats/simat"
 	"github.com/emer/emergent/v2/actrf"
 	"github.com/emer/emergent/v2/confusion"
@@ -39,16 +38,10 @@ type Stats struct {
 	Confusion confusion.Matrix `display:"no-inline"`
 
 	// similarity matrix for comparing pattern similarities
-	SimMats map[string]*simat.SimMat
+	SimMats map[string]*tensor.Float64
 
 	// analysis plots -- created by analysis routines
 	Plots map[string]*plotcore.PlotEditor
-
-	// one PCA object can be reused for all PCA computations
-	PCA pca.PCA
-
-	// one SVD object can be reused for all SVD computations
-	SVD pca.SVD
 
 	// activation-based receptive fields
 	ActRFs actrf.RFs `display:"no-inline"`

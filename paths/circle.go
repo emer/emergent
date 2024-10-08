@@ -66,7 +66,7 @@ func (cr *Circle) Name() string {
 	return "Circle"
 }
 
-func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNy, sNx, _, _ := tensor.Projection2DShape(send, false)
 	rNy, rNx, _, _ := tensor.Projection2DShape(recv, false)
@@ -104,7 +104,7 @@ func (cr *Circle) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *te
 						if !cr.SelfCon && same && ri == si {
 							continue
 						}
-						cons.Values.Set(off, true)
+						cons.Values.Set(true, off)
 						rnv[ri]++
 						snv[si]++
 					}

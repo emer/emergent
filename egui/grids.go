@@ -8,7 +8,6 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/tensorcore"
-	"github.com/emer/emergent/v2/actrf"
 )
 
 // Grid gets tensor grid view of given name, creating if not yet made
@@ -60,6 +59,7 @@ func (gui *GUI) SaveActRFGrid(tg *tensorcore.TensorGrid, name string) {
 	gui.SetGrid(name, tg)
 }
 
+/*
 // AddActRFGridTabs adds tabs for each of the ActRFs.
 func (gui *GUI) AddActRFGridTabs(arfs *actrf.RFs) {
 	for _, rf := range arfs.RFs {
@@ -83,3 +83,4 @@ func (gui *GUI) ViewActRFs(atf *actrf.RFs) {
 		}
 	}
 }
+*/

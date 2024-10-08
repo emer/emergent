@@ -56,7 +56,7 @@ func (ur *UniformRand) InitRand() {
 	ur.Rand = randx.NewSysRand(ur.RandSeed)
 }
 
-func (ur *UniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *UniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	if ur.PCon >= 1 {
 		return ur.ConnectFull(send, recv, same)
 	}
@@ -116,7 +116,7 @@ func (ur *UniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recv
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
 		for si := 0; si < nsend; si++ {
 			off := ri*slen + slist[si]
-			cons.Values.Set(off, true)
+			cons.Values.Set(true, off)
 		}
 		randx.PermuteInts(sorder, ur.Rand)
 	}
@@ -137,7 +137,7 @@ func (ur *UniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recv
 }
 
 // ConnectRecip does reciprocal connectvity
-func (ur *UniformRand) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *UniformRand) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	slen := recv.Len() // swapped
 	rlen := send.Len()
@@ -181,7 +181,7 @@ func (ur *UniformRand) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn,
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
 		for si := 0; si < nsend; si++ {
 			off := slist[si]*slenR + ri
-			cons.Values.Set(off, true)
+			cons.Values.Set(true, off)
 		}
 		randx.PermuteInts(sorder, ur.Rand)
 	}
@@ -201,7 +201,7 @@ func (ur *UniformRand) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn,
 	return
 }
 
-func (ur *UniformRand) ConnectFull(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *UniformRand) ConnectFull(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()
@@ -209,7 +209,7 @@ func (ur *UniformRand) ConnectFull(send, recv *tensor.Shape, same bool) (sendn, 
 	if same && !ur.SelfCon {
 		for i := 0; i < nsend; i++ { // nsend = nrecv
 			off := i*nsend + i
-			cons.Values.Set(off, false)
+			cons.Values.Set(false, off)
 		}
 		nsend--
 		nrecv--

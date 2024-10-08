@@ -28,7 +28,7 @@ func (ot *PoolSameUnit) Name() string {
 	return "PoolSameUnit"
 }
 
-func (ot *PoolSameUnit) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolSameUnit) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	switch {
 	case send.NumDims() == 4 && recv.NumDims() == 4:
 		return ot.ConnectPools(send, recv, same)
@@ -43,7 +43,7 @@ func (ot *PoolSameUnit) Connect(send, recv *tensor.Shape, same bool) (sendn, rec
 }
 
 // ConnectPools is when both recv and send have pools
-func (ot *PoolSameUnit) ConnectPools(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolSameUnit) ConnectPools(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	sNp := send.DimSize(0) * send.DimSize(1)
@@ -64,7 +64,7 @@ func (ot *PoolSameUnit) ConnectPools(send, recv *tensor.Shape, same bool) (sendn
 				}
 				si := spi*sNu + rui
 				off := ri*sNtot + si
-				cons.Values.Set(off, true)
+				cons.Values.Set(true, off)
 				rnv[ri]++
 				snv[si]++
 			}
@@ -74,7 +74,7 @@ func (ot *PoolSameUnit) ConnectPools(send, recv *tensor.Shape, same bool) (sendn
 }
 
 // ConnectRecvPool is when recv has pools but send doesn't
-func (ot *PoolSameUnit) ConnectRecvPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolSameUnit) ConnectRecvPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	rNp := recv.DimSize(0) * recv.DimSize(1)
@@ -90,7 +90,7 @@ func (ot *PoolSameUnit) ConnectRecvPool(send, recv *tensor.Shape, same bool) (se
 			ri := rpi*rNu + rui
 			si := rui
 			off := ri*sNtot + si
-			cons.Values.Set(off, true)
+			cons.Values.Set(true, off)
 			rnv[ri]++
 			snv[si]++
 		}
@@ -99,7 +99,7 @@ func (ot *PoolSameUnit) ConnectRecvPool(send, recv *tensor.Shape, same bool) (se
 }
 
 // ConnectSendPool is when send has pools but recv doesn't
-func (ot *PoolSameUnit) ConnectSendPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolSameUnit) ConnectSendPool(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	sNp := send.DimSize(0) * send.DimSize(1)
@@ -115,7 +115,7 @@ func (ot *PoolSameUnit) ConnectSendPool(send, recv *tensor.Shape, same bool) (se
 		for spi := 0; spi < sNp; spi++ {
 			si := spi*sNu + rui
 			off := ri*sNtot + si
-			cons.Values.Set(off, true)
+			cons.Values.Set(true, off)
 			rnv[ri]++
 			snv[si]++
 		}
@@ -124,7 +124,7 @@ func (ot *PoolSameUnit) ConnectSendPool(send, recv *tensor.Shape, same bool) (se
 }
 
 // copy of OneToOne.Connect
-func (ot *PoolSameUnit) ConnectOneToOne(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *PoolSameUnit) ConnectOneToOne(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNtot := send.Len()
 	sNu := send.DimSize(0) * send.DimSize(1)
@@ -138,7 +138,7 @@ func (ot *PoolSameUnit) ConnectOneToOne(send, recv *tensor.Shape, same bool) (se
 		ri := rui
 		si := rui
 		off := ri*sNtot + si
-		cons.Values.Set(off, true)
+		cons.Values.Set(true, off)
 		rnv[ri] = 1
 		snv[si] = 1
 	}

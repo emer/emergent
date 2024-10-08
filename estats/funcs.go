@@ -94,14 +94,18 @@ var PCAStrongThr = 0.01
 // layer_PCA_Next5: average strength of next 5 eigenvalues
 // layer_PCA_Rest: average strength of remaining eigenvalues (if more than 10 total eigens)
 // Uses SVD to compute much more efficiently than official PCA.
-func (st *Stats) PCAStats(ix *table.IndexView, varNm string, layers []string) {
-	svd := &st.SVD
+func (st *Stats) PCAStats(ix *table.Table, varNm string, layers []string) {
 	svd.Cond = PCAStrongThr
+	covar := tensor.NewFloat64()
+	evecs := tensor.NewFloat64()
+	evals := tensor.NewFloat64()
 	for _, lnm := range layers {
-		svd.TableColumn(ix, lnm+"_"+varNm, metric.Covariance64)
-		ln := len(svd.Values)
+		col := ix.Column(lnm + "_" + varNm)
+		metric.CovarianceMatrixOut(metric.Covariance, col, covar)
+		matrix.SVDOut(covar, evecs, evals)
+		ln := len(evals)
 		var nstr float64 // nstr := float64(svd.Rank)  this didn't work..
-		for i, v := range svd.Values {
+		for i, v := range evals {
 			if v < PCAStrongThr {
 				nstr = float64(i)
 				break
@@ -110,17 +114,17 @@ func (st *Stats) PCAStats(ix *table.IndexView, varNm string, layers []string) {
 		var top5, next5 float64
 		for i := 0; i < 5; i++ {
 			if ln >= 5 {
-				top5 += svd.Values[i]
+				top5 += evals[i]
 			}
 			if ln >= 10 {
-				next5 += svd.Values[i+5]
+				next5 += evals[i+5]
 			}
 		}
 		st.SetFloat(lnm+"_PCA_NStrong", nstr)
 		st.SetFloat(lnm+"_PCA_Top5", top5/5)
 		st.SetFloat(lnm+"_PCA_Next5", next5/5)
 		if ln > 10 {
-			sum := stats.Sum64(svd.Values)
+			sum := stats.Sum(evals)
 			ravg := (sum - (top5 + next5)) / float64(ln-10)
 			st.SetFloat(lnm+"_PCA_Rest", ravg)
 		} else {

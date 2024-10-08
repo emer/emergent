@@ -5,7 +5,6 @@
 package looper
 
 import (
-	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
 )
 
@@ -137,12 +136,12 @@ func (stack *Stack) TimeBelow(time etime.Times) etime.Times {
 // Typically, a TrialName string is also expected to be set,
 // to describe the current trial (Step) contents in a useful way,
 // and other relevant info (e.g., group / category info) can also be set.
-func (stack *Stack) CountersToStats(stats *estats.Stats) {
-	for _, tm := range stack.Order {
-		lp := stack.Loops[tm]
-		stats.SetInt(tm.String(), lp.Counter.Cur)
-	}
-}
+// func (stack *Stack) CountersToStats(stats *estats.Stats) {
+// 	for _, tm := range stack.Order {
+// 		lp := stack.Loops[tm]
+// 		stats.SetInt(tm.String(), lp.Counter.Cur)
+// 	}
+// }
 
 // SetStep sets stepping to given level and iterations
 func (stack *Stack) SetStep(numSteps int, stopscale etime.Times) {
