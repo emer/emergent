@@ -594,11 +594,11 @@ func (nv *NetView) ReadUnlock() {
 	nv.DataMu.RUnlock()
 }
 
-// UnitVal returns the raw value, scaled value, and color representation
+// UnitValue returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	lb := lay.AsEmer()
-	idx1d := lb.Shape.Offset(idx)
+	idx1d := lb.Shape.IndexTo1D(idx...)
 	if idx1d >= lb.Shape.Len() {
 		raw, hasval = 0, false
 	} else {
@@ -613,7 +613,7 @@ func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, cl
 // scaled is in range -1..1
 func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	lb := lay.AsEmer()
-	idx1d := lb.SampleShape.Offset(idx)
+	idx1d := lb.SampleShape.IndexTo1D(idx...)
 	ridx := lb.SampleIndexes
 	if len(ridx) == 0 { // no rep
 		if idx1d >= lb.Shape.Len() {

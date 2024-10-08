@@ -257,7 +257,7 @@ func (ly *LayerBase) Index4DFrom2D(x, y int) ([]int, bool) {
 	px := x / nux
 	py := y / nuy
 	idx := []int{py, px, uy, ux}
-	if !lshp.IndexIsValid(idx) {
+	if !lshp.IndexIsValid(idx...) {
 		return nil, false
 	}
 	return idx, true
@@ -303,14 +303,8 @@ func (ly *LayerBase) DisplaySize() math32.Vector2 {
 }
 
 // SetShape sets the layer shape and also uses default dim names.
-func (ly *LayerBase) SetShape(shape []int) {
-	var dnms []string
-	if len(shape) == 2 {
-		dnms = LayerDimNames2D
-	} else if len(shape) == 4 {
-		dnms = LayerDimNames4D
-	}
-	ly.Shape.SetShape(shape, dnms...)
+func (ly *LayerBase) SetShape(shape ...int) {
+	ly.Shape.SetShapeSizes(shape...)
 }
 
 // SetSampleIndexesShape sets the SampleIndexes,
@@ -318,15 +312,9 @@ func (ly *LayerBase) SetShape(shape []int) {
 // for a subset sample of units to represent the entire layer.
 // This is critical for large layers that are otherwise unwieldy
 // to visualize and for computationally-intensive statistics.
-func (ly *LayerBase) SetSampleIndexesShape(idxs, shape []int) {
+func (ly *LayerBase) SetSampleIndexesShape(idxs []int, shape ...int) {
 	ly.SampleIndexes = idxs
-	var dnms []string
-	if len(shape) == 2 {
-		dnms = LayerDimNames2D
-	} else if len(shape) == 4 {
-		dnms = LayerDimNames4D
-	}
-	ly.SampleShape.SetShape(shape, dnms...)
+	ly.SampleShape.SetShapeSizes(shape...)
 }
 
 // GetSampleShape returns the shape to use for representative units.
@@ -336,7 +324,7 @@ func (ly *LayerBase) GetSampleShape() *tensor.Shape {
 		return &ly.Shape
 	}
 	if ly.SampleShape.Len() != sz {
-		ly.SampleShape.SetShape([]int{sz})
+		ly.SampleShape.SetShapeSizes(sz)
 	}
 	return &ly.SampleShape
 }
@@ -382,28 +370,28 @@ func (ly *LayerBase) UnitValues(vals *[]float32, varNm string, di int) error {
 // If tensor is not already big enough to hold the values, it is
 // set to the same shape as the layer.
 // Returns error on invalid var name.
-func (ly *LayerBase) UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error {
+func (ly *LayerBase) UnitValuesTensor(tsr tensor.Values, varNm string, di int) error {
 	if tsr == nil {
 		err := fmt.Errorf("emer.UnitValuesTensor: Tensor is nil")
 		log.Println(err)
 		return err
 	}
 	nn := ly.NumUnits()
-	tsr.SetShape(ly.Shape.Sizes, ly.Shape.Names...)
+	tsr.SetShapeSizes(ly.Shape.Sizes...)
 	vidx, err := ly.EmerLayer.UnitVarIndex(varNm)
 	if err != nil {
 		nan := math.NaN()
 		for lni := 0; lni < nn; lni++ {
-			tsr.SetFloat1D(lni, nan)
+			tsr.SetFloat1D(nan, lni)
 		}
 		return err
 	}
 	for lni := 0; lni < nn; lni++ {
 		v := ly.EmerLayer.UnitValue1D(vidx, lni, di)
 		if math32.IsNaN(v) {
-			tsr.SetFloat1D(lni, math.NaN())
+			tsr.SetFloat1D(math.NaN(), lni)
 		} else {
-			tsr.SetFloat1D(lni, float64(v))
+			tsr.SetFloat1D(float64(v), lni)
 		}
 	}
 	return nil
@@ -422,7 +410,7 @@ func (ly *LayerBase) UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) e
 // set to SampleShape to hold all the values if subset is defined,
 // otherwise it calls UnitValuesTensor and is identical to that.
 // Returns error on invalid var name.
-func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Tensor, varNm string, di int) error {
+func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Values, varNm string, di int) error {
 	nu := len(ly.SampleIndexes)
 	if nu == 0 {
 		return ly.UnitValuesTensor(tsr, varNm, di)
@@ -434,22 +422,22 @@ func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Tensor, varNm string, di 
 	}
 	if tsr.Len() != nu {
 		rs := ly.GetSampleShape()
-		tsr.SetShape(rs.Sizes, rs.Names...)
+		tsr.SetShapeSizes(rs.Sizes...)
 	}
 	vidx, err := ly.EmerLayer.UnitVarIndex(varNm)
 	if err != nil {
 		nan := math.NaN()
 		for i, _ := range ly.SampleIndexes {
-			tsr.SetFloat1D(i, nan)
+			tsr.SetFloat1D(nan, i)
 		}
 		return err
 	}
 	for i, ui := range ly.SampleIndexes {
 		v := ly.EmerLayer.UnitValue1D(vidx, ui, di)
 		if math32.IsNaN(v) {
-			tsr.SetFloat1D(i, math.NaN())
+			tsr.SetFloat1D(math.NaN(), i)
 		} else {
-			tsr.SetFloat1D(i, float64(v))
+			tsr.SetFloat1D(float64(v), i)
 		}
 	}
 	return nil
@@ -465,7 +453,7 @@ func (ly *LayerBase) UnitValue(varNm string, idx []int, di int) float32 {
 	if err != nil {
 		return math32.NaN()
 	}
-	fidx := ly.Shape.Offset(idx)
+	fidx := ly.Shape.IndexTo1D(idx...)
 	return ly.EmerLayer.UnitValue1D(vidx, fidx, di)
 }
 
@@ -517,7 +505,7 @@ func Layer2DSampleIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 	i := 0
 	for y := 0; y < my; y++ {
 		for x := 0; x < mx; x++ {
-			idxs[i] = sh.Offset([]int{y, x})
+			idxs[i] = sh.IndexTo1D(y, x)
 			i++
 		}
 	}

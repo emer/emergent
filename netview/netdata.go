@@ -14,13 +14,13 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/plot/plotcore"
+	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
@@ -680,9 +680,9 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
 	dt := &table.Table{}
-	dt.SetMetaData("name", "NetView: "+selnm)
-	dt.SetMetaData("read-only", "true")
-	dt.SetMetaData("precision", strconv.Itoa(4))
+	dt.Meta.SetName("NetView: " + selnm)
+	dt.Meta.Set("read-only", true)
+	tensor.SetPrecision(dt.Meta, 4)
 
 	ln := nd.Ring.Len
 	vlen := len(nd.UnVars)
@@ -698,11 +698,11 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 
 	for ri := 0; ri < ln; ri++ {
 		ridx := nd.RecIndex(ri)
-		dt.SetFloatIndex(0, ri, float64(ri))
+		dt.Columns.Values[0].SetFloat(float64(ri), 0, ri)
 		for vi := 0; vi < vlen; vi++ {
 			idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 			val := ld.Data[idx]
-			dt.SetFloatIndex(vi+1, ri, float64(val))
+			dt.Columns.Values[0].SetFloat(float64(val), vi+1, ri)
 		}
 	}
 	return dt

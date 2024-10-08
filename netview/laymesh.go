@@ -47,7 +47,7 @@ func (lm *LayMesh) MeshSize() (nVtx, nIndex int, hasColor bool) {
 		return 0, 0, true
 	}
 	shp := &lm.Lay.AsEmer().Shape
-	lm.Shape.CopyShape(shp)
+	lm.Shape.CopyFrom(shp)
 	if lm.View.Options.Raster.On {
 		if shp.NumDims() == 4 {
 			lm.NumVertex, lm.NumIndex = lm.RasterSize4D()

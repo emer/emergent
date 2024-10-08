@@ -48,7 +48,7 @@ func (gui *GUI) ConfigRasterGrid(lay *core.Frame, laynm string, rast *tensor.Flo
 	core.NewText(lay).SetText(laynm + ":")
 	lay.AddChild(tg)
 	core.NewSpace(lay)
-	rast.SetMetaData("grid-fill", "1")
+	rast.Metadata().Set("grid-fill", float32(1))
 	tg.SetTensor(rast)
 	return tg
 }

@@ -197,17 +197,17 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 		lshp := lb.Shape
 		if lb.Is2D() {
 			idx := []int{ly, lx}
-			if !lshp.IndexIsValid(idx) {
+			if !lshp.IndexIsValid(idx...) {
 				continue
 			}
-			unIndex = lshp.Offset(idx)
+			unIndex = lshp.IndexTo1D(idx...)
 			return
 		} else if lb.Is4D() {
 			idx, ok := lb.Index4DFrom2D(lx, ly)
 			if !ok {
 				continue
 			}
-			unIndex = lshp.Offset(idx)
+			unIndex = lshp.IndexTo1D(idx...)
 			return
 		} else {
 			continue // not supported
