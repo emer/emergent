@@ -12,9 +12,6 @@ import (
 	"cogentcore.org/core/base/timer"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/simat"
-	"github.com/emer/emergent/v2/actrf"
-	"github.com/emer/emergent/v2/confusion"
 	"github.com/emer/emergent/v2/decoder"
 )
 
@@ -35,7 +32,7 @@ type Stats struct {
 	IntTensors map[string]*tensor.Int
 
 	// confusion matrix
-	Confusion confusion.Matrix `display:"no-inline"`
+	// Confusion confusion.Matrix `display:"no-inline"`
 
 	// similarity matrix for comparing pattern similarities
 	SimMats map[string]*tensor.Float64
@@ -44,7 +41,7 @@ type Stats struct {
 	Plots map[string]*plotcore.PlotEditor
 
 	// activation-based receptive fields
-	ActRFs actrf.RFs `display:"no-inline"`
+	// ActRFs actrf.RFs `display:"no-inline"`
 
 	// list of layer names configured for recording raster plots
 	Rasters []string
@@ -67,14 +64,14 @@ func (st *Stats) Init() {
 	st.F32Tensors = make(map[string]*tensor.Float32)
 	st.F64Tensors = make(map[string]*tensor.Float64)
 	st.IntTensors = make(map[string]*tensor.Int)
-	st.SimMats = make(map[string]*simat.SimMat)
+	// st.SimMats = make(map[string]*simat.SimMat)
 	st.Plots = make(map[string]*plotcore.PlotEditor)
 	st.LinDecoders = make(map[string]*decoder.Linear)
 	st.SoftMaxDecoders = make(map[string]*decoder.SoftMax)
 	st.Timers = make(map[string]*timer.Time)
-	st.PCA.Init()
-	st.SVD.Init()
-	st.SVD.Cond = PCAStrongThr
+	// st.PCA.Init()
+	// st.SVD.Init()
+	// st.SVD.Cond = PCAStrongThr
 }
 
 // Print returns a formatted Name: Value string of stat values,
@@ -368,6 +365,7 @@ func (st *Stats) SetIntTensorDi(name string, di int, tsr *tensor.Int) {
 /////////////////////////////////////////
 //  Misc items
 
+/*
 // SimMat returns a SimMat similarity matrix of given name, creating if not yet made
 func (st *Stats) SimMat(name string) *simat.SimMat {
 	sm, has := st.SimMats[name]
@@ -377,6 +375,7 @@ func (st *Stats) SimMat(name string) *simat.SimMat {
 	}
 	return sm
 }
+*/
 
 // Plot returns an plotcore.PlotEditor of given name, creating if not yet made
 func (st *Stats) Plot(name string) *plotcore.PlotEditor {

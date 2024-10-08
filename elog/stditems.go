@@ -11,7 +11,6 @@ import (
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/math32/minmax"
-	"cogentcore.org/core/tensor/stats/split"
 	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
@@ -280,11 +279,11 @@ func (lg *Logs) RunStats(stats ...string) {
 	lt := lg.TableDetailsScope(sk)
 	ix, _ := lt.NamedIndexView("RunStats")
 
-	spl := split.GroupBy(ix, "RunName")
-	for _, st := range stats {
-		split.DescColumn(spl, st)
-	}
-	lg.MiscTables["RunStats"] = spl.AggsToTable(table.AddAggName)
+	// spl := split.GroupBy(ix, "RunName")
+	// for _, st := range stats {
+	// 	split.DescColumn(spl, st)
+	// }
+	// lg.MiscTables["RunStats"] = spl.AggsToTable(table.AddAggName)
 }
 
 // AddLayerTensorItems adds tensor recording items for given variable,

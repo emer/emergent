@@ -21,14 +21,14 @@ func (st *Stats) ConfigRasters(net emer.Network, maxCyc int, layers []string) {
 		if nu == 0 {
 			nu = ly.Shape.Len()
 		}
-		sr.SetShape([]int{nu, maxCyc}, "Nrn", "Cyc")
+		sr.SetShapeSizes(nu, maxCyc)
 	}
 }
 
 // SetRasterCol sets column of given raster from data
 func (st *Stats) SetRasterCol(sr, tsr *tensor.Float32, col int) {
 	for ni, v := range tsr.Values {
-		sr.Set([]int{ni, col}, v)
+		sr.Set(v, ni, col)
 	}
 }
 
