@@ -27,12 +27,12 @@ func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {
 
 // ClusterPlot does one cluster plot on given table column name
 // and label name
-func ClusterPlot(plt *plotcore.PlotEditor, ix *table.IndexView, colNm, lblNm string) {
+func ClusterPlot(plt *plotcore.PlotEditor, ix *table.IndexView, colNm, lblNm string, dfunc clust.DistFunc) {
 	nm, _ := ix.Table.MetaData["name"]
 	smat := &simat.SimMat{}
 	smat.TableColumnStd(ix, colNm, lblNm, false, metric.Euclidean)
 	pt := &table.Table{}
-	clust.Plot(pt, clust.Glom(smat, clust.ContrastDist), smat)
+	clust.Plot(pt, clust.Glom(smat, dfunc), smat)
 	plt.Name = colNm
 	plt.Options.Title = "Cluster Plot of: " + nm + " " + colNm
 	plt.Options.XAxis = "X"
