@@ -312,7 +312,7 @@ func (ly *LayerBase) SetShape(shape ...int) {
 // for a subset sample of units to represent the entire layer.
 // This is critical for large layers that are otherwise unwieldy
 // to visualize and for computationally-intensive statistics.
-func (ly *LayerBase) SetSampleIndexesShape(idxs []int, shape ...int) {
+func (ly *LayerBase) SetSampleIndexesShape(idxs, shape []int) {
 	ly.SampleIndexes = idxs
 	ly.SampleShape.SetShapeSizes(shape...)
 }
