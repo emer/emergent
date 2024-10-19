@@ -10,7 +10,7 @@ import (
 )
 
 func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
-	ss := &lm.Lay.AsEmer().SampleShape
+	ss := lm.Lay.AsEmer().GetSampleShape()
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nz := nuz*nux + nuz - 1
@@ -24,7 +24,7 @@ func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
 }
 
 func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
-	ss := &lm.Lay.AsEmer().SampleShape
+	ss := lm.Lay.AsEmer().GetSampleShape()
 	npz := ss.DimSize(0) // p = pool
 	npx := ss.DimSize(1)
 	nuz := ss.DimSize(2) // u = unit
@@ -42,7 +42,7 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 }
 
 func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	ss := &lm.Lay.AsEmer().SampleShape
+	ss := lm.Lay.AsEmer().GetSampleShape()
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nz := nuz*nux + nuz - 1
@@ -123,7 +123,7 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 }
 
 func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	ss := &lm.Lay.AsEmer().SampleShape
+	ss := lm.Lay.AsEmer().GetSampleShape()
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nx := nuz*nux + nuz - 1
@@ -203,7 +203,7 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 }
 
 func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	ss := &lm.Lay.AsEmer().SampleShape
+	ss := lm.Lay.AsEmer().GetSampleShape()
 	npz := ss.DimSize(0) // p = pool
 	npx := ss.DimSize(1)
 	nuz := ss.DimSize(2) // u = unit
@@ -304,7 +304,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 }
 
 func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry math32.ArrayU32) {
-	ss := &lm.Lay.AsEmer().SampleShape
+	ss := lm.Lay.AsEmer().GetSampleShape()
 	npz := ss.DimSize(0) // p = pool
 	npx := ss.DimSize(1)
 	nuz := ss.DimSize(2) // u = unit
