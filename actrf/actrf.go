@@ -7,8 +7,10 @@ package actrf
 //go:generate core generate -add-types
 
 import (
+	"slices"
+
 	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/norm"
+	"cogentcore.org/core/tensor/stats/stats"
 )
 
 // RF is used for computing an activation-based receptive field.
@@ -59,17 +61,15 @@ func (af *RF) InitShape(act, src tensor.Tensor) []int {
 	aNy, aNx, _, _ := tensor.Projection2DShape(act.Shape(), false)
 	sNy, sNx, _, _ := tensor.Projection2DShape(src.Shape(), false)
 	oshp := []int{aNy, aNx, sNy, sNx}
-	if tensor.EqualInts(af.RF.Shp.Sizes, oshp) {
+	if slices.Equal(af.RF.Shape().Sizes, oshp) {
 		return oshp
 	}
-	snm := []string{"ActY", "ActX", "SrcY", "SrcX"}
 	sshp := []int{sNy, sNx}
-	ssnm := []string{"SrcY", "SrcX"}
-	af.RF.SetShape(oshp, snm...)
-	af.NormRF.SetShape(oshp, snm...)
-	af.SumProd.SetShape(oshp, snm...)
-	af.NormSrc.SetShape(sshp, ssnm...)
-	af.SumSrc.SetShape(sshp, ssnm...)
+	af.RF.SetShapeSizes(oshp...)
+	af.NormRF.SetShapeSizes(oshp...)
+	af.SumProd.SetShapeSizes(oshp...)
+	af.NormSrc.SetShapeSizes(sshp...)
+	af.SumSrc.SetShapeSizes(sshp...)
 
 	af.ConfigView(&af.RF)
 	af.ConfigView(&af.NormRF)
@@ -81,10 +81,11 @@ func (af *RF) InitShape(act, src tensor.Tensor) []int {
 
 // ConfigView configures the view params on the tensor
 func (af *RF) ConfigView(tsr *tensor.Float32) {
-	tsr.SetMetaData("colormap", "Viridis")
-	tsr.SetMetaData("grid-fill", "1") // remove extra lines
-	tsr.SetMetaData("fix-min", "true")
-	tsr.SetMetaData("min", "0")
+	// todo:meta
+	// tsr.SetMetaData("colormap", "Viridis")
+	// tsr.SetMetaData("grid-fill", "1") // remove extra lines
+	// tsr.SetMetaData("fix-min", "true")
+	// tsr.SetMetaData("min", "0")
 }
 
 // Reset reinitializes the Sum accumulators -- must have called Init first
@@ -106,11 +107,11 @@ func (af *RF) Add(act, src tensor.Tensor, thr float32) {
 			if tv < thr {
 				continue
 			}
-			af.SumSrc.AddScalar([]int{sy, sx}, float64(tv))
+			af.SumSrc.SetAdd(tv, sy, sx)
 			for ay := 0; ay < aNy; ay++ {
 				for ax := 0; ax < aNx; ax++ {
 					av := float32(tensor.Projection2DValue(act, false, ay, ax))
-					af.SumProd.AddScalar([]int{ay, ax, sy, sx}, float64(av*tv))
+					af.SumProd.SetAdd(av*tv, ay, ax, sy, sx)
 				}
 			}
 		}
@@ -126,7 +127,7 @@ func (af *RF) Avg() {
 	var maxSrc float32
 	for sy := 0; sy < sNy; sy++ {
 		for sx := 0; sx < sNx; sx++ {
-			src := af.SumSrc.Value([]int{sy, sx})
+			src := af.SumSrc.Value(sy, sx)
 			if src == 0 {
 				continue
 			}
@@ -135,7 +136,7 @@ func (af *RF) Avg() {
 			}
 			for ay := 0; ay < aNy; ay++ {
 				for ax := 0; ax < aNx; ax++ {
-					oo := af.SumProd.Shape().Offset([]int{ay, ax, sy, sx})
+					oo := af.SumProd.Shape().IndexTo1D(ay, ax, sy, sx)
 					af.RF.Values[oo] = af.SumProd.Values[oo] / src
 				}
 			}
@@ -151,8 +152,7 @@ func (af *RF) Avg() {
 
 // Norm computes unit norm of RF values -- must be called after Avg
 func (af *RF) Norm() {
-	af.NormRF.CopyFrom(&af.RF)
-	norm.TensorUnit(&af.NormRF, 2) // 2 = norm within outer 2 dims = norm each src within
+	stats.UnitNormOut(&af.RF, &af.NormRF)
 }
 
 // AvgNorm computes RF as SumProd / SumTarg and then does Norm.
