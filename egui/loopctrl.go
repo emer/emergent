@@ -51,27 +51,29 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		stepChoose.SetCurrentValue(cur)
 	}
 
-	tree.AddAt(p, "loop-mode", func(w *core.Switches) {
-		w.SetType(core.SwitchSegmentedButton)
-		w.Mutex = true
-		w.SetEnums(modes...)
-		w.SelectValue(curMode)
-		w.FinalStyler(func(s *styles.Style) {
-			s.Grow.Set(0, 0)
+	if len(modes) > 1 {
+		tree.AddAt(p, "loop-mode", func(w *core.Switches) {
+			w.SetType(core.SwitchSegmentedButton)
+			w.Mutex = true
+			w.SetEnums(modes...)
+			w.SelectValue(curMode)
+			w.FinalStyler(func(s *styles.Style) {
+				s.Grow.Set(0, 0)
+			})
+			w.OnChange(func(e events.Event) {
+				curMode = w.SelectedItem().Value.(enums.Enum)
+				st := loops.Stacks[curMode]
+				if st != nil {
+					curStep = st.StepLevel
+				}
+				updateSteps()
+				stepChoose.Update()
+				stepN := st.Loops[curStep].StepCount
+				stepNSpin.SetValue(float32(stepN))
+				stepNSpin.Update()
+			})
 		})
-		w.OnChange(func(e events.Event) {
-			curMode = w.SelectedItem().Value.(enums.Enum)
-			st := loops.Stacks[curMode]
-			if st != nil {
-				curStep = st.StepLevel
-			}
-			updateSteps()
-			stepChoose.Update()
-			stepN := st.Loops[curStep].StepCount
-			stepNSpin.SetValue(float32(stepN))
-			stepNSpin.Update()
-		})
-	})
+	}
 
 	gui.AddToolbarItem(p, ToolbarItem{Label: "Init",
 		Icon:    icons.Update,
