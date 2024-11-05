@@ -5,7 +5,11 @@
 package egui
 
 import (
+	"cmp"
+	"slices"
+
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/icons"
 	"cogentcore.org/core/styles"
@@ -15,16 +19,72 @@ import (
 	"github.com/emer/emergent/v2/looper"
 )
 
-// AddLooperCtrl adds toolbar control for looper.Stack
-// with Run, Step controls.
-func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime.Modes, prefix ...string) {
-	pfx := ""
-	if len(prefix) == 1 {
-		pfx = prefix[0] + ": "
+// AddLooperCtrl adds toolbar control for looper.Stacks with Init, Run, Step controls,
+// with selector for which stack is being controlled.
+func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
+	modes := make([]enums.Enum, len(loops.Stacks))
+	var stepChoose *core.Chooser
+	var stepNSpin *core.Spinner
+	i := 0
+	for m := range loops.Stacks {
+		modes[i] = m
+		i++
 	}
-	gui.AddToolbarItem(p, ToolbarItem{Label: pfx + "Stop",
+	slices.SortFunc(modes, func(a, b enums.Enum) int {
+		return cmp.Compare(a.Int64(), b.Int64())
+	})
+	curMode := modes[0]
+	curStep := loops.Stacks[curMode].StepLevel
+
+	updateSteps := func() {
+		st := loops.Stacks[curMode]
+		stepStrs := make([]string, len(st.Order))
+		cur := ""
+		for i, s := range st.Order {
+			sv := s.String()
+			stepStrs[i] = sv
+			if s.Int64() == curStep.Int64() {
+				cur = sv
+			}
+		}
+		stepChoose.SetStrings(stepStrs...)
+		stepChoose.SetCurrentValue(cur)
+	}
+
+	tree.AddAt(p, "loop-mode", func(w *core.Switches) {
+		w.SetType(core.SwitchSegmentedButton)
+		w.Mutex = true
+		w.SetEnums(modes...)
+		w.SelectValue(curMode)
+		w.FinalStyler(func(s *styles.Style) {
+			s.Grow.Set(0, 0)
+		})
+		w.OnChange(func(e events.Event) {
+			curMode = w.SelectedItem().Value.(enums.Enum)
+			st := loops.Stacks[curMode]
+			if st != nil {
+				curStep = st.StepLevel
+			}
+			updateSteps()
+			stepChoose.Update()
+			stepN := st.Loops[curStep].StepCount
+			stepNSpin.SetValue(float32(stepN))
+			stepNSpin.Update()
+		})
+	})
+
+	gui.AddToolbarItem(p, ToolbarItem{Label: "Init",
+		Icon:    icons.Update,
+		Tooltip: "Initializes running and state for current mode.",
+		Active:  ActiveStopped,
+		Func: func() {
+			loops.InitMode(curMode)
+		},
+	})
+
+	gui.AddToolbarItem(p, ToolbarItem{Label: "Stop",
 		Icon:    icons.Stop,
-		Tooltip: "Interrupts running.  running / stepping picks back up where it left off.",
+		Tooltip: "Interrupts current running. Will pick back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
 			loops.Stop(etime.Cycle)
@@ -33,80 +93,74 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Manager, modes []etime
 		},
 	})
 
-	for _, m := range modes {
-		mode := m
-		tree.AddAt(p, pfx+mode.String()+"-run", func(w *core.Button) {
-			tb := gui.Toolbar
-			w.SetText(pfx + mode.String() + " Run").SetIcon(icons.PlayArrow).
-				SetTooltip("Run the " + pfx + mode.String() + " process")
-			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
-			w.OnClick(func(e events.Event) {
-				if !gui.IsRunning {
-					gui.IsRunning = true
-					tb.Restyle()
-					go func() {
-						loops.Run(mode)
-						gui.Stopped()
-					}()
-				}
-			})
-		})
-
-		stepN := make(map[string]int)
-		steps := loops.Stacks[mode].Order
-		stringToEnumTime := make(map[string]etime.Times)
-		for _, st := range steps {
-			stepN[st.String()] = 1
-			stringToEnumTime[st.String()] = st
-		}
-
-		tree.AddAt(p, pfx+mode.String()+"-step", func(w *core.Button) {
-			tb := gui.Toolbar
-			w.SetText(pfx + "Step").SetIcon(icons.SkipNext).
-				SetTooltip("Step the " + pfx + mode.String() + " process according to the following step level and N")
-			w.FirstStyler(func(s *styles.Style) {
-				s.SetEnabled(!gui.IsRunning)
-				s.SetAbilities(true, abilities.RepeatClickable)
-			})
-			w.OnClick(func(e events.Event) {
-				if !gui.IsRunning {
-					gui.IsRunning = true
-					tb.Restyle()
-					go func() {
-						stack := loops.Stacks[mode]
-						loops.Step(mode, stepN[stack.StepLevel.String()], stack.StepLevel)
-						gui.Stopped()
-					}()
-				}
-			})
-		})
-
-		var chs *core.Chooser
-		var sp *core.Spinner
-		tree.AddAt(p, pfx+mode.String()+"-level", func(w *core.Chooser) {
-			chs = w
-			stepStrs := []string{}
-			for _, s := range steps {
-				stepStrs = append(stepStrs, s.String())
+	tree.AddAt(p, "loop-run", func(w *core.Button) {
+		tb := gui.Toolbar
+		w.SetText("Run").SetIcon(icons.PlayArrow).
+			SetTooltip("Run the current mode, picking up from where it left off last time (Init to restart)")
+		w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
+		w.OnClick(func(e events.Event) {
+			if !gui.IsRunning {
+				gui.IsRunning = true
+				tb.Restyle()
+				go func() {
+					loops.Run(curMode)
+					gui.Stopped()
+				}()
 			}
-			w.SetStrings(stepStrs...)
-			stack := loops.Stacks[mode]
-			w.SetCurrentValue(stack.StepLevel.String())
-			w.OnChange(func(e events.Event) {
-				stack := loops.Stacks[mode]
-				stack.StepLevel = stringToEnumTime[chs.CurrentItem.Value.(string)]
-				sp.Value = float32(stepN[stack.StepLevel.String()])
-				sp.Update()
-			})
 		})
+	})
 
-		tree.AddAt(p, pfx+mode.String()+"-n", func(w *core.Spinner) {
-			sp = w
-			w.SetStep(1).SetMin(1).SetValue(1)
-			w.SetTooltip("number of iterations per step")
-			w.OnChange(func(e events.Event) {
-				stepN[chs.CurrentItem.Value.(string)] = int(w.Value)
-			})
+	tree.AddAt(p, "loop-step", func(w *core.Button) {
+		tb := gui.Toolbar
+		w.SetText("Step").SetIcon(icons.SkipNext).
+			SetTooltip("Step the current mode, according to the following step level and N")
+		w.FirstStyler(func(s *styles.Style) {
+			s.SetEnabled(!gui.IsRunning)
+			s.SetAbilities(true, abilities.RepeatClickable)
 		})
-	}
+		w.OnClick(func(e events.Event) {
+			if !gui.IsRunning {
+				gui.IsRunning = true
+				tb.Restyle()
+				go func() {
+					st := loops.Stacks[curMode]
+					nst := int(stepNSpin.Value)
+					loops.Step(curMode, nst, st.StepLevel)
+					gui.Stopped()
+				}()
+			}
+		})
+	})
+
+	tree.AddAt(p, "step-level", func(w *core.Chooser) {
+		stepChoose = w
+		updateSteps()
+		w.SetCurrentValue(curStep.String())
+		w.OnChange(func(e events.Event) {
+			st := loops.Stacks[curMode]
+			cs := stepChoose.CurrentItem.Value.(string)
+			for _, l := range st.Order {
+				if l.String() == cs {
+					st.StepLevel = l
+					stepNSpin.Value = float32(st.Loops[l].StepCount)
+					stepNSpin.Update()
+					break
+				}
+			}
+		})
+	})
+
+	tree.AddAt(p, "step-n", func(w *core.Spinner) {
+		stepNSpin = w
+		w.SetStep(1).SetMin(1).SetValue(1)
+		w.SetTooltip("number of iterations per step")
+		w.OnChange(func(e events.Event) {
+			st := loops.Stacks[curMode]
+			if st != nil {
+				st.StepCount = int(w.Value)
+				st.Loops[st.StepLevel].StepCount = st.StepCount
+			}
+		})
+	})
+
 }

@@ -44,23 +44,43 @@ type Loop struct {
 	// IsDone functions are called after each loop iteration,
 	// and if any return true, then the loop iteration is terminated.
 	IsDone NamedFuncs
+
+	// StepCount is the default step count for this loop level.
+	StepCount int
 }
 
 // NewLoop returns a new loop with given Counter Max and increment.
 func NewLoop(ctrMax, ctrIncr int) *Loop {
 	lp := &Loop{}
 	lp.Counter.SetMaxInc(ctrMax, ctrIncr)
+	lp.StepCount = 1
 	return lp
 }
 
-// AddEvent adds a new event at given counter.
+// AddEvent adds a new event at given counter. If an event already exists
+// for that counter, the function is added to the list for that event.
 func (lp *Loop) AddEvent(name string, atCtr int, fun func()) *Event {
-	ev := NewEvent(name, atCtr, fun)
-	lp.Events = append(lp.Events, ev)
+	ev := lp.EventByCounter(atCtr)
+	if ev == nil {
+		ev = NewEvent(name, atCtr, fun)
+		lp.Events = append(lp.Events, ev)
+	} else {
+		ev.OnEvent.Add(name, fun)
+	}
 	return ev
 }
 
-// EventByName returns event by name, nil if not found
+// EventByCounter returns event for given atCounter value, nil if not found.
+func (lp *Loop) EventByCounter(atCtr int) *Event {
+	for _, ev := range lp.Events {
+		if ev.AtCounter == atCtr {
+			return ev
+		}
+	}
+	return nil
+}
+
+// EventByName returns event by name, nil if not found.
 func (lp *Loop) EventByName(name string) *Event {
 	for _, ev := range lp.Events {
 		if ev.Name == name {

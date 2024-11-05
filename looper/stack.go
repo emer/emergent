@@ -28,7 +28,11 @@ type Stack struct {
 	// the beginning and shorter timescales like Trial should be and the end.
 	Order []enums.Enum
 
-	// If true, stop model at the end of the current StopLevel.
+	// OnInit are functions to run for Init function of this stack,
+	// which also resets the counters for this stack.
+	OnInit NamedFuncs
+
+	// StopNext will stop running at the end of the current StopLevel if set.
 	StopNext bool
 
 	// StopFlag will stop running ASAP if set.
@@ -53,13 +57,13 @@ type Stack struct {
 
 // NewStack returns a new Stack for given mode.
 func NewStack(mode enums.Enum) *Stack {
-	stack := &Stack{}
-	stack.Init(mode)
-	return stack
+	st := &Stack{}
+	st.newInit(mode)
+	return st
 }
 
-// Init initializes new data structures for a newly created object
-func (st *Stack) Init(mode enums.Enum) {
+// newInit initializes new data structures for a newly created object.
+func (st *Stack) newInit(mode enums.Enum) {
 	st.Mode = mode
 	st.StepLevel = etime.Trial
 	st.StepCount = 1
@@ -81,6 +85,24 @@ func (st *Stack) AddTime(time enums.Enum, ctrMax int) *Stack {
 	st.Loops[time] = NewLoop(ctrMax, 1)
 	st.Order = append(st.Order, time)
 	return st
+}
+
+// AddOnStartToAll adds given function taking mode and time args to OnStart in all loops.
+func (st *Stack) AddOnStartToAll(name string, fun func(mode, time enums.Enum)) {
+	for tt, lp := range st.Loops {
+		lp.OnStart.Add(name, func() {
+			fun(st.Mode, tt)
+		})
+	}
+}
+
+// AddOnEndToAll adds given function taking mode and time args to OnEnd in all loops.
+func (st *Stack) AddOnEndToAll(name string, fun func(mode, time enums.Enum)) {
+	for tt, lp := range st.Loops {
+		lp.OnEnd.Add(name, func() {
+			fun(st.Mode, tt)
+		})
+	}
 }
 
 // AddTimeIncr adds a new timescale to this Stack with a given ctrMax number of iterations,
@@ -117,11 +139,21 @@ func (st *Stack) TimeBelow(time enums.Enum) enums.Enum {
 	return etime.NoTime
 }
 
+//////// Control
+
 // SetStep sets stepping to given level and number of iterations.
-func (st *Stack) SetStep(numSteps int, stopscale enums.Enum) {
-	st.StopLevel = stopscale
+// If numSteps == 0 then the default for the given stops
+func (st *Stack) SetStep(numSteps int, stopLevel enums.Enum) {
+	st.StopLevel = stopLevel
+	lp := st.Loops[stopLevel]
+	if numSteps > 0 {
+		st.StopCount = numSteps
+		lp.StepCount = numSteps
+	} else {
+		numSteps = lp.StepCount
+	}
 	st.StopCount = numSteps
-	st.StepLevel = stopscale
+	st.StepLevel = stopLevel
 	st.StepCount = numSteps
 	st.StopFlag = false
 	st.StopNext = true

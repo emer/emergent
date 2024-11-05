@@ -38,15 +38,15 @@ type Stacks struct {
 
 // NewStacks returns a new initialized collection of Stacks.
 func NewStacks() *Stacks {
-	ss := &Stacks{}
-	ss.Init()
-	return ss
+	ls := &Stacks{}
+	ls.newInit()
+	return ls
 }
 
-// Init initializes the state of the stacks, to be called on a newly created object.
-func (ss *Stacks) Init() {
-	ss.Stacks = map[enums.Enum]*Stack{}
-	ss.lastStartedCounter = map[Scope]int{}
+// newInit initializes the state of the stacks, to be called on a newly created object.
+func (ls *Stacks) newInit() {
+	ls.Stacks = map[enums.Enum]*Stack{}
+	ls.lastStartedCounter = map[Scope]int{}
 }
 
 //////// Run API
@@ -54,50 +54,51 @@ func (ss *Stacks) Init() {
 // Run runs the stack of loops for given mode (Train, Test, etc).
 // This resets any stepping settings for this stack and runs
 // until completion or stopped externally.
-func (ss *Stacks) Run(mode enums.Enum) {
-	ss.Mode = mode
-	ss.ClearStep(mode)
-	ss.Cont()
+func (ls *Stacks) Run(mode enums.Enum) {
+	ls.Mode = mode
+	ls.ClearStep(mode)
+	ls.Cont()
 }
 
 // ResetAndRun calls ResetCountersByMode on this mode
 // and then Run.  This ensures that the Stack is run from
 // the start, regardless of what state it might have been in.
-func (ss *Stacks) ResetAndRun(mode enums.Enum) {
-	ss.ResetCountersByMode(mode)
-	ss.Run(mode)
+func (ls *Stacks) ResetAndRun(mode enums.Enum) {
+	ls.ResetCountersByMode(mode)
+	ls.Run(mode)
 }
 
 // Cont continues running based on current state of the stacks.
 // This is common pathway for Step and Run, which set state and
 // call Cont. Programatic calling of Step can continue with Cont.
-func (ss *Stacks) Cont() {
-	ss.isRunning = true
-	ss.internalStop = false
-	ss.runLevel(0) // 0 Means the top level loop
-	ss.isRunning = false
+func (ls *Stacks) Cont() {
+	ls.isRunning = true
+	ls.internalStop = false
+	ls.runLevel(0) // 0 Means the top level loop
+	ls.isRunning = false
 }
 
-// Step numSteps stopscales. Use this if you want to do exactly one trial
-// or two epochs or 50 cycles or whatever
-func (ss *Stacks) Step(mode enums.Enum, numSteps int, stopscale enums.Enum) {
-	ss.Mode = mode
-	st := ss.Stacks[ss.Mode]
-	st.SetStep(numSteps, stopscale)
-	ss.Cont()
+// Step numSteps at given stopLevel. Use this if you want to do exactly one trial
+// or two epochs or 50 cycles or whatever. If numSteps <= 0 then the default
+// number of steps for given step level is used.
+func (ls *Stacks) Step(mode enums.Enum, numSteps int, stopLevel enums.Enum) {
+	ls.Mode = mode
+	st := ls.Stacks[ls.Mode]
+	st.SetStep(numSteps, stopLevel)
+	ls.Cont()
 }
 
 // ClearStep clears stepping variables from given mode,
 // so it will run to completion in a subsequent Cont().
 // Called by Run
-func (ss *Stacks) ClearStep(mode enums.Enum) {
-	st := ss.Stacks[ss.Mode]
+func (ls *Stacks) ClearStep(mode enums.Enum) {
+	st := ls.Stacks[ls.Mode]
 	st.ClearStep()
 }
 
 // Stop stops currently running stack of loops at given run time level
-func (ss *Stacks) Stop(level enums.Enum) {
-	st := ss.Stacks[ss.Mode]
+func (ls *Stacks) Stop(level enums.Enum) {
+	st := ls.Stacks[ls.Mode]
 	st.StopLevel = level
 	st.StopCount = 0
 	st.StopFlag = true
@@ -106,15 +107,15 @@ func (ss *Stacks) Stop(level enums.Enum) {
 //////// Config API
 
 // AddStack adds a new Stack for given mode
-func (ss *Stacks) AddStack(mode enums.Enum) *Stack {
-	stack := NewStack(mode)
-	ss.Stacks[mode] = stack
-	return stack
+func (ls *Stacks) AddStack(mode enums.Enum) *Stack {
+	st := NewStack(mode)
+	ls.Stacks[mode] = st
+	return st
 }
 
 // Loop returns the Loop associated with given mode and timescale.
-func (ss *Stacks) Loop(mode, time enums.Enum) *Loop {
-	st := ss.Stacks[mode]
+func (ls *Stacks) Loop(mode, time enums.Enum) *Loop {
+	st := ls.Stacks[mode]
 	if st == nil {
 		return nil
 	}
@@ -122,47 +123,77 @@ func (ss *Stacks) Loop(mode, time enums.Enum) *Loop {
 }
 
 // ModeStack returns the Stack for the current Mode
-func (ss *Stacks) ModeStack() *Stack {
-	return ss.Stacks[ss.Mode]
+func (ls *Stacks) ModeStack() *Stack {
+	return ls.Stacks[ls.Mode]
 }
 
 // AddEventAllModes adds a new event for all modes at given timescale.
-func (ss *Stacks) AddEventAllModes(time enums.Enum, name string, atCtr int, fun func()) {
-	for _, stack := range ss.Stacks {
-		stack.Loops[time].AddEvent(name, atCtr, fun)
+func (ls *Stacks) AddEventAllModes(time enums.Enum, name string, atCtr int, fun func()) {
+	for _, st := range ls.Stacks {
+		st.Loops[time].AddEvent(name, atCtr, fun)
+	}
+}
+
+// AddOnStartToAll adds given function taking mode and time args to OnStart in all stacks, loops
+func (ls *Stacks) AddOnStartToAll(name string, fun func(mode, time enums.Enum)) {
+	for _, st := range ls.Stacks {
+		st.AddOnStartToAll(name, fun)
+	}
+}
+
+// AddOnEndToAll adds given function taking mode and time args to OnEnd in all stacks, loops
+func (ls *Stacks) AddOnEndToAll(name string, fun func(mode, time enums.Enum)) {
+	for _, st := range ls.Stacks {
+		st.AddOnEndToAll(name, fun)
 	}
 }
 
 //////// More detailed control API
 
 // IsRunning is True if running.
-func (ss *Stacks) IsRunning() bool {
-	return ss.isRunning
+func (ls *Stacks) IsRunning() bool {
+	return ls.isRunning
+}
+
+// InitMode initializes [Stack] of given mode,
+// resetting counters and calling the OnInit functions.
+func (ls *Stacks) InitMode(mode enums.Enum) {
+	ls.ResetCountersByMode(mode)
+	st := ls.Stacks[mode]
+	st.OnInit.Run()
 }
 
 // ResetCountersByMode resets counters for given mode.
-func (ss *Stacks) ResetCountersByMode(mode enums.Enum) {
-	for sk, _ := range ss.lastStartedCounter {
+func (ls *Stacks) ResetCountersByMode(mode enums.Enum) {
+	for sk, _ := range ls.lastStartedCounter {
 		skm, _ := sk.ModeTime()
 		if skm == mode.Int64() {
-			delete(ss.lastStartedCounter, sk)
+			delete(ls.lastStartedCounter, sk)
 		}
 	}
-	for m, stack := range ss.Stacks {
+	for m, st := range ls.Stacks {
 		if m == mode {
-			for _, loop := range stack.Loops {
+			for _, loop := range st.Loops {
 				loop.Counter.Cur = 0
 			}
 		}
 	}
 }
 
+// Init initializes all stacks. See [Stacks.InitMode] for more info.
+func (ls *Stacks) Init() {
+	ls.lastStartedCounter = map[Scope]int{}
+	for _, st := range ls.Stacks {
+		ls.InitMode(st.Mode)
+	}
+}
+
 // ResetCounters resets the Cur on all loop Counters,
 // and resets the Stacks's place in the loops.
-func (ss *Stacks) ResetCounters() {
-	ss.lastStartedCounter = map[Scope]int{}
-	for _, stack := range ss.Stacks {
-		for _, loop := range stack.Loops {
+func (ls *Stacks) ResetCounters() {
+	ls.lastStartedCounter = map[Scope]int{}
+	for _, st := range ls.Stacks {
+		for _, loop := range st.Loops {
 			loop.Counter.Cur = 0
 		}
 	}
@@ -170,26 +201,26 @@ func (ss *Stacks) ResetCounters() {
 
 // ResetCountersBelow resets the Cur on all loop Counters below given level
 // (inclusive), and resets the Stacks's place in the loops.
-func (ss *Stacks) ResetCountersBelow(mode enums.Enum, time enums.Enum) {
-	for _, stack := range ss.Stacks {
-		if stack.Mode != mode {
+func (ls *Stacks) ResetCountersBelow(mode enums.Enum, time enums.Enum) {
+	for _, st := range ls.Stacks {
+		if st.Mode != mode {
 			continue
 		}
-		for lt, loop := range stack.Loops {
+		for lt, loop := range st.Loops {
 			if lt.Int64() > time.Int64() {
 				continue
 			}
 			loop.Counter.Cur = 0
 			sk := ToScope(mode, lt)
-			delete(ss.lastStartedCounter, sk)
+			delete(ls.lastStartedCounter, sk)
 		}
 	}
 }
 
 // DocString returns an indented summary of the loops and functions in the stack.
-func (ss *Stacks) DocString() string {
+func (ls *Stacks) DocString() string {
 	var sb strings.Builder
-	for _, st := range ss.Stacks {
+	for _, st := range ls.Stacks {
 		sb.WriteString(st.DocString())
 	}
 	return sb.String()
