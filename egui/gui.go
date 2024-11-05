@@ -66,6 +66,7 @@ func (gui *GUI) UpdateWindow() {
 	if gui.Toolbar != nil {
 		gui.Toolbar.Restyle()
 	}
+	gui.SimForm.Update()
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really necessary
 }

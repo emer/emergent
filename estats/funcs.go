@@ -7,7 +7,6 @@ package estats
 import (
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/matrix"
 	"cogentcore.org/core/tensor/stats/metric"
 	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
@@ -100,11 +99,12 @@ func (st *Stats) PCAStats(ix *table.Table, varNm string, layers []string) {
 	// svd.Cond = PCAStrongThr
 	covar := tensor.NewFloat64()
 	evecs := tensor.NewFloat64()
+	_ = evecs
 	evals := tensor.NewFloat64()
 	for _, lnm := range layers {
 		col := ix.Column(lnm + "_" + varNm)
 		metric.CovarianceMatrixOut(metric.Covariance, col, covar)
-		matrix.SVDOut(covar, evecs, evals)
+		// matrix.SVDOut(covar, evecs, evals) // todo
 		ln := len(evals.Values)
 		var nstr float64 // nstr := float64(svd.Rank)  this didn't work..
 		for i, v := range evals.Values {
