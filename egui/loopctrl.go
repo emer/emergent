@@ -7,6 +7,7 @@ package egui
 import (
 	"cmp"
 	"slices"
+	"strings"
 
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/enums"
@@ -21,7 +22,14 @@ import (
 
 // AddLooperCtrl adds toolbar control for looper.Stacks with Init, Run, Step controls,
 // with selector for which stack is being controlled.
-func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
+// A prefix can optionally be provided if multiple loops are used.
+func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...string) {
+	pfx := ""
+	lblpfx := ""
+	if len(prefix) == 1 {
+		pfx = strings.ToLower(prefix[0]) + "-"
+		lblpfx = prefix[0] + " "
+	}
 	modes := make([]enums.Enum, len(loops.Stacks))
 	var stepChoose *core.Chooser
 	var stepNSpin *core.Spinner
@@ -52,7 +60,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 	}
 
 	if len(modes) > 1 {
-		tree.AddAt(p, "loop-mode", func(w *core.Switches) {
+		tree.AddAt(p, pfx+"loop-mode", func(w *core.Switches) {
 			w.SetType(core.SwitchSegmentedButton)
 			w.Mutex = true
 			w.SetEnums(modes...)
@@ -75,7 +83,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		})
 	}
 
-	gui.AddToolbarItem(p, ToolbarItem{Label: "Init",
+	gui.AddToolbarItem(p, ToolbarItem{Label: lblpfx + "Init",
 		Icon:    icons.Update,
 		Tooltip: "Initializes running and state for current mode.",
 		Active:  ActiveStopped,
@@ -84,7 +92,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		},
 	})
 
-	gui.AddToolbarItem(p, ToolbarItem{Label: "Stop",
+	gui.AddToolbarItem(p, ToolbarItem{Label: lblpfx + "Stop",
 		Icon:    icons.Stop,
 		Tooltip: "Interrupts current running. Will pick back up where it left off.",
 		Active:  ActiveRunning,
@@ -95,7 +103,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		},
 	})
 
-	tree.AddAt(p, "loop-run", func(w *core.Button) {
+	tree.AddAt(p, pfx+"loop-run", func(w *core.Button) {
 		tb := gui.Toolbar
 		w.SetText("Run").SetIcon(icons.PlayArrow).
 			SetTooltip("Run the current mode, picking up from where it left off last time (Init to restart)")
@@ -112,7 +120,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		})
 	})
 
-	tree.AddAt(p, "loop-step", func(w *core.Button) {
+	tree.AddAt(p, pfx+"loop-step", func(w *core.Button) {
 		tb := gui.Toolbar
 		w.SetText("Step").SetIcon(icons.SkipNext).
 			SetTooltip("Step the current mode, according to the following step level and N")
@@ -134,7 +142,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		})
 	})
 
-	tree.AddAt(p, "step-level", func(w *core.Chooser) {
+	tree.AddAt(p, pfx+"step-level", func(w *core.Chooser) {
 		stepChoose = w
 		updateSteps()
 		w.SetCurrentValue(curStep.String())
@@ -152,7 +160,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks) {
 		})
 	})
 
-	tree.AddAt(p, "step-n", func(w *core.Spinner) {
+	tree.AddAt(p, pfx+"step-n", func(w *core.Spinner) {
 		stepNSpin = w
 		w.SetStep(1).SetMin(1).SetValue(1)
 		w.SetTooltip("number of iterations per step")
