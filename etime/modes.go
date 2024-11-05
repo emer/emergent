@@ -6,7 +6,9 @@ package etime
 
 //go:generate core generate
 
-//gosl:start etime
+// todo: this only has Train, Test in final V2 case
+
+//gosl:start
 
 // Modes are evaluation modes (Training, Testing, etc)
 type Modes int32 //enums:enum
@@ -34,7 +36,7 @@ const (
 	Debug
 )
 
-//gosl:end etime
+//gosl:end
 
 // ModeFromString returns Mode int value from string name
 func ModeFromString(str string) Modes {

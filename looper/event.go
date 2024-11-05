@@ -12,22 +12,22 @@ import (
 // in the loop, when the counter is AtCounter value.
 type Event struct {
 
-	// Might be 'plus' or 'minus' for example.
+	// Name of this event.
 	Name string
 
-	// The counter value upon which this Event occurs.
+	// AtCounter is the counter value upon which this Event occurs.
 	AtCounter int
 
-	// Callback function for the Event.
+	// OnEvent are the functions to run when Counter == AtCounter.
 	OnEvent NamedFuncs
 }
 
 // String describes the Event in human readable text.
 func (event *Event) String() string {
 	s := event.Name + ": "
-	s = s + "(at " + strconv.Itoa(event.AtCounter) + ") "
+	s = s + "[at " + strconv.Itoa(event.AtCounter) + "] "
 	if len(event.OnEvent) > 0 {
-		s = s + "\tEvents: " + event.OnEvent.String()
+		s = s + "Events: " + event.OnEvent.String()
 	}
 	return s
 }

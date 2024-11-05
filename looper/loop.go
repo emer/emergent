@@ -4,45 +4,57 @@
 
 package looper
 
-// Loop contains one level of a multi-level iteration scheme.
-// It wraps around an inner loop recorded in a Stack, or around Main functions.
-// It records how many times the loop should be repeated in the Counter.
-// It records what happens at the beginning and end of each loop.
-// For example, a loop with 1 start, 1 end, and a Counter with max=3 will do:
-// Start, Inner, End, Start, Inner, End, Start, Inner, End
-// Where the Inner loop is specified by a Stack or by Main,
-// and Start and End are functions on the loop.
-// See Stack for more details on how loops are combined.
+import (
+	"fmt"
+	"strings"
+)
+
+// Loop contains one level of a multi-level iteration stack,
+// with functions that can be called at the start and end
+// of each iteration of the loop, and a Counter that increments
+// for each iteration, terminating if >= Max, or IsDone returns true.
+// Within each iteration, any sub-loop at the next level down
+// in its [Stack] runs its full set of iterations.
+// The control flow is:
+//
+//	for {
+//		Events[Counter == AtCounter] // run events at counter
+//		OnStart()
+//		    Run Sub-Loop to completion
+//		OnEnd()
+//		Counter += Inc
+//		if Counter >= Max || IsDone() {
+//		    break
+//		}
+//	}
 type Loop struct {
 
-	// Tracks time within the loop. Also tracks the maximum. OnStart, Main, and OnEnd will be called Counter.Max times, or until IsDone is satisfied, whichever ends first.
+	// Counter increments every time through the loop, up to [Counter.Max].
 	Counter Counter
 
-	// OnStart is called at the beginning of each loop.
+	// Events occur when Counter.Cur is at their AtCounter.
+	Events []*Event
+
+	// OnStart functions are called at the beginning of each loop iteration.
 	OnStart NamedFuncs
 
-	// OnStart is called in the middle of each loop. In general, only use Main for the last Loop in a Stack. For example, actual Net updates might occur here.
-	Main NamedFuncs
-
-	// OnStart is called at the end of each loop.
+	// OnEnd functions are called at the end of each loop iteration.
 	OnEnd NamedFuncs
 
-	// If true, end loop. Maintained as an unordered map because they should not have side effects.
-	IsDone NamedFuncsBool
-
-	// Events occur when Counter.Cur gets to their AtCounter.
-	Events []*Event
+	// IsDone functions are called after each loop iteration,
+	// and if any return true, then the loop iteration is terminated.
+	IsDone NamedFuncs
 }
 
-// AddEvents to the list of events.
-func (lp *Loop) AddEvents(events ...*Event) {
-	for _, event := range events {
-		lp.Events = append(lp.Events, event)
-	}
+// NewLoop returns a new loop with given Counter Max and increment.
+func NewLoop(ctrMax, ctrIncr int) *Loop {
+	lp := &Loop{}
+	lp.Counter.SetMaxInc(ctrMax, ctrIncr)
+	return lp
 }
 
-// AddNewEvent to the list.
-func (lp *Loop) AddNewEvent(name string, atCtr int, fun func()) *Event {
+// AddEvent adds a new event at given counter.
+func (lp *Loop) AddEvent(name string, atCtr int, fun func()) *Event {
 	ev := NewEvent(name, atCtr, fun)
 	lp.Events = append(lp.Events, ev)
 	return ev
@@ -59,7 +71,39 @@ func (lp *Loop) EventByName(name string) *Event {
 }
 
 // SkipToMax sets the counter to its Max value for this level.
-// for skipping over rest of loop
+// for skipping over rest of loop.
 func (lp *Loop) SkipToMax() {
 	lp.Counter.SkipToMax()
+}
+
+// DocString returns an indented summary of this loop and those below it.
+func (lp *Loop) DocString(st *Stack, level int) string {
+	var sb strings.Builder
+	ctrs := ""
+	if lp.Counter.Inc > 1 {
+		ctrs = fmt.Sprintf("[0 : %d : %d]:\n", lp.Counter.Max, lp.Counter.Inc)
+	} else {
+		ctrs = fmt.Sprintf("[0 : %d]:\n", lp.Counter.Max)
+	}
+	sb.WriteString(indent(level+1) + st.Order[level].String() + ctrs)
+	if len(lp.Events) > 0 {
+		sb.WriteString(indent(level+2) + "Events:\n")
+		for _, ev := range lp.Events {
+			sb.WriteString(indent(level+3) + ev.String() + "\n")
+		}
+	}
+	if len(lp.OnStart) > 0 {
+		sb.WriteString(indent(level+2) + "Start:  " + lp.OnStart.String() + "\n")
+	}
+	if level < len(st.Order)-1 {
+		slp := st.Level(level + 1)
+		sb.WriteString(slp.DocString(st, level+1))
+	}
+	if len(lp.OnEnd) > 0 {
+		sb.WriteString(indent(level+2) + "End:    " + lp.OnEnd.String() + "\n")
+	}
+	if len(lp.IsDone) > 0 {
+		sb.WriteString(indent(level+2) + "IsDone:  " + lp.IsDone.String() + "\n")
+	}
+	return sb.String()
 }

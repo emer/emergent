@@ -4,30 +4,39 @@
 
 package looper
 
-// Counter combines an integer with a maximum value. It supports time tracking within looper.
+// Counter combines an integer with a maximum value.
+// It supports time tracking within looper.
 type Counter struct {
 
-	// current counter value
+	// Cur is the current counter value.
 	Cur int
 
-	// maximum counter value -- only used if > 0
+	// Max is the maximum counter value.
+	// Only used if > 0 ([Loop] requires an IsDone condition to stop).
 	Max int
 
-	// increment per iteration
+	// Inc is the increment per iteration.
 	Inc int
 }
 
-// Incr increments the counter by 1. Does not interact with Max.
+// SetMaxIncr sets the given Max and Inc value for the counter.
+func (ct *Counter) SetMaxInc(mx, inc int) {
+	ct.Max = mx
+	ct.Inc = inc
+}
+
+// Incr increments the counter by Inc. Does not interact with Max.
 func (ct *Counter) Incr() {
 	ct.Cur += ct.Inc
 }
 
-// SkipToMax sets the counter to its Max value -- for skipping over rest of loop
+// SkipToMax sets the counter to its Max value,
+// for skipping over rest of loop iterations.
 func (ct *Counter) SkipToMax() {
 	ct.Cur = ct.Max
 }
 
-// IsOverMax returns true if counter is at or over Max (only if Max > 0)
+// IsOverMax returns true if counter is at or over Max (only if Max > 0).
 func (ct *Counter) IsOverMax() bool {
 	return ct.Max > 0 && ct.Cur >= ct.Max
 }
