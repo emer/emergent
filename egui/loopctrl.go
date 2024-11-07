@@ -69,7 +69,11 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 				s.Grow.Set(0, 0)
 			})
 			w.OnChange(func(e events.Event) {
-				curMode = w.SelectedItem().Value.(enums.Enum)
+				sel := w.SelectedItem()
+				if sel == nil || sel.Value == nil {
+					return
+				}
+				curMode = sel.Value.(enums.Enum)
 				st := loops.Stacks[curMode]
 				if st != nil {
 					curStep = st.StepLevel
@@ -148,7 +152,10 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		w.SetCurrentValue(curStep.String())
 		w.OnChange(func(e events.Event) {
 			st := loops.Stacks[curMode]
-			cs := stepChoose.CurrentItem.Value.(string)
+			if w.CurrentItem.Value == nil {
+				return
+			}
+			cs := w.CurrentItem.Value.(string)
 			for _, l := range st.Order {
 				if l.String() == cs {
 					st.StepLevel = l
