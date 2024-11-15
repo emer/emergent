@@ -89,6 +89,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	if tb, ok := sim.(core.ToolbarMaker); ok {
 		gui.Body.AddTopBar(func(bar *core.Frame) {
 			gui.Toolbar = core.NewToolbar(bar)
+			gui.Toolbar.Maker(gui.MakeToolbar)
 			gui.Toolbar.Maker(tb.MakeToolbar)
 		})
 	}
@@ -102,6 +103,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	tabs := databrowser.NewTabs(split)
 	gui.Tabs = tabs
 	tabs.Name = "tabs"
+	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)
 	split.SetSplits(.2, .5, .8)
 }
