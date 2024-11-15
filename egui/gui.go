@@ -31,14 +31,17 @@ type GUI struct {
 	// flag to stop running
 	StopNow bool `display:"-"`
 
-	// the view update for managing updates of netview
-	ViewUpdate *netview.ViewUpdate `display:"-"`
+	// NetViews are the created netviews.
+	NetViews []*netview.NetView
 
 	// displays Sim fields on left
 	SimForm *core.Form `display:"-"`
 
 	// Body is the content of the sim window
 	Body *core.Body `display:"-"`
+
+	//	OnStop is called when running stopped through the GUI.
+	OnStop func()
 }
 
 // UpdateWindow triggers an update on window body,
@@ -69,8 +72,8 @@ func (gui *GUI) Stopped() {
 	if gui.Body == nil {
 		return
 	}
-	if gui.ViewUpdate != nil {
-		gui.UpdateNetViewWhenStopped()
+	if gui.OnStop != nil {
+		gui.OnStop()
 	}
 	gui.GoUpdateWindow()
 }
@@ -117,9 +120,18 @@ func (gui *GUI) AddNetView(tabName string) *netview.NetView {
 		// 	nv.Current()
 		// 	nv.Update()
 		// })
+		gui.NetViews = append(gui.NetViews, nv)
 		return nv
 	})
 	return nv
+}
+
+// NetView returns the first created netview, or nil if none.
+func (gui *GUI) NetView() *netview.NetView {
+	if len(gui.NetViews) == 0 {
+		return nil
+	}
+	return gui.NetViews[0]
 }
 
 // FinalizeGUI wraps the end functionality of the GUI
