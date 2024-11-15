@@ -106,9 +106,9 @@ func (ls *Stacks) Stop(level enums.Enum) {
 
 //////// Config API
 
-// AddStack adds a new Stack for given mode
-func (ls *Stacks) AddStack(mode enums.Enum) *Stack {
-	st := NewStack(mode)
+// AddStack adds a new Stack for given mode and default step level.
+func (ls *Stacks) AddStack(mode, stepLevel enums.Enum) *Stack {
+	st := NewStack(mode, stepLevel)
 	ls.Stacks[mode] = st
 	return st
 }

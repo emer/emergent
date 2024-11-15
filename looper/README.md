@@ -21,7 +21,7 @@ for {
 }
 ```
 
-The `Loop` object has the above function lists (`OnStart`, `OnEnd`, and `IsDone`), where function closures can be added to perform any relevant functionality. `Events` have the trigger `AtCounter` and a list of functions to call. If the Loop is the last one in the Stack, then, 
+The `Loop` object has the above function lists (`OnStart`, `OnEnd`, and `IsDone`), where function closures can be added to perform any relevant functionality. `Events` have the trigger `AtCounter` and a list of functions to call.
 
 Each level of loop holds a corresponding `Counter` value, which increments at each iteration, and its `Max` value determines when the loop iteration terminates.
 
@@ -39,7 +39,7 @@ From `step_test.go` `ExampleStacks`:
 
 ```Go
 	stacks := NewStacks()
-	stacks.AddStack(etime.Train).
+	stacks.AddStack(etime.Train, etime.Trial).
 		AddTime(etime.Epoch, 3).
 		AddTime(etime.Trial, 2)
 

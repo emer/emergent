@@ -15,7 +15,7 @@ var printTest = false
 
 func ExampleStacks() {
 	stacks := NewStacks()
-	stacks.AddStack(etime.Train).
+	stacks.AddStack(etime.Train, etime.Trial).
 		AddTime(etime.Epoch, 3).
 		AddTime(etime.Trial, 2)
 
@@ -55,7 +55,7 @@ func TestStep(t *testing.T) {
 	trialCount := 0
 
 	stacks := NewStacks()
-	stacks.AddStack(etime.Train).
+	stacks.AddStack(etime.Train, etime.Trial).
 		AddTime(etime.Run, 2).
 		AddTime(etime.Epoch, 5).
 		AddTime(etime.Trial, 4).
@@ -134,7 +134,11 @@ func TestStepIncr(t *testing.T) {
 	trialCount := 0
 
 	stacks := NewStacks()
-	stacks.AddStack(etime.Train).AddTime(etime.Run, 2).AddTime(etime.Epoch, 5).AddTimeIncr(etime.Trial, 10, 3).AddTime(etime.Cycle, 3)
+	stacks.AddStack(etime.Train, etime.Trial).
+		AddTime(etime.Run, 2).
+		AddTime(etime.Epoch, 5).
+		AddTimeIncr(etime.Trial, 10, 3).
+		AddTime(etime.Cycle, 3)
 	stacks.Loop(etime.Train, etime.Trial).OnStart.Add("Count Trials", func() { trialCount += 1 })
 	stacks.Loop(etime.Train, etime.Run).OnEnd.Add("Counters Test", func() {
 		run := stacks.Stacks[etime.Train].Loops[etime.Run].Counter.Cur

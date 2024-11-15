@@ -13,7 +13,7 @@ import (
 // ViewUpdate manages time scales for updating the NetView
 type ViewUpdate struct {
 
-	// the network view
+	// View is the network view.
 	View *NetView `display:"-"`
 
 	// whether in testing mode -- can be set in advance to drive appropriate updating
@@ -25,7 +25,9 @@ type ViewUpdate struct {
 	// toggles update of display on
 	On bool
 
-	// if true, do not record network data when the NetView is invisible -- this speeds up running when not visible, but the NetView display will not show the current state when switching back to it
+	// SkipInvis means do not record network data when the NetView is invisible.
+	// This speeds up running when not visible, but the NetView display will
+	// not show the current state when switching back to it.
 	SkipInvis bool
 
 	// at what time scale to update the display during training?

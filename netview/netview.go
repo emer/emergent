@@ -176,6 +176,18 @@ func (nv *NetView) HasLayers() bool {
 	return true
 }
 
+// IsViewingSynapse returns true if netview is viewing synapses.
+func (nv *NetView) IsViewingSynapse() bool {
+	if !nv.IsVisible() {
+		return false
+	}
+	vvar := nv.Var
+	if strings.HasPrefix(vvar, "r.") || strings.HasPrefix(vvar, "s.") {
+		return true
+	}
+	return false
+}
+
 // RecordCounters saves the counters, so they are available for a Current update
 func (nv *NetView) RecordCounters(counters string) {
 	nv.DataMu.Lock()

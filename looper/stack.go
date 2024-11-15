@@ -5,11 +5,10 @@
 package looper
 
 import (
+	"fmt"
 	"strings"
 
 	"cogentcore.org/core/enums"
-	"github.com/emer/emergent/v2/estats"
-	"github.com/emer/emergent/v2/etime"
 )
 
 // Stack contains a list of Loops to run, for a given Mode of processing.
@@ -55,17 +54,17 @@ type Stack struct {
 	StepCount int
 }
 
-// NewStack returns a new Stack for given mode.
-func NewStack(mode enums.Enum) *Stack {
+// NewStack returns a new Stack for given mode and default step level.
+func NewStack(mode, stepLevel enums.Enum) *Stack {
 	st := &Stack{}
-	st.newInit(mode)
+	st.newInit(mode, stepLevel)
 	return st
 }
 
 // newInit initializes new data structures for a newly created object.
-func (st *Stack) newInit(mode enums.Enum) {
+func (st *Stack) newInit(mode, stepLevel enums.Enum) {
 	st.Mode = mode
-	st.StepLevel = etime.Trial
+	st.StepLevel = stepLevel
 	st.StepCount = 1
 	st.Loops = map[enums.Enum]*Loop{}
 	st.Order = []enums.Enum{}
@@ -116,27 +115,27 @@ func (st *Stack) AddTimeIncr(time enums.Enum, ctrMax, ctrIncr int) *Stack {
 }
 
 // TimeAbove returns the time above the given time in the stack
-// returning etime.NoTime if this is the highest level,
+// returning false if this is the highest level,
 // or given time does not exist in order.
-func (st *Stack) TimeAbove(time enums.Enum) enums.Enum {
+func (st *Stack) TimeAbove(time enums.Enum) (enums.Enum, bool) {
 	for i, tt := range st.Order {
 		if tt == time && i > 0 {
-			return st.Order[i-1]
+			return st.Order[i-1], true
 		}
 	}
-	return etime.NoTime
+	return time, false
 }
 
 // TimeBelow returns the time below the given time in the stack
-// returning etime.NoTime if this is the lowest level,
+// returning false if this is the lowest level,
 // or given time does not exist in order.
-func (st *Stack) TimeBelow(time enums.Enum) enums.Enum {
+func (st *Stack) TimeBelow(time enums.Enum) (enums.Enum, bool) {
 	for i, tt := range st.Order {
 		if tt == time && i+1 < len(st.Order) {
-			return st.Order[i+1]
+			return st.Order[i+1], true
 		}
 	}
-	return etime.NoTime
+	return time, false
 }
 
 //////// Control
@@ -165,17 +164,23 @@ func (st *Stack) ClearStep() {
 	st.StopFlag = false
 }
 
-// CountersToStats sets the current counter values to estats Int values
-// by their time names only (no eval Mode). These values can then
-// be read by elog LogItems to record the counters in logs.
-// Typically, a TrialName string is also expected to be set,
-// to describe the current trial (Step) contents in a useful way,
-// and other relevant info (e.g., group / category info) can also be set.
-func (st *Stack) CountersToStats(stats *estats.Stats) {
-	for _, tm := range st.Order {
-		lp := st.Loops[tm]
-		stats.SetInt(tm.String(), lp.Counter.Cur)
+// Counters returns a slice of the current counter values
+// for this stack, in Order.
+func (st *Stack) Counters() []int {
+	ctrs := make([]int, len(st.Order))
+	for i, tm := range st.Order {
+		ctrs[i] = st.Loops[tm].Counter.Cur
 	}
+	return ctrs
+}
+
+// CountersString returns a string with loop time and counter values.
+func (st *Stack) CountersString() string {
+	ctrs := ""
+	for _, tm := range st.Order {
+		ctrs += fmt.Sprintf("%s: %d ", tm.String(), st.Loops[tm].Counter.Cur)
+	}
+	return ctrs
 }
 
 // DocString returns an indented summary of the loops and functions in the Stack.
