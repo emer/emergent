@@ -10,16 +10,16 @@ import (
 )
 
 func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {
-	plt.Options.Title = nm
-	col1 := dt.ColumnName(1)
-	plt.Options.XAxis = col1
+	// plt.Options.Title = nm
+	// col1 := dt.ColumnName(1)
+	// plt.Options.XAxis = col1
 	plt.SetTable(dt)
-	plt.Options.Lines = false
-	plt.Options.Points = true
+	// plt.Options.Lines = false
+	// plt.Options.Points = true
 	// order of params: on, fixMin, min, fixMax, max
-	plt.SetColumnOptions(dt.ColumnName(0), plotcore.On, plotcore.FloatMin, 0, plotcore.FloatMax, 0)
-	plt.SetColumnOptions(col1, plotcore.Off, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
-	plt.SetColumnOptions(dt.ColumnName(2), plotcore.On, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
+	// plt.SetColumnOptions(dt.ColumnName(0), plotcore.On, plotcore.FloatMin, 0, plotcore.FloatMax, 0)
+	// plt.SetColumnOptions(col1, plotcore.Off, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
+	// plt.SetColumnOptions(dt.ColumnName(2), plotcore.On, plotcore.FloatMin, -3, plotcore.FloatMax, 3)
 }
 
 // ClusterPlot does one cluster plot on given table column name

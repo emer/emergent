@@ -9,7 +9,6 @@ import (
 	"log"
 	"math"
 
-	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
@@ -30,8 +29,11 @@ type FreqTable struct {
 	// name of this environment
 	Name string
 
-	// this is an indexed view of the table with the set of patterns to output -- the indexes are used for the *sequential* view so you can easily sort / split / filter the patterns to be presented using this view -- we then add the random permuted Order on top of those if !sequential
-	Table *table.IndexView
+	// Table has the set of patterns to output.
+	// The indexes are used for the *sequential* view so you can easily
+	// sort / split / filter the patterns to be presented using this view.
+	// This adds the random permuted Order on top of those if !sequential.
+	Table *table.Table
 
 	// number of samples to use in constructing the list of items to present according to frequency -- number per epoch ~ NSamples * Freq -- see RandSamp option
 	NSamples float64
@@ -65,15 +67,15 @@ type FreqTable struct {
 }
 
 func (ft *FreqTable) Validate() error {
-	if ft.Table == nil || ft.Table.Table == nil {
+	if ft.Table == nil {
 		return fmt.Errorf("env.FreqTable: %v has no Table set", ft.Name)
 	}
-	if ft.Table.Table.NumColumns() == 0 {
+	if ft.Table.NumColumns() == 0 {
 		return fmt.Errorf("env.FreqTable: %v Table has no columns -- Outputs will be invalid", ft.Name)
 	}
-	_, err := ft.Table.Table.ColumnByName(ft.FreqCol)
-	if err != nil {
-		return err
+	fc := ft.Table.Column(ft.FreqCol)
+	if fc == nil {
+		return fmt.Errorf("env.FreqTable: %v Table has no FreqCol", ft.FreqCol)
 	}
 	return nil
 }
@@ -102,17 +104,16 @@ func (ft *FreqTable) Sample() {
 	if ft.NSamples <= 0 {
 		ft.NSamples = 1
 	}
-	np := ft.Table.Len()
+	np := ft.Table.NumRows()
 	if ft.Order == nil {
 		ft.Order = make([]int, 0, int(math.Round(float64(np)*ft.NSamples)))
 	} else {
 		ft.Order = ft.Order[:0]
 	}
-	frqs := errors.Log1(ft.Table.Table.ColumnByName(ft.FreqCol))
+	frqs := ft.Table.Column(ft.FreqCol)
 
 	for ri := 0; ri < np; ri++ {
-		ti := ft.Table.Indexes[ri]
-		frq := frqs.Float1D(ti)
+		frq := frqs.FloatRow(ri, 0)
 		if ft.RandSamp {
 			n := int(ft.NSamples)
 			for i := 0; i < n; i++ {
@@ -139,19 +140,19 @@ func (ft *FreqTable) Row() int {
 }
 
 func (ft *FreqTable) SetTrialName() {
-	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.NameCol)); nms != nil {
+	if nms := ft.Table.Column(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.String1D(rw))
+			ft.TrialName.Set(nms.StringRow(rw, 0))
 		}
 	}
 }
 
 func (ft *FreqTable) SetGroupName() {
-	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.GroupCol)); nms != nil {
+	if nms := ft.Table.Column(ft.GroupCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.String1D(rw))
+			ft.GroupName.Set(nms.StringRow(rw, 0))
 		}
 	}
 }
@@ -167,7 +168,7 @@ func (ft *FreqTable) Step() bool {
 }
 
 func (ft *FreqTable) State(element string) tensor.Tensor {
-	et := ft.Table.Table.Tensor(element, ft.Row())
+	et := ft.Table.Column(element).RowTensor(ft.Row())
 	if et == nil {
 		log.Println("FreqTable.State -- could not find element:", element)
 	}

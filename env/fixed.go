@@ -9,7 +9,6 @@ import (
 	"log"
 	"math/rand"
 
-	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
@@ -25,11 +24,11 @@ type FixedTable struct {
 	// name of this environment, usually Train vs. Test.
 	Name string
 
-	// this is an indexed view of the table with the set of patterns to output.
+	// Table has the set of patterns to output.
 	// The indexes are used for the *sequential* view so you can easily
 	// sort / split / filter the patterns to be presented using this view.
 	// This adds the random permuted Order on top of those if !sequential.
-	Table *table.IndexView
+	Table *table.Table
 
 	// present items from the table in sequential order (i.e., according to
 	// the indexed view on the Table)?  otherwise permuted random order.
@@ -57,10 +56,10 @@ type FixedTable struct {
 }
 
 func (ft *FixedTable) Validate() error {
-	if ft.Table == nil || ft.Table.Table == nil {
+	if ft.Table == nil {
 		return fmt.Errorf("env.FixedTable: %v has no Table set", ft.Name)
 	}
-	if ft.Table.Table.NumColumns() == 0 {
+	if ft.Table.NumColumns() == 0 {
 		return fmt.Errorf("env.FixedTable: %v Table has no columns -- Outputs will be invalid", ft.Name)
 	}
 	return nil
@@ -86,14 +85,14 @@ func (ft *FixedTable) Init(run int) {
 // then a Run counter is added, otherwise just Epoch and Trial.
 // NameCol and GroupCol are initialized to "Name" and "Group"
 // so set these to something else after this if needed.
-func (ft *FixedTable) Config(tbl *table.IndexView) {
+func (ft *FixedTable) Config(tbl *table.Table) {
 	ft.Table = tbl
 	ft.Init(0)
 }
 
 // NewOrder sets a new random Order based on number of rows in the table.
 func (ft *FixedTable) NewOrder() {
-	np := ft.Table.Len()
+	np := ft.Table.NumRows()
 	ft.Order = rand.Perm(np) // always start with new one so random order is identical
 	// and always maintain Order so random number usage is same regardless, and if
 	// user switches between Sequential and random at any point, it all works..
@@ -106,29 +105,28 @@ func (ft *FixedTable) PermuteOrder() {
 	randx.PermuteInts(ft.Order)
 }
 
-// Row returns the current row number in table, based on Sequential / perumuted Order and
-// already de-referenced through the IndexView's indexes to get the actual row in the table.
+// Row returns the current row number in table, based on Sequential / perumuted Order.
 func (ft *FixedTable) Row() int {
 	if ft.Sequential {
-		return ft.Table.Indexes[ft.Trial.Cur]
+		return ft.Trial.Cur
 	}
-	return ft.Table.Indexes[ft.Order[ft.Trial.Cur]]
+	return ft.Order[ft.Trial.Cur]
 }
 
 func (ft *FixedTable) SetTrialName() {
-	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.NameCol)); nms != nil {
+	if nms := ft.Table.Column(ft.NameCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.String1D(rw))
+			ft.TrialName.Set(nms.StringRow(rw, 0))
 		}
 	}
 }
 
 func (ft *FixedTable) SetGroupName() {
-	if nms := errors.Ignore1(ft.Table.Table.ColumnByName(ft.GroupCol)); nms != nil {
+	if nms := ft.Table.Column(ft.GroupCol); nms != nil {
 		rw := ft.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.String1D(rw))
+			ft.GroupName.Set(nms.StringRow(rw, 0))
 		}
 	}
 }
@@ -143,7 +141,7 @@ func (ft *FixedTable) Step() bool {
 }
 
 func (ft *FixedTable) State(element string) tensor.Tensor {
-	et := ft.Table.Table.Tensor(element, ft.Row())
+	et := ft.Table.Column(element).RowTensor(ft.Row())
 	if et == nil {
 		log.Println("FixedTable.State -- could not find element:", element)
 	}

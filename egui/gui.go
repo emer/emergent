@@ -10,14 +10,14 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	_ "cogentcore.org/core/goal/gosl/slbool/slboolcore" // include to get gui views
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/tensorcore"
-	"github.com/emer/emergent/v2/etime"
+	"cogentcore.org/core/styles"
+	"cogentcore.org/core/tensor/databrowser"
 	"github.com/emer/emergent/v2/netview"
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface
 type GUI struct {
+	databrowser.Browser
 
 	// how many cycles between updates of cycle-level plots
 	CycleUpdateInterval int
@@ -31,32 +31,14 @@ type GUI struct {
 	// flag to stop running
 	StopNow bool `display:"-"`
 
-	// plots by scope
-	Plots map[etime.ScopeKey]*plotcore.PlotEditor
-
-	// plots by scope
-	TableViews map[etime.ScopeKey]*tensorcore.Table
-
-	// tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access
-	Grids map[string]*tensorcore.TensorGrid
-
 	// the view update for managing updates of netview
 	ViewUpdate *netview.ViewUpdate `display:"-"`
-
-	// net data for recording in nogui mode, if !nil
-	NetData *netview.NetData `display:"-"`
 
 	// displays Sim fields on left
 	SimForm *core.Form `display:"-"`
 
-	// tabs for different view elements: plots, rasters
-	Tabs *core.Tabs `display:"-"`
-
 	// Body is the content of the sim window
 	Body *core.Body `display:"-"`
-
-	//	Toolbar is the overall sim toolbar
-	Toolbar *core.Toolbar `display:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
@@ -101,6 +83,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	// gui.Body.App().About = about
 	split := core.NewSplits(gui.Body)
 	split.Name = "split"
+	gui.Splits = split
 	gui.SimForm = core.NewForm(split).SetStruct(sim)
 	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
@@ -109,19 +92,30 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 			gui.Toolbar.Maker(tb.MakeToolbar)
 		})
 	}
-	gui.Tabs = core.NewTabs(split)
-	gui.Tabs.Name = "tabs"
-	split.SetSplits(.2, .8)
+	fform := core.NewFrame(split)
+	fform.Styler(func(s *styles.Style) {
+		s.Direction = styles.Column
+		s.Overflow.Set(styles.OverflowAuto)
+		s.Grow.Set(1, 1)
+	})
+	gui.Files = databrowser.NewDataTree(fform)
+	tabs := databrowser.NewTabs(split)
+	gui.Tabs = tabs
+	tabs.Name = "tabs"
+	split.SetTiles(core.TileSplit, core.TileSpan)
+	split.SetSplits(.2, .5, .8)
 }
 
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
-	nvt, tb := gui.Tabs.NewTab(tabName)
-	nv := netview.NewNetView(nvt)
-	nv.Var = "Act"
-	tb.OnFinal(events.Click, func(e events.Event) {
-		nv.Current()
-		nv.Update()
+	nv := databrowser.NewTab(gui.Tabs, tabName, func(tab *core.Frame) *netview.NetView {
+		nv := netview.NewNetView(tab)
+		nv.Var = "Act"
+		// tb.OnFinal(events.Click, func(e events.Event) {
+		// 	nv.Current()
+		// 	nv.Update()
+		// })
+		return nv
 	})
 	return nv
 }

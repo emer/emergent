@@ -4,12 +4,6 @@
 
 package egui
 
-import (
-	"cogentcore.org/core/core"
-	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/emergent/v2/netview"
-)
-
 // UpdateNetView updates the gui visualization of the network.
 func (gui *GUI) UpdateNetView() {
 	if gui.ViewUpdate != nil {
@@ -23,31 +17,4 @@ func (gui *GUI) UpdateNetViewWhenStopped() {
 	if gui.ViewUpdate != nil {
 		gui.ViewUpdate.UpdateWhenStopped()
 	}
-}
-
-// InitNetData initializes the NetData object to record NetView data
-// when the GUI is not active
-func (gui *GUI) InitNetData(net emer.Network, nrecs int) {
-	gui.NetData = &netview.NetData{}
-	gui.NetData.Init(net, nrecs, true, 1) // true = NoSynData, 1 = MaxData
-}
-
-// NetDataRecord records current netview data
-// if InitNetData has been called and NetData exists.
-func (gui *GUI) NetDataRecord(netViewText string) {
-	if gui.NetData == nil {
-		return
-	}
-	gui.NetData.Record(netViewText, -1, 100)
-}
-
-// SaveNetData saves NetData NetView data (if !nil)
-// to a file named by the network name
-// plus _extra name plus ".netdata.gz"
-func (gui *GUI) SaveNetData(extra string) {
-	if gui.NetData == nil {
-		return
-	}
-	ndfn := gui.NetData.Net.AsEmer().Name + "_" + extra + ".netdata.gz"
-	gui.NetData.SaveJSON(core.Filename(ndfn))
 }
