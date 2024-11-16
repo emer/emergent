@@ -20,8 +20,8 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 	if currentLevel >= len(st.Order) {
 		return true // Stack overflow, expected at bottom of stack.
 	}
-	time := st.Order[currentLevel]
-	loop := st.Loops[time]
+	level := st.Order[currentLevel]
+	loop := st.Loops[level]
 	ctr := &loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max <= 0 { // Loop forever for non-maxes
@@ -47,11 +47,11 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 		}
 
 		// Don't ever Start the same iteration of the same level twice.
-		lastCounter, ok := ss.lastStartedCounter[ToScope(ss.Mode, time)]
+		lastCounter, ok := ss.lastStartedCounter[ToScope(ss.Mode, level)]
 		if !ok || ctr.Cur > lastCounter {
-			ss.lastStartedCounter[ToScope(ss.Mode, time)] = ctr.Cur
+			ss.lastStartedCounter[ToScope(ss.Mode, level)] = ctr.Cur
 			if PrintControlFlow {
-				fmt.Printf("%s%s: Start: %d\n", indent(currentLevel), time.String(), ctr.Cur)
+				fmt.Printf("%s%s: Start: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 			}
 			for _, ev := range loop.Events {
 				if ctr.Cur == ev.AtCounter {
@@ -60,7 +60,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 			}
 			loop.OnStart.Run()
 		} else if PrintControlFlow {
-			fmt.Printf("%s%s: Skipping Start: %d\n", indent(currentLevel), time.String(), ctr.Cur)
+			fmt.Printf("%s%s: Skipping Start: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 		}
 
 		// Recursion!
@@ -68,7 +68,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 
 		if runComplete {
 			if PrintControlFlow {
-				fmt.Printf("%s%s: End: %d\n", indent(currentLevel), time.String(), ctr.Cur)
+				fmt.Printf("%s%s: End: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 			}
 			loop.OnEnd.Run()
 			ctr.Incr()
@@ -82,7 +82,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 			for _, fun := range loop.IsDone {
 				if fun.Func() {
 					if PrintControlFlow {
-						fmt.Printf("%s%s: IsDone Stop at: %d from: %s\n", indent(currentLevel), time.String(), ctr.Cur, fun.Name)
+						fmt.Printf("%s%s: IsDone Stop at: %d from: %s\n", indent(currentLevel), level.String(), ctr.Cur, fun.Name)
 					}
 					goto exitLoop // Exit IsDone and Counter for-loops without flag variable.
 				}

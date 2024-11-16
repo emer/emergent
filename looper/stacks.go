@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	// If you want to debug the flow of time, set this to true.
+	// If you want to debug the flow of processing, set this to true.
 	PrintControlFlow = false
 )
 
@@ -96,7 +96,7 @@ func (ls *Stacks) ClearStep(mode enums.Enum) {
 	st.ClearStep()
 }
 
-// Stop stops currently running stack of loops at given run time level
+// Stop stops currently running stack of loops at given run level.
 func (ls *Stacks) Stop(level enums.Enum) {
 	st := ls.Stacks[ls.Mode]
 	st.StopLevel = level
@@ -113,13 +113,13 @@ func (ls *Stacks) AddStack(mode, stepLevel enums.Enum) *Stack {
 	return st
 }
 
-// Loop returns the Loop associated with given mode and timescale.
-func (ls *Stacks) Loop(mode, time enums.Enum) *Loop {
+// Loop returns the Loop associated with given mode and loop level.
+func (ls *Stacks) Loop(mode, level enums.Enum) *Loop {
 	st := ls.Stacks[mode]
 	if st == nil {
 		return nil
 	}
-	return st.Loops[time]
+	return st.Loops[level]
 }
 
 // ModeStack returns the Stack for the current Mode
@@ -127,24 +127,38 @@ func (ls *Stacks) ModeStack() *Stack {
 	return ls.Stacks[ls.Mode]
 }
 
-// AddEventAllModes adds a new event for all modes at given timescale.
-func (ls *Stacks) AddEventAllModes(time enums.Enum, name string, atCtr int, fun func()) {
+// AddEventAllModes adds a new event for all modes at given loop level.
+func (ls *Stacks) AddEventAllModes(level enums.Enum, name string, atCtr int, fun func()) {
 	for _, st := range ls.Stacks {
-		st.Loops[time].AddEvent(name, atCtr, fun)
+		st.Loops[level].AddEvent(name, atCtr, fun)
 	}
 }
 
-// AddOnStartToAll adds given function taking mode and time args to OnStart in all stacks, loops
-func (ls *Stacks) AddOnStartToAll(name string, fun func(mode, time enums.Enum)) {
+// AddOnStartToAll adds given function taking mode and level args to OnStart in all stacks, loops
+func (ls *Stacks) AddOnStartToAll(name string, fun func(mode, level enums.Enum)) {
 	for _, st := range ls.Stacks {
 		st.AddOnStartToAll(name, fun)
 	}
 }
 
-// AddOnEndToAll adds given function taking mode and time args to OnEnd in all stacks, loops
-func (ls *Stacks) AddOnEndToAll(name string, fun func(mode, time enums.Enum)) {
+// AddOnEndToAll adds given function taking mode and level args to OnEnd in all stacks, loops
+func (ls *Stacks) AddOnEndToAll(name string, fun func(mode, level enums.Enum)) {
 	for _, st := range ls.Stacks {
 		st.AddOnEndToAll(name, fun)
+	}
+}
+
+// AddOnStartToLoop adds given function taking mode arg to OnStart in all stacks for given loop.
+func (ls *Stacks) AddOnStartToLoop(level enums.Enum, name string, fun func(mode enums.Enum)) {
+	for m, st := range ls.Stacks {
+		st.Loops[level].OnStart.Add(name, func() { fun(m) })
+	}
+}
+
+// AddOnEndToLoop adds given function taking mode arg to OnEnd in all stacks for given loop.
+func (ls *Stacks) AddOnEndToLoop(level enums.Enum, name string, fun func(mode enums.Enum)) {
+	for m, st := range ls.Stacks {
+		st.Loops[level].OnEnd.Add(name, func() { fun(m) })
 	}
 }
 
@@ -166,7 +180,7 @@ func (ls *Stacks) InitMode(mode enums.Enum) {
 // ResetCountersByMode resets counters for given mode.
 func (ls *Stacks) ResetCountersByMode(mode enums.Enum) {
 	for sk, _ := range ls.lastStartedCounter {
-		skm, _ := sk.ModeTime()
+		skm, _ := sk.ModeLevel()
 		if skm == mode.Int64() {
 			delete(ls.lastStartedCounter, sk)
 		}
@@ -201,13 +215,13 @@ func (ls *Stacks) ResetCounters() {
 
 // ResetCountersBelow resets the Cur on all loop Counters below given level
 // (inclusive), and resets the Stacks's place in the loops.
-func (ls *Stacks) ResetCountersBelow(mode enums.Enum, time enums.Enum) {
+func (ls *Stacks) ResetCountersBelow(mode enums.Enum, level enums.Enum) {
 	for _, st := range ls.Stacks {
 		if st.Mode != mode {
 			continue
 		}
 		for lt, loop := range st.Loops {
-			if lt.Int64() > time.Int64() {
+			if lt.Int64() > level.Int64() {
 				continue
 			}
 			loop.Counter.Cur = 0
