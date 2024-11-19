@@ -16,7 +16,6 @@ import (
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
-	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/relpos"
 )
 
@@ -147,9 +146,6 @@ type NetworkBase struct {
 	// map of name to layers, for EmerLayerByName methods
 	LayerNameMap map[string]Layer `display:"-"`
 
-	// map from class name to layer names.
-	LayerClassMap map[string][]string `display:"-"`
-
 	// minimum display position in network
 	MinPos math32.Vector3 `display:"-"`
 
@@ -184,31 +180,16 @@ func (nt *NetworkBase) AsEmer() *NetworkBase { return nt }
 
 func (nt *NetworkBase) Label() string { return nt.Name }
 
-// MakeLayerMaps creates new LayerNameMap and LayerClassMap.
-// Call this when the network is built.
-func (nt *NetworkBase) MakeLayerMaps() {
-	nt.LayerNameMap = make(map[string]Layer)
-	nt.LayerClassMap = make(map[string][]string)
-	nt.UpdateLayerMaps()
-}
-
-// UpdateLayerMaps updates the LayerNameMap and LayerClassMap.
-func (nt *NetworkBase) UpdateLayerMaps() {
+// UpdateLayerNameMap updates the LayerNameMap.
+func (nt *NetworkBase) UpdateLayerNameMap() {
 	if nt.LayerNameMap == nil {
-		nt.MakeLayerMaps()
-		return
+		nt.LayerNameMap = make(map[string]Layer)
 	}
 	nl := nt.EmerNetwork.NumLayers()
 	for li := range nl {
 		ly := nt.EmerNetwork.EmerLayer(li)
-		lnm := ly.StyleName()
+		lnm := ly.Label()
 		nt.LayerNameMap[lnm] = ly
-		cls := strings.Split(ly.StyleClass(), " ")
-		for _, cl := range cls {
-			ll := nt.LayerClassMap[cl]
-			ll = append(ll, lnm)
-			nt.LayerClassMap[cl] = ll
-		}
 	}
 }
 
@@ -216,7 +197,7 @@ func (nt *NetworkBase) UpdateLayerMaps() {
 // returns error message if layer is not found.
 func (nt *NetworkBase) EmerLayerByName(name string) (Layer, error) {
 	if nt.LayerNameMap == nil || len(nt.LayerNameMap) != nt.EmerNetwork.NumLayers() {
-		nt.UpdateLayerMaps()
+		nt.UpdateLayerNameMap()
 	}
 	if ly, ok := nt.LayerNameMap[name]; ok {
 		return ly, nil
@@ -248,47 +229,6 @@ func (nt *NetworkBase) EmerPathByName(name string) (Path, error) {
 		return nil, err
 	}
 	return path, nil
-}
-
-// LayersByClass returns a list of layer names by given class(es).
-// Lists are compiled when network Build() function called,
-// or now if not yet present.
-// The layer Type is always included as a Class, along with any other
-// space-separated strings specified in Class for parameter styling, etc.
-// If no classes are passed, all layer names in order are returned.
-func (nt *NetworkBase) LayersByClass(classes ...string) []string {
-	if nt.LayerClassMap == nil {
-		nt.UpdateLayerMaps()
-	}
-	var nms []string
-	nl := nt.EmerNetwork.NumLayers()
-	if len(classes) == 0 {
-		for li := range nl {
-			ly := nt.EmerNetwork.EmerLayer(li).AsEmer()
-			if ly.Off {
-				continue
-			}
-			nms = append(nms, ly.Name)
-		}
-		return nms
-	}
-	for _, lc := range classes {
-		nms = append(nms, nt.LayerClassMap[lc]...)
-	}
-	// only get unique layers
-	layers := []string{}
-	has := map[string]bool{}
-	for _, nm := range nms {
-		if has[nm] {
-			continue
-		}
-		layers = append(layers, nm)
-		has[nm] = true
-	}
-	if len(layers) == 0 {
-		panic(fmt.Sprintf("No Layers found for query: %#v.", classes))
-	}
-	return layers
 }
 
 // LayoutLayers computes the 3D layout of layers based on their relative
@@ -393,31 +333,7 @@ func (nt *NetworkBase) VarRange(varNm string) (min, max float32, err error) {
 	return
 }
 
-///////////////////////////////////////////////////////////////////////
-//		Params
-
-// ApplyParams applies given parameter style Sheet to layers and paths in this network.
-// Calls UpdateParams to ensure derived parameters are all updated.
-// If setMsg is true, then a message is printed to confirm each parameter that is set.
-// it always prints a message if a parameter fails to be set.
-// returns true if any params were set, and error if there were any errors.
-func (nt *NetworkBase) ApplyParams(pars *params.Sheet, setMsg bool) (bool, error) {
-	applied := false
-	var errs []error
-	en := nt.EmerNetwork
-	nlay := en.NumLayers()
-	for li := range nlay {
-		ly := en.EmerLayer(li).AsEmer()
-		app, err := ly.ApplyParams(pars, setMsg)
-		if app {
-			applied = true
-		}
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return applied, errors.Join(errs...)
-}
+////////	Params
 
 // NonDefaultParams returns a listing of all parameters in the Network that
 // are not at their default values -- useful for setting param styles etc.

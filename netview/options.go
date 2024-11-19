@@ -53,11 +53,10 @@ type Options struct { //types:add
 	// whether to display the pathways between layers as arrows
 	Paths bool
 
-	// path type name(s) to display (space separated), for path arrows,
+	// PathType has name(s) to display (space separated), for path arrows,
 	// and when there are multiple pathways from the same layer.
-	// For arrows, uses the style class names to match, which includes type name
-	// and other factors.
-	// Uses case insensitive contains logic for each name.
+	// Uses the parameter Class names in addition to type,
+	// and case insensitive "contains" logic for each name.
 	PathType string
 
 	// width of the path arrows, in normalized units

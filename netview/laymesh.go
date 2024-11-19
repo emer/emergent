@@ -35,7 +35,7 @@ func NewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	lm := &LayMesh{}
 	lm.View = nv
 	lm.Lay = lay
-	lm.Name = lay.StyleName()
+	lm.Name = lay.Label()
 	sc.SetMesh(lm)
 	return lm
 }

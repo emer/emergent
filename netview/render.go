@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"strings"
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors"
@@ -42,13 +41,13 @@ func (nv *NetView) UpdateLayers() {
 	layConfig := tree.TypePlan{}
 	for li := range nlay {
 		ly := nv.Net.EmerLayer(li)
-		layConfig.Add(types.For[xyz.Group](), ly.StyleName())
+		layConfig.Add(types.For[xyz.Group](), ly.Label())
 	}
 
 	if !tree.Update(laysGp, layConfig) && nv.layerNameSizeShown == nv.Options.LayerNameSize {
 		for li := range laysGp.Children {
 			ly := nv.Net.EmerLayer(li)
-			lmesh := errors.Log1(se.MeshByName(ly.StyleName()))
+			lmesh := errors.Log1(se.MeshByName(ly.Label()))
 			se.SetMesh(lmesh) // does update
 		}
 		if nv.hasPaths != nv.Options.Paths || nv.pathTypeShown != nv.Options.PathType ||
@@ -72,14 +71,14 @@ func (nv *NetView) UpdateLayers() {
 	for li, lgi := range laysGp.Children {
 		ly := nv.Net.EmerLayer(li)
 		lb := ly.AsEmer()
-		lmesh, _ := se.MeshByName(ly.StyleName())
+		lmesh, _ := se.MeshByName(ly.Label())
 		if lmesh == nil {
 			NewLayMesh(se, nv, ly)
 		} else {
 			lmesh.(*LayMesh).Lay = ly // make sure
 		}
 		lg := lgi.(*xyz.Group)
-		gpConfig[1].Name = ly.StyleName() // text2d textures use obj name, so must be unique
+		gpConfig[1].Name = ly.Label() // text2d textures use obj name, so must be unique
 		tree.Update(lg, gpConfig)
 		lp := lb.Pos.Pos
 		lp.Y = -lp.Y // reverse direction
@@ -89,9 +88,9 @@ func (nv *NetView) UpdateLayers() {
 
 		lo := lg.Child(0).(*LayObj)
 		lo.Defaults()
-		lo.LayName = ly.StyleName()
+		lo.LayName = ly.Label()
 		lo.NetView = nv
-		lo.SetMeshName(ly.StyleName())
+		lo.SetMeshName(ly.Label())
 		lo.Material.Color = colors.FromRGB(255, 100, 255)
 		lo.Material.Reflective = 8
 		lo.Material.Bright = 8
@@ -102,7 +101,7 @@ func (nv *NetView) UpdateLayers() {
 		txt := lg.Child(1).(*LayName)
 		txt.Defaults()
 		txt.NetView = nv
-		txt.SetText(ly.StyleName())
+		txt.SetText(ly.Label())
 		txt.Pose.Scale = math32.Vector3Scalar(nv.Options.LayerNameSize).Div(lg.Pose.Scale)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
 		txt.Styles.Text.Align = styles.Start
@@ -230,7 +229,7 @@ func (nv *NetView) UpdatePaths() {
 		npt := sl.NumSendPaths()
 		for pi := range npt {
 			pt := sl.SendPath(pi)
-			if !nv.pathTypeNameMatch(pt.StyleClass()) {
+			if !nv.pathTypeNameMatch(pt) {
 				continue
 			}
 			rb := pt.RecvLayer().AsEmer()
@@ -407,20 +406,11 @@ func (nv *NetView) UpdatePaths() {
 	nv.pathWidthShown = nv.Options.PathWidth
 }
 
-func (nv *NetView) pathTypeNameMatch(pcls string) bool {
+func (nv *NetView) pathTypeNameMatch(pt emer.Path) bool {
 	if len(nv.Options.PathType) == 0 {
 		return true
 	}
-	cls := strings.Fields(strings.ToLower(pcls))
-	fs := strings.Fields(strings.ToLower(nv.Options.PathType))
-	for _, pt := range fs {
-		for _, cl := range cls {
-			if strings.Contains(cl, pt) {
-				return true
-			}
-		}
-	}
-	return false
+	return pt.AsEmer().IsTypeOrClass(nv.Options.PathType)
 }
 
 // returns the self projection mesh, either left = 1 or right = 2

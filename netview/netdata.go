@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/metadata"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/plot/plotcore"
@@ -158,12 +159,12 @@ makeData:
 		if !nd.NoSynData {
 			for li := range nlay {
 				rlay := nd.Net.EmerLayer(li)
-				rld := nd.LayData[rlay.StyleName()]
+				rld := nd.LayData[rlay.Label()]
 				rld.RecvPaths = make([]*PathData, rlay.NumRecvPaths())
 				for ri := 0; ri < rlay.NumRecvPaths(); ri++ {
 					rpj := rlay.RecvPath(ri)
 					slay := rpj.SendLayer()
-					sld := nd.LayData[slay.StyleName()]
+					sld := nd.LayData[slay.Label()]
 					for _, spj := range sld.SendPaths {
 						if spj.Path == rpj {
 							rld.RecvPaths[ri] = spj // link
@@ -175,7 +176,7 @@ makeData:
 	} else {
 		for li := range nlay {
 			lay := nd.Net.EmerLayer(li)
-			ld := nd.LayData[lay.StyleName()]
+			ld := nd.LayData[lay.Label()]
 			if nd.NoSynData {
 				ld.FreePaths()
 			} else {
@@ -346,7 +347,7 @@ func (nd *NetData) RecordSyns() {
 	}
 	for li := range nlay {
 		lay := nd.Net.EmerLayer(li)
-		laynm := lay.StyleName()
+		laynm := lay.Label()
 		ld := nd.LayData[laynm]
 		for si := 0; si < lay.NumSendPaths(); si++ {
 			spd := ld.SendPaths[si]
@@ -681,9 +682,9 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
 	dt := &table.Table{}
-	dt.Meta.SetName("NetView: " + selnm)
-	dt.Meta.Set("read-only", true)
-	tensor.SetPrecision(dt.Meta, 4)
+	metadata.SetName(dt, "NetView: "+selnm)
+	metadata.SetTo(dt, "read-only", true)
+	tensor.SetPrecision(dt, 4)
 
 	ln := nd.Ring.Len
 	vlen := len(nd.UnVars)

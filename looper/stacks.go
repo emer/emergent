@@ -7,9 +7,12 @@ package looper
 //go:generate core generate -add-types
 
 import (
+	"cmp"
+	"slices"
 	"strings"
 
 	"cogentcore.org/core/enums"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -160,6 +163,15 @@ func (ls *Stacks) AddOnEndToLoop(level enums.Enum, name string, fun func(mode en
 	for m, st := range ls.Stacks {
 		st.Loops[level].OnEnd.Add(name, func() { fun(m) })
 	}
+}
+
+// Modes returns a sorted list of stack modes, for iterating in Mode enum value order.
+func (ls *Stacks) Modes() []enums.Enum {
+	mds := maps.Keys(ls.Stacks)
+	slices.SortFunc(mds, func(a, b enums.Enum) int {
+		return cmp.Compare(a.Int64(), b.Int64())
+	})
+	return mds
 }
 
 //////// More detailed control API

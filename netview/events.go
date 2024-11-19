@@ -46,13 +46,13 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 	pos := e.Pos().Sub(sw.Geom.ContentBBox.Min)
 	pt := sw.PathAtPoint(pos)
 	if pt != nil {
-		FormDialog(sw, pt, "Path: "+pt.StyleName())
+		FormDialog(sw, pt, "Path: "+pt.Label())
 		e.SetHandled()
 		return
 	}
 	lay := sw.LayerLabelAtPoint(pos)
 	if lay != nil {
-		FormDialog(sw, lay, "Layer: "+lay.StyleName())
+		FormDialog(sw, lay, "Layer: "+lay.Label())
 		e.SetHandled()
 		return
 	}
@@ -62,7 +62,7 @@ func (sw *Scene) MouseDownEvent(e events.Event) {
 	}
 	nv := sw.NetView
 	nv.Data.PathUnIndex = unIndex
-	nv.Data.PathLay = lay.StyleName()
+	nv.Data.PathLay = lay.Label()
 	nv.UpdateView()
 	e.SetHandled()
 }
@@ -77,7 +77,7 @@ func (sw *Scene) WidgetTooltip(pos image.Point) (string, image.Point) {
 	pt := sw.PathAtPoint(lpos)
 	if pt != nil {
 		pe := pt.AsEmer()
-		tt := "[Click to edit] " + pe.Name + " " + pt.StyleClass()
+		tt := "[Click to edit] " + pe.Name
 		if pe.Doc != "" {
 			tt += ": " + pe.Doc
 		}

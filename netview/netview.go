@@ -659,7 +659,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	}
 	if !hasval {
 		scaled = 0
-		if lay.StyleName() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
+		if lay.Label() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
 			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor
