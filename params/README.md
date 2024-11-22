@@ -17,25 +17,18 @@ Three levels of organization are supported:
 TODO: replace with actual example from axon:
 
 ```
-Sheets {
-    "Base" {
-        Sel: "Layer" {
-            Params: {
-                "Layer.Inhib.Layer.Gi": "1.1",
-                ...
-            }
-        },
-        Sel: ".Back" {
-            Params: {
-                "Path.PathScale.Rel": "0.2",
-                ...
-            }
-        }
-    },
-    "Option1" {
-        ...
-    }
-}        
+var LayerParams = axon.LayerSheets{
+	"Base": {
+		{Sel: "Layer", Doc: "all defaults",
+			Set: func(ly *axon.LayerParams) {
+				ly.Inhib.Layer.Gi = 1.05                     // 1.05 > 1.1 for short-term; 1.1 better long-run stability
+				ly.Inhib.Layer.FB = 0.5                      // 0.5 > 0.2 > 0.1 > 1.0 -- usu 1.0
+				ly.Inhib.ActAvg.Nominal = 0.06               // 0.6 > 0.5
+				ly.Acts.NMDA.MgC = 1.2                       // 1.2 > 1.4 here, still..
+				ly.Learn.RLRate.SigmoidLinear.SetBool(false) // false > true here
+			}},
+	},
+}
 ```
 
 In summary, the overall logic is all about the order of application, going from broad defaults to more specific overrides, with the following overall ordering:
