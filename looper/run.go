@@ -7,20 +7,24 @@ package looper
 import (
 	"fmt"
 	"strings"
+
+	"cogentcore.org/core/enums"
 )
 
 func indent(level int) string {
 	return strings.Repeat("   ", level)
 }
 
-// runLevel implements nested for loops recursively.
-// It is set up so that it can be stopped and resumed at any point.
-func (ss *Stacks) runLevel(currentLevel int) bool {
+// runLevel implements nested run for loops recursively.
+// It can be stopped and resumed at any point.
+// returns true if the level was completed, and the level where it stopped.
+func (ss *Stacks) runLevel(currentLevel int) (bool, enums.Enum) {
 	st := ss.Stacks[ss.Mode]
 	if currentLevel >= len(st.Order) {
-		return true // Stack overflow, expected at bottom of stack.
+		return true, st.Order[0] // Stack overflow, should not happen
 	}
 	level := st.Order[currentLevel]
+	stoppedLevel := level // return value for what level it stopped at
 	loop := st.Loops[level]
 	ctr := &loop.Counter
 
@@ -28,6 +32,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 		stoplev := int64(-1)
 		if st.StopLevel != nil {
 			stoplev = st.StopLevel.Int64()
+			stoppedLevel = st.StopLevel
 		}
 		stopAtLevelOrLarger := st.Order[currentLevel].Int64() >= stoplev
 		if st.StopFlag && stopAtLevelOrLarger {
@@ -36,7 +41,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 		if ss.internalStop {
 			// This should occur before ctr incrementing and before functions.
 			st.StopFlag = false
-			return false // Don't continue above, e.g. Stop functions
+			return false, stoppedLevel // Don't continue above, e.g. Stop functions
 		}
 		if st.StopNext && st.Order[currentLevel] == st.StopLevel {
 			st.StopCount -= 1
@@ -63,10 +68,12 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 			fmt.Printf("%s%s: Skipping Start: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 		}
 
-		// Recursion!
-		runComplete := ss.runLevel(currentLevel + 1)
+		done := true
+		if currentLevel+1 < len(st.Order) {
+			done, stoppedLevel = ss.runLevel(currentLevel + 1)
+		}
 
-		if runComplete {
+		if done {
 			if PrintControlFlow {
 				fmt.Printf("%s%s: End: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 			}
@@ -92,5 +99,5 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 
 exitLoop:
 	// Only get to this point if this loop is done.
-	return true
+	return true, level
 }

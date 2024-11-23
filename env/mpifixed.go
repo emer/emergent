@@ -13,15 +13,13 @@ import (
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
 	"cogentcore.org/core/tensor/tensormpi"
-	"github.com/emer/emergent/v2/etime"
 )
 
-// MPIFixedTable is an MPI-enabled version of the FixedTable, which is
-// a basic Env that manages patterns from an table.Table, with
-// either sequential or permuted random ordering, and uses standard Trial
-// Time counter to record iterations through the table.
-// It uses an IndexView indexed view of the Table, so a single shared table
-// can be used across different environments, with each having its own unique view.
+// MPIFixedTable is an MPI-enabled version of the [FixedTable], which is
+// a basic Env that manages patterns from a [table.Table[, with
+// either sequential or permuted random ordering, and a Trial counter to
+// record iterations through the table.
+// Use [table.NewView] to provide a unique indexed view of a shared table.
 // The MPI version distributes trials across MPI procs, in the Order list.
 // It is ESSENTIAL that the number of trials (rows) in Table is
 // evenly divisible by number of MPI procs!
@@ -47,10 +45,10 @@ type MPIFixedTable struct {
 	Trial Counter `display:"inline"`
 
 	// if Table has a Name column, this is the contents of that
-	TrialName CurPrvString
+	TrialName CurPrevString
 
 	// if Table has a Group column, this is contents of that
-	GroupName CurPrvString
+	GroupName CurPrevString
 
 	// name of the Name column -- defaults to 'Name'
 	NameCol string
@@ -77,6 +75,14 @@ func (ft *MPIFixedTable) Validate() error {
 
 func (ft *MPIFixedTable) Label() string { return ft.Name }
 
+func (ft *MPIFixedTable) String() string {
+	s := ft.TrialName.Cur
+	if ft.GroupName.Cur != "" {
+		s = ft.GroupName.Cur + "_" + s
+	}
+	return s
+}
+
 func (ft *MPIFixedTable) Init(run int) {
 	if ft.NameCol == "" {
 		ft.NameCol = "Name"
@@ -84,7 +90,6 @@ func (ft *MPIFixedTable) Init(run int) {
 	if ft.GroupCol == "" {
 		ft.GroupCol = "Group"
 	}
-	ft.Trial.Scale = etime.Trial
 	ft.Trial.Init()
 	ft.NewOrder()
 	ft.Trial.Cur = ft.TrialSt - 1 // init state -- key so that first Step() = ft.TrialSt
@@ -142,7 +147,7 @@ func (ft *MPIFixedTable) Step() bool {
 	return true
 }
 
-func (ft *MPIFixedTable) State(element string) tensor.Tensor {
+func (ft *MPIFixedTable) State(element string) tensor.Values {
 	et := ft.Table.Column(element).RowTensor(ft.Row())
 	if et == nil {
 		log.Println("MPIFixedTable.State -- could not find element:", element)
@@ -150,7 +155,7 @@ func (ft *MPIFixedTable) State(element string) tensor.Tensor {
 	return et
 }
 
-func (ft *MPIFixedTable) Action(element string, input tensor.Tensor) {
+func (ft *MPIFixedTable) Action(element string, input tensor.Values) {
 	// nop
 }
 

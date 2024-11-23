@@ -681,7 +681,7 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
-	dt := &table.Table{}
+	dt := table.New()
 	metadata.SetName(dt, "NetView: "+selnm)
 	metadata.SetTo(dt, "read-only", true)
 	tensor.SetPrecision(dt, 4)

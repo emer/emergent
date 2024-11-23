@@ -107,25 +107,49 @@ func TestStep(t *testing.T) {
 		}
 	} else {
 		PrintControlFlow = false
-		stacks.Step(levels.Train, 1, levels.Cycle)
-		stacks.Step(levels.Train, 1, levels.Cycle)
-		stacks.Step(levels.Train, 1, levels.Cycle)
-		stacks.Step(levels.Train, 1, levels.Cycle)
-		stacks.Step(levels.Train, 2, levels.Cycle)
-		stacks.Step(levels.Train, 1, levels.Run)
+		stop := stacks.Step(levels.Train, 1, levels.Cycle)
+		if stop != levels.Cycle {
+			t.Errorf("stop != Cycle: %s", stop)
+		}
+		stop = stacks.Step(levels.Train, 1, levels.Cycle)
+		if stop != levels.Cycle {
+			t.Errorf("stop != Cycle: %s", stop)
+		}
+		stop = stacks.Step(levels.Train, 1, levels.Cycle)
+		if stop != levels.Cycle {
+			t.Errorf("stop != Cycle: %s", stop)
+		}
+		stop = stacks.Step(levels.Train, 1, levels.Cycle)
+		if stop != levels.Cycle {
+			t.Errorf("stop != Cycle: %s", stop)
+		}
+		stop = stacks.Step(levels.Train, 2, levels.Cycle)
+		if stop != levels.Cycle {
+			t.Errorf("stop != Cycle: %s", stop)
+		}
+		stop = stacks.Step(levels.Train, 1, levels.Run)
 		if run.Counter.Cur != 1 {
 			t.Errorf("Incorrect step run")
 		}
-		stacks.Step(levels.Train, 3, levels.Epoch)
+		if stop != levels.Run {
+			t.Errorf("stop != Run: %s", stop)
+		}
+		stop = stacks.Step(levels.Train, 3, levels.Epoch)
 		if run.Counter.Cur != 1 || epc.Counter.Cur != 3 {
 			t.Errorf("Incorrect step epoch")
+		}
+		if stop != levels.Epoch {
+			t.Errorf("stop != Epoch: %s", stop)
 		}
 		if trialCount != 32 { // 32 = 1*5*4+3*4
 			t.Errorf("Cycles not counted correctly: %d != 32", trialCount)
 		}
-		stacks.Step(levels.Train, 2, levels.Trial)
+		stop = stacks.Step(levels.Train, 2, levels.Trial)
 		if trialCount != 34 { // 34 = 1*5*4+3*4+2
 			t.Errorf("Cycles not counted correctly: %d != 34", trialCount)
+		}
+		if stop != levels.Trial {
+			t.Errorf("stop != Trial: %s", stop)
 		}
 	}
 }

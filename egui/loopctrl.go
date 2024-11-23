@@ -117,8 +117,8 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 				gui.IsRunning = true
 				tb.Restyle()
 				go func() {
-					loops.Run(curMode)
-					gui.Stopped()
+					stop := loops.Run(curMode)
+					gui.Stopped(curMode, stop)
 				}()
 			}
 		})
@@ -139,8 +139,8 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 				go func() {
 					st := loops.Stacks[curMode]
 					nst := int(stepNSpin.Value)
-					loops.Step(curMode, nst, st.StepLevel)
-					gui.Stopped()
+					stop := loops.Step(curMode, nst, st.StepLevel)
+					gui.Stopped(curMode, stop)
 				}()
 			}
 		})

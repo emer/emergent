@@ -12,7 +12,6 @@ import (
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/etime"
 )
 
 // FreqTable is an Env that manages patterns from an table.Table with frequency
@@ -51,10 +50,10 @@ type FreqTable struct {
 	Trial Counter `display:"inline"`
 
 	// if Table has a Name column, this is the contents of that
-	TrialName CurPrvString
+	TrialName CurPrevString
 
 	// if Table has a Group column, this is contents of that
-	GroupName CurPrvString
+	GroupName CurPrevString
 
 	// name of the Name column -- defaults to 'Name'
 	NameCol string
@@ -82,6 +81,14 @@ func (ft *FreqTable) Validate() error {
 
 func (ft *FreqTable) Label() string { return ft.Name }
 
+func (ft *FreqTable) String() string {
+	s := ft.TrialName.Cur
+	if ft.GroupName.Cur != "" {
+		s = ft.GroupName.Cur + "_" + s
+	}
+	return s
+}
+
 func (ft *FreqTable) Init(run int) {
 	if ft.NameCol == "" {
 		ft.NameCol = "Name"
@@ -92,7 +99,6 @@ func (ft *FreqTable) Init(run int) {
 	if ft.FreqCol == "" {
 		ft.FreqCol = "Freq"
 	}
-	ft.Trial.Scale = etime.Trial
 	ft.Trial.Init()
 	ft.Sample()
 	ft.Trial.Max = len(ft.Order)
@@ -167,7 +173,7 @@ func (ft *FreqTable) Step() bool {
 	return true
 }
 
-func (ft *FreqTable) State(element string) tensor.Tensor {
+func (ft *FreqTable) State(element string) tensor.Values {
 	et := ft.Table.Column(element).RowTensor(ft.Row())
 	if et == nil {
 		log.Println("FreqTable.State -- could not find element:", element)
@@ -175,7 +181,7 @@ func (ft *FreqTable) State(element string) tensor.Tensor {
 	return et
 }
 
-func (ft *FreqTable) Action(element string, input tensor.Tensor) {
+func (ft *FreqTable) Action(element string, input tensor.Values) {
 	// nop
 }
 

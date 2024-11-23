@@ -8,6 +8,7 @@ package egui
 
 import (
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
 	_ "cogentcore.org/core/goal/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/core/styles"
@@ -41,7 +42,8 @@ type GUI struct {
 	Body *core.Body `display:"-"`
 
 	//	OnStop is called when running stopped through the GUI.
-	OnStop func()
+	// Should update the network view.
+	OnStop func(mode, level enums.Enum)
 }
 
 // UpdateWindow triggers an update on window body,
@@ -67,13 +69,13 @@ func (gui *GUI) GoUpdateWindow() {
 // Stopped is called when a run method stops running,
 // from a separate goroutine (do not call from main event loop).
 // Updates the IsRunning flag and toolbar.
-func (gui *GUI) Stopped() {
+func (gui *GUI) Stopped(mode, level enums.Enum) {
 	gui.IsRunning = false
 	if gui.Body == nil {
 		return
 	}
 	if gui.OnStop != nil {
-		gui.OnStop()
+		gui.OnStop(mode, level)
 	}
 	gui.GoUpdateWindow()
 }
@@ -108,7 +110,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	tabs.Name = "tabs"
 	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)
-	split.SetSplits(.2, .5, .8)
+	split.SetSplits(.2, .7, .8)
 }
 
 // AddNetView adds NetView in tab with given name

@@ -57,43 +57,48 @@ func (ls *Stacks) newInit() {
 // Run runs the stack of loops for given mode (Train, Test, etc).
 // This resets any stepping settings for this stack and runs
 // until completion or stopped externally.
-func (ls *Stacks) Run(mode enums.Enum) {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) Run(mode enums.Enum) enums.Enum {
 	ls.Mode = mode
 	ls.ClearStep(mode)
-	ls.Cont()
+	return ls.Cont()
 }
 
 // ResetAndRun calls ResetCountersByMode on this mode
 // and then Run.  This ensures that the Stack is run from
 // the start, regardless of what state it might have been in.
-func (ls *Stacks) ResetAndRun(mode enums.Enum) {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) ResetAndRun(mode enums.Enum) enums.Enum {
 	ls.ResetCountersByMode(mode)
-	ls.Run(mode)
+	return ls.Run(mode)
 }
 
 // Cont continues running based on current state of the stacks.
 // This is common pathway for Step and Run, which set state and
 // call Cont. Programatic calling of Step can continue with Cont.
-func (ls *Stacks) Cont() {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) Cont() enums.Enum {
 	ls.isRunning = true
 	ls.internalStop = false
-	ls.runLevel(0) // 0 Means the top level loop
+	_, stop := ls.runLevel(0) // 0 Means the top level loop
 	ls.isRunning = false
+	return stop
 }
 
 // Step numSteps at given stopLevel. Use this if you want to do exactly one trial
 // or two epochs or 50 cycles or whatever. If numSteps <= 0 then the default
 // number of steps for given step level is used.
-func (ls *Stacks) Step(mode enums.Enum, numSteps int, stopLevel enums.Enum) {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) Step(mode enums.Enum, numSteps int, stopLevel enums.Enum) enums.Enum {
 	ls.Mode = mode
 	st := ls.Stacks[ls.Mode]
 	st.SetStep(numSteps, stopLevel)
-	ls.Cont()
+	return ls.Cont()
 }
 
 // ClearStep clears stepping variables from given mode,
 // so it will run to completion in a subsequent Cont().
-// Called by Run
+// Called by Run.
 func (ls *Stacks) ClearStep(mode enums.Enum) {
 	st := ls.Stacks[ls.Mode]
 	st.ClearStep()

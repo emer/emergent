@@ -12,14 +12,12 @@ import (
 	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/etime"
 )
 
-// FixedTable is a basic Env that manages patterns from an table.Table, with
-// either sequential or permuted random ordering, with the Trial counters
+// FixedTable is a basic Env that manages patterns from a [table.Table], with
+// either sequential or permuted random ordering, with a Trial counter
 // to record progress and iterations through the table.
-// It uses an IndexView indexed view of the Table, so a single shared table
-// can be used across different environments, with each having its own unique view.
+// Use [table.NewView] to provide a unique indexed view of a shared table.
 type FixedTable struct {
 	// name of this environment, usually Train vs. Test.
 	Name string
@@ -43,10 +41,10 @@ type FixedTable struct {
 	Trial Counter `display:"inline"`
 
 	// if Table has a Name column, this is the contents of that.
-	TrialName CurPrvString
+	TrialName CurPrevString
 
 	// if Table has a Group column, this is contents of that.
-	GroupName CurPrvString
+	GroupName CurPrevString
 
 	// name of the Name column -- defaults to 'Name'.
 	NameCol string
@@ -67,6 +65,14 @@ func (ft *FixedTable) Validate() error {
 
 func (ft *FixedTable) Label() string { return ft.Name }
 
+func (ft *FixedTable) String() string {
+	s := ft.TrialName.Cur
+	if ft.GroupName.Cur != "" {
+		s = ft.GroupName.Cur + "_" + s
+	}
+	return s
+}
+
 func (ft *FixedTable) Init(run int) {
 	if ft.NameCol == "" {
 		ft.NameCol = "Name"
@@ -74,7 +80,6 @@ func (ft *FixedTable) Init(run int) {
 	if ft.GroupCol == "" {
 		ft.GroupCol = "Group"
 	}
-	ft.Trial.Scale = etime.Trial
 	ft.Trial.Init()
 	ft.NewOrder()
 	ft.Trial.Cur = -1 // init state -- key so that first Step() = 0
@@ -140,7 +145,7 @@ func (ft *FixedTable) Step() bool {
 	return true
 }
 
-func (ft *FixedTable) State(element string) tensor.Tensor {
+func (ft *FixedTable) State(element string) tensor.Values {
 	et := ft.Table.Column(element).RowTensor(ft.Row())
 	if et == nil {
 		log.Println("FixedTable.State -- could not find element:", element)
@@ -148,7 +153,7 @@ func (ft *FixedTable) State(element string) tensor.Tensor {
 	return et
 }
 
-func (ft *FixedTable) Action(element string, input tensor.Tensor) {
+func (ft *FixedTable) Action(element string, input tensor.Values) {
 	// nop
 }
 

@@ -30,7 +30,7 @@ func (es *Envs) Add(evs ...Env) {
 }
 
 // ByMode returns env by Modes evaluation mode as the map key.
-// returns nil if not found
+// returns nil if not found.
 func (es *Envs) ByMode(mode enums.Enum) Env {
 	return (*es)[mode.String()]
 }
@@ -43,7 +43,7 @@ func ModeDi(mode enums.Enum, di int) string {
 
 // ByModeDi returns env by etime.Modes evaluation mode and
 // data parallel index as the map key, using ModeDi function.
-// returns nil if not found
+// returns nil if not found.
 func (es *Envs) ByModeDi(mode enums.Enum, di int) Env {
 	return (*es)[ModeDi(mode, di)]
 }
