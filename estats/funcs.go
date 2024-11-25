@@ -4,14 +4,7 @@
 
 package estats
 
-import (
-	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/metric"
-	"cogentcore.org/core/tensor/stats/stats"
-	"cogentcore.org/core/tensor/table"
-	"github.com/emer/emergent/v2/emer"
-)
+/*
 
 // funcs contains misc stats functions
 
@@ -76,61 +69,4 @@ func (st *Stats) ClosestPat(net emer.Network, layNm, unitVar string, di int, pat
 	}
 	return row, cor, nm
 }
-
-//////////////////////////////////////////////
-//  PCA Stats
-
-// PCAStrongThr is the threshold for counting PCA eigenvalues as "strong"
-// Applies to SVD as well.
-var PCAStrongThr = 0.01
-
-// PCAStats computes PCA statistics on recorded hidden activation patterns
-// on given log table (IndexView), and given list of layer names
-// and variable name -- columns named "layer_var".
-// Helpful for measuring the overall information (variance) in the representations
-// to detect a common failure mode where a few patterns dominate over everything ("hogs").
-// Records Float stats as:
-// layer_PCA_NStrong: number of eigenvalues above the PCAStrongThr threshold
-// layer_PCA_Top5: average strength of top 5 eigenvalues
-// layer_PCA_Next5: average strength of next 5 eigenvalues
-// layer_PCA_Rest: average strength of remaining eigenvalues (if more than 10 total eigens)
-// Uses SVD to compute much more efficiently than official PCA.
-func (st *Stats) PCAStats(ix *table.Table, varNm string, layers []string) {
-	// svd.Cond = PCAStrongThr
-	covar := tensor.NewFloat64()
-	evecs := tensor.NewFloat64()
-	_ = evecs
-	evals := tensor.NewFloat64()
-	for _, lnm := range layers {
-		col := ix.Column(lnm + "_" + varNm)
-		metric.CovarianceMatrixOut(metric.Covariance, col, covar)
-		// matrix.SVDOut(covar, evecs, evals) // todo
-		ln := len(evals.Values)
-		var nstr float64 // nstr := float64(svd.Rank)  this didn't work..
-		for i, v := range evals.Values {
-			if v < PCAStrongThr {
-				nstr = float64(i)
-				break
-			}
-		}
-		var top5, next5 float64
-		for i := 0; i < 5; i++ {
-			if ln >= 5 {
-				top5 += evals.Values[i]
-			}
-			if ln >= 10 {
-				next5 += evals.Values[i+5]
-			}
-		}
-		st.SetFloat(lnm+"_PCA_NStrong", nstr)
-		st.SetFloat(lnm+"_PCA_Top5", top5/5)
-		st.SetFloat(lnm+"_PCA_Next5", next5/5)
-		if ln > 10 {
-			sum := stats.Sum(evals).Float1D(0)
-			ravg := (sum - (top5 + next5)) / float64(ln-10)
-			st.SetFloat(lnm+"_PCA_Rest", ravg)
-		} else {
-			st.SetFloat(lnm+"_PCA_Rest", 0)
-		}
-	}
-}
+*/
