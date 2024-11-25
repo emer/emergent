@@ -61,7 +61,7 @@ type Linear struct {
 // Layer is the subset of emer.Layer that is used by this code
 type Layer interface {
 	Name() string
-	UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error
+	UnitValuesTensor(tsr tensor.Values, varNm string, di int) error
 	Shape() *tensor.Shape
 }
 
