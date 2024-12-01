@@ -107,6 +107,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	gui.Files = databrowser.NewDataTree(fform)
 	tabs := databrowser.NewTabs(split)
 	gui.Tabs = tabs
+	databrowser.CurTabber = tabs
 	tabs.Name = "tabs"
 	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)

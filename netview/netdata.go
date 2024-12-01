@@ -23,7 +23,9 @@ import (
 	"cogentcore.org/core/plot"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/databrowser"
 	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/core/tensor/tensorfs"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
 )
@@ -625,7 +627,8 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // }
 
 // PlotSelectedUnit opens a window with a plot of all the data for the
-// currently selected unit.
+// currently selected unit, saving data to the [tensorfs.CurRoot]/NetView
+// directory.
 // Useful for replaying detailed trace for units of interest.
 func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //types:add
 	nd := &nv.Data
@@ -635,15 +638,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 	}
 
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
-
-	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
-	plt := plotcore.NewPlotEditor(b)
-
-	b.AddTopBar(func(bar *core.Frame) {
-		core.NewToolbar(bar).Maker(plt.MakeToolbar)
-	})
 	dt := nd.SelectedUnitTable(nv.Di)
-
 	for _, vnm := range nd.UnVars {
 		vp, ok := nv.VarOptions[vnm]
 		if !ok {
@@ -660,10 +655,22 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
 		})
 	}
-	plt.SetTable(dt)
-
-	b.RunWindow()
-	return dt, plt
+	if tensorfs.CurRoot != nil && databrowser.CurTabber != nil {
+		dir := tensorfs.CurRoot.RecycleDir("NetView")
+		udir := dir.RecycleDir(selnm)
+		tensorfs.DirFromTable(udir, dt)
+		plt := databrowser.CurTabber.PlotTensorFS(udir)
+		return dt, plt
+	} else {
+		b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
+		plt := plotcore.NewPlotEditor(b)
+		plt.SetTable(dt)
+		b.AddTopBar(func(bar *core.Frame) {
+			core.NewToolbar(bar).Maker(plt.MakeToolbar)
+		})
+		b.RunWindow()
+		return dt, plt
+	}
 }
 
 // SelectedUnitTable returns a table with all of the data for the
