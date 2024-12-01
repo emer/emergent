@@ -20,6 +20,7 @@ import (
 	"cogentcore.org/core/base/metadata"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/plot"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
@@ -637,15 +638,11 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 
 	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
 	plt := plotcore.NewPlotEditor(b)
-	// plt.Options.Title = "NetView " + selnm
-	// plt.Options.XAxis = "Rec"
 
 	b.AddTopBar(func(bar *core.Frame) {
 		core.NewToolbar(bar).Maker(plt.MakeToolbar)
 	})
 	dt := nd.SelectedUnitTable(nv.Di)
-
-	plt.SetTable(dt)
 
 	for _, vnm := range nd.UnVars {
 		vp, ok := nv.VarOptions[vnm]
@@ -653,13 +650,17 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 			continue
 		}
 		disp := (vnm == nv.Var)
-		_ = disp
 		min := vp.Range.Min
 		if min < 0 && vp.Range.FixMin && vp.MinMax.Min >= 0 {
 			min = 0 // netview uses -1..1 but not great for graphs unless needed
 		}
-		// plt.SetColumnOptions(vnm, disp, vp.Range.FixMin, min, vp.Range.FixMax, vp.Range.Max)
+		dc := dt.Column(vnm)
+		plot.AddStylerTo(dc, func(s *plot.Style) {
+			s.On = disp
+			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
+		})
 	}
+	plt.SetTable(dt)
 
 	b.RunWindow()
 	return dt, plt
@@ -700,11 +701,11 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 
 	for ri := 0; ri < ln; ri++ {
 		ridx := nd.RecIndex(ri)
-		dt.Columns.Values[0].SetFloat(float64(ri), 0, ri)
+		dt.Columns.Values[0].SetFloat1D(float64(ri), ri)
 		for vi := 0; vi < vlen; vi++ {
 			idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 			val := ld.Data[idx]
-			dt.Columns.Values[0].SetFloat(float64(val), vi+1, ri)
+			dt.Columns.Values[vi+1].SetFloat1D(float64(val), ri)
 		}
 	}
 	return dt
