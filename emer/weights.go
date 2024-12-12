@@ -34,11 +34,11 @@ func (nt *NetworkBase) SaveWeightsJSON(filename core.Filename) error { //types:a
 	ext := filepath.Ext(string(filename))
 	if ext == ".gz" {
 		gzr := gzip.NewWriter(fp)
-		err = nt.WriteWeightsJSON(gzr)
+		err = nt.EmerNetwork.WriteWeightsJSON(gzr)
 		gzr.Close()
 	} else {
 		bw := bufio.NewWriter(fp)
-		err = nt.WriteWeightsJSON(bw)
+		err = nt.EmerNetwork.WriteWeightsJSON(bw)
 		bw.Flush()
 	}
 	return err
@@ -61,9 +61,9 @@ func (nt *NetworkBase) OpenWeightsJSON(filename core.Filename) error { //types:a
 			log.Println(err)
 			return err
 		}
-		return nt.ReadWeightsJSON(gzr)
+		return nt.EmerNetwork.ReadWeightsJSON(gzr)
 	} else {
-		return nt.ReadWeightsJSON(bufio.NewReader(fp))
+		return nt.EmerNetwork.ReadWeightsJSON(bufio.NewReader(fp))
 	}
 }
 
@@ -85,9 +85,9 @@ func (nt *NetworkBase) OpenWeightsFS(fsys fs.FS, filename string) error {
 			log.Println(err)
 			return err
 		}
-		return nt.ReadWeightsJSON(gzr)
+		return nt.EmerNetwork.ReadWeightsJSON(gzr)
 	} else {
-		return nt.ReadWeightsJSON(bufio.NewReader(fp))
+		return nt.EmerNetwork.ReadWeightsJSON(bufio.NewReader(fp))
 	}
 }
 

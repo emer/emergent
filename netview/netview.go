@@ -123,6 +123,9 @@ func (nv *NetView) Init() {
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
 		})
+		w.OnShow(func(e events.Event) {
+			nv.Current()
+		})
 	})
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
 		w.SetText("Counters: " + strings.Repeat(" ", 200)).
@@ -665,7 +668,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 			clr = NilColor
 		}
 	} else {
-		clp := nv.CurVarOptions.Range.ClipValue(raw)
+		clp := nv.CurVarOptions.Range.ClampValue(raw)
 		norm := nv.CurVarOptions.Range.NormValue(clp)
 		var op float32
 		if nv.CurVarOptions.ZeroCtr {

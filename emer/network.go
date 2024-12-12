@@ -8,6 +8,7 @@ package emer
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -125,6 +126,17 @@ type Network interface {
 	// zeroctr:"+" or "-" = control whether zero-centering is used
 	// Note: this is typically a global list so do not modify!
 	SynVarProps() map[string]string
+
+	// ReadWeightsJSON reads network weights from the receiver-side perspective
+	// in a JSON text format. Reads entire file into a temporary weights.Weights
+	// structure that is then passed to Layers etc using SetWeights method.
+	// Call the NetworkBase version followed by any post-load updates.
+	ReadWeightsJSON(r io.Reader) error
+
+	// WriteWeightsJSON writes the weights from this network
+	// from the receiver-side perspective in a JSON text format.
+	// Call the NetworkBase version after pre-load updates.
+	WriteWeightsJSON(w io.Writer) error
 }
 
 // NetworkBase defines the basic data for a neural network,
