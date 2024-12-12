@@ -78,6 +78,10 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	})
 	tree.Add(p, func(w *core.Spinner) {
 		w.SetMin(0).SetStep(1).SetValue(float32(nv.Di)).SetTooltip(ditp)
+		w.Styler(func(s *styles.Style) {
+			s.Max.X.Ch(9)
+			s.Min.X.Ch(9)
+		})
 		w.OnChange(func(e events.Event) {
 			maxData := nv.Net.MaxParallelData()
 			md := int(w.Value)
@@ -137,6 +141,10 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	})
 	tree.AddAt(p, "minSpin", func(w *core.Spinner) {
 		minSpin = w
+		w.Styler(func(s *styles.Style) {
+			s.Min.X.Ch(12)
+			s.Max.X.Ch(12)
+		})
 		w.SetValue(vp.Range.Min).
 			OnChange(func(e events.Event) {
 				vp := nv.VarOptions[nv.Var]
@@ -197,6 +205,10 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 
 	tree.AddAt(p, "maxSpin", func(w *core.Spinner) {
 		maxSpin = w
+		w.Styler(func(s *styles.Style) {
+			s.Min.X.Ch(12)
+			s.Max.X.Ch(12)
+		})
 		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
 			vp := nv.VarOptions[nv.Var]
 			vp.Range.SetMax(w.Value)
