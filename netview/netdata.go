@@ -656,8 +656,8 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 		})
 	}
 	if tensorfs.CurRoot != nil && databrowser.CurTabber != nil {
-		dir := tensorfs.CurRoot.RecycleDir("NetView")
-		udir := dir.RecycleDir(selnm)
+		dir := tensorfs.CurRoot.Dir("NetView")
+		udir := dir.Dir(selnm)
 		tensorfs.DirFromTable(udir, dt)
 		plt := databrowser.CurTabber.PlotTensorFS(udir)
 		return dt, plt

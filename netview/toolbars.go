@@ -142,8 +142,8 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	tree.AddAt(p, "minSpin", func(w *core.Spinner) {
 		minSpin = w
 		w.Styler(func(s *styles.Style) {
-			s.Min.X.Ch(12)
-			s.Max.X.Ch(12)
+			s.Min.X.Ch(15)
+			s.Max.X.Ch(15)
 		})
 		w.SetValue(vp.Range.Min).
 			OnChange(func(e events.Event) {
@@ -206,8 +206,8 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	tree.AddAt(p, "maxSpin", func(w *core.Spinner) {
 		maxSpin = w
 		w.Styler(func(s *styles.Style) {
-			s.Min.X.Ch(12)
-			s.Max.X.Ch(12)
+			s.Min.X.Ch(15)
+			s.Max.X.Ch(15)
 		})
 		w.SetValue(vp.Range.Max).OnChange(func(e events.Event) {
 			vp := nv.VarOptions[nv.Var]
