@@ -8,8 +8,8 @@ import (
 	"math"
 	"sort"
 
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/lab/tensor"
 )
 
 // PoolUniformRand implements random pattern of connectivity between pools within layers.
@@ -31,7 +31,7 @@ func (ur *PoolUniformRand) Name() string {
 	return "PoolUniformRand"
 }
 
-func (ur *PoolUniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *PoolUniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	if send.NumDims() == 4 && recv.NumDims() == 4 {
 		return ur.ConnectPoolsRand(send, recv, same)
 	}
@@ -39,7 +39,7 @@ func (ur *PoolUniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, 
 }
 
 // ConnectPoolsRand is when both recv and send have pools
-func (ur *PoolUniformRand) ConnectPoolsRand(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *PoolUniformRand) ConnectPoolsRand(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	if ur.PCon >= 1 {
 		return ur.ConnectPools(send, recv, same)
 	}
@@ -100,7 +100,7 @@ func (ur *PoolUniformRand) ConnectPoolsRand(send, recv *tensor.Shape, same bool)
 			for sui := 0; sui < nsend; sui++ {
 				si := spi*sNu + slist[sui]
 				off := ri*sNtot + si
-				cons.Values.Set(off, true)
+				cons.Values.Set(true, off)
 			}
 			randx.PermuteInts(sorder, ur.Rand)
 		}
@@ -121,7 +121,7 @@ func (ur *PoolUniformRand) ConnectPoolsRand(send, recv *tensor.Shape, same bool)
 }
 
 // ConnectRand is a copy of UniformRand.Connect with initial if statement modified
-func (ur *PoolUniformRand) ConnectRand(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ur *PoolUniformRand) ConnectRand(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	if ur.PCon >= 1 {
 		switch {
 		case send.NumDims() == 2 && recv.NumDims() == 4:
@@ -188,7 +188,7 @@ func (ur *PoolUniformRand) ConnectRand(send, recv *tensor.Shape, same bool) (sen
 		sort.Ints(slist) // keep list sorted for more efficient memory traversal etc
 		for si := 0; si < nsend; si++ {
 			off := ri*slen + slist[si]
-			cons.Values.Set(off, true)
+			cons.Values.Set(true, off)
 		}
 		randx.PermuteInts(sorder, ur.Rand)
 	}

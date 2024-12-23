@@ -7,8 +7,8 @@ package netview
 import (
 	"cogentcore.org/core/gpu/shape"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/xyz"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/emer"
 )
 
@@ -35,7 +35,7 @@ func NewLayMesh(sc *xyz.Scene, nv *NetView, lay emer.Layer) *LayMesh {
 	lm := &LayMesh{}
 	lm.View = nv
 	lm.Lay = lay
-	lm.Name = lay.StyleName()
+	lm.Name = lay.Label()
 	sc.SetMesh(lm)
 	return lm
 }
@@ -47,7 +47,7 @@ func (lm *LayMesh) MeshSize() (nVtx, nIndex int, hasColor bool) {
 		return 0, 0, true
 	}
 	shp := &lm.Lay.AsEmer().Shape
-	lm.Shape.CopyShape(shp)
+	lm.Shape.CopyFrom(shp)
 	if lm.View.Options.Raster.On {
 		if shp.NumDims() == 4 {
 			lm.NumVertex, lm.NumIndex = lm.RasterSize4D()

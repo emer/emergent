@@ -123,11 +123,15 @@ func (nv *NetView) Init() {
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
 		})
+		w.OnShow(func(e events.Event) {
+			nv.Current()
+		})
 	})
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
 		w.SetText("Counters: " + strings.Repeat(" ", 200)).
 			Styler(func(s *styles.Style) {
-				s.Grow.Set(1, 0)
+				s.Max.X.Pw(95)
+				s.Min.X.Pw(95)
 			})
 		w.Updater(func() {
 			if w.Text != nv.CurCtrs && nv.CurCtrs != "" {
@@ -174,6 +178,18 @@ func (nv *NetView) HasLayers() bool {
 		return false
 	}
 	return true
+}
+
+// IsViewingSynapse returns true if netview is viewing synapses.
+func (nv *NetView) IsViewingSynapse() bool {
+	if !nv.IsVisible() {
+		return false
+	}
+	vvar := nv.Var
+	if strings.HasPrefix(vvar, "r.") || strings.HasPrefix(vvar, "s.") {
+		return true
+	}
+	return false
 }
 
 // RecordCounters saves the counters, so they are available for a Current update
@@ -594,11 +610,11 @@ func (nv *NetView) ReadUnlock() {
 	nv.DataMu.RUnlock()
 }
 
-// UnitVal returns the raw value, scaled value, and color representation
+// UnitValue returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	lb := lay.AsEmer()
-	idx1d := lb.Shape.Offset(idx)
+	idx1d := lb.Shape.IndexTo1D(idx...)
 	if idx1d >= lb.Shape.Len() {
 		raw, hasval = 0, false
 	} else {
@@ -613,7 +629,7 @@ func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, cl
 // scaled is in range -1..1
 func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	lb := lay.AsEmer()
-	idx1d := lb.GetSampleShape().Offset(idx)
+	idx1d := lb.GetSampleShape().IndexTo1D(idx...)
 	ridx := lb.SampleIndexes
 	if len(ridx) == 0 { // no rep
 		if idx1d >= lb.Shape.Len() {
@@ -647,13 +663,13 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	}
 	if !hasval {
 		scaled = 0
-		if lay.StyleName() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
+		if lay.Label() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
 			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor
 		}
 	} else {
-		clp := nv.CurVarOptions.Range.ClipValue(raw)
+		clp := nv.CurVarOptions.Range.ClampValue(raw)
 		norm := nv.CurVarOptions.Range.NormValue(clp)
 		var op float32
 		if nv.CurVarOptions.ZeroCtr {

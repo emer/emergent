@@ -9,7 +9,8 @@ import (
 	"reflect"
 
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/table"
+	"cogentcore.org/lab/tensor"
 )
 
 // ReshapeCpp fixes C++ emergent table shape which is reversed from Go.
@@ -17,17 +18,15 @@ import (
 // that are float 2D or 4D columns -- assumes these are layer patterns
 // and names dimensions accordingly.
 func ReshapeCpp(dt *table.Table) {
-	for _, cl := range dt.Columns {
+	for _, cl := range dt.Columns.Values {
 		shp := cl.Shape().Sizes
 		if cl.NumDims() == 3 && (cl.DataType() == reflect.Float32 || cl.DataType() == reflect.Float64) {
 			revshp := []int{shp[0], shp[2], shp[1]} // [0] = row
-			dnms := []string{"Row", "Y", "X"}
-			cl.SetShape(revshp, dnms...)
+			cl.SetShapeSizes(revshp...)
 		}
 		if cl.NumDims() == 5 && (cl.DataType() == reflect.Float32 || cl.DataType() == reflect.Float64) {
 			revshp := []int{shp[0], shp[4], shp[3], shp[2], shp[1]} // [0] = row
-			dnms := []string{"Row", "PoolY", "PoolX", "NeurY", "NeurX"}
-			cl.SetShape(revshp, dnms...)
+			cl.SetShapeSizes(revshp...)
 		}
 	}
 }
@@ -35,11 +34,11 @@ func ReshapeCpp(dt *table.Table) {
 // ReshapeCppFile fixes C++ emergent table shape which is reversed from Go.
 // It loads file from fname and saves to fixnm
 func ReshapeCppFile(dt *table.Table, fname, fixnm string) {
-	err := dt.OpenCSV(core.Filename(fname), table.Tab)
+	err := dt.OpenCSV(core.Filename(fname), tensor.Tab)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	ReshapeCpp(dt)
-	dt.SaveCSV(core.Filename(fixnm), table.Tab, true)
+	dt.SaveCSV(core.Filename(fixnm), tensor.Tab, true)
 }

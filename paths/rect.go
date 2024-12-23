@@ -7,7 +7,7 @@ package paths
 import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/math32/vecint"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/edge"
 )
 
@@ -72,7 +72,7 @@ func (cr *Rect) Name() string {
 	return "Rect"
 }
 
-func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	if cr.Recip {
 		return cr.ConnectRecip(send, recv, same)
 	}
@@ -133,7 +133,7 @@ func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 					if !cr.SelfCon && same && ri == si {
 						continue
 					}
-					cons.Values.Set(off, true)
+					cons.Values.Set(true, off)
 					rnv[ri]++
 					snv[si]++
 				}
@@ -143,7 +143,7 @@ func (cr *Rect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 	return
 }
 
-func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNy, sNx, _, _ := tensor.Projection2DShape(recv, false) // swapped!
 	rNy, rNx, _, _ := tensor.Projection2DShape(send, false)
@@ -201,7 +201,7 @@ func (cr *Rect) ConnectRecip(send, recv *tensor.Shape, same bool) (sendn, recvn 
 					if !cr.SelfCon && same && ri == si {
 						continue
 					}
-					cons.Values.Set(off, true)
+					cons.Values.Set(true, off)
 					rnv[si]++
 					snv[ri]++
 				}

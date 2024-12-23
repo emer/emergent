@@ -1,24 +1,16 @@
 Docs: [GoDoc](https://pkg.go.dev/github.com/emer/emergent/env)
 
-See [Wiki Env](https://github.com/emer/emergent/wiki/Env) page for detailed docs.
-
-Package `env` defines the `Env` interface for environments, which determine the nature and sequence of States that can be used as inputs to a model and it can also accept Action responses from the model that affect how the environment evolves in the future.
+Package `env` defines the `Env` interface for environments, which determine the nature and sequence of States as inputs to a model. Action responses from the model can also drive state evolution.
 
 By adhering to this interface, it is then easier to mix-and-match environments with models.
 
 ![Env / Agent](agent_env_interface.png?raw=true "Logical interface between the agent and the environment: the Environment supplies State to the Agent, and receives Actions from the Agent.")
 
-The overall division of labor is that the model keeps track of the outer-most Run time-scale depending on its own parameters and learning trajectory and the environment is responsible for generating patterns for each run.
+Multiple different environments will typically be used in a model, e.g., one for training and other(s) for testing. Even if these envs all share a common database of patterns, a different Env should be used for each case where different counters and sequences of events etc are presented, which keeps them from interfering with each other. Also, `table.NewView` can be used to create new views on a common set of pattenrs, so different Envs can present different indexed views. The basic `FixedTable` env implementation uses this.
 
-Multiple different environments will typically be used in a model, e.g., one for training and other(s) for testing.  Even if these envs all share a common database of patterns, a different Env should be used for each case where different counters and sequences of events etc are presented, which keeps them from interfering with each other.  Also, the table.IndexView can be used to allow multiple different Env's to all present different indexed views into a shared common table.Table (e.g., train / test splits). The basic `FixedTable` env implementation uses this.
+The standard `String() string` `fmt.Stringer` method must be defined to return a string description of the current environment state, e.g., as a TrialName. A `Label() string` method must be defined to return the Name of the environment, which is typically the Mode of usage (Train vs. Test).
 
-Thus, the Env encapsulates all of the counter management logic for each aspect of model training and testing, so that the model itself just needs to manage which Env to use, when, and manage the connection of the Env States as inputs to the model, and vice-versa for Actions on the Env coming from the model.
-
-With the newer `looper` framework, the counters are managed by looper independent of the env.
-
-There is also an `Envs` map that provides a basic container for managing multiple Envs -- the key is typically an `etime.Modes` e.g., `etime.Train` or `etime.Test`.
-
-The `EnvDesc` interface provides additional methods (originally included in `Env`) that describe the Counters, States, and Actions, of the Env.  Each `Element` of the overall `State` allows annotation about the different elements of state that are available in general.
+There is also an `Envs` map that provides a basic container for managing multiple Envs, using a `string` key based on the `Label()` name.
 
 The `Step` should update all relevant state elements as appropriate, so these can be queried by the user. Particular paradigms of environments must establish naming conventions for these state elements which then allow the model to use the information appropriately -- the Env interface only provides the most basic framework for establishing these paradigms, and ultimately a given model will only work within a particular paradigm of environments following specific conventions.
 

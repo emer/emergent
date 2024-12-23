@@ -7,13 +7,16 @@ package looper
 //go:generate core generate -add-types
 
 import (
+	"cmp"
+	"slices"
 	"strings"
 
 	"cogentcore.org/core/enums"
+	"golang.org/x/exp/maps"
 )
 
 var (
-	// If you want to debug the flow of time, set this to true.
+	// If you want to debug the flow of processing, set this to true.
 	PrintControlFlow = false
 )
 
@@ -54,49 +57,54 @@ func (ls *Stacks) newInit() {
 // Run runs the stack of loops for given mode (Train, Test, etc).
 // This resets any stepping settings for this stack and runs
 // until completion or stopped externally.
-func (ls *Stacks) Run(mode enums.Enum) {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) Run(mode enums.Enum) enums.Enum {
 	ls.Mode = mode
 	ls.ClearStep(mode)
-	ls.Cont()
+	return ls.Cont()
 }
 
 // ResetAndRun calls ResetCountersByMode on this mode
 // and then Run.  This ensures that the Stack is run from
 // the start, regardless of what state it might have been in.
-func (ls *Stacks) ResetAndRun(mode enums.Enum) {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) ResetAndRun(mode enums.Enum) enums.Enum {
 	ls.ResetCountersByMode(mode)
-	ls.Run(mode)
+	return ls.Run(mode)
 }
 
 // Cont continues running based on current state of the stacks.
 // This is common pathway for Step and Run, which set state and
 // call Cont. Programatic calling of Step can continue with Cont.
-func (ls *Stacks) Cont() {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) Cont() enums.Enum {
 	ls.isRunning = true
 	ls.internalStop = false
-	ls.runLevel(0) // 0 Means the top level loop
+	_, stop := ls.runLevel(0) // 0 Means the top level loop
 	ls.isRunning = false
+	return stop
 }
 
 // Step numSteps at given stopLevel. Use this if you want to do exactly one trial
 // or two epochs or 50 cycles or whatever. If numSteps <= 0 then the default
 // number of steps for given step level is used.
-func (ls *Stacks) Step(mode enums.Enum, numSteps int, stopLevel enums.Enum) {
+// Returns the level that was running when it stopped.
+func (ls *Stacks) Step(mode enums.Enum, numSteps int, stopLevel enums.Enum) enums.Enum {
 	ls.Mode = mode
 	st := ls.Stacks[ls.Mode]
 	st.SetStep(numSteps, stopLevel)
-	ls.Cont()
+	return ls.Cont()
 }
 
 // ClearStep clears stepping variables from given mode,
 // so it will run to completion in a subsequent Cont().
-// Called by Run
+// Called by Run.
 func (ls *Stacks) ClearStep(mode enums.Enum) {
 	st := ls.Stacks[ls.Mode]
 	st.ClearStep()
 }
 
-// Stop stops currently running stack of loops at given run time level
+// Stop stops currently running stack of loops at given run level.
 func (ls *Stacks) Stop(level enums.Enum) {
 	st := ls.Stacks[ls.Mode]
 	st.StopLevel = level
@@ -106,20 +114,20 @@ func (ls *Stacks) Stop(level enums.Enum) {
 
 //////// Config API
 
-// AddStack adds a new Stack for given mode
-func (ls *Stacks) AddStack(mode enums.Enum) *Stack {
-	st := NewStack(mode)
+// AddStack adds a new Stack for given mode and default step level.
+func (ls *Stacks) AddStack(mode, stepLevel enums.Enum) *Stack {
+	st := NewStack(mode, stepLevel)
 	ls.Stacks[mode] = st
 	return st
 }
 
-// Loop returns the Loop associated with given mode and timescale.
-func (ls *Stacks) Loop(mode, time enums.Enum) *Loop {
+// Loop returns the Loop associated with given mode and loop level.
+func (ls *Stacks) Loop(mode, level enums.Enum) *Loop {
 	st := ls.Stacks[mode]
 	if st == nil {
 		return nil
 	}
-	return st.Loops[time]
+	return st.Loops[level]
 }
 
 // ModeStack returns the Stack for the current Mode
@@ -127,25 +135,48 @@ func (ls *Stacks) ModeStack() *Stack {
 	return ls.Stacks[ls.Mode]
 }
 
-// AddEventAllModes adds a new event for all modes at given timescale.
-func (ls *Stacks) AddEventAllModes(time enums.Enum, name string, atCtr int, fun func()) {
+// AddEventAllModes adds a new event for all modes at given loop level.
+func (ls *Stacks) AddEventAllModes(level enums.Enum, name string, atCtr int, fun func()) {
 	for _, st := range ls.Stacks {
-		st.Loops[time].AddEvent(name, atCtr, fun)
+		st.Loops[level].AddEvent(name, atCtr, fun)
 	}
 }
 
-// AddOnStartToAll adds given function taking mode and time args to OnStart in all stacks, loops
-func (ls *Stacks) AddOnStartToAll(name string, fun func(mode, time enums.Enum)) {
+// AddOnStartToAll adds given function taking mode and level args to OnStart in all stacks, loops
+func (ls *Stacks) AddOnStartToAll(name string, fun func(mode, level enums.Enum)) {
 	for _, st := range ls.Stacks {
 		st.AddOnStartToAll(name, fun)
 	}
 }
 
-// AddOnEndToAll adds given function taking mode and time args to OnEnd in all stacks, loops
-func (ls *Stacks) AddOnEndToAll(name string, fun func(mode, time enums.Enum)) {
+// AddOnEndToAll adds given function taking mode and level args to OnEnd in all stacks, loops
+func (ls *Stacks) AddOnEndToAll(name string, fun func(mode, level enums.Enum)) {
 	for _, st := range ls.Stacks {
 		st.AddOnEndToAll(name, fun)
 	}
+}
+
+// AddOnStartToLoop adds given function taking mode arg to OnStart in all stacks for given loop.
+func (ls *Stacks) AddOnStartToLoop(level enums.Enum, name string, fun func(mode enums.Enum)) {
+	for m, st := range ls.Stacks {
+		st.Loops[level].OnStart.Add(name, func() { fun(m) })
+	}
+}
+
+// AddOnEndToLoop adds given function taking mode arg to OnEnd in all stacks for given loop.
+func (ls *Stacks) AddOnEndToLoop(level enums.Enum, name string, fun func(mode enums.Enum)) {
+	for m, st := range ls.Stacks {
+		st.Loops[level].OnEnd.Add(name, func() { fun(m) })
+	}
+}
+
+// Modes returns a sorted list of stack modes, for iterating in Mode enum value order.
+func (ls *Stacks) Modes() []enums.Enum {
+	mds := maps.Keys(ls.Stacks)
+	slices.SortFunc(mds, func(a, b enums.Enum) int {
+		return cmp.Compare(a.Int64(), b.Int64())
+	})
+	return mds
 }
 
 //////// More detailed control API
@@ -166,7 +197,7 @@ func (ls *Stacks) InitMode(mode enums.Enum) {
 // ResetCountersByMode resets counters for given mode.
 func (ls *Stacks) ResetCountersByMode(mode enums.Enum) {
 	for sk, _ := range ls.lastStartedCounter {
-		skm, _ := sk.ModeTime()
+		skm, _ := sk.ModeLevel()
 		if skm == mode.Int64() {
 			delete(ls.lastStartedCounter, sk)
 		}
@@ -201,13 +232,13 @@ func (ls *Stacks) ResetCounters() {
 
 // ResetCountersBelow resets the Cur on all loop Counters below given level
 // (inclusive), and resets the Stacks's place in the loops.
-func (ls *Stacks) ResetCountersBelow(mode enums.Enum, time enums.Enum) {
+func (ls *Stacks) ResetCountersBelow(mode enums.Enum, level enums.Enum) {
 	for _, st := range ls.Stacks {
 		if st.Mode != mode {
 			continue
 		}
 		for lt, loop := range st.Loops {
-			if lt.Int64() > time.Int64() {
+			if lt.Int64() > level.Int64() {
 				continue
 			}
 			loop.Counter.Cur = 0

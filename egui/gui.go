@@ -8,16 +8,17 @@ package egui
 
 import (
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
-	_ "cogentcore.org/core/gpu/gosl/slbool/slboolcore" // include to get gui views
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/tensorcore"
-	"github.com/emer/emergent/v2/etime"
+	"cogentcore.org/core/styles"
+	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
+	"cogentcore.org/lab/lab"
 	"github.com/emer/emergent/v2/netview"
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface
 type GUI struct {
+	lab.Browser
 
 	// how many cycles between updates of cycle-level plots
 	CycleUpdateInterval int
@@ -31,32 +32,18 @@ type GUI struct {
 	// flag to stop running
 	StopNow bool `display:"-"`
 
-	// plots by scope
-	Plots map[etime.ScopeKey]*plotcore.PlotEditor
-
-	// plots by scope
-	TableViews map[etime.ScopeKey]*tensorcore.Table
-
-	// tensor grid views by name -- used e.g., for Rasters or ActRFs -- use Grid(name) to access
-	Grids map[string]*tensorcore.TensorGrid
-
-	// the view update for managing updates of netview
-	ViewUpdate *netview.ViewUpdate `display:"-"`
-
-	// net data for recording in nogui mode, if !nil
-	NetData *netview.NetData `display:"-"`
+	// NetViews are the created netviews.
+	NetViews []*netview.NetView
 
 	// displays Sim fields on left
 	SimForm *core.Form `display:"-"`
 
-	// tabs for different view elements: plots, rasters
-	Tabs *core.Tabs `display:"-"`
-
 	// Body is the content of the sim window
 	Body *core.Body `display:"-"`
 
-	//	Toolbar is the overall sim toolbar
-	Toolbar *core.Toolbar `display:"-"`
+	//	OnStop is called when running stopped through the GUI.
+	// Should update the network view.
+	OnStop func(mode, level enums.Enum)
 }
 
 // UpdateWindow triggers an update on window body,
@@ -82,13 +69,13 @@ func (gui *GUI) GoUpdateWindow() {
 // Stopped is called when a run method stops running,
 // from a separate goroutine (do not call from main event loop).
 // Updates the IsRunning flag and toolbar.
-func (gui *GUI) Stopped() {
+func (gui *GUI) Stopped(mode, level enums.Enum) {
 	gui.IsRunning = false
 	if gui.Body == nil {
 		return
 	}
-	if gui.ViewUpdate != nil {
-		gui.UpdateNetViewWhenStopped()
+	if gui.OnStop != nil {
+		gui.OnStop(mode, level)
 	}
 	gui.GoUpdateWindow()
 }
@@ -101,29 +88,53 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	// gui.Body.App().About = about
 	split := core.NewSplits(gui.Body)
 	split.Name = "split"
+	gui.Splits = split
 	gui.SimForm = core.NewForm(split).SetStruct(sim)
 	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
 		gui.Body.AddTopBar(func(bar *core.Frame) {
 			gui.Toolbar = core.NewToolbar(bar)
+			gui.Toolbar.Maker(gui.MakeToolbar)
 			gui.Toolbar.Maker(tb.MakeToolbar)
 		})
 	}
-	gui.Tabs = core.NewTabs(split)
-	gui.Tabs.Name = "tabs"
-	split.SetSplits(.2, .8)
+	fform := core.NewFrame(split)
+	fform.Styler(func(s *styles.Style) {
+		s.Direction = styles.Column
+		s.Overflow.Set(styles.OverflowAuto)
+		s.Grow.Set(1, 1)
+	})
+	gui.Files = lab.NewDataTree(fform)
+	tabs := lab.NewTabs(split)
+	gui.Tabs = tabs
+	lab.CurTabber = tabs
+	tabs.Name = "tabs"
+	gui.Files.Tabber = tabs
+	split.SetTiles(core.TileSplit, core.TileSpan)
+	split.SetSplits(.2, .7, .8)
 }
 
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
-	nvt, tb := gui.Tabs.NewTab(tabName)
-	nv := netview.NewNetView(nvt)
-	nv.Var = "Act"
-	tb.OnFinal(events.Click, func(e events.Event) {
-		nv.Current()
-		nv.Update()
+	nv := lab.NewTab(gui.Tabs, tabName, func(tab *core.Frame) *netview.NetView {
+		nv := netview.NewNetView(tab)
+		nv.Var = "Act"
+		// tb.OnFinal(events.Click, func(e events.Event) {
+		// 	nv.Current()
+		// 	nv.Update()
+		// })
+		gui.NetViews = append(gui.NetViews, nv)
+		return nv
 	})
 	return nv
+}
+
+// NetView returns the first created netview, or nil if none.
+func (gui *GUI) NetView() *netview.NetView {
+	if len(gui.NetViews) == 0 {
+		return nil
+	}
+	return gui.NetViews[0]
 }
 
 // FinalizeGUI wraps the end functionality of the GUI

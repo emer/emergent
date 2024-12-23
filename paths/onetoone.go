@@ -4,7 +4,7 @@
 
 package paths
 
-import "cogentcore.org/core/tensor"
+import "cogentcore.org/lab/tensor"
 
 // OneToOne implements point-to-point one-to-one pattern of connectivity between two layers
 type OneToOne struct {
@@ -27,7 +27,7 @@ func (ot *OneToOne) Name() string {
 	return "OneToOne"
 }
 
-func (ot *OneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (ot *OneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	nsend := send.Len()
 	nrecv := recv.Len()
@@ -44,7 +44,7 @@ func (ot *OneToOne) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *
 			break
 		}
 		off := ri*nsend + si
-		cons.Values.Set(off, true)
+		cons.Values.Set(true, off)
 		rnv[ri] = 1
 		snv[si] = 1
 	}

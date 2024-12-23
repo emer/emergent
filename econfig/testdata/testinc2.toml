@@ -1,4 +1,0 @@
-GPU=true
-Epochs=500
-Runs=5 # overwritten by testinc3
-NTrials=64 # overwritten by testinc

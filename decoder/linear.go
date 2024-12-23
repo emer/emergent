@@ -9,9 +9,9 @@ package decoder
 import (
 	"fmt"
 
-	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/base/mpi"
+	"cogentcore.org/lab/tensor"
 )
 
 type ActivationFunc func(float32) float32
@@ -61,7 +61,7 @@ type Linear struct {
 // Layer is the subset of emer.Layer that is used by this code
 type Layer interface {
 	Name() string
-	UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error
+	UnitValuesTensor(tsr tensor.Values, varNm string, di int) error
 	Shape() *tensor.Shape
 }
 
@@ -111,7 +111,7 @@ func (dec *Linear) Init(nOutputs, nInputs int, poolIndex int, activationFn Activ
 	dec.NOutputs = nOutputs
 	dec.Units = make([]LinearUnit, dec.NOutputs)
 	dec.Inputs = make([]float32, dec.NInputs)
-	dec.Weights.SetShape([]int{dec.NOutputs, dec.NInputs}, "Outputs", "Inputs")
+	dec.Weights.SetShapeSizes(dec.NOutputs, dec.NInputs)
 	for i := range dec.Weights.Values {
 		dec.Weights.Values[i] = 0.1
 	}
@@ -207,7 +207,7 @@ func (dec *Linear) Input(varNm string, di int) {
 			shape := ly.Shape()
 			y := dec.PoolIndex / shape.DimSize(1)
 			x := dec.PoolIndex % shape.DimSize(1)
-			tsr = tsr.SubSpace([]int{y, x}).(*tensor.Float32)
+			tsr = tsr.SubSpace(y, x).(*tensor.Float32)
 		}
 		for j, v := range tsr.Values {
 			dec.Inputs[off+j] = v
@@ -259,7 +259,7 @@ func (dec *Linear) Back() float32 {
 // Returns SSE (sum squared error) of difference between targets and outputs.
 func (dec *Linear) BackMPI() float32 {
 	if dec.MPIDWts.Len() != dec.Weights.Len() {
-		dec.MPIDWts.CopyShapeFrom(&dec.Weights)
+		tensor.SetShapeFrom(&dec.MPIDWts, &dec.Weights)
 	}
 	var sse float32
 	for ui := range dec.Units {

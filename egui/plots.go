@@ -4,18 +4,7 @@
 
 package egui
 
-import (
-	"fmt"
-	"log"
-
-	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/colors/gradient"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/tensorcore"
-	"github.com/emer/emergent/v2/elog"
-	"github.com/emer/emergent/v2/etime"
-)
-
+/*
 // AddPlots adds plots based on the unique tables we have,
 // currently assumes they should always be plotted
 func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
@@ -39,16 +28,18 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 		ConfigPlotFromLog(title, plt, lg, key)
 	}
 }
+*/
 
-// AddMiscPlotTab adds a misc (non log-generated) plot with a new
-// tab and plot of given name.
-func (gui *GUI) AddMiscPlotTab(name string) *plotcore.PlotEditor {
-	tab, _ := gui.Tabs.NewTab(name)
-	plt := plotcore.NewSubPlot(tab)
-	gui.SetPlotByName(name, plt)
-	return plt
-}
+// // AddMiscPlotTab adds a misc (non log-generated) plot with a new
+// // tab and plot of given name.
+// func (gui *GUI) AddMiscPlotTab(name string) *plotcore.PlotEditor {
+// 	tab, _ := gui.Tabs.NewTab(name)
+// 	plt := plotcore.NewSubPlot(tab)
+// 	gui.SetPlotByName(name, plt)
+// 	return plt
+// }
 
+/*
 func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, key etime.ScopeKey) {
 	_, times := key.ModesAndTimes()
 	time := times[0]
@@ -79,7 +70,9 @@ func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, ke
 	plt.ColumnsFromMetaMap(lt.Table.MetaData)
 	plt.ColumnsFromMetaMap(lt.Meta)
 }
+*/
 
+/*
 // Plot returns plot for mode, time scope
 func (gui *GUI) Plot(mode etime.Modes, time etime.Times) *plotcore.PlotEditor {
 	return gui.PlotScope(etime.Scope(mode, time))
@@ -205,7 +198,9 @@ func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotcore.PlotEd
 	gui.Plots[key] = plt
 	return plt
 }
+*/
 
+/*
 // AddTableView adds a table view of given log,
 // typically particularly useful for Debug logs.
 func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) *tensorcore.Table {
@@ -227,7 +222,9 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 	tv.SetTable(lt.Table)
 	return tv
 }
+*/
 
+/*
 // TableView returns TableView for mode, time scope
 func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *tensorcore.Table {
 	if !gui.Active {
@@ -250,3 +247,4 @@ func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *tensorcore.
 	}
 	return tv
 }
+*/

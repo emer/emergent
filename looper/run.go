@@ -7,27 +7,32 @@ package looper
 import (
 	"fmt"
 	"strings"
+
+	"cogentcore.org/core/enums"
 )
 
 func indent(level int) string {
 	return strings.Repeat("   ", level)
 }
 
-// runLevel implements nested for loops recursively.
-// It is set up so that it can be stopped and resumed at any point.
-func (ss *Stacks) runLevel(currentLevel int) bool {
+// runLevel implements nested run for loops recursively.
+// It can be stopped and resumed at any point.
+// returns true if the level was completed, and the level where it stopped.
+func (ss *Stacks) runLevel(currentLevel int) (bool, enums.Enum) {
 	st := ss.Stacks[ss.Mode]
 	if currentLevel >= len(st.Order) {
-		return true // Stack overflow, expected at bottom of stack.
+		return true, st.Order[0] // Stack overflow, should not happen
 	}
-	time := st.Order[currentLevel]
-	loop := st.Loops[time]
+	level := st.Order[currentLevel]
+	stoppedLevel := level // return value for what level it stopped at
+	loop := st.Loops[level]
 	ctr := &loop.Counter
 
 	for ctr.Cur < ctr.Max || ctr.Max <= 0 { // Loop forever for non-maxes
 		stoplev := int64(-1)
 		if st.StopLevel != nil {
 			stoplev = st.StopLevel.Int64()
+			stoppedLevel = st.StopLevel
 		}
 		stopAtLevelOrLarger := st.Order[currentLevel].Int64() >= stoplev
 		if st.StopFlag && stopAtLevelOrLarger {
@@ -36,7 +41,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 		if ss.internalStop {
 			// This should occur before ctr incrementing and before functions.
 			st.StopFlag = false
-			return false // Don't continue above, e.g. Stop functions
+			return false, stoppedLevel // Don't continue above, e.g. Stop functions
 		}
 		if st.StopNext && st.Order[currentLevel] == st.StopLevel {
 			st.StopCount -= 1
@@ -47,11 +52,11 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 		}
 
 		// Don't ever Start the same iteration of the same level twice.
-		lastCounter, ok := ss.lastStartedCounter[ToScope(ss.Mode, time)]
+		lastCounter, ok := ss.lastStartedCounter[ToScope(ss.Mode, level)]
 		if !ok || ctr.Cur > lastCounter {
-			ss.lastStartedCounter[ToScope(ss.Mode, time)] = ctr.Cur
+			ss.lastStartedCounter[ToScope(ss.Mode, level)] = ctr.Cur
 			if PrintControlFlow {
-				fmt.Printf("%s%s: Start: %d\n", indent(currentLevel), time.String(), ctr.Cur)
+				fmt.Printf("%s%s: Start: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 			}
 			for _, ev := range loop.Events {
 				if ctr.Cur == ev.AtCounter {
@@ -60,15 +65,17 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 			}
 			loop.OnStart.Run()
 		} else if PrintControlFlow {
-			fmt.Printf("%s%s: Skipping Start: %d\n", indent(currentLevel), time.String(), ctr.Cur)
+			fmt.Printf("%s%s: Skipping Start: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 		}
 
-		// Recursion!
-		runComplete := ss.runLevel(currentLevel + 1)
+		done := true
+		if currentLevel+1 < len(st.Order) {
+			done, stoppedLevel = ss.runLevel(currentLevel + 1)
+		}
 
-		if runComplete {
+		if done {
 			if PrintControlFlow {
-				fmt.Printf("%s%s: End: %d\n", indent(currentLevel), time.String(), ctr.Cur)
+				fmt.Printf("%s%s: End: %d\n", indent(currentLevel), level.String(), ctr.Cur)
 			}
 			loop.OnEnd.Run()
 			ctr.Incr()
@@ -82,7 +89,7 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 			for _, fun := range loop.IsDone {
 				if fun.Func() {
 					if PrintControlFlow {
-						fmt.Printf("%s%s: IsDone Stop at: %d from: %s\n", indent(currentLevel), time.String(), ctr.Cur, fun.Name)
+						fmt.Printf("%s%s: IsDone Stop at: %d from: %s\n", indent(currentLevel), level.String(), ctr.Cur, fun.Name)
 					}
 					goto exitLoop // Exit IsDone and Counter for-loops without flag variable.
 				}
@@ -92,5 +99,5 @@ func (ss *Stacks) runLevel(currentLevel int) bool {
 
 exitLoop:
 	// Only get to this point if this loop is done.
-	return true
+	return true, level
 }

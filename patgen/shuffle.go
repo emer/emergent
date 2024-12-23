@@ -5,8 +5,8 @@
 package patgen
 
 import (
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/lab/table"
 )
 
 // Shuffle shuffles rows in specified columns in the table independently
@@ -18,7 +18,7 @@ func Shuffle(dt *table.Table, rows []int, colNames []string, colIndependent bool
 			copy(sfrows, rows)
 			randx.PermuteInts(sfrows, RandSource)
 			for i, row := range rows {
-				dt.Tensor(colNm, row).CopyFrom(cl.Tensor(colNm, sfrows[i]))
+				dt.Column(colNm).RowTensor(row).CopyFrom(cl.Column(colNm).RowTensor(sfrows[i]))
 			}
 		}
 	} else { // shuffle together
@@ -27,9 +27,8 @@ func Shuffle(dt *table.Table, rows []int, colNames []string, colIndependent bool
 		randx.PermuteInts(sfrows, RandSource)
 		for _, colNm := range colNames {
 			for i, row := range rows {
-				dt.Tensor(colNm, row).CopyFrom(cl.Tensor(colNm, sfrows[i]))
+				dt.Column(colNm).RowTensor(row).CopyFrom(cl.Column(colNm).RowTensor(sfrows[i]))
 			}
 		}
 	}
-
 }

@@ -43,7 +43,7 @@ func (ld *LayData) AllocSendPaths(ly emer.Layer) {
 	ld.SendPaths = make([]*PathData, nsp)
 	for si := range ly.NumSendPaths() {
 		pt := ly.SendPath(si)
-		pd := &PathData{Send: pt.SendLayer().StyleName(), Recv: pt.RecvLayer().StyleName(), Path: pt}
+		pd := &PathData{Send: pt.SendLayer().Label(), Recv: pt.RecvLayer().Label(), Path: pt}
 		ld.SendPaths[si] = pd
 		pd.Alloc()
 	}

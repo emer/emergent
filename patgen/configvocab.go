@@ -10,10 +10,11 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"slices"
 
 	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/lab/stats/stats"
+	"cogentcore.org/lab/tensor"
 )
 
 // Vocab is a map of named tensors that contain patterns used for creating
@@ -38,7 +39,7 @@ func (vc Vocab) ByName(name string) (*tensor.Float32, error) {
 
 // NOnInTensor returns the number of bits active in given tensor
 func NOnInTensor(trow *tensor.Float32) int {
-	return int(stats.SumTensor(trow))
+	return stats.Sum(trow).Int1D(0)
 }
 
 // PctActInTensor returns the percent activity in given tensor (NOn / size)
@@ -55,7 +56,7 @@ func NFromPct(pct float32, n int) int {
 // AddVocabEmpty adds an empty pool to the vocabulary.
 // This can be used to make test cases with missing pools.
 func AddVocabEmpty(mp Vocab, name string, rows, poolY, poolX int) (*tensor.Float32, error) {
-	tsr := tensor.NewFloat32([]int{rows, poolY, poolX}, "row", "Y", "X")
+	tsr := tensor.NewFloat32(rows, poolY, poolX)
 	mp[name] = tsr
 	return tsr, nil
 }
@@ -72,7 +73,7 @@ func AddVocabEmpty(mp Vocab, name string, rows, poolY, poolX int) (*tensor.Float
 func AddVocabPermutedBinary(mp Vocab, name string, rows, poolY, poolX int, pctAct, minPctDiff float32) (*tensor.Float32, error) {
 	nOn := NFromPct(pctAct, poolY*poolX)
 	minDiff := NFromPct(minPctDiff, nOn)
-	tsr := tensor.NewFloat32([]int{rows, poolY, poolX}, "row", "Y", "X")
+	tsr := tensor.NewFloat32(rows, poolY, poolX)
 	err := PermutedBinaryMinDiff(tsr, nOn, 1, 0, minDiff)
 	mp[name] = tsr
 	return tsr, err
@@ -100,11 +101,11 @@ func AddVocabRepeat(mp Vocab, name string, rows int, copyFrom string, copyRow in
 	tsr := &tensor.Float32{}
 	cpshp := cp.Shape().Sizes
 	cpshp[0] = rows
-	tsr.SetShape(cpshp, cp.Shape().Names...)
+	tsr.SetShapeSizes(cpshp...)
 	mp[name] = tsr
-	cprow := cp.SubSpace([]int{copyRow})
+	cprow := cp.SubSpace(copyRow)
 	for i := 0; i < rows; i++ {
-		trow := tsr.SubSpace([]int{i})
+		trow := tsr.SubSpace(i)
 		trow.CopyFrom(cprow)
 	}
 	return tsr, nil
@@ -123,17 +124,17 @@ func AddVocabDrift(mp Vocab, name string, rows int, pctDrift float32, copyFrom s
 	tsr := &tensor.Float32{}
 	cpshp := cp.Shape().Sizes
 	cpshp[0] = rows
-	tsr.SetShape(cpshp, cp.Shape().Names...)
+	tsr.SetShapeSizes(cpshp...)
 	mp[name] = tsr
-	cprow := cp.SubSpace([]int{copyRow}).(*tensor.Float32)
-	trow := tsr.SubSpace([]int{0})
+	cprow := cp.SubSpace(copyRow).(*tensor.Float32)
+	trow := tsr.SubSpace(0)
 	trow.CopyFrom(cprow)
 	nOn := NOnInTensor(cprow)
 	rmdr := 0.0                               // remainder carryover in drift
 	drift := float64(nOn) * float64(pctDrift) // precise fractional amount of drift
 	for i := 1; i < rows; i++ {
-		srow := tsr.SubSpace([]int{i - 1})
-		trow := tsr.SubSpace([]int{i})
+		srow := tsr.SubSpace(i - 1)
+		trow := tsr.SubSpace(i)
 		trow.CopyFrom(srow)
 		curDrift := math.Round(drift + rmdr) // integer amount
 		nDrift := int(curDrift)
@@ -149,13 +150,13 @@ func AddVocabDrift(mp Vocab, name string, rows int, pctDrift float32, copyFrom s
 func VocabShuffle(mp Vocab, shufflePools []string) {
 	for _, key := range shufflePools {
 		tsr := mp[key]
-		rows := tsr.Shape().Sizes[0]
-		poolY := tsr.Shape().Sizes[1]
-		poolX := tsr.Shape().Sizes[2]
+		rows := tsr.DimSize(0)
+		poolY := tsr.DimSize(1)
+		poolX := tsr.DimSize(2)
 		sRows := RandSource.Perm(rows)
-		sTsr := tensor.NewFloat32([]int{rows, poolY, poolX}, "row", "Y", "X")
+		sTsr := tensor.NewFloat32(rows, poolY, poolX)
 		for iRow, sRow := range sRows {
-			sTsr.SubSpace([]int{iRow}).CopyFrom(tsr.SubSpace([]int{sRow}))
+			sTsr.SubSpace(iRow).CopyFrom(tsr.SubSpace(sRow))
 		}
 		mp[key] = sTsr
 	}
@@ -167,18 +168,18 @@ func VocabConcat(mp Vocab, newPool string, frmPools []string) error {
 	for i, key := range frmPools {
 		if i > 0 {
 			// check pool shape
-			if !(tsr.SubSpace([]int{0}).(*tensor.Float32).Shp.IsEqual(&mp[key].SubSpace([]int{0}).(*tensor.Float32).Shp)) {
+			if !slices.Equal(tsr.SubSpace(0).Shape().Sizes, mp[key].SubSpace(0).Shape().Sizes) {
 				err := fmt.Errorf("shapes of input pools must be the same") // how do I stop the program?
 				log.Println(err.Error())
 				return err
 			}
 
-			currows := tsr.Shape().Sizes[0]
-			approws := mp[key].Shape().Sizes[0]
-			tsr.SetShape([]int{currows + approws, tsr.Shape().Sizes[1], tsr.Shape().Sizes[2]}, "row", "Y", "X")
+			currows := tsr.DimSize(0)
+			approws := mp[key].DimSize(0)
+			tsr.SetShapeSizes(currows+approws, tsr.DimSize(1), tsr.DimSize(2))
 			for iRow := 0; iRow < approws; iRow++ {
-				subtsr := tsr.SubSpace([]int{iRow + currows})
-				subtsr.CopyFrom(mp[key].SubSpace([]int{iRow}))
+				subtsr := tsr.SubSpace(iRow + currows)
+				subtsr.CopyFrom(mp[key].SubSpace(iRow))
 			}
 		}
 	}
@@ -190,8 +191,8 @@ func VocabConcat(mp Vocab, newPool string, frmPools []string) error {
 // SliceOffs is the cutoff points in the original pool, should have one more element than newPools.
 func VocabSlice(mp Vocab, frmPool string, newPools []string, sliceOffs []int) error {
 	oriTsr := mp[frmPool]
-	poolY := oriTsr.Shape().Sizes[1]
-	poolX := oriTsr.Shape().Sizes[2]
+	poolY := oriTsr.DimSize(1)
+	poolX := oriTsr.DimSize(2)
 
 	// check newPools and sliceOffs have same length
 	if len(newPools)+1 != len(sliceOffs) {
@@ -219,9 +220,9 @@ func VocabSlice(mp Vocab, frmPool string, newPools []string, sliceOffs []int) er
 	for i := range newPools {
 		toOff := sliceOffs[i+1]
 		newPool := newPools[i]
-		newTsr := tensor.NewFloat32([]int{toOff - frmOff, poolY, poolX}, "row", "Y", "X")
+		newTsr := tensor.NewFloat32(toOff-frmOff, poolY, poolX)
 		for off := frmOff; off < toOff; off++ {
-			newTsr.SubSpace([]int{off - frmOff}).CopyFrom(oriTsr.SubSpace([]int{off}))
+			newTsr.SubSpace(off - frmOff).CopyFrom(oriTsr.SubSpace(off))
 		}
 		mp[newPool] = newTsr
 		frmOff = toOff

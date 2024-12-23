@@ -4,7 +4,7 @@
 
 package paths
 
-import "cogentcore.org/core/tensor"
+import "cogentcore.org/lab/tensor"
 
 // Full implements full all-to-all pattern of connectivity between two layers
 type Full struct {
@@ -21,7 +21,7 @@ func (fp *Full) Name() string {
 	return "Full"
 }
 
-func (fp *Full) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (fp *Full) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	cons.Values.SetAll(true)
 	nsend := send.Len()
@@ -29,7 +29,7 @@ func (fp *Full) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tens
 	if same && !fp.SelfCon {
 		for i := 0; i < nsend; i++ { // nsend = nrecv
 			off := i*nsend + i
-			cons.Values.Set(off, false)
+			cons.Values.Set(false, off)
 		}
 		nsend--
 		nrecv--
