@@ -4,7 +4,7 @@
 
 package paths
 
-import "cogentcore.org/core/tensor"
+import "cogentcore.org/lab/tensor"
 
 // PoolOneToOne implements one-to-one connectivity between pools within layers.
 // Pools are the outer-most two dimensions of a 4D layer shape.

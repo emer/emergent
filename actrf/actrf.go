@@ -9,8 +9,8 @@ package actrf
 import (
 	"slices"
 
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/lab/stats/stats"
+	"cogentcore.org/lab/tensor"
 )
 
 // RF is used for computing an activation-based receptive field.

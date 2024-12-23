@@ -15,9 +15,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/base/mpi"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/emer"
 )
 

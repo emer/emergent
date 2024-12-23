@@ -11,7 +11,7 @@ import (
 	"math/rand"
 	"strings"
 
-	"cogentcore.org/core/base/randx"
+	"cogentcore.org/lab/base/randx"
 )
 
 // RuleTypes are different types of rules (i.e., how the items are selected)

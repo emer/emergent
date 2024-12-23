@@ -5,8 +5,8 @@
 package patgen
 
 import (
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/lab/table"
 )
 
 // Shuffle shuffles rows in specified columns in the table independently

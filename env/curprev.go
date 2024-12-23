@@ -4,7 +4,7 @@
 
 package env
 
-import "cogentcore.org/core/tensor"
+import "cogentcore.org/lab/tensor"
 
 // CurPrev manages current and previous values for basic data types.
 type CurPrev[T tensor.DataTypes] struct {

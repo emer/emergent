@@ -9,10 +9,10 @@ import (
 	"log"
 	"math/rand"
 
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
-	"cogentcore.org/core/tensor/tensormpi"
+	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/lab/table"
+	"cogentcore.org/lab/tensor"
+	"cogentcore.org/lab/tensor/tensormpi"
 )
 
 // MPIFixedTable is an MPI-enabled version of the [FixedTable], which is

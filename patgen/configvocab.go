@@ -13,8 +13,8 @@ import (
 	"slices"
 
 	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/lab/stats/stats"
+	"cogentcore.org/lab/tensor"
 )
 
 // Vocab is a map of named tensors that contain patterns used for creating

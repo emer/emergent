@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/table"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 )

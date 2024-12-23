@@ -10,7 +10,7 @@ import (
 	"slices"
 
 	"cogentcore.org/core/base/metadata"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/table"
 )
 
 // InitPats initiates patterns to be used in MixPats

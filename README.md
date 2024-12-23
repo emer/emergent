@@ -111,7 +111,7 @@ Here are the other packages from [Cogent Core](https://github.com/cogentcore/cor
 
 * [envs](https://github.com/emer/envs) has misc standalone environments that can be good starting points, including managing files, visual images, etc.
 
-* [ttail](https://github.com/cogentcore/core/tree/main/tensor/cmd/ttail) is a `tail` program for interactively viewing tabular (csv, tsv, etc) log files in a terminal CLI environment!  `go install cogentcore.org/core/tensor/cmd/ttail@latest` from anywhere to install.
+* [ttail](https://github.com/cogentcore/core/tree/main/tensor/cmd/ttail) is a `tail` program for interactively viewing tabular (csv, tsv, etc) log files in a terminal CLI environment!  `go install cogentcore.org/lab/tensor/cmd/ttail@latest` from anywhere to install.
 
 * [eTorch](https://github.com/emer/etorch) is the emergent interface to PyTorch models, providing emergent GUI NetView etc for these models.
 

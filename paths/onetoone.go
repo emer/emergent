@@ -4,7 +4,7 @@
 
 package paths
 
-import "cogentcore.org/core/tensor"
+import "cogentcore.org/lab/tensor"
 
 // OneToOne implements point-to-point one-to-one pattern of connectivity between two layers
 type OneToOne struct {

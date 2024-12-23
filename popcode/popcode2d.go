@@ -10,7 +10,7 @@ import (
 	"sort"
 
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 )
 
 // popcode.TwoD provides encoding and decoding of population

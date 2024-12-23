@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/base/labels"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 )
 
 //go:generate core generate -add-types

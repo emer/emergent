@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 )
 
 // RFs manages multiple named RF's -- each one must be initialized first

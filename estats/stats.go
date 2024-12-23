@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/base/timer"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/plotcore"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/decoder"
 )
 

@@ -4,7 +4,7 @@
 
 package actrf
 
-import "cogentcore.org/core/tensor"
+import "cogentcore.org/lab/tensor"
 
 // RunningAvg computes a running-average activation-based receptive field
 // for activities act relative to source activations src (the thing we're projecting rf onto)

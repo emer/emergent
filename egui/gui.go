@@ -10,15 +10,15 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
-	_ "cogentcore.org/core/goal/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/core/styles"
-	"cogentcore.org/core/tensor/databrowser"
+	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
+	"cogentcore.org/lab/lab"
 	"github.com/emer/emergent/v2/netview"
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface
 type GUI struct {
-	databrowser.Browser
+	lab.Browser
 
 	// how many cycles between updates of cycle-level plots
 	CycleUpdateInterval int
@@ -104,10 +104,10 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 		s.Overflow.Set(styles.OverflowAuto)
 		s.Grow.Set(1, 1)
 	})
-	gui.Files = databrowser.NewDataTree(fform)
-	tabs := databrowser.NewTabs(split)
+	gui.Files = lab.NewDataTree(fform)
+	tabs := lab.NewTabs(split)
 	gui.Tabs = tabs
-	databrowser.CurTabber = tabs
+	lab.CurTabber = tabs
 	tabs.Name = "tabs"
 	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)
@@ -116,7 +116,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 
 // AddNetView adds NetView in tab with given name
 func (gui *GUI) AddNetView(tabName string) *netview.NetView {
-	nv := databrowser.NewTab(gui.Tabs, tabName, func(tab *core.Frame) *netview.NetView {
+	nv := lab.NewTab(gui.Tabs, tabName, func(tab *core.Frame) *netview.NetView {
 		nv := netview.NewNetView(tab)
 		nv.Var = "Act"
 		// tb.OnFinal(events.Click, func(e events.Event) {

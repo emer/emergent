@@ -9,9 +9,9 @@ import (
 	"log"
 	"math"
 
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/lab/table"
+	"cogentcore.org/lab/tensor"
 )
 
 // FreqTable is an Env that manages patterns from an table.Table with frequency

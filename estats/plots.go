@@ -5,8 +5,8 @@
 package estats
 
 import (
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/plotcore"
+	"cogentcore.org/lab/table"
 )
 
 func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {

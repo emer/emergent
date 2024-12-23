@@ -9,9 +9,9 @@ import (
 	"log"
 	"math/rand"
 
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/lab/table"
+	"cogentcore.org/lab/tensor"
 )
 
 // FixedTable is a basic Env that manages patterns from a [table.Table], with

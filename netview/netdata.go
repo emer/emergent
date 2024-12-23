@@ -20,12 +20,12 @@ import (
 	"cogentcore.org/core/base/metadata"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/plot"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/databrowser"
-	"cogentcore.org/core/tensor/table"
-	"cogentcore.org/core/tensor/tensorfs"
+	"cogentcore.org/lab/lab"
+	"cogentcore.org/lab/plot"
+	"cogentcore.org/lab/plotcore"
+	"cogentcore.org/lab/table"
+	"cogentcore.org/lab/tensor"
+	"cogentcore.org/lab/tensorfs"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
 )
@@ -655,11 +655,11 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
 		})
 	}
-	if tensorfs.CurRoot != nil && databrowser.CurTabber != nil {
+	if tensorfs.CurRoot != nil && lab.CurTabber != nil {
 		dir := tensorfs.CurRoot.Dir("NetView")
 		udir := dir.Dir(selnm)
 		tensorfs.DirFromTable(udir, dt)
-		plt := databrowser.CurTabber.PlotTensorFS(udir)
+		plt := lab.CurTabber.PlotTensorFS(udir)
 		return dt, plt
 	} else {
 		b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)

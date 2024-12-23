@@ -7,8 +7,8 @@ package netview
 import (
 	"cogentcore.org/core/gpu/shape"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/xyz"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/emer"
 )
 
