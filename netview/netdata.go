@@ -659,7 +659,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 		dir := tensorfs.CurRoot.Dir("NetView")
 		udir := dir.Dir(selnm)
 		tensorfs.DirFromTable(udir, dt)
-		plt := lab.CurTabber.PlotTensorFS(udir)
+		plt := lab.CurTabber.AsLab().PlotTensorFS(udir)
 		return dt, plt
 	} else {
 		b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
