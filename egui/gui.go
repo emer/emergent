@@ -57,6 +57,9 @@ type GUI struct {
 
 	//	Toolbar is the overall sim toolbar
 	Toolbar *core.Toolbar `display:"-"`
+
+	// ReadMe is the sim ReadMe frame
+	ReadMe *core.Frame `display:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
@@ -70,7 +73,6 @@ func (gui *GUI) UpdateWindow() {
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really necessary
 }
-
 // GoUpdateWindow triggers an update on window body,
 // for calling from a separate goroutine.
 func (gui *GUI) GoUpdateWindow() {
@@ -94,13 +96,14 @@ func (gui *GUI) Stopped() {
 }
 
 // MakeBody returns default window Body content
-func (gui *GUI) MakeBody(sim any, appname, title, about string) {
+func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...string) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
 	// gui.Body.App().About = about
 	split := core.NewSplits(gui.Body)
 	split.Name = "split"
+
 	gui.SimForm = core.NewForm(split).SetStruct(sim)
 	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
@@ -109,8 +112,20 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 			gui.Toolbar.Maker(tb.MakeToolbar)
 		})
 	}
+
 	gui.Tabs = core.NewTabs(split)
 	gui.Tabs.Name = "tabs"
+
+	if len(readme) > 0 {
+		gui.ReadMe = core.NewFrame(split)
+		gui.ReadMe.Name = "readme"
+
+		split.SetTiles(
+			core.TileSecondLong,
+		)
+		split.SetTileSplits(.8, .2)
+	}
+
 	split.SetSplits(.2, .8)
 }
 
