@@ -7,9 +7,15 @@ package egui
 //go:generate core generate -add-types
 
 import (
+	"embed"
+	"fmt"
+	"net/http"
+	"strings"
+
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	_ "cogentcore.org/core/gpu/gosl/slbool/slboolcore" // include to get gui views
+	"cogentcore.org/core/htmlcore"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/etime"
@@ -73,6 +79,7 @@ func (gui *GUI) UpdateWindow() {
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really necessary
 }
+
 // GoUpdateWindow triggers an update on window body,
 // for calling from a separate goroutine.
 func (gui *GUI) GoUpdateWindow() {
@@ -96,7 +103,7 @@ func (gui *GUI) Stopped() {
 }
 
 // MakeBody returns default window Body content
-func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...string) {
+func (gui *GUI) MakeBody(sim any, appname, title, about string, readmefses ...embed.FS) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
@@ -116,14 +123,47 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...string
 	gui.Tabs = core.NewTabs(split)
 	gui.Tabs.Name = "tabs"
 
-	if len(readme) > 0 {
+	if len(readmefses) > 0 {
+		readmefs := readmefses[0]
 		gui.ReadMe = core.NewFrame(split)
 		gui.ReadMe.Name = "readme"
 
-		split.SetTiles(
-			core.TileSecondLong,
-		)
-		split.SetTileSplits(.8, .2)
+		ctx := htmlcore.NewContext()
+		ctx.GetURL = func(url string) (*http.Response, error) {
+			url = strings.Split(url, "?")[0]
+			url = strings.TrimPrefix(url, "/")
+			fmt.Println(url)
+			body, err := readmefs.Open(url)
+			if err != nil {
+				fmt.Printf("Error opening file %v\n", err)
+				return nil, err
+			}
+			res := &http.Response{
+				Status:        "200 OK",
+				StatusCode:    200,
+				Body:          body,
+				Header:        make(http.Header),
+				ContentLength: -1,
+			}
+			fmt.Printf("res: %#v\n", res)
+			normalresponse, err := http.Get("https://github.com/CompCogNeuro/sims/blob/main/ch6/objrec/" + url)
+			if err != nil {
+				fmt.Printf("Error getting file %v\n", err)
+			}
+			fmt.Printf("normalresponse: %#v\n", normalresponse)
+			return res, nil
+		}
+		readme, err := readmefs.ReadFile("README.md")
+		// TODO: handle error
+		if err == nil {
+			htmlcore.ReadMDString(ctx, gui.ReadMe, string(readme))
+			split.SetTiles(
+				core.TileSecondLong,
+			)
+			split.SetTileSplits(.8, .2)
+		} else {
+			fmt.Printf("MakeBody error %#v\n", err)
+		}
 	}
 
 	split.SetSplits(.2, .8)
