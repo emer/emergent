@@ -630,7 +630,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // currently selected unit, saving data to the [tensorfs.CurRoot]/NetView
 // directory.
 // Useful for replaying detailed trace for units of interest.
-func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //types:add
+func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.Editor) { //types:add
 	nd := &nv.Data
 	if nd.PathLay == "" || nd.PathUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
@@ -650,20 +650,20 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 			min = 0 // netview uses -1..1 but not great for graphs unless needed
 		}
 		dc := dt.Column(vnm)
-		plot.AddStylerTo(dc, func(s *plot.Style) {
+		plot.AddStyle(dc, func(s *plot.Style) {
 			s.On = disp
 			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
 		})
 	}
-	if tensorfs.CurRoot != nil && lab.CurTabber != nil {
+	if tensorfs.CurRoot != nil && lab.Lab != nil {
 		dir := tensorfs.CurRoot.Dir("NetView")
 		udir := dir.Dir(selnm)
 		tensorfs.DirFromTable(udir, dt)
-		plt := lab.CurTabber.AsLab().PlotTensorFS(udir)
+		plt := lab.Lab.PlotTensorFS(udir)
 		return dt, plt
 	} else {
 		b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
-		plt := plotcore.NewPlotEditor(b)
+		plt := plotcore.NewEditor(b)
 		plt.SetTable(dt)
 		b.AddTopBar(func(bar *core.Frame) {
 			core.NewToolbar(bar).Maker(plt.MakeToolbar)
@@ -691,7 +691,7 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 
 	dt := table.New()
 	metadata.SetName(dt, "NetView: "+selnm)
-	metadata.SetTo(dt, "read-only", true)
+	metadata.Set(dt, "read-only", true)
 	tensor.SetPrecision(dt, 4)
 
 	ln := nd.Ring.Len

@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.3.8-0.20241223205351-d797b66be415
-	cogentcore.org/lab v0.0.0-20241223211031-dc40e74b973c
+	cogentcore.org/core v0.3.8-0.20250116184504-a8f1ea77c96a
+	cogentcore.org/lab v0.0.0-20250116190940-0b99b79306a7
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 )
@@ -46,7 +46,7 @@ require (
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

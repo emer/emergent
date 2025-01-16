@@ -85,7 +85,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
-	// gui.Body.App().About = about
+	core.AppAbout = about
 	split := core.NewSplits(gui.Body)
 	split.Name = "split"
 	gui.Splits = split
@@ -107,7 +107,7 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 	gui.Files = lab.NewDataTree(fform)
 	tabs := lab.NewTabs(split)
 	gui.Tabs = tabs
-	lab.CurTabber = tabs
+	lab.Lab = tabs
 	tabs.Name = "tabs"
 	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)

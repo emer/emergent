@@ -38,7 +38,7 @@ type Stats struct {
 	SimMats map[string]*tensor.Float64
 
 	// analysis plots -- created by analysis routines
-	Plots map[string]*plotcore.PlotEditor
+	Plots map[string]*plotcore.Editor
 
 	// activation-based receptive fields
 	// ActRFs actrf.RFs `display:"no-inline"`
@@ -65,7 +65,7 @@ func (st *Stats) Init() {
 	st.F64Tensors = make(map[string]*tensor.Float64)
 	st.IntTensors = make(map[string]*tensor.Int)
 	// st.SimMats = make(map[string]*simat.SimMat)
-	st.Plots = make(map[string]*plotcore.PlotEditor)
+	st.Plots = make(map[string]*plotcore.Editor)
 	st.LinDecoders = make(map[string]*decoder.Linear)
 	st.SoftMaxDecoders = make(map[string]*decoder.SoftMax)
 	st.Timers = make(map[string]*timer.Time)
@@ -377,11 +377,11 @@ func (st *Stats) SimMat(name string) *simat.SimMat {
 }
 */
 
-// Plot returns an plotcore.PlotEditor of given name, creating if not yet made
-func (st *Stats) Plot(name string) *plotcore.PlotEditor {
+// Plot returns an plotcore.Editor of given name, creating if not yet made
+func (st *Stats) Plot(name string) *plotcore.Editor {
 	pl, has := st.Plots[name]
 	if !has {
-		pl = plotcore.NewPlotEditor()
+		pl = plotcore.NewEditor()
 		pl.Name = name // any Ki obj needs this
 		st.Plots[name] = pl
 	}

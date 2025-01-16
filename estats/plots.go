@@ -9,7 +9,7 @@ import (
 	"cogentcore.org/lab/table"
 )
 
-func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {
+func ConfigPCAPlot(plt *plotcore.Editor, dt *table.Table, nm string) {
 	// plt.Options.Title = nm
 	// col1 := dt.ColumnName(1)
 	// plt.Options.XAxis = col1
@@ -24,7 +24,7 @@ func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {
 
 // ClusterPlot does one cluster plot on given table column name
 // and label name
-// func ClusterPlot(plt *plotcore.PlotEditor, ix *table.Table, colNm, lblNm string, dfunc cluster.MetricFunc) {
+// func ClusterPlot(plt *plotcore.Editor, ix *table.Table, colNm, lblNm string, dfunc cluster.MetricFunc) {
 // nm, _ := ix.Table.MetaData["name"]
 // smat := &simat.SimMat{}
 // smat.TableColumnStd(ix, colNm, lblNm, false, metric.Euclidean)
