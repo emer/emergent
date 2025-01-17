@@ -286,12 +286,12 @@ func (ly *LayerBase) SetShape(shape ...int) {
 	ly.Shape.SetShapeSizes(shape...)
 }
 
-// SetSampleIndexesShape sets the SampleIndexes,
+// SetSampleShape sets the SampleIndexes,
 // and SampleShape and as list of dimension sizes,
 // for a subset sample of units to represent the entire layer.
 // This is critical for large layers that are otherwise unwieldy
 // to visualize and for computationally-intensive statistics.
-func (ly *LayerBase) SetSampleIndexesShape(idxs, shape []int) {
+func (ly *LayerBase) SetSampleShape(idxs, shape []int) {
 	ly.SampleIndexes = idxs
 	ly.SampleShape.SetShapeSizes(shape...)
 }
@@ -470,7 +470,7 @@ func CenterPoolShape(ly Layer, n int) []int {
 
 // Layer2DSampleIndexes returns neuron indexes and corresponding 2D shape
 // for the representative neurons within a large 2D layer, for passing to
-// [SetSampleIndexesShape].  These neurons are used for the raster plot
+// [SetSampleShape].  These neurons are used for the raster plot
 // in the GUI and for computing PCA, among other cases where the full set
 // of neurons is problematic. The lower-left corner of neurons up to
 // given maxSize is selected.
