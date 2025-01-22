@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.3.8-0.20250116184504-a8f1ea77c96a
-	cogentcore.org/lab v0.0.0-20250116190940-0b99b79306a7
+	cogentcore.org/core v0.3.8-0.20250122003714-5b467176b244
+	cogentcore.org/lab v0.0.0-20250122080418-5c5a532aa54c
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 )
@@ -18,7 +18,7 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bramvdbogaerde/go-scp v1.4.0 // indirect
 	github.com/chewxy/math32 v1.10.1 // indirect
-	github.com/cogentcore/webgpu v0.0.0-20241212004832-ad7475f3b4dd // indirect
+	github.com/cogentcore/webgpu v0.0.0-20250118183535-3dd1436165cf // indirect
 	github.com/cogentcore/yaegi v0.0.0-20240724064145-e32a03faad56 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect

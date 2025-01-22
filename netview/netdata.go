@@ -650,7 +650,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.Editor) { //types
 			min = 0 // netview uses -1..1 but not great for graphs unless needed
 		}
 		dc := dt.Column(vnm)
-		plot.AddStyle(dc, func(s *plot.Style) {
+		plot.Styler(dc, func(s *plot.Style) {
 			s.On = disp
 			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
 		})
