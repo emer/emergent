@@ -124,49 +124,45 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string, readmefses ...em
 	gui.Tabs.Name = "tabs"
 
 	if len(readmefses) > 0 {
-		readmefs := readmefses[0]
-		gui.ReadMe = core.NewFrame(split)
-		gui.ReadMe.Name = "readme"
-
-		ctx := htmlcore.NewContext()
-		ctx.GetURL = func(url string) (*http.Response, error) {
-			url = strings.Split(url, "?")[0]
-			url = strings.TrimPrefix(url, "/")
-			fmt.Println(url)
-			body, err := readmefs.Open(url)
-			if err != nil {
-				fmt.Printf("Error opening file %v\n", err)
-				return nil, err
-			}
-			res := &http.Response{
-				Status:        "200 OK",
-				StatusCode:    200,
-				Body:          body,
-				Header:        make(http.Header),
-				ContentLength: -1,
-			}
-			fmt.Printf("res: %#v\n", res)
-			normalresponse, err := http.Get("https://github.com/CompCogNeuro/sims/blob/main/ch6/objrec/" + url)
-			if err != nil {
-				fmt.Printf("Error getting file %v\n", err)
-			}
-			fmt.Printf("normalresponse: %#v\n", normalresponse)
-			return res, nil
-		}
-		readme, err := readmefs.ReadFile("README.md")
-		// TODO: handle error
-		if err == nil {
-			htmlcore.ReadMDString(ctx, gui.ReadMe, string(readme))
-			split.SetTiles(
-				core.TileSecondLong,
-			)
-			split.SetTileSplits(.8, .2)
-		} else {
-			fmt.Printf("MakeBody error %#v\n", err)
-		}
+		gui.addReadMe(readmefses[0], split)
 	}
 
 	split.SetSplits(.2, .8)
+}
+
+func (gui *GUI) addReadMe(readmefs embed.FS, split *core.Splits) {
+	gui.ReadMe = core.NewFrame(split)
+	gui.ReadMe.Name = "readme"
+
+	ctx := htmlcore.NewContext()
+	ctx.GetURL = func(url string) (*http.Response, error) {
+		url = strings.Split(url, "?")[0]
+		url = strings.TrimPrefix(url, "/")
+		body, err := readmefs.Open(url)
+		if err != nil {
+			fmt.Printf("Error opening file %v\n", err)
+			return nil, err
+		}
+		res := &http.Response{
+			StatusCode:    200,
+			Body:          body,
+			Header:        make(http.Header),
+			ContentLength: -1,
+		}
+		return res, nil
+	}
+
+	readme, err := readmefs.ReadFile("README.md")
+
+	if err == nil {
+		htmlcore.ReadMDString(ctx, gui.ReadMe, string(readme))
+		split.SetTiles(
+			core.TileSecondLong,
+		)
+		split.SetTileSplits(.8, .2)
+	} else {
+		fmt.Printf("MakeBody error %#v\n", err)
+	}
 }
 
 // AddNetView adds NetView in tab with given name
