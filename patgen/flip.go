@@ -5,8 +5,8 @@
 package patgen
 
 import (
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/base/randx"
+	"github.com/emer/etensor/tensor"
 )
 
 // FlipBits turns nOff bits that are currently On to Off and

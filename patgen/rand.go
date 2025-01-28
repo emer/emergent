@@ -4,7 +4,7 @@
 
 package patgen
 
-import "cogentcore.org/core/base/randx"
+import "cogentcore.org/lab/base/randx"
 
 var (
 	// RandSource is a random source to use for all random numbers used in patgen

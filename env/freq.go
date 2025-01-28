@@ -10,10 +10,10 @@ import (
 	"math"
 
 	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/base/randx"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/base/randx"
 	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/table"
 )
 
 // FreqTable is an Env that manages patterns from an table.Table with frequency

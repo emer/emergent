@@ -7,8 +7,8 @@ package paths
 import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/math32/vecint"
-	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
+	"github.com/emer/etensor/tensor"
 )
 
 // Rect implements a rectangular pattern of connectivity between two layers

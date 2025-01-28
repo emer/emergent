@@ -11,11 +11,11 @@ import (
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/math32/minmax"
-	"cogentcore.org/core/tensor/stats/split"
-	"cogentcore.org/core/tensor/stats/stats"
-	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/etensor/tensor/stats/split"
+	"github.com/emer/etensor/tensor/stats/stats"
+	"github.com/emer/etensor/tensor/table"
 )
 
 // AddCounterItems adds given Int counters from Stats,

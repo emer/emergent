@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/iox/tomlx"
-	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/base/strcase"
+	"cogentcore.org/lab/base/mpi"
 )
 
 // SetFromArgs sets Config values from command-line args,
@@ -202,10 +202,10 @@ func addAllCases(nm, path string, pval reflect.Value, allArgs map[string]reflect
 // fieldArgNamesStruct returns map of all the different ways the field names
 // can be specified as arg flags, mapping to the reflect.Value
 func fieldArgNamesStruct(obj any, path string, nest bool, allArgs map[string]reflect.Value) {
-	if reflectx.AnyIsNil(obj) {
+	ov := reflect.ValueOf(obj)
+	if reflectx.IsNil(ov) {
 		return
 	}
-	ov := reflect.ValueOf(obj)
 	if ov.Kind() == reflect.Pointer && ov.IsNil() {
 		return
 	}

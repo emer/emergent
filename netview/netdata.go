@@ -20,10 +20,10 @@ import (
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
+	"github.com/emer/etensor/plot/plotcore"
+	"github.com/emer/etensor/tensor/table"
 )
 
 // NetData maintains a record of all the network data that has been displayed

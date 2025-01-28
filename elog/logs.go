@@ -13,12 +13,12 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"cogentcore.org/core/base/mpi"
-	"cogentcore.org/core/tensor/table"
-	"cogentcore.org/core/tensor/tensormpi"
+	"cogentcore.org/lab/base/mpi"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/etensor/tensor/table"
+	"github.com/emer/etensor/tensor/tensormpi"
 )
 
 // LogPrec is precision for saving float values in logs

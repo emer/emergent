@@ -6,7 +6,7 @@ package env
 
 import (
 	"cogentcore.org/core/base/labels"
-	"cogentcore.org/core/tensor"
+	"github.com/emer/etensor/tensor"
 )
 
 //go:generate core generate -add-types
