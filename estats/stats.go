@@ -10,13 +10,13 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/base/timer"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/pca"
-	"cogentcore.org/core/tensor/stats/simat"
 	"github.com/emer/emergent/v2/actrf"
 	"github.com/emer/emergent/v2/confusion"
 	"github.com/emer/emergent/v2/decoder"
+	"github.com/emer/etensor/plot/plotcore"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/stats/pca"
+	"github.com/emer/etensor/tensor/stats/simat"
 )
 
 // Stats provides maps for storing statistics as named scalar and tensor values.

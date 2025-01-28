@@ -11,8 +11,8 @@ import (
 	"math"
 
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/simat"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/stats/simat"
 )
 
 // Matrix computes the confusion matrix, with rows representing

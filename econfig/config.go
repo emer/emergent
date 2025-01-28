@@ -12,7 +12,7 @@ import (
 	"reflect"
 
 	"cogentcore.org/core/base/fsx"
-	"cogentcore.org/core/base/mpi"
+	"cogentcore.org/lab/base/mpi"
 )
 
 var (

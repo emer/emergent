@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/iox/tomlx"
-	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/base/strcase"
+	"cogentcore.org/lab/base/mpi"
 )
 
 // SetFromArgs sets Config values from command-line args,

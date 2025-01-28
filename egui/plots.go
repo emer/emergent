@@ -10,10 +10,10 @@ import (
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors/gradient"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/etensor/plot/plotcore"
+	"github.com/emer/etensor/tensor/tensorcore"
 )
 
 // AddPlots adds plots based on the unique tables we have,

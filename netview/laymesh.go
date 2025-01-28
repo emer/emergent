@@ -7,9 +7,9 @@ package netview
 import (
 	"cogentcore.org/core/gpu/shape"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/emergent/v2/emer"
+	"github.com/emer/etensor/tensor"
 )
 
 // LayMesh is a xyz.Mesh that represents a layer -- it is dynamically updated using the

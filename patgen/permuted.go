@@ -10,10 +10,10 @@ import (
 	"log"
 	"math"
 
-	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/metric"
+	"cogentcore.org/lab/base/randx"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/stats/metric"
 )
 
 // PermutedBinary sets the given tensor to contain nOn onVal values and the

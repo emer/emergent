@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"cogentcore.org/core/base/mpi"
+	"cogentcore.org/lab/base/mpi"
 	"github.com/emer/emergent/v2/params"
 )
 
