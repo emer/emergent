@@ -8,10 +8,9 @@ package egui
 
 import (
 	"embed"
-	"fmt"
 	"net/http"
-	"strings"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
@@ -64,8 +63,8 @@ type GUI struct {
 	//	Toolbar is the overall sim toolbar
 	Toolbar *core.Toolbar `display:"-"`
 
-	// ReadMe is the sim ReadMe frame
-	ReadMe *core.Frame `display:"-"`
+	// Readme is the sim ReadMe frame
+	Readme *core.Frame `display:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
@@ -103,7 +102,7 @@ func (gui *GUI) Stopped() {
 }
 
 // MakeBody returns default window Body content
-func (gui *GUI) MakeBody(sim any, appname, title, about string, readmefses ...embed.FS) {
+func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...embed.FS) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
@@ -123,45 +122,30 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string, readmefses ...em
 	gui.Tabs = core.NewTabs(split)
 	gui.Tabs.Name = "tabs"
 
-	if len(readmefses) > 0 {
-		gui.addReadMe(readmefses[0], split)
+	if len(readme) > 0 {
+		gui.addReadme(readme[0], split)
 	}
 
 	split.SetSplits(.2, .8)
 }
 
-func (gui *GUI) addReadMe(readmefs embed.FS, split *core.Splits) {
-	gui.ReadMe = core.NewFrame(split)
-	gui.ReadMe.Name = "readme"
+func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
+	gui.Readme = core.NewFrame(split)
+	gui.Readme.Name = "readme"
+
+	split.SetTiles(core.TileSecondLong)
+	split.SetTileSplits(.8, .2)
 
 	ctx := htmlcore.NewContext()
-	ctx.GetURL = func(url string) (*http.Response, error) {
-		url = strings.Split(url, "?")[0]
-		url = strings.TrimPrefix(url, "/")
-		body, err := readmefs.Open(url)
-		if err != nil {
-			fmt.Printf("Error opening file %v\n", err)
-			return nil, err
-		}
-		res := &http.Response{
-			StatusCode:    200,
-			Body:          body,
-			Header:        make(http.Header),
-			ContentLength: -1,
-		}
-		return res, nil
+
+	ctx.GetURL = func(rawURL string) (*http.Response, error) {
+		return htmlcore.GetURLFromFS(readmefs, rawURL)
 	}
 
 	readme, err := readmefs.ReadFile("README.md")
 
-	if err == nil {
-		htmlcore.ReadMDString(ctx, gui.ReadMe, string(readme))
-		split.SetTiles(
-			core.TileSecondLong,
-		)
-		split.SetTileSplits(.8, .2)
-	} else {
-		fmt.Printf("MakeBody error %#v\n", err)
+	if errors.Log(err) == nil {
+		htmlcore.ReadMDString(ctx, gui.Readme, string(readme))
 	}
 }
 
