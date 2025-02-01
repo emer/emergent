@@ -133,7 +133,7 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 	gui.Readme = core.NewFrame(split)
 	gui.Readme.Name = "readme"
 
-	split.SetTileSplits(.2, .5, .3)
+	split.SetSplits(.2, .5, .3)
 
 	ctx := htmlcore.NewContext()
 
