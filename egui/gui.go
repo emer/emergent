@@ -124,17 +124,16 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...embed.
 
 	if len(readme) > 0 {
 		gui.addReadme(readme[0], split)
+	} else {
+		split.SetSplits(.2, .8)
 	}
-
-	split.SetSplits(.2, .8)
 }
 
 func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 	gui.Readme = core.NewFrame(split)
 	gui.Readme.Name = "readme"
 
-	split.SetTiles(core.TileSecondLong)
-	split.SetTileSplits(.8, .2)
+	split.SetTileSplits(.2, .5, .3)
 
 	ctx := htmlcore.NewContext()
 
