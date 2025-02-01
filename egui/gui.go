@@ -7,8 +7,13 @@ package egui
 //go:generate core generate -add-types
 
 import (
+	"embed"
+	"net/http"
+
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
+	"cogentcore.org/core/htmlcore"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
@@ -57,6 +62,9 @@ type GUI struct {
 
 	//	Toolbar is the overall sim toolbar
 	Toolbar *core.Toolbar `display:"-"`
+
+	// Readme is the sim ReadMe frame
+	Readme *core.Frame `display:"-"`
 }
 
 // UpdateWindow triggers an update on window body,
@@ -94,13 +102,14 @@ func (gui *GUI) Stopped() {
 }
 
 // MakeBody returns default window Body content
-func (gui *GUI) MakeBody(sim any, appname, title, about string) {
+func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...embed.FS) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
 	// gui.Body.App().About = about
 	split := core.NewSplits(gui.Body)
 	split.Name = "split"
+
 	gui.SimForm = core.NewForm(split).SetStruct(sim)
 	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
@@ -109,9 +118,34 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string) {
 			gui.Toolbar.Maker(tb.MakeToolbar)
 		})
 	}
+
 	gui.Tabs = core.NewTabs(split)
 	gui.Tabs.Name = "tabs"
-	split.SetSplits(.2, .8)
+
+	if len(readme) > 0 {
+		gui.addReadme(readme[0], split)
+	} else {
+		split.SetSplits(.2, .8)
+	}
+}
+
+func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
+	gui.Readme = core.NewFrame(split)
+	gui.Readme.Name = "readme"
+
+	split.SetSplits(.2, .5, .3)
+
+	ctx := htmlcore.NewContext()
+
+	ctx.GetURL = func(rawURL string) (*http.Response, error) {
+		return htmlcore.GetURLFromFS(readmefs, rawURL)
+	}
+
+	readme, err := readmefs.ReadFile("README.md")
+
+	if errors.Log(err) == nil {
+		htmlcore.ReadMDString(ctx, gui.Readme, string(readme))
+	}
 }
 
 // AddNetView adds NetView in tab with given name
