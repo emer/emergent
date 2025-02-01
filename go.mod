@@ -2,8 +2,6 @@ module github.com/emer/emergent/v2
 
 go 1.22.0
 
-toolchain go1.23.1
-
 require (
 	cogentcore.org/core v0.3.9-0.20250127075122-ddf64b82d707
 	cogentcore.org/lab v0.0.0-20250116065728-014d19175d12
