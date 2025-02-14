@@ -8,12 +8,18 @@ package egui
 
 import (
 	"embed"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
+	"cogentcore.org/core/styles/abilities"
+	"cogentcore.org/core/system"
+	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
@@ -141,10 +147,54 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		return htmlcore.GetURLFromFS(readmefs, rawURL)
 	}
 
+	ctx.AddWikilinkHandler(gui.readmeWikilink("sim"))
+
+	ctx.OpenURL = gui.readmeOpenURL
+
 	readme, err := readmefs.ReadFile("README.md")
 
 	if errors.Log(err) == nil {
 		htmlcore.ReadMDString(ctx, gui.Readme, string(readme))
+	}
+}
+
+func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
+	return func(text string) (url string, label string) {
+		if !strings.HasPrefix(text, prefix+":") {
+			return "", ""
+		}
+		text = strings.TrimPrefix(text, prefix+":")
+		url = prefix + "://" + text
+		fmt.Println("text: ", text)
+		return url, text
+	}
+}
+
+func (gui *GUI) readmeOpenURL(url string) {
+	if strings.HasPrefix(url, "sim://") {
+		fmt.Println("open url: ", url)
+		text := strings.TrimPrefix(url, "sim://")
+		WidgetFound := false
+		gui.Body.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
+			// fmt.Println("Current widget Base:", cwb)
+			// fmt.Println("Widget found = ", WidgetFound)
+			if (WidgetFound) {
+				return tree.Break
+			}
+			if (labels.ToLabel(cwb.Name) == labels.ToLabel(text)) && (cwb.AbilityIs(abilities.Focusable)) {
+				// fmt.Println("found widget")
+				// fmt.Println(cwb.Name)
+				cwb.SetFocus()
+				// fmt.Println("focus set")
+				WidgetFound = true
+				return tree.Break
+			} else {
+				return tree.Continue
+			}
+		})
+		// fmt.Println("WidgetWalkDown Break")
+	} else {
+		system.TheApp.OpenURL(url)
 	}
 }
 
