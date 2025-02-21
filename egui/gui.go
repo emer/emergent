@@ -171,29 +171,49 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 }
 
 func (gui *GUI) readmeOpenURL(url string) {
+	found := false
+	focusSet := false
 	if strings.HasPrefix(url, "sim://") {
 		fmt.Println("open url: ", url)
 		text := strings.TrimPrefix(url, "sim://")
-		WidgetFound := false
-		gui.Body.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
-			// fmt.Println("Current widget Base:", cwb)
+		gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
+			fmt.Println("Current widget Base:", cwb)
 			// fmt.Println("Widget found = ", WidgetFound)
-			if (WidgetFound) {
+			if focusSet {
 				return tree.Break
 			}
-			if (labels.ToLabel(cwb.Name) == labels.ToLabel(text)) && (cwb.AbilityIs(abilities.Focusable)) {
-				// fmt.Println("found widget")
-				// fmt.Println(cwb.Name)
-				cwb.SetFocus()
-				// fmt.Println("focus set")
-				WidgetFound = true
-				return tree.Break
-			} else {
-				return tree.Continue
+			if strings.ToLower(labels.ToLabel(cw)) == strings.ToLower(text) {
+				if cwb.AbilityIs(abilities.Focusable) {
+					fmt.Printf("labels.ToLabel(cw): %v\n", labels.ToLabel(cw))
+					fmt.Printf("text: %v\n", text)
+					fmt.Println("found widget")
+					fmt.Println(cwb.Name)
+					cwb.SetFocus()
+					fmt.Println("focus set")
+					found = true
+					return tree.Break
+				} 
+
+				next := core.AsWidget(tree.Next(cwb))
+				if next.AbilityIs(abilities.Focusable) {
+					next.SetFocus()
+					return tree.Break
+				}
 			}
+
+			// This looks very convoluted. 
+			if !focusSet && strings.Contains( strings.ToLower(labels.ToLabel(cw)), strings.ToLower(text)) {
+				if cwb.AbilityIs(abilities.Focusable) {
+					cwb.SetFocus()
+					focusSet = true
+					return tree.Break
+				} 
+			}
+			return tree.Continue
 		})
 		// fmt.Println("WidgetWalkDown Break")
-	} else {
+	}
+	if !found {
 		system.TheApp.OpenURL(url)
 	}
 }
