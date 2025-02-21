@@ -170,50 +170,67 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 	}
 }
 
+
+	// TODO
+	// Focus tab
+	// Use Label.toLabel 
+	// core.AsWidget 
+	// if you can do it on cw, 
+	// Use as little nesting as possible, ifs an no elses if possible. 
+	// Change work space to high level workspace: Not really getting? 
+	// Disambiguate 
+	// Add / parser for path: If path doesn't include "word"/, skip. 
+
+
 func (gui *GUI) readmeOpenURL(url string) {
-	found := false
+	// found := false
 	focusSet := false
+
 	if strings.HasPrefix(url, "sim://") {
 		fmt.Println("open url: ", url)
 		text := strings.TrimPrefix(url, "sim://")
+
+		// var pathPrefix string = ""
+		// hasPath := false
+		// if strings.Contains(text, "/"){
+		// 	pathPrefix, text, hasPath = strings.Cut(text, "/")
+		// }
+
 		gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
-			fmt.Println("Current widget Base:", cwb)
-			// fmt.Println("Widget found = ", WidgetFound)
 			if focusSet {
 				return tree.Break
 			}
-			if strings.ToLower(labels.ToLabel(cw)) == strings.ToLower(text) {
-				if cwb.AbilityIs(abilities.Focusable) {
-					fmt.Printf("labels.ToLabel(cw): %v\n", labels.ToLabel(cw))
-					fmt.Printf("text: %v\n", text)
-					fmt.Println("found widget")
-					fmt.Println(cwb.Name)
-					cwb.SetFocus()
-					fmt.Println("focus set")
-					found = true
-					return tree.Break
-				} 
-
-				next := core.AsWidget(tree.Next(cwb))
-				if next.AbilityIs(abilities.Focusable) {
-					next.SetFocus()
-					return tree.Break
-				}
-			}
-
-			// This looks very convoluted. 
-			if !focusSet && strings.Contains( strings.ToLower(labels.ToLabel(cw)), strings.ToLower(text)) {
+			label := labels.ToLabel(cw)
+			if strings.EqualFold(label, text) {
+				// found = true
 				if cwb.AbilityIs(abilities.Focusable) {
 					cwb.SetFocus()
 					focusSet = true
 					return tree.Break
 				} 
+				next := core.AsWidget(tree.Next(cwb)) // RM? recursive solution? 
+				if next.AbilityIs(abilities.Focusable) {
+					next.SetFocus()
+					focusSet = true
+					fmt.Println("Next focus used")
+					return tree.Break
+				}
+			}
+
+			// Found but not focused loop
+			if !focusSet && strings.Contains(strings.ToLower(label), strings.ToLower(text)) {
+				if cwb.AbilityIs(abilities.Focusable) {
+					cwb.SetFocus()
+					focusSet = true
+					fmt.Println("focus Loop used")
+					return tree.Break
+				} 
 			}
 			return tree.Continue
 		})
-		// fmt.Println("WidgetWalkDown Break")
 	}
-	if !found {
+	if !focusSet { 
+		fmt.Println("No match to", url, " in sim. Trying OpenURL")
 		system.TheApp.OpenURL(url)
 	}
 }
