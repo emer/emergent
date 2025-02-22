@@ -181,50 +181,59 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 	// Disambiguate 
 	// Add / parser for path: If path doesn't include "word"/, skip. 
 
+	// Move path logic earlier as a disqualifier 
+	// Try to register internship via handshake: Cogent core. 
+
 
 func (gui *GUI) readmeOpenURL(url string) {
-	// found := false
 	focusSet := false
 
 	if strings.HasPrefix(url, "sim://") {
 		fmt.Println("open url: ", url)
-		text := strings.TrimPrefix(url, "sim://")
+		text := strings.TrimPrefix(url, "sim://") 
 
-		// var pathPrefix string = ""
-		// hasPath := false
-		// if strings.Contains(text, "/"){
-		// 	pathPrefix, text, hasPath = strings.Cut(text, "/")
-		// }
+
+		// For links with path specificaiton: `[[sim://]]`
+		var pathPrefix string = ""
+		hasPath := false 
+		if strings.Contains(text, "/"){
+			pathPrefix, text, hasPath = strings.Cut(text, "/")
+		}
+		fmt.Println("pathPrefix:", pathPrefix," text:", text, "hasPath: ", hasPath)
 
 		gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
 			if focusSet {
 				return tree.Break
 			}
-			label := labels.ToLabel(cw)
-			if strings.EqualFold(label, text) {
-				// found = true
-				if cwb.AbilityIs(abilities.Focusable) {
-					cwb.SetFocus()
-					focusSet = true
-					return tree.Break
-				} 
-				next := core.AsWidget(tree.Next(cwb)) // RM? recursive solution? 
-				if next.AbilityIs(abilities.Focusable) {
-					next.SetFocus()
-					focusSet = true
-					fmt.Println("Next focus used")
-					return tree.Break
-				}
+			if !hasPath && !cwb.IsVisible() {
+				return tree.Break
 			}
+			if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix){
+				return tree.Continue
+			}
+			label := labels.ToLabel(cw)
+			if !strings.EqualFold(label, text) {
+				return tree.Continue
+			}
+			if cwb.AbilityIs(abilities.Focusable) {
+				cwb.SetFocus()
+				focusSet = true
+				
+				// cwb.walkup activate Walk up until find a widget whose parents`tabs` and calls index in parent to get tab, tabs.select.index 
+				// if widget.parent is inside a tabs, select this tabs, only if 
+				// tabs.select.index  
+				// selectTabIndex()
+				// indexInParent() call on the node in walk up fn : asTree  
+				// Link hovering? (maybe not now) Maybe better to link more than not
 
-			// Found but not focused loop
-			if !focusSet && strings.Contains(strings.ToLower(label), strings.ToLower(text)) {
-				if cwb.AbilityIs(abilities.Focusable) {
-					cwb.SetFocus()
-					focusSet = true
-					fmt.Println("focus Loop used")
-					return tree.Break
-				} 
+				return tree.Break
+			} 
+			next := core.AsWidget(tree.Next(cwb)) 
+			if next.AbilityIs(abilities.Focusable) {
+				next.SetFocus()
+				focusSet = true
+				fmt.Println("Next focus used")
+				return tree.Break
 			}
 			return tree.Continue
 		})
