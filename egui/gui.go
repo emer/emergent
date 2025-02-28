@@ -207,14 +207,12 @@ func (gui *GUI) readmeOpenURL(url string) {
 			if next.AbilityIs(abilities.Focusable) {
 				next.SetFocus()
 				focusSet = true
-				fmt.Println("Next focus used")
 				return tree.Break
 			}
 			return tree.Continue
 		})
 	}
 	if !focusSet { 
-		fmt.Println("No match to", url, " in sim. Trying OpenURL")
 		system.TheApp.OpenURL(url)
 	}
 }
