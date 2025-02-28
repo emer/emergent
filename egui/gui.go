@@ -170,6 +170,7 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 	}
 }
 
+// Parses URL, highlights linked button or opens URL
 func (gui *GUI) readmeOpenURL(url string) {
 	focusSet := false
 
