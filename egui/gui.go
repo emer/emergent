@@ -170,21 +170,6 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 	}
 }
 
-
-	// TODO
-	// Focus tab
-	// Use Label.toLabel 
-	// core.AsWidget 
-	// if you can do it on cw, 
-	// Use as little nesting as possible, ifs an no elses if possible. 
-	// Change work space to high level workspace: Not really getting? 
-	// Disambiguate 
-	// Add / parser for path: If path doesn't include "word"/, skip. 
-
-	// Move path logic earlier as a disqualifier 
-	// Try to register internship via handshake: Cogent core. 
-
-
 func (gui *GUI) readmeOpenURL(url string) {
 	focusSet := false
 
@@ -192,8 +177,6 @@ func (gui *GUI) readmeOpenURL(url string) {
 		fmt.Println("open url: ", url)
 		text := strings.TrimPrefix(url, "sim://") 
 
-
-		// For links with path specificaiton: `[[sim://]]`
 		var pathPrefix string = ""
 		hasPath := false 
 		if strings.Contains(text, "/"){
@@ -218,14 +201,6 @@ func (gui *GUI) readmeOpenURL(url string) {
 			if cwb.AbilityIs(abilities.Focusable) {
 				cwb.SetFocus()
 				focusSet = true
-				
-				// cwb.walkup activate Walk up until find a widget whose parents`tabs` and calls index in parent to get tab, tabs.select.index 
-				// if widget.parent is inside a tabs, select this tabs, only if 
-				// tabs.select.index  
-				// selectTabIndex()
-				// indexInParent() call on the node in walk up fn : asTree  
-				// Link hovering? (maybe not now) Maybe better to link more than not
-
 				return tree.Break
 			} 
 			next := core.AsWidget(tree.Next(cwb)) 
