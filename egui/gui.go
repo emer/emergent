@@ -171,50 +171,45 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 // readmeOpenURL Parses URL, highlights linked button or opens URL
 func (gui *GUI) readmeOpenURL(url string) {
 	focusSet := false
-
 	if !strings.HasPrefix(url, "sim://"){
 		system.TheApp.OpenURL(url)
 		return
 	}
 
-
-	if strings.HasPrefix(url, "sim://") {
-		text := strings.TrimPrefix(url, "sim://") 
-
-		var pathPrefix string = ""
-		hasPath := false 
-		if strings.Contains(text, "/"){
-			pathPrefix, text, hasPath = strings.Cut(text, "/")
-		}
-
-		gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
-			if focusSet {
-				return tree.Break
-			}
-			if !hasPath && !cwb.IsVisible() {
-				return tree.Break
-			}
-			if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix){
-				return tree.Continue
-			}
-			label := labels.ToLabel(cw)
-			if !strings.EqualFold(label, text) {
-				return tree.Continue
-			}
-			if cwb.AbilityIs(abilities.Focusable) {
-				cwb.SetFocus()
-				focusSet = true
-				return tree.Break
-			} 
-			next := core.AsWidget(tree.Next(cwb)) 
-			if next.AbilityIs(abilities.Focusable) {
-				next.SetFocus()
-				focusSet = true
-				return tree.Break
-			}
-			return tree.Continue
-		})
+	text := strings.TrimPrefix(url, "sim://") 
+	var pathPrefix string = ""
+	hasPath := false 
+	if strings.Contains(text, "/"){
+		pathPrefix, text, hasPath = strings.Cut(text, "/")
 	}
+
+	gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
+		if focusSet {
+			return tree.Break
+		}
+		if !hasPath && !cwb.IsVisible() {
+			return tree.Break
+		}
+		if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix){
+			return tree.Continue
+		}
+		label := labels.ToLabel(cw)
+		if !strings.EqualFold(label, text) {
+			return tree.Continue
+		}
+		if cwb.AbilityIs(abilities.Focusable) {
+			cwb.SetFocus()
+			focusSet = true
+			return tree.Break
+		} 
+		next := core.AsWidget(tree.Next(cwb)) 
+		if next.AbilityIs(abilities.Focusable) {
+			next.SetFocus()
+			focusSet = true
+			return tree.Break
+		}
+		return tree.Continue
+	})
 	core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim url %q", url))
 }
 
