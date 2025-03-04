@@ -8,10 +8,9 @@ package egui
 
 import (
 	"embed"
-	"fmt"
+	// "fmt"
 	"net/http"
 	"strings"
-
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/core"
@@ -165,17 +164,24 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 		}
 		text = strings.TrimPrefix(text, prefix+":")
 		url = prefix + "://" + text
-		fmt.Println("text: ", text)
 		return url, text
 	}
 }
 
-// Parses URL, highlights linked button or opens URL
+// readmeOpenURL Parses URL, highlights linked button or opens URL
 func (gui *GUI) readmeOpenURL(url string) {
 	focusSet := false
 
+	if !strings.HasPrefix(url, "sim://"){
+		// core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim rul %q", url))
+		system.TheApp.OpenURL(url)
+		// if err != nil {
+			// core.ErrorSnackbar(gui.Body, fmt.Error("invalid sim rul %q", url))
+		// }	
+	}
+
+
 	if strings.HasPrefix(url, "sim://") {
-		fmt.Println("open url: ", url)
 		text := strings.TrimPrefix(url, "sim://") 
 
 		var pathPrefix string = ""
@@ -183,7 +189,6 @@ func (gui *GUI) readmeOpenURL(url string) {
 		if strings.Contains(text, "/"){
 			pathPrefix, text, hasPath = strings.Cut(text, "/")
 		}
-		fmt.Println("pathPrefix:", pathPrefix," text:", text, "hasPath: ", hasPath)
 
 		gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
 			if focusSet {
@@ -212,9 +217,6 @@ func (gui *GUI) readmeOpenURL(url string) {
 			}
 			return tree.Continue
 		})
-	}
-	if !focusSet { 
-		system.TheApp.OpenURL(url)
 	}
 }
 
