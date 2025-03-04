@@ -8,7 +8,7 @@ package egui
 
 import (
 	"embed"
-	// "fmt"
+	"fmt"
 	"net/http"
 	"strings"
 	"cogentcore.org/core/base/errors"
@@ -173,11 +173,8 @@ func (gui *GUI) readmeOpenURL(url string) {
 	focusSet := false
 
 	if !strings.HasPrefix(url, "sim://"){
-		// core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim rul %q", url))
 		system.TheApp.OpenURL(url)
-		// if err != nil {
-			// core.ErrorSnackbar(gui.Body, fmt.Error("invalid sim rul %q", url))
-		// }	
+		return
 	}
 
 
@@ -218,6 +215,7 @@ func (gui *GUI) readmeOpenURL(url string) {
 			return tree.Continue
 		})
 	}
+	core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim url %q", url))
 }
 
 // AddNetView adds NetView in tab with given name
