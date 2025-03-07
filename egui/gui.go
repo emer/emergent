@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/core"
@@ -164,6 +165,9 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 		}
 		text = strings.TrimPrefix(text, prefix+":")
 		url = prefix + "://" + text
+		if strings.Contains(text, "/") {
+			_, text, _ = strings.Cut(text, "/")
+		}
 		return url, text
 	}
 }
@@ -171,15 +175,15 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 // readmeOpenURL Parses URL, highlights linked button or opens URL
 func (gui *GUI) readmeOpenURL(url string) {
 	focusSet := false
-	if !strings.HasPrefix(url, "sim://"){
+	if !strings.HasPrefix(url, "sim://") {
 		system.TheApp.OpenURL(url)
 		return
 	}
 
-	text := strings.TrimPrefix(url, "sim://") 
+	text := strings.TrimPrefix(url, "sim://")
 	var pathPrefix string = ""
-	hasPath := false 
-	if strings.Contains(text, "/"){
+	hasPath := false
+	if strings.Contains(text, "/") {
 		pathPrefix, text, hasPath = strings.Cut(text, "/")
 	}
 
@@ -190,7 +194,7 @@ func (gui *GUI) readmeOpenURL(url string) {
 		if !hasPath && !cwb.IsVisible() {
 			return tree.Break
 		}
-		if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix){
+		if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix) {
 			return tree.Continue
 		}
 		label := labels.ToLabel(cw)
@@ -201,8 +205,8 @@ func (gui *GUI) readmeOpenURL(url string) {
 			cwb.SetFocus()
 			focusSet = true
 			return tree.Break
-		} 
-		next := core.AsWidget(tree.Next(cwb)) 
+		}
+		next := core.AsWidget(tree.Next(cwb))
 		if next.AbilityIs(abilities.Focusable) {
 			next.SetFocus()
 			focusSet = true
@@ -210,7 +214,9 @@ func (gui *GUI) readmeOpenURL(url string) {
 		}
 		return tree.Continue
 	})
-	core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim url %q", url))
+	if !focusSet {
+		core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim url %q", url))
+	}
 }
 
 // AddNetView adds NetView in tab with given name
