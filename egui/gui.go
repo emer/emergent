@@ -8,12 +8,18 @@ package egui
 
 import (
 	"embed"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
+	"cogentcore.org/core/styles/abilities"
+	"cogentcore.org/core/system"
+	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
@@ -141,10 +147,75 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		return htmlcore.GetURLFromFS(readmefs, rawURL)
 	}
 
+	ctx.AddWikilinkHandler(gui.readmeWikilink("sim"))
+
+	ctx.OpenURL = gui.readmeOpenURL
+
 	readme, err := readmefs.ReadFile("README.md")
 
 	if errors.Log(err) == nil {
 		htmlcore.ReadMDString(ctx, gui.Readme, string(readme))
+	}
+}
+
+func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
+	return func(text string) (url string, label string) {
+		if !strings.HasPrefix(text, prefix+":") {
+			return "", ""
+		}
+		text = strings.TrimPrefix(text, prefix+":")
+		url = prefix + "://" + text
+		if strings.Contains(text, "/") {
+			_, text, _ = strings.Cut(text, "/")
+		}
+		return url, text
+	}
+}
+
+// readmeOpenURL Parses URL, highlights linked button or opens URL
+func (gui *GUI) readmeOpenURL(url string) {
+	focusSet := false
+	if !strings.HasPrefix(url, "sim://") {
+		system.TheApp.OpenURL(url)
+		return
+	}
+
+	text := strings.TrimPrefix(url, "sim://")
+	var pathPrefix string = ""
+	hasPath := false
+	if strings.Contains(text, "/") {
+		pathPrefix, text, hasPath = strings.Cut(text, "/")
+	}
+
+	gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
+		if focusSet {
+			return tree.Break
+		}
+		if !hasPath && !cwb.IsVisible() {
+			return tree.Break
+		}
+		if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix) {
+			return tree.Continue
+		}
+		label := labels.ToLabel(cw)
+		if !strings.EqualFold(label, text) {
+			return tree.Continue
+		}
+		if cwb.AbilityIs(abilities.Focusable) {
+			cwb.SetFocus()
+			focusSet = true
+			return tree.Break
+		}
+		next := core.AsWidget(tree.Next(cwb))
+		if next.AbilityIs(abilities.Focusable) {
+			next.SetFocus()
+			focusSet = true
+			return tree.Break
+		}
+		return tree.Continue
+	})
+	if !focusSet {
+		core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim url %q", url))
 	}
 }
 
