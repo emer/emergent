@@ -25,7 +25,7 @@ import (
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/system"
-	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/text/textcore"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
 	"cogentcore.org/core/xyz"
@@ -769,14 +769,14 @@ func (nv *NetView) OpenWeights(filename core.Filename) { //types:add
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string { //types:add
 	nds := nv.Net.AsEmer().NonDefaultParams()
-	texteditor.TextDialog(nv, "Non Default Params: "+nv.Name, nds)
+	textcore.TextDialog(nv, "Non Default Params: "+nv.Name, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
 func (nv *NetView) ShowAllParams() string { //types:add
 	nds := nv.Net.AsEmer().AllParams()
-	texteditor.TextDialog(nv, "All Params: "+nv.Name, nds)
+	textcore.TextDialog(nv, "All Params: "+nv.Name, nds)
 	return nds
 }
 
@@ -784,7 +784,7 @@ func (nv *NetView) ShowAllParams() string { //types:add
 // of the most important layer-level params (specific to each algorithm)
 func (nv *NetView) ShowKeyLayerParams() string { //types:add
 	nds := nv.Net.KeyLayerParams()
-	texteditor.TextDialog(nv, "Key Layer Params: "+nv.Name, nds)
+	textcore.TextDialog(nv, "Key Layer Params: "+nv.Name, nds)
 	return nds
 }
 
@@ -792,6 +792,6 @@ func (nv *NetView) ShowKeyLayerParams() string { //types:add
 // of the most important pathway-level params (specific to each algorithm)
 func (nv *NetView) ShowKeyPathParams() string { //types:add
 	nds := nv.Net.KeyPathParams()
-	texteditor.TextDialog(nv, "Key Path Params: "+nv.Name, nds)
+	textcore.TextDialog(nv, "Key Path Params: "+nv.Name, nds)
 	return nds
 }
