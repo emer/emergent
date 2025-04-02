@@ -11,6 +11,7 @@ import (
 	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/styles"
+	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/lab/lab"
 	"github.com/emer/emergent/v2/netview"
@@ -54,15 +55,15 @@ func (gui *GUI) UpdateWindow() {
 		gui.Toolbar.Restyle()
 	}
 	gui.SimForm.Update()
-	gui.Body.Scene.NeedsRender()
+	gui.Splits.NeedsRender()
 	// todo: could update other stuff but not really necessary
 }
 
 // GoUpdateWindow triggers an update on window body,
 // for calling from a separate goroutine.
 func (gui *GUI) GoUpdateWindow() {
-	gui.Body.Scene.AsyncLock()
-	defer gui.Body.Scene.AsyncUnlock()
+	gui.Splits.Scene.AsyncLock()
+	defer gui.Splits.Scene.AsyncUnlock()
 	gui.UpdateWindow()
 }
 
@@ -71,32 +72,43 @@ func (gui *GUI) GoUpdateWindow() {
 // Updates the IsRunning flag and toolbar.
 func (gui *GUI) Stopped(mode, level enums.Enum) {
 	gui.IsRunning = false
-	if gui.Body == nil {
-		return
-	}
 	if gui.OnStop != nil {
 		gui.OnStop(mode, level)
 	}
 	gui.GoUpdateWindow()
 }
 
-// MakeBody returns default window Body content
-func (gui *GUI) MakeBody(sim any, appname, title, about string) {
+// MakeBody returns default window Body content,
+// optionally using the existing body if non-nil.
+func (gui *GUI) MakeBody(b tree.Node, sim any, appname, title, about string) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
-	gui.Body = core.NewBody(appname).SetTitle(title)
-	core.AppAbout = about
-	split := core.NewSplits(gui.Body)
+	if b == nil {
+		gui.Body = core.NewBody(appname).SetTitle(title)
+		b = gui.Body
+		core.AppAbout = about
+	} else {
+		gui.Toolbar = core.NewToolbar(b)
+	}
+	split := core.NewSplits(b)
+	split.Styler(func(s *styles.Style) {
+		s.Min.Y.Em(40)
+	})
 	split.Name = "split"
 	gui.Splits = split
 	gui.SimForm = core.NewForm(split).SetStruct(sim)
 	gui.SimForm.Name = "sim-form"
 	if tb, ok := sim.(core.ToolbarMaker); ok {
-		gui.Body.AddTopBar(func(bar *core.Frame) {
-			gui.Toolbar = core.NewToolbar(bar)
+		if gui.Body != nil {
+			gui.Body.AddTopBar(func(bar *core.Frame) {
+				gui.Toolbar = core.NewToolbar(bar)
+				gui.Toolbar.Maker(gui.MakeToolbar)
+				gui.Toolbar.Maker(tb.MakeToolbar)
+			})
+		} else {
 			gui.Toolbar.Maker(gui.MakeToolbar)
 			gui.Toolbar.Maker(tb.MakeToolbar)
-		})
+		}
 	}
 	fform := core.NewFrame(split)
 	fform.Styler(func(s *styles.Style) {
@@ -139,17 +151,18 @@ func (gui *GUI) NetView() *netview.NetView {
 
 // FinalizeGUI wraps the end functionality of the GUI
 func (gui *GUI) FinalizeGUI(closePrompt bool) {
-	if closePrompt {
-		gui.Body.AddCloseDialog(func(d *core.Body) bool {
-			d.SetTitle("Close?")
-			core.NewText(d).SetType(core.TextSupporting).SetText("Are you sure you want to close?")
-			d.AddBottomBar(func(bar *core.Frame) {
-				d.AddOK(bar).SetText("Close").OnClick(func(e events.Event) {
-					gui.Body.Close()
-				})
-			})
-			return true
-		})
-	}
 	gui.Active = true
+	if !closePrompt || gui.Body == nil {
+		return
+	}
+	gui.Body.AddCloseDialog(func(d *core.Body) bool {
+		d.SetTitle("Close?")
+		core.NewText(d).SetType(core.TextSupporting).SetText("Are you sure you want to close?")
+		d.AddBottomBar(func(bar *core.Frame) {
+			d.AddOK(bar).SetText("Close").OnClick(func(e events.Event) {
+				gui.Body.Close()
+			})
+		})
+		return true
+	})
 }
