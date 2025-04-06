@@ -1,10 +1,10 @@
 module github.com/emer/emergent/v2
 
-go 1.22
+go 1.23.0
 
 require (
-	cogentcore.org/core v0.3.9-0.20250402182034-99b63fc362e0
-	cogentcore.org/lab v0.1.1-0.20250402183515-f23e1a9f4b34
+	cogentcore.org/core v0.3.9-0.20250406033103-abf571a3ef6c
+	cogentcore.org/lab v0.1.1-0.20250406034000-173465805348
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 )
@@ -48,7 +48,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.21.3 // indirect
 	github.com/tdewolff/parse/v2 v2.7.19 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/image v0.23.0 // indirect
+	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
@@ -57,5 +57,7 @@ require (
 	golang.org/x/tools v0.24.0 // indirect
 	gonum.org/v1/gonum v0.15.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	star-tex.org/x/tex v0.5.0 // indirect
+	modernc.org/knuth v0.5.4 // indirect
+	modernc.org/token v1.1.0 // indirect
+	star-tex.org/x/tex v0.6.0 // indirect
 )
