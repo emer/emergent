@@ -1,7 +1,7 @@
-cogentcore.org/core v0.3.10-0.20250408183414-88aeaf0ee692 h1:u2TdNFXVkEimUkzYkdFahrb2iIi/gCJPm5s8PUpkDUQ=
-cogentcore.org/core v0.3.10-0.20250408183414-88aeaf0ee692/go.mod h1:dSb8eH/6CsC7Y9S7ZdqLf0TUbvbgPgrBGCUCn/Z1b/0=
-cogentcore.org/lab v0.1.1-0.20250408195441-4a25ebd4ab5e h1:jnsCtRoFvd6DbwECE6YKGADgdRcX9foJQiBTptum0nc=
-cogentcore.org/lab v0.1.1-0.20250408195441-4a25ebd4ab5e/go.mod h1:UWbo9IzDvEWkzp2MhS7dyiE/SmY6I+caiqlvNafdtXI=
+cogentcore.org/core v0.3.10-0.20250409041215-e6441a20a402 h1:bnLDGMBXO4iWHT45MhHPLZcxYuy0e9+jyydEVlvYF08=
+cogentcore.org/core v0.3.10-0.20250409041215-e6441a20a402/go.mod h1:dSb8eH/6CsC7Y9S7ZdqLf0TUbvbgPgrBGCUCn/Z1b/0=
+cogentcore.org/lab v0.1.1-0.20250409042104-35852a6a2965 h1:sMr/GBE5u+1FGgiMbfvE9iSawwYckZlbEL+Il53kK0Q=
+cogentcore.org/lab v0.1.1-0.20250409042104-35852a6a2965/go.mod h1:g1O98Mxg0ke7P2D7bUR4XCSJQvQ6sIpo6vj/XoTWHwg=
 github.com/Bios-Marcel/wastebasket/v2 v2.0.2 h1:zOgACjeSca1lvhGDRN/dbcpFkY6FT85f5F2CImywPh4=
 github.com/Bios-Marcel/wastebasket/v2 v2.0.2/go.mod h1:769oPCv6eH7ugl90DYIsWwjZh4hgNmMS3Zuhe1bH6KU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
