@@ -7,6 +7,8 @@ package egui
 //go:generate core generate -add-types
 
 import (
+	"io/fs"
+
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
@@ -78,11 +80,20 @@ func (gui *GUI) Stopped(mode, level enums.Enum) {
 	gui.GoUpdateWindow()
 }
 
-// MakeBody returns default window Body content,
-// optionally using the existing body if non-nil.
-func (gui *GUI) MakeBody(b tree.Node, sim any, appname, title, about string) {
-	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
+// NewGUIBody returns a new GUI, with an initialized Body by calling [gui.MakeBody].
+func NewGUIBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string) *GUI {
+	gu := &GUI{}
+	gu.MakeBody(b, sim, fsroot, appname, title, about)
+	return gu
+}
 
+// MakeBody initializes default Body with a top-level [core.Splits] containing
+// a [core.Form] editor of the given sim object, and a filetree for the data filesystem
+// rooted at fsroot, and with given app name, title, and about information.
+// The first arg is an optional existing [core.Body] to make into: if nil then
+// a new body is made first.
+func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string) {
+	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 	if b == nil {
 		gui.Body = core.NewBody(appname).SetTitle(title)
 		b = gui.Body
@@ -121,9 +132,13 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, appname, title, about string) {
 	gui.Tabs = tabs
 	lab.Lab = tabs
 	tabs.Name = "tabs"
+	gui.FS = fsroot
+	gui.DataRoot = "Root"
+	gui.CycleUpdateInterval = 10
+	gui.UpdateFiles()
 	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)
-	split.SetSplits(.2, .7, .8)
+	split.SetSplits(.2, .5, .8)
 }
 
 // AddNetView adds NetView in tab with given name

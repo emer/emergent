@@ -1,0 +1,10 @@
+#!/usr/bin/env goal
+
+command extract {
+    for _, pkg := range args {
+        yaegi extract {"github.com/emer/emergent/v2/"+pkg}
+    }
+}
+
+extract netview egui
+
