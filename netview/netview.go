@@ -768,14 +768,14 @@ func (nv *NetView) OpenWeights(filename core.Filename) { //types:add
 // ShowNonDefaultParams shows a dialog of all the parameters that
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string { //types:add
-	nds := nv.Net.AsEmer().NonDefaultParams()
+	nds := nv.Net.AsEmer().ParamsString(emer.NonDefault)
 	textcore.TextDialog(nv, "Non Default Params: "+nv.Name, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
 func (nv *NetView) ShowAllParams() string { //types:add
-	nds := nv.Net.AsEmer().AllParams()
+	nds := nv.Net.AsEmer().ParamsString(emer.AllParams)
 	textcore.TextDialog(nv, "All Params: "+nv.Name, nds)
 	return nds
 }

@@ -345,48 +345,34 @@ func (nt *NetworkBase) VarRange(varNm string) (min, max float32, err error) {
 	return
 }
 
-////////	Params
+////////  Params
 
-// NonDefaultParams returns a listing of all parameters in the Network that
-// are not at their default values -- useful for setting param styles etc.
-func (nt *NetworkBase) NonDefaultParams() string {
-	nds := ""
+const (
+	// AllParams can be used for ParamsString arg to list all params.
+	AllParams = false
+
+	// NonDefault can be used for ParamsString arg to list only non-default params.
+	NonDefault = true
+)
+
+// ParamsString returns a listing of all parameters in the Layer and
+// pathways within the layer. If nonDefault is true, only report those
+// not at their default values.
+func (nt *NetworkBase) ParamsString(nonDefault bool) string {
+	var b strings.Builder
 	en := nt.EmerNetwork
 	nlay := en.NumLayers()
 	for li := range nlay {
 		ly := en.EmerLayer(li)
-		nd := ly.NonDefaultParams()
-		nds += nd
+		b.WriteString(ly.ParamsString(nonDefault))
 	}
-	return nds
+	return b.String()
 }
 
-// AllParams returns a listing of all parameters in the Network.
-func (nt *NetworkBase) AllParams() string {
-	nds := ""
-	en := nt.EmerNetwork
-	nlay := en.NumLayers()
-	for li := range nlay {
-		ly := en.EmerLayer(li)
-		nd := ly.AllParams()
-		nds += nd
-	}
-	return nds
-}
-
-// SaveAllParams saves list of all parameters in Network to given file.
-func (nt *NetworkBase) SaveAllParams(filename core.Filename) error {
-	str := nt.AllParams()
-	err := os.WriteFile(string(filename), []byte(str), 0666)
-	if err != nil {
-		log.Println(err)
-	}
-	return err
-}
-
-// SaveNonDefaultParams saves list of all non-default parameters in Network to given file.
-func (nt *NetworkBase) SaveNonDefaultParams(filename core.Filename) error {
-	str := nt.NonDefaultParams()
+// SaveParams saves list of parameters in Network to given file.
+// If nonDefault is true, only report those not at their default values.
+func (nt *NetworkBase) SaveParams(nonDefault bool, filename core.Filename) error {
+	str := nt.ParamsString(nonDefault)
 	err := os.WriteFile(string(filename), []byte(str), 0666)
 	if err != nil {
 		log.Println(err)

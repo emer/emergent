@@ -652,6 +652,9 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.Editor) { //types
 		dc := dt.Column(vnm)
 		plot.Styler(dc, func(s *plot.Style) {
 			s.On = disp
+			if !vp.Range.FixMax {
+				s.RightY = true
+			}
 			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
 		})
 	}

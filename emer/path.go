@@ -86,8 +86,9 @@ type Path interface {
 	// so it is the only one that needs to be updated for derived types.
 	SynValue1D(varIndex int, synIndex int) float32
 
-	// AllParams returns a listing of all parameters in the Pathway.
-	AllParams() string
+	// ParamsString returns a listing of all parameters in the pathway.
+	// If nonDefault is true, only report those not at their default values.
+	ParamsString(nonDefault bool) string
 
 	// WriteWeightsJSON writes the weights from this pathway
 	// from the receiver-side perspective in a JSON text format.
@@ -180,13 +181,4 @@ func (pt *PathBase) SynValue(varNm string, sidx, ridx int) float32 {
 	}
 	syi := pt.EmerPath.SynIndex(sidx, ridx)
 	return pt.EmerPath.SynValue1D(vidx, syi)
-}
-
-// NonDefaultParams returns a listing of all parameters in the Layer that
-// are not at their default values -- useful for setting param styles etc.
-func (pt *PathBase) NonDefaultParams() string {
-	// nds := reflectx.NonDefaultFields(ly.Params) // todo:
-	nds := "non default field strings todo"
-	//Str(ly.AxonLay.AsAxon().Params, ly.Name)
-	return nds
 }

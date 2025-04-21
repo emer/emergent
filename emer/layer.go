@@ -106,12 +106,10 @@ type Layer interface {
 	// Returns error on invalid var name or lack of recv path (vals always set to nan on path err).
 	SendPathValues(vals *[]float32, varNm string, recvLay Layer, recvIndex1D int, pathType string) error
 
-	// NonDefaultParams returns a listing of all parameters in the Layer that
-	// are not at their default values; useful for setting param styles etc.
-	NonDefaultParams() string
-
-	// AllParams returns a listing of all parameters in the Layer
-	AllParams() string
+	// ParamsString returns a listing of all parameters in the Layer and
+	// pathways within the layer. If nonDefault is true, only report those
+	// not at their default values.
+	ParamsString(nonDefault bool) string
 
 	// WriteWeightsJSON writes the weights from this layer from the
 	// receiver-side perspective in a JSON text format.
@@ -543,21 +541,4 @@ func (ly *LayerBase) SendPathByRecvNameType(recv, typeName string) (Path, error)
 		}
 	}
 	return nil, fmt.Errorf("receiving layer named: %s, type: %s not found in list of sending pathways", recv, typeName)
-}
-
-//////// Params
-
-// NonDefaultParams returns a listing of all parameters in the Layer that
-// are not at their default values -- useful for setting param styles etc.
-func (ly *LayerBase) NonDefaultParams() string {
-	// nds := reflectx.NonDefaultFields(ly.Params) // todo:
-	nds := "non default field strings todo"
-	//Str(ly.AxonLay.AsAxon().Params, ly.Name)
-	el := ly.EmerLayer
-	for pi := range el.NumRecvPaths() {
-		pt := el.RecvPath(pi).AsEmer()
-		pnd := pt.NonDefaultParams()
-		nds += pnd
-	}
-	return nds
 }
