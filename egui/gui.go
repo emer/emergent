@@ -8,6 +8,7 @@ package egui
 
 import (
 	"io/fs"
+	"sync"
 
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/enums"
@@ -23,30 +24,36 @@ import (
 type GUI struct {
 	lab.Browser
 
-	// how many cycles between updates of cycle-level plots
+	// CycleUpdateInterval is number of cycles between updates of cycle-level plots.
 	CycleUpdateInterval int
 
-	// true if the GUI is configured and running
+	// Active is true if the GUI is configured and running
 	Active bool `display:"-"`
-
-	// true if sim is running
-	IsRunning bool `display:"-"`
-
-	// flag to stop running
-	StopNow bool `display:"-"`
 
 	// NetViews are the created netviews.
 	NetViews []*netview.NetView
 
-	// displays Sim fields on left
+	// SimForm displays the Sim object fields in the left panel.
 	SimForm *core.Form `display:"-"`
 
-	// Body is the content of the sim window
+	// Body is the entire content of the sim window.
 	Body *core.Body `display:"-"`
 
-	//	OnStop is called when running stopped through the GUI.
-	// Should update the network view.
+	// OnStop is called when running is stopped through the GUI,
+	// via the Stopped method. It should update the network view for example.
 	OnStop func(mode, level enums.Enum)
+
+	// isRunning is true if sim is running.
+	isRunning bool
+
+	// stopNow can be set via SetStopNow method under mutex protection
+	// to signal the current sim to stop running.
+	// It is not used directly in the looper-based control logic, which has
+	// its own direct Stop function, but it is set there in case there are
+	// other processes that are looking at this flag.
+	stopNow bool
+
+	runMu sync.Mutex
 }
 
 // UpdateWindow triggers an update on window body,
@@ -69,11 +76,45 @@ func (gui *GUI) GoUpdateWindow() {
 	gui.UpdateWindow()
 }
 
+// StartRun should be called whenever a process starts running.
+// It sets stopNow = false and isRunning = true under a mutex.
+func (gui *GUI) StartRun() {
+	gui.runMu.Lock()
+	gui.stopNow = false
+	gui.isRunning = true
+	gui.runMu.Unlock()
+}
+
+// IsRunning returns the state of the isRunning flag, under a mutex.
+func (gui *GUI) IsRunning() bool {
+	gui.runMu.Lock()
+	defer gui.runMu.Unlock()
+	return gui.isRunning
+}
+
+// StopNow returns the state of the stopNow flag, under a mutex.
+func (gui *GUI) StopNow() bool {
+	gui.runMu.Lock()
+	defer gui.runMu.Unlock()
+	return gui.stopNow
+}
+
+// SetStopNow sets the stopNow flag to true, under a mutex.
+func (gui *GUI) SetStopNow() {
+	gui.runMu.Lock()
+	gui.stopNow = true
+	gui.runMu.Unlock()
+}
+
 // Stopped is called when a run method stops running,
 // from a separate goroutine (do not call from main event loop).
-// Updates the IsRunning flag and toolbar.
+// Turns off the isRunning flag, calls OnStop with the given arguments,
+// and calls GoUpdateWindow to update window state.
 func (gui *GUI) Stopped(mode, level enums.Enum) {
-	gui.IsRunning = false
+	gui.runMu.Lock()
+	gui.isRunning = false
+	gui.stopNow = true // in case anyone else is looking
+	gui.runMu.Unlock()
 	if gui.OnStop != nil {
 		gui.OnStop(mode, level)
 	}
