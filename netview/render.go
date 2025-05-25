@@ -14,7 +14,7 @@ import (
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/styles"
+	"cogentcore.org/core/text/text"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
 	"cogentcore.org/core/xyz"
@@ -105,8 +105,8 @@ func (nv *NetView) UpdateLayers() {
 		txt.SetText(ly.StyleName())
 		txt.Pose.Scale = math32.Vector3Scalar(nv.Options.LayerNameSize).Div(lg.Pose.Scale)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
-		txt.Styles.Text.Align = styles.Start
-		txt.Styles.Text.AlignV = styles.Start
+		txt.Styles.Text.Align = text.Start
+		txt.Styles.Text.AlignV = text.Start
 	}
 	nv.UpdatePaths()
 	sw.XYZ.SetNeedsUpdate()
