@@ -17,6 +17,7 @@ import (
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/lab/lab"
+	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
 )
 
@@ -42,6 +43,9 @@ type GUI struct {
 	// OnStop is called when running is stopped through the GUI,
 	// via the Stopped method. It should update the network view for example.
 	OnStop func(mode, level enums.Enum)
+
+	// StopLevel is the enum to use when the stop button is pressed.
+	StopLevel enums.Enum
 
 	// isRunning is true if sim is running.
 	isRunning bool
@@ -134,6 +138,7 @@ func NewGUIBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string
 // The first arg is an optional existing [core.Body] to make into: if nil then
 // a new body is made first.
 func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string) {
+	gui.StopLevel = etime.NoTime // corresponds to the first level typically
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 	if b == nil {
 		gui.Body = core.NewBody(appname).SetTitle(title)

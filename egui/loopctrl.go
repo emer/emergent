@@ -16,7 +16,6 @@ import (
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/tree"
-	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 )
 
@@ -101,7 +100,7 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		Tooltip: "Interrupts current running. Will pick back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
-			loops.Stop(etime.Cycle)
+			loops.Stop(gui.StopLevel)
 			// fmt.Println("Stop time!")
 			gui.SetStopNow()
 		},
