@@ -4,7 +4,10 @@
 
 package params
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 // Styler must be implemented by any object that parameters are
 // applied to, to provide the .Class and #Name selector functionality.
@@ -26,13 +29,11 @@ type Styler interface {
 // class string, ensuring it is not a duplicate of existing, and properly
 // adding spaces.
 func AddClass(cur string, class ...string) string {
-	cls := strings.Join(class, " ")
-	if ClassMatch(cur, cls) {
-		return cur
+	nc := strings.Fields(cur)
+	for _, cl := range class {
+		if !slices.Contains(nc, cl) {
+			nc = append(nc, cl)
+		}
 	}
-	cur = strings.TrimSpace(cur)
-	if len(cur) == 0 {
-		return cls
-	}
-	return cur + " " + cls
+	return strings.Join(nc, " ")
 }

@@ -74,3 +74,14 @@ func TestSet(t *testing.T) {
 	paramSets["NoMomentum"].Apply(tf)
 	assert.Equal(t, false, tf.Norm)
 }
+
+func TestStyles(t *testing.T) {
+	assert.Equal(t, "A B", AddClass("", "A", "B"))
+	assert.Equal(t, "A B", AddClass("A", "B"))
+	assert.Equal(t, "A B", AddClass("A", "B", "B"))
+	assert.Equal(t, "A B", AddClass("A", "A", "B"))
+	assert.Equal(t, true, ClassMatch("A", "A B"))
+	assert.Equal(t, true, ClassMatch("B", "A B"))
+	assert.Equal(t, false, ClassMatch("C", "A B"))
+	assert.Equal(t, false, ClassMatch("C", ""))
+}

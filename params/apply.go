@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 )
 
@@ -36,16 +37,10 @@ func (ps *Sel[T]) SelMatch(obj T) bool {
 	return true // type always matches
 }
 
-// ClassMatch returns true if given class names.
-// handles space-separated multiple class names
+// ClassMatch returns true if given class names match.
+// Handles space-separated multiple class names.
 func ClassMatch(sel, cls string) bool {
-	clss := strings.Split(cls, " ")
-	for _, cl := range clss {
-		if strings.TrimSpace(cl) == sel {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(strings.Fields(cls), sel)
 }
 
 ////////  Sheet
