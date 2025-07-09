@@ -157,7 +157,7 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 
 	eds := []*texteditor.Editor{}
 
-	ctx.ElementHandlers["question"] = func(ctx *htmlcore.Context) bool {
+	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
 		ed := texteditor.NewEditor(ctx.BlockParent)
 		ed.Buffer.Options.LineNumbers = false
 		ed.Styler(func(s *styles.Style) {
