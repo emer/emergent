@@ -13,12 +13,14 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/fileinfo/mimedata"
 	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/system"
+	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
@@ -150,6 +152,29 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 	ctx.AddWikilinkHandler(gui.readmeWikilink("sim"))
 
 	ctx.OpenURL = gui.readmeOpenURL
+
+	eds := []*texteditor.Editor{}
+
+	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
+		ed := texteditor.NewEditor(ctx.BlockParent)
+		ed.Buffer.Options.LineNumbers = false
+		eds = append(eds, ed)
+		id := htmlcore.GetAttr(ctx.Node, "id")
+		ed.SetName(id)
+		return true
+	}
+
+	core.NewButton(gui.Readme).SetText("Copy answers").OnClick(func(e events.Event) {
+		clipboard := gui.Readme.Clipboard()
+		var ab strings.Builder
+		for _, ed := range eds {
+			ab.WriteString("## Question " + ed.Name + "\n" + ed.Buffer.String() + "\n")
+		}
+		answers := ab.String()
+		md := mimedata.NewText(answers)
+		clipboard.Write(md)
+		core.MessageSnackbar(gui.Body, "Answers copied to clipboard")
+	})
 
 	readme, err := readmefs.ReadFile("README.md")
 
