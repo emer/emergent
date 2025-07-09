@@ -164,11 +164,11 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		return true
 	}
 
-	core.NewButton(gui.Readme).SetText("Copy Answers").OnClick(func(e events.Event) {
+	core.NewButton(gui.Readme).SetText("Copy answers").OnClick(func(e events.Event) {
 		clipboard := gui.Readme.Clipboard()
 		var ab strings.Builder
 		for _, ed := range eds {
-			ab.WriteString("Question " + ed.Name + ":\n" + ed.Buffer.String() + "\n")
+			ab.WriteString("## Question " + ed.Name + "\n" + ed.Buffer.String() + "\n")
 		}
 		answers := ab.String()
 		md := mimedata.NewText(answers)
