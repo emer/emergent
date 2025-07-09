@@ -18,9 +18,7 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
-	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
-	"cogentcore.org/core/styles/units"
 	"cogentcore.org/core/system"
 	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/tree"
@@ -160,10 +158,6 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
 		ed := texteditor.NewEditor(ctx.BlockParent)
 		ed.Buffer.Options.LineNumbers = false
-		ed.Styler(func(s *styles.Style) {
-			s.SetMono(false)
-			s.Padding.SetBottom(units.Em(0))
-		})
 		eds = append(eds, ed)
 		id := htmlcore.GetAttr(ctx.Node, "id")
 		ed.SetName(id)
