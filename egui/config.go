@@ -10,6 +10,9 @@ type Config interface {
 
 	// AsBaseConfig returns the embedded [BaseConfig].
 	AsBaseConfig() *BaseConfig
+
+	// Defaults sets default values for config fields.
+	Defaults()
 }
 
 // BaseConfig contains the basic configuration parameters common to all sims.
