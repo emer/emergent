@@ -49,3 +49,12 @@ func RunSim[S, C any](cfg *C) error {
 	}
 	return nil
 }
+
+// Embed runs a sim with the default config, embedding it under the given parent node.
+// It returns the resulting sim. *S must implement [Sim][C] (interface [Sim]
+// parameterized by config type C).
+//
+// See also [Run] and [RunSim].
+func Embed[S, C any](parent tree.Node) *S {
+
+}
