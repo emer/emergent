@@ -12,6 +12,8 @@ import (
 
 // Sim is an interface implemented by all sim types.
 // It is parameterized by the config type C. *C must implement [Config].
+//
+// See [Run], [RunSim], and [Embed].
 type Sim[C any] interface {
 
 	// SetConfig sets the sim config.
@@ -81,5 +83,18 @@ func RunSim[S, C any](cfg *C) error {
 //
 // See also [Run] and [RunSim].
 func Embed[S, C any](parent tree.Node) *S {
+	cfgC := new(C)
+	cfg := any(cfgC).(Config)
+	cfg.Defaults()
 
+	cfg.AsBaseConfig().GUI = true // force GUI on
+
+	simS := new(S)
+	sim := any(simS).(Sim[C])
+
+	sim.SetConfig(cfgC)
+	sim.ConfigSim()
+	sim.Init()
+	sim.ConfigGUI(parent)
+	return simS
 }
