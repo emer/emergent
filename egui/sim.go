@@ -5,6 +5,8 @@
 package egui
 
 import (
+	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/cli"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tree"
@@ -79,7 +81,7 @@ func RunSim[S, C any](cfg *C) error {
 // parameterized by config type C).
 //
 // See also [Run] and [RunSim].
-func Embed[S, C any](parent tree.Node) *S {
+func Embed[S, C any](parent tree.Node) *S { //yaegi:add
 	cfgC, cfg := NewConfig[C]()
 
 	cfg.AsBaseConfig().GUI = true // force GUI on
@@ -95,10 +97,10 @@ func Embed[S, C any](parent tree.Node) *S {
 }
 
 // NewConfig makes a new [Config] of type *C with defaults set.
-func NewConfig[C any]() (*C, Config) {
+func NewConfig[C any]() (*C, Config) { //yaegi:add
 	cfgC := new(C)
 	cfg := any(cfgC).(Config)
-	cli.SetFromDefaults(cfg)
+	errors.Log(reflectx.SetFromDefaultTags(cfg))
 	cfg.Defaults()
 	return cfgC, cfg
 }
