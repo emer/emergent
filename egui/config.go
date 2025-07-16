@@ -13,6 +13,8 @@ type Config interface {
 	AsBaseConfig() *BaseConfig
 
 	// Defaults sets default values for config fields.
+	// Helper functions such as [Run], [Embed], and [NewConfig] already set defaults
+	// based on struct tags, so you only need to set non-tag-based defaults here.
 	Defaults()
 }
 

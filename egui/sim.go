@@ -40,9 +40,7 @@ type Sim[C any] interface {
 // Run uses the config type C to make a new [Config] object and set its default values
 // with [Config.Defaults].
 func Run[S, C any]() {
-	cfgC := new(C)
-	cfg := any(cfgC).(Config)
-	cfg.Defaults()
+	cfgC, cfg := NewConfig[C]()
 
 	bc := cfg.AsBaseConfig()
 	opts := cli.DefaultOptions(bc.Name, bc.Title)
@@ -82,9 +80,7 @@ func RunSim[S, C any](cfg *C) error {
 //
 // See also [Run] and [RunSim].
 func Embed[S, C any](parent tree.Node) *S {
-	cfgC := new(C)
-	cfg := any(cfgC).(Config)
-	cfg.Defaults()
+	cfgC, cfg := NewConfig[C]()
 
 	cfg.AsBaseConfig().GUI = true // force GUI on
 
@@ -96,4 +92,13 @@ func Embed[S, C any](parent tree.Node) *S {
 	sim.Init()
 	sim.ConfigGUI(parent)
 	return simS
+}
+
+// NewConfig makes a new [Config] of type *C with defaults set.
+func NewConfig[C any]() (*C, Config) {
+	cfgC := new(C)
+	cfg := any(cfgC).(Config)
+	cli.SetFromDefaults(cfg)
+	cfg.Defaults()
+	return cfgC, cfg
 }
