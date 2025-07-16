@@ -63,8 +63,8 @@ func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
 // function MUST take a single argument that is a pointer to the [Config] type for the
 // sim. If its argument type does not implement [Config], Run will panic.
 func Run[C any](runSim func(cfg *C) error) {
-	cfgT := new(C)
-	cfg := any(cfgT).(Config)
+	cfgC := new(C)
+	cfg := any(cfgC).(Config)
 	cfg.Defaults()
 
 	bc := cfg.AsBaseConfig()
@@ -72,5 +72,5 @@ func Run[C any](runSim func(cfg *C) error) {
 	opts.DefaultFiles = append(opts.DefaultFiles, "config.toml")
 	opts.SearchUp = true // so that the sim can be run from the command subdirectory
 
-	cli.Run(opts, cfgT, runSim)
+	cli.Run(opts, cfgC, runSim)
 }
