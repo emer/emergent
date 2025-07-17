@@ -128,10 +128,9 @@ func (nv *NetView) Init() {
 		})
 	})
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
-		w.SetText("Counters: " + strings.Repeat(" ", 200)).
+		w.SetText("Counters: ").
 			Styler(func(s *styles.Style) {
-				s.Max.X.Pw(95)
-				s.Min.X.Pw(95)
+				s.Min.X.Pw(90)
 			})
 		w.Updater(func() {
 			if w.Text != nv.CurCtrs && nv.CurCtrs != "" {
