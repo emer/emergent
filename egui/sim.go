@@ -9,6 +9,7 @@ import (
 	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/cli"
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/system"
 	"cogentcore.org/core/tree"
 )
 
@@ -100,7 +101,11 @@ func Embed[S, C any](parent tree.Node) *S { //yaegi:add
 func NewConfig[C any]() (*C, Config) { //yaegi:add
 	cfgC := new(C)
 	cfg := any(cfgC).(Config)
+
 	errors.Log(reflectx.SetFromDefaultTags(cfg))
+	if core.TheApp.Platform() == system.Web {
+		cfg.AsBaseConfig().GPU = false // GPU not properly supported on web yet
+	}
 	cfg.Defaults()
 	return cfgC, cfg
 }
