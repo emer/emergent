@@ -60,13 +60,19 @@ func (bc *BaseConfig) AsBaseConfig() *BaseConfig { return bc }
 
 func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
 
+// BaseDefaults sets default values not specified by struct tags.
+// It is called automatically by [NewConfig].
+func (bc *BaseConfig) BaseDefaults() {
+	bc.GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
+}
+
 // NewConfig makes a new [Config] of type *C with defaults set.
 func NewConfig[C any]() (*C, Config) { //yaegi:add
 	cfgC := new(C)
 	cfg := any(cfgC).(Config)
 
 	errors.Log(reflectx.SetFromDefaultTags(cfg))
-	cfg.AsBaseConfig().GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
+	cfg.AsBaseConfig().BaseDefaults()
 	cfg.Defaults()
 	return cfgC, cfg
 }
