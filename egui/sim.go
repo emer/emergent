@@ -5,11 +5,8 @@
 package egui
 
 import (
-	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/cli"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/system"
 	"cogentcore.org/core/tree"
 )
 
@@ -95,15 +92,4 @@ func Embed[S, C any](parent tree.Node) *S { //yaegi:add
 	sim.Init()
 	sim.ConfigGUI(parent)
 	return simS
-}
-
-// NewConfig makes a new [Config] of type *C with defaults set.
-func NewConfig[C any]() (*C, Config) { //yaegi:add
-	cfgC := new(C)
-	cfg := any(cfgC).(Config)
-
-	errors.Log(reflectx.SetFromDefaultTags(cfg))
-	cfg.AsBaseConfig().GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
-	cfg.Defaults()
-	return cfgC, cfg
 }

@@ -4,6 +4,13 @@
 
 package egui
 
+import (
+	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/reflectx"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/system"
+)
+
 // Config is an interface implemented by all [Sim] config types.
 // To implement Config, you must embed [BaseConfig]. You must
 // implement [Config.Defaults] yourself.
@@ -52,3 +59,14 @@ type BaseConfig struct {
 func (bc *BaseConfig) AsBaseConfig() *BaseConfig { return bc }
 
 func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
+
+// NewConfig makes a new [Config] of type *C with defaults set.
+func NewConfig[C any]() (*C, Config) { //yaegi:add
+	cfgC := new(C)
+	cfg := any(cfgC).(Config)
+
+	errors.Log(reflectx.SetFromDefaultTags(cfg))
+	cfg.AsBaseConfig().GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
+	cfg.Defaults()
+	return cfgC, cfg
+}
