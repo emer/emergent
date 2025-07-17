@@ -46,7 +46,7 @@ type BaseConfig struct {
 
 	// GPU indicates to use the GPU for computation. This is on by default, except
 	// on web, where it is currently off by default.
-	GPU bool `default:"true"`
+	GPU bool
 }
 
 func (bc *BaseConfig) AsBaseConfig() *BaseConfig { return bc }

@@ -103,9 +103,7 @@ func NewConfig[C any]() (*C, Config) { //yaegi:add
 	cfg := any(cfgC).(Config)
 
 	errors.Log(reflectx.SetFromDefaultTags(cfg))
-	if core.TheApp.Platform() == system.Web {
-		cfg.AsBaseConfig().GPU = false // GPU not properly supported on web yet
-	}
+	cfg.AsBaseConfig().GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
 	cfg.Defaults()
 	return cfgC, cfg
 }
