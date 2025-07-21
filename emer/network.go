@@ -13,9 +13,9 @@ import (
 	"strings"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/randx"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/lab/base/randx"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/relpos"
 )

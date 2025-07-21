@@ -4,7 +4,7 @@
 
 package paths
 
-import "github.com/emer/etensor/tensor"
+import "cogentcore.org/core/tensor"
 
 // Full implements full all-to-all pattern of connectivity between two layers
 type Full struct {

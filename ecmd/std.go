@@ -9,7 +9,7 @@ package ecmd
 import (
 	"os"
 
-	"cogentcore.org/lab/base/mpi"
+	"cogentcore.org/core/base/mpi"
 	"github.com/emer/emergent/v2/elog"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/etime"

@@ -7,7 +7,7 @@ package elog
 import (
 	"os"
 
-	"github.com/emer/etensor/tensor/table"
+	"cogentcore.org/core/tensor/table"
 )
 
 // LogTable contains all the data for one log table

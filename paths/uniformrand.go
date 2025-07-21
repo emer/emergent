@@ -9,8 +9,8 @@ import (
 	"math/rand"
 	"sort"
 
-	"cogentcore.org/lab/base/randx"
-	"github.com/emer/etensor/tensor"
+	"cogentcore.org/core/base/randx"
+	"cogentcore.org/core/tensor"
 )
 
 // UniformRand implements uniform random pattern of connectivity between two layers

@@ -6,9 +6,9 @@ package egui
 
 import (
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/actrf"
-	"github.com/emer/etensor/tensor"
-	"github.com/emer/etensor/tensor/tensorcore"
 )
 
 // Grid gets tensor grid view of given name, creating if not yet made

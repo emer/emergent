@@ -12,8 +12,8 @@ import (
 	"math"
 
 	"cogentcore.org/core/base/errors"
-	"github.com/emer/etensor/tensor"
-	"github.com/emer/etensor/tensor/stats/stats"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/stats"
 )
 
 // Vocab is a map of named tensors that contain patterns used for creating

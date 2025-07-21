@@ -10,7 +10,7 @@ import (
 	"reflect"
 
 	"cogentcore.org/core/base/errors"
-	"github.com/emer/etensor/tensor/table"
+	"cogentcore.org/core/tensor/table"
 )
 
 // InitPats initiates patterns to be used in MixPats

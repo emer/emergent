@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etensor/tensor"
+	"cogentcore.org/core/tensor"
 )
 
 // difTol is the numerical difference tolerance for comparing vs. target values

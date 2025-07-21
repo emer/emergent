@@ -7,9 +7,9 @@ package paths
 import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/math32/vecint"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/edge"
 	"github.com/emer/emergent/v2/efuns"
-	"github.com/emer/etensor/tensor"
 )
 
 // Circle implements a circular pattern of connectivity between two layers

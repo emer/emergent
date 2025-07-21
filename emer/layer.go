@@ -13,10 +13,10 @@ import (
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/slicesx"
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/relpos"
 	"github.com/emer/emergent/v2/weights"
-	"github.com/emer/etensor/tensor"
 )
 
 var (

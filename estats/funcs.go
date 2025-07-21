@@ -6,11 +6,11 @@ package estats
 
 import (
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/metric"
+	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etensor/tensor"
-	"github.com/emer/etensor/tensor/stats/metric"
-	"github.com/emer/etensor/tensor/stats/stats"
-	"github.com/emer/etensor/tensor/table"
 )
 
 // funcs contains misc stats functions

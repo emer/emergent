@@ -5,11 +5,11 @@
 package estats
 
 import (
-	"github.com/emer/etensor/plot/plotcore"
-	"github.com/emer/etensor/tensor/stats/clust"
-	"github.com/emer/etensor/tensor/stats/metric"
-	"github.com/emer/etensor/tensor/stats/simat"
-	"github.com/emer/etensor/tensor/table"
+	"cogentcore.org/core/plot/plotcore"
+	"cogentcore.org/core/tensor/stats/clust"
+	"cogentcore.org/core/tensor/stats/metric"
+	"cogentcore.org/core/tensor/stats/simat"
+	"cogentcore.org/core/tensor/table"
 )
 
 func ConfigPCAPlot(plt *plotcore.PlotEditor, dt *table.Table, nm string) {

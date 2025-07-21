@@ -10,11 +10,11 @@ import (
 	"math/rand"
 
 	"cogentcore.org/core/base/errors"
-	"cogentcore.org/lab/base/randx"
+	"cogentcore.org/core/base/randx"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/core/tensor/tensormpi"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etensor/tensor"
-	"github.com/emer/etensor/tensor/table"
-	"github.com/emer/etensor/tensor/tensormpi"
 )
 
 // MPIFixedTable is an MPI-enabled version of the FixedTable, which is

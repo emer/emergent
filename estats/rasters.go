@@ -6,8 +6,8 @@ package estats
 
 import (
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etensor/tensor"
 )
 
 // ConfigRasters configures spike rasters for given maximum number of cycles

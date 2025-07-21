@@ -8,8 +8,8 @@ import (
 	"math"
 	"sort"
 
-	"cogentcore.org/lab/base/randx"
-	"github.com/emer/etensor/tensor"
+	"cogentcore.org/core/base/randx"
+	"cogentcore.org/core/tensor"
 )
 
 // PoolUniformRand implements random pattern of connectivity between pools within layers.

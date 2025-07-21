@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"cogentcore.org/core/base/errors"
-	"github.com/emer/etensor/tensor/table"
+	"cogentcore.org/core/tensor/table"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 )

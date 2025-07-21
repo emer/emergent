@@ -4,7 +4,7 @@
 
 package paths
 
-import "github.com/emer/etensor/tensor"
+import "cogentcore.org/core/tensor"
 
 // OneToOne implements point-to-point one-to-one pattern of connectivity between two layers
 type OneToOne struct {

@@ -7,7 +7,7 @@ package paths
 //go:generate core generate -add-types
 
 import (
-	"github.com/emer/etensor/tensor"
+	"cogentcore.org/core/tensor"
 )
 
 // Pattern defines a pattern of connectivity between two layers.

@@ -4,7 +4,7 @@
 
 package paths
 
-import "github.com/emer/etensor/tensor"
+import "cogentcore.org/core/tensor"
 
 // PoolSameUnit connects a given unit to the unit at the same index
 // across all the pools in a layer.

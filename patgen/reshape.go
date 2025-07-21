@@ -9,7 +9,7 @@ import (
 	"reflect"
 
 	"cogentcore.org/core/core"
-	"github.com/emer/etensor/tensor/table"
+	"cogentcore.org/core/tensor/table"
 )
 
 // ReshapeCpp fixes C++ emergent table shape which is reversed from Go.

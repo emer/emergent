@@ -18,15 +18,15 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
+	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/system"
+	"cogentcore.org/core/tensor/tensorcore"
 	"cogentcore.org/core/texteditor"
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
-	"github.com/emer/etensor/plot/plotcore"
-	"github.com/emer/etensor/tensor/tensorcore"
 )
 
 // GUI manages all standard elements of a simulation Graphical User Interface

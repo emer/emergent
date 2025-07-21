@@ -7,8 +7,8 @@ package actrf
 //go:generate core generate -add-types
 
 import (
-	"github.com/emer/etensor/tensor"
-	"github.com/emer/etensor/tensor/stats/norm"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/norm"
 )
 
 // RF is used for computing an activation-based receptive field.

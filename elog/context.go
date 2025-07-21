@@ -8,13 +8,13 @@ import (
 	"fmt"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/metric"
+	"cogentcore.org/core/tensor/stats/stats"
+	"cogentcore.org/core/tensor/table"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/estats"
 	"github.com/emer/emergent/v2/etime"
-	"github.com/emer/etensor/tensor"
-	"github.com/emer/etensor/tensor/stats/metric"
-	"github.com/emer/etensor/tensor/stats/stats"
-	"github.com/emer/etensor/tensor/table"
 )
 
 // WriteFunc function that computes and sets log values

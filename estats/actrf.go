@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/emer"
-	"github.com/emer/etensor/tensor"
 )
 
 // InitActRFs initializes a set of activation-based receptive field (ActRF)

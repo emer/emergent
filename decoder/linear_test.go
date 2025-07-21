@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/emer/etensor/tensor"
+	"cogentcore.org/core/tensor"
 	"github.com/stretchr/testify/assert"
 )
 

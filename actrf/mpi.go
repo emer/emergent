@@ -5,8 +5,8 @@
 package actrf
 
 import (
-	"cogentcore.org/lab/base/mpi"
-	"github.com/emer/etensor/tensor/tensormpi"
+	"cogentcore.org/core/base/mpi"
+	"cogentcore.org/core/tensor/tensormpi"
 )
 
 // MPISum aggregates RF Sum data across all processors in given mpi communicator.

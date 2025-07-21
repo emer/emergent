@@ -4,7 +4,7 @@
 
 package chem
 
-import "github.com/emer/etensor/tensor/table"
+import "cogentcore.org/core/tensor/table"
 
 // The Stater interface defines the functions implemented for State
 // structures containing chem state variables.
