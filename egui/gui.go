@@ -197,13 +197,12 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, abo
 	gui.CycleUpdateInterval = 10
 	gui.UpdateFiles()
 	gui.Files.Tabber = tabs
-	split.SetTiles(core.TileSplit, core.TileSpan)
-	split.SetSplits(.2, .5, .8)
 
 	if len(readme) > 0 {
 		gui.addReadme(readme[0], split)
 	} else {
-		split.SetSplits(.2, .8)
+		split.SetTiles(core.TileSplit, core.TileSpan)
+		split.SetSplits(.2, .5, .8)
 	}
 }
 
