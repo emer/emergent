@@ -9,8 +9,10 @@ package egui
 import (
 	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"strings"
+	"sync"
 
 	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/fileinfo/mimedata"
@@ -19,13 +21,13 @@ import (
 	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
-	"cogentcore.org/core/plot/plotcore"
+	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/system"
-	"cogentcore.org/core/tensor/tensorcore"
-	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/text/textcore"
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
+	"cogentcore.org/lab/lab"
 	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/netview"
 )
@@ -49,10 +51,10 @@ type GUI struct {
 	// Body is the entire content of the sim window.
 	Body *core.Body `display:"-"`
 
-	//	Toolbar is the overall sim toolbar
+	// Toolbar is the overall sim toolbar
 	Toolbar *core.Toolbar `display:"-"`
 
-	// Readme is the sim ReadMe frame
+	// Readme is the sim readme frame
 	Readme *core.Frame `display:"-"`
 
 	// OnStop is called when running is stopped through the GUI,
@@ -151,8 +153,8 @@ func NewGUIBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string
 // a [core.Form] editor of the given sim object, and a filetree for the data filesystem
 // rooted at fsroot, and with given app name, title, and about information.
 // The first arg is an optional existing [core.Body] to make into: if nil then
-// a new body is made first. It takes an optional readme string.
-func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string, readme ...string) {
+// a new body is made first. It takes an optional fs with a README.md file.
+func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string, readme ...embed.FS) {
 	gui.StopLevel = etime.NoTime // corresponds to the first level typically
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 	if b == nil {
@@ -182,7 +184,6 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, abo
 			gui.Toolbar.Maker(tb.MakeToolbar)
 		}
 	}
-
 	fform := core.NewFrame(split)
 	fform.Styler(func(s *styles.Style) {
 		s.Direction = styles.Column
@@ -201,9 +202,6 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, abo
 	gui.Files.Tabber = tabs
 	split.SetTiles(core.TileSplit, core.TileSpan)
 	split.SetSplits(.2, .5, .8)
-
-	gui.Tabs = core.NewTabs(split)
-	gui.Tabs.Name = "tabs"
 
 	if len(readme) > 0 {
 		gui.addReadme(readme[0], split)
@@ -228,11 +226,11 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 
 	ctx.OpenURL = gui.readmeOpenURL
 
-	eds := []*texteditor.Editor{}
+	eds := []*textcore.Editor{}
 
 	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
-		ed := texteditor.NewEditor(ctx.BlockParent)
-		ed.Buffer.Options.LineNumbers = false
+		ed := textcore.NewEditor(ctx.BlockParent)
+		ed.Lines.Settings.LineNumbers = false
 		eds = append(eds, ed)
 		id := htmlcore.GetAttr(ctx.Node, "id")
 		ed.SetName(id)
@@ -243,7 +241,7 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		clipboard := gui.Readme.Clipboard()
 		var ab strings.Builder
 		for _, ed := range eds {
-			ab.WriteString("## Question " + ed.Name + "\n" + ed.Buffer.String() + "\n")
+			ab.WriteString("## Question " + ed.Name + "\n" + ed.Lines.String() + "\n")
 		}
 		answers := ab.String()
 		md := mimedata.NewText(answers)
