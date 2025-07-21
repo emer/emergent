@@ -6,14 +6,7 @@ package confusion
 
 //go:generate core generate -add-types
 
-import (
-	"fmt"
-	"math"
-
-	"cogentcore.org/core/core"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/simat"
-)
+/*
 
 // Matrix computes the confusion matrix, with rows representing
 // the ground truth correct class, and columns representing the
@@ -207,31 +200,5 @@ func (cm *Matrix) SaveCSV(fname core.Filename) {
 // OpenCSV opens Prob result from a CSV file, comma separated
 func (cm *Matrix) OpenCSV(fname core.Filename) {
 	tensor.OpenCSV(&cm.Prob, fname, ',')
-}
-
-/*
-var MatrixProps = tree.Props{
-	"ToolBar": tree.PropSlice{
-		{"SaveCSV", tree.Props{
-			"label": "Save CSV...",
-			"icon":  "file-save",
-			"desc":  "Save CSV-formatted confusion probabilities (Probs)",
-			"Args": tree.PropSlice{
-				{"CSV File Name", tree.Props{
-					"ext": ".csv",
-				}},
-			},
-		}},
-		{"OpenCSV", tree.Props{
-			"label": "Open CSV...",
-			"icon":  "file-open",
-			"desc":  "Open CSV-formatted confusion probabilities (Probs)",
-			"Args": tree.PropSlice{
-				{"Weights File Name", tree.Props{
-					"ext": ".csv",
-				}},
-			},
-		}},
-	},
 }
 */

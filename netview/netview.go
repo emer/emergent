@@ -25,7 +25,7 @@ import (
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/system"
-	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/text/textcore"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
 	"cogentcore.org/core/xyz"
@@ -123,11 +123,14 @@ func (nv *NetView) Init() {
 			laysGp := xyz.NewGroup(se)
 			laysGp.Name = "Layers"
 		})
+		w.OnShow(func(e events.Event) {
+			nv.Current()
+		})
 	})
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
-		w.SetText("Counters: " + strings.Repeat(" ", 200)).
+		w.SetText("Counters: ").
 			Styler(func(s *styles.Style) {
-				s.Grow.Set(1, 0)
+				s.Min.X.Pw(90)
 			})
 		w.Updater(func() {
 			if w.Text != nv.CurCtrs && nv.CurCtrs != "" {
@@ -177,6 +180,18 @@ func (nv *NetView) HasLayers() bool {
 		return false
 	}
 	return true
+}
+
+// IsViewingSynapse returns true if netview is viewing synapses.
+func (nv *NetView) IsViewingSynapse() bool {
+	if !nv.IsVisible() {
+		return false
+	}
+	vvar := nv.Var
+	if strings.HasPrefix(vvar, "r.") || strings.HasPrefix(vvar, "s.") {
+		return true
+	}
+	return false
 }
 
 // RecordCounters saves the counters, so they are available for a Current update
@@ -597,11 +612,11 @@ func (nv *NetView) ReadUnlock() {
 	nv.DataMu.RUnlock()
 }
 
-// UnitVal returns the raw value, scaled value, and color representation
+// UnitValue returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	lb := lay.AsEmer()
-	idx1d := lb.Shape.Offset(idx)
+	idx1d := lb.Shape.IndexTo1D(idx...)
 	if idx1d >= lb.Shape.Len() {
 		raw, hasval = 0, false
 	} else {
@@ -616,7 +631,7 @@ func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, cl
 // scaled is in range -1..1
 func (nv *NetView) UnitValRaster(lay emer.Layer, idx []int, rCtr int) (raw, scaled float32, clr color.RGBA, hasval bool) {
 	lb := lay.AsEmer()
-	idx1d := lb.GetSampleShape().Offset(idx)
+	idx1d := lb.GetSampleShape().IndexTo1D(idx...)
 	ridx := lb.SampleIndexes
 	if len(ridx) == 0 { // no rep
 		if idx1d >= lb.Shape.Len() {
@@ -650,7 +665,7 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 	}
 	if !hasval {
 		scaled = 0
-		if lay.StyleName() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
+		if lay.Label() == nv.Data.PathLay && idx1d == nv.Data.PathUnIndex {
 			clr = color.RGBA{0x20, 0x80, 0x20, 0x80}
 		} else {
 			clr = NilColor
@@ -755,15 +770,15 @@ func (nv *NetView) OpenWeights(filename core.Filename) { //types:add
 // ShowNonDefaultParams shows a dialog of all the parameters that
 // are not at their default values in the network.  Useful for setting params.
 func (nv *NetView) ShowNonDefaultParams() string { //types:add
-	nds := nv.Net.AsEmer().NonDefaultParams()
-	texteditor.TextDialog(nv, "Non Default Params: "+nv.Name, nds)
+	nds := nv.Net.AsEmer().ParamsString(emer.NonDefault)
+	textcore.TextDialog(nv, "Non Default Params: "+nv.Name, nds)
 	return nds
 }
 
 // ShowAllParams shows a dialog of all the parameters in the network.
 func (nv *NetView) ShowAllParams() string { //types:add
-	nds := nv.Net.AsEmer().AllParams()
-	texteditor.TextDialog(nv, "All Params: "+nv.Name, nds)
+	nds := nv.Net.AsEmer().ParamsString(emer.AllParams)
+	textcore.TextDialog(nv, "All Params: "+nv.Name, nds)
 	return nds
 }
 
@@ -771,7 +786,7 @@ func (nv *NetView) ShowAllParams() string { //types:add
 // of the most important layer-level params (specific to each algorithm)
 func (nv *NetView) ShowKeyLayerParams() string { //types:add
 	nds := nv.Net.KeyLayerParams()
-	texteditor.TextDialog(nv, "Key Layer Params: "+nv.Name, nds)
+	textcore.TextDialog(nv, "Key Layer Params: "+nv.Name, nds)
 	return nds
 }
 
@@ -779,6 +794,6 @@ func (nv *NetView) ShowKeyLayerParams() string { //types:add
 // of the most important pathway-level params (specific to each algorithm)
 func (nv *NetView) ShowKeyPathParams() string { //types:add
 	nds := nv.Net.KeyPathParams()
-	texteditor.TextDialog(nv, "Key Path Params: "+nv.Name, nds)
+	textcore.TextDialog(nv, "Key Path Params: "+nv.Name, nds)
 	return nds
 }

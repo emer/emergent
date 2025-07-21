@@ -14,14 +14,18 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/metadata"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/lab/lab"
+	"cogentcore.org/lab/plot"
+	"cogentcore.org/lab/plotcore"
+	"cogentcore.org/lab/table"
+	"cogentcore.org/lab/tensor"
+	"cogentcore.org/lab/tensorfs"
 	"github.com/emer/emergent/v2/emer"
 	"github.com/emer/emergent/v2/ringidx"
 )
@@ -158,12 +162,12 @@ makeData:
 		if !nd.NoSynData {
 			for li := range nlay {
 				rlay := nd.Net.EmerLayer(li)
-				rld := nd.LayData[rlay.StyleName()]
+				rld := nd.LayData[rlay.Label()]
 				rld.RecvPaths = make([]*PathData, rlay.NumRecvPaths())
 				for ri := 0; ri < rlay.NumRecvPaths(); ri++ {
 					rpj := rlay.RecvPath(ri)
 					slay := rpj.SendLayer()
-					sld := nd.LayData[slay.StyleName()]
+					sld := nd.LayData[slay.Label()]
 					for _, spj := range sld.SendPaths {
 						if spj.Path == rpj {
 							rld.RecvPaths[ri] = spj // link
@@ -175,7 +179,7 @@ makeData:
 	} else {
 		for li := range nlay {
 			lay := nd.Net.EmerLayer(li)
-			ld := nd.LayData[lay.StyleName()]
+			ld := nd.LayData[lay.Label()]
 			if nd.NoSynData {
 				ld.FreePaths()
 			} else {
@@ -346,7 +350,7 @@ func (nd *NetData) RecordSyns() {
 	}
 	for li := range nlay {
 		lay := nd.Net.EmerLayer(li)
-		laynm := lay.StyleName()
+		laynm := lay.Label()
 		ld := nd.LayData[laynm]
 		for si := 0; si < lay.NumSendPaths(); si++ {
 			spd := ld.SendPaths[si]
@@ -623,9 +627,10 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 // }
 
 // PlotSelectedUnit opens a window with a plot of all the data for the
-// currently selected unit.
+// currently selected unit, saving data to the [tensorfs.CurRoot]/NetView
+// directory.
 // Useful for replaying detailed trace for units of interest.
-func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //types:add
+func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.Editor) { //types:add
 	nd := &nv.Data
 	if nd.PathLay == "" || nd.PathUnIndex < 0 {
 		fmt.Printf("NetView:PlotSelectedUnit -- no unit selected\n")
@@ -633,19 +638,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 	}
 
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
-
-	b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
-	plt := plotcore.NewPlotEditor(b)
-	plt.Options.Title = "NetView " + selnm
-	plt.Options.XAxis = "Rec"
-
-	b.AddTopBar(func(bar *core.Frame) {
-		core.NewToolbar(bar).Maker(plt.MakeToolbar)
-	})
 	dt := nd.SelectedUnitTable(nv.Di)
-
-	plt.SetTable(dt)
-
 	for _, vnm := range nd.UnVars {
 		vp, ok := nv.VarOptions[vnm]
 		if !ok {
@@ -656,11 +649,31 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.PlotEditor) { //t
 		if min < 0 && vp.Range.FixMin && vp.MinMax.Min >= 0 {
 			min = 0 // netview uses -1..1 but not great for graphs unless needed
 		}
-		plt.SetColumnOptions(vnm, disp, vp.Range.FixMin, min, vp.Range.FixMax, vp.Range.Max)
+		dc := dt.Column(vnm)
+		plot.Styler(dc, func(s *plot.Style) {
+			s.On = disp
+			if !vp.Range.FixMax {
+				s.RightY = true
+			}
+			s.Range.SetMin(float64(min)).SetMax(float64(vp.Range.Max))
+		})
 	}
-
-	b.RunWindow()
-	return dt, plt
+	if tensorfs.CurRoot != nil && lab.Lab != nil {
+		dir := tensorfs.CurRoot.Dir("NetView")
+		udir := dir.Dir(selnm)
+		tensorfs.DirFromTable(udir, dt)
+		plt := lab.Lab.PlotTensorFS(udir)
+		return dt, plt
+	} else {
+		b := core.NewBody("netview-selectedunit").SetTitle("NetView SelectedUnit Plot: " + selnm)
+		plt := plotcore.NewEditor(b)
+		plt.SetTable(dt)
+		b.AddTopBar(func(bar *core.Frame) {
+			core.NewToolbar(bar).Maker(plt.MakeToolbar)
+		})
+		b.RunWindow()
+		return dt, plt
+	}
 }
 
 // SelectedUnitTable returns a table with all of the data for the
@@ -679,10 +692,10 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 
-	dt := &table.Table{}
-	dt.SetMetaData("name", "NetView: "+selnm)
-	dt.SetMetaData("read-only", "true")
-	dt.SetMetaData("precision", strconv.Itoa(4))
+	dt := table.New()
+	metadata.SetName(dt, "NetView: "+selnm)
+	metadata.Set(dt, "read-only", true)
+	tensor.SetPrecision(dt, 4)
 
 	ln := nd.Ring.Len
 	vlen := len(nd.UnVars)
@@ -698,11 +711,11 @@ func (nd *NetData) SelectedUnitTable(di int) *table.Table {
 
 	for ri := 0; ri < ln; ri++ {
 		ridx := nd.RecIndex(ri)
-		dt.SetFloatIndex(0, ri, float64(ri))
+		dt.Columns.Values[0].SetFloat1D(float64(ri), ri)
 		for vi := 0; vi < vlen; vi++ {
 			idx := ridx*nvu + vi*nd.MaxData*nu + di*nu + uidx1d
 			val := ld.Data[idx]
-			dt.SetFloatIndex(vi+1, ri, float64(val))
+			dt.Columns.Values[vi+1].SetFloat1D(float64(val), ri)
 		}
 	}
 	return dt

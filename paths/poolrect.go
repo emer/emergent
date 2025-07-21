@@ -7,7 +7,7 @@ package paths
 import (
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/math32/vecint"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/edge"
 )
 
@@ -61,7 +61,7 @@ func (cr *PoolRect) Name() string {
 	return "PoolRect"
 }
 
-func (cr *PoolRect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
+func (cr *PoolRect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
 	sendn, recvn, cons = NewTensors(send, recv)
 	sNy := send.DimSize(0)
 	sNx := send.DimSize(1)
@@ -139,7 +139,7 @@ func (cr *PoolRect) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *
 							if !cr.SelfCon && same && ri == si {
 								continue
 							}
-							cons.Values.Set(off, true)
+							cons.Values.Set(true, off)
 							rnv[ri]++
 							snv[si]++
 						}

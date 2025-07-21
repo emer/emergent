@@ -4,14 +4,7 @@
 
 package estats
 
-import (
-	"fmt"
-	"strings"
-
-	"cogentcore.org/core/tensor"
-	"github.com/emer/emergent/v2/emer"
-)
-
+/*
 // InitActRFs initializes a set of activation-based receptive field (ActRF)
 // statistics, which record activation-weighted averaging of other tensor
 // states, which can be activations in other layers, or external sensory
@@ -89,3 +82,4 @@ func (st *Stats) UpdateActRFs(net emer.Network, varnm string, thr float32, di in
 func (st *Stats) ActRFsAvgNorm() {
 	st.ActRFs.AvgNorm()
 }
+*/

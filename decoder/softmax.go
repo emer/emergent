@@ -15,9 +15,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"cogentcore.org/core/base/mpi"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/base/mpi"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/emer"
 )
 
@@ -93,7 +93,7 @@ func (sm *SoftMax) Init(ncats, ninputs int) {
 	sm.Units = make([]SoftMaxUnit, ncats)
 	sm.Sorted = make([]int, ncats)
 	sm.Inputs = make([]float32, sm.NInputs)
-	sm.Weights.SetShape([]int{sm.NCats, sm.NInputs}, "Cats", "Inputs")
+	sm.Weights.SetShapeSizes(sm.NCats, sm.NInputs)
 	for i := range sm.Weights.Values {
 		sm.Weights.Values[i] = .1
 	}
@@ -215,7 +215,7 @@ func (sm *SoftMax) Back() {
 // MPI version shares weight changes across nodes
 func (sm *SoftMax) BackMPI() {
 	if sm.MPIDWts.Len() != sm.Weights.Len() {
-		sm.MPIDWts.CopyShapeFrom(&sm.Weights)
+		tensor.SetShapeFrom(&sm.MPIDWts, &sm.Weights)
 	}
 	lr := sm.Lrate
 	for ui := range sm.Units {

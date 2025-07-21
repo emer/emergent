@@ -6,16 +6,16 @@ package looper
 
 import "cogentcore.org/core/enums"
 
-// Scope is a combined Mode + Time value.
-// Mode is encoded by multiples of 1000 and Time is added to that.
+// Scope is a combined Mode + Level value.
+// Mode is encoded by multiples of 1000 and Level is added to that.
 type Scope int
 
-func (sc Scope) ModeTime() (mode, time int64) {
+func (sc Scope) ModeLevel() (mode, level int64) {
 	mode = int64(sc / 1000)
-	time = int64(sc % 1000)
+	level = int64(sc % 1000)
 	return
 }
 
-func ToScope(mode, time enums.Enum) Scope {
-	return Scope(mode.Int64()*1000 + time.Int64())
+func ToScope(mode, level enums.Enum) Scope {
+	return Scope(mode.Int64()*1000 + level.Int64())
 }

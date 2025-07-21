@@ -29,7 +29,7 @@ import (
 //	}
 type Loop struct {
 
-	// Counter increments every time through the loop, up to [Counter.Max].
+	// Counter increments every iteration through the loop, up to [Counter.Max].
 	Counter Counter
 
 	// Events occur when Counter.Cur is at their AtCounter.

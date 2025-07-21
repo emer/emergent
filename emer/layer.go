@@ -10,10 +10,9 @@ import (
 	"log"
 	"math"
 
-	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/slicesx"
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 	"github.com/emer/emergent/v2/params"
 	"github.com/emer/emergent/v2/relpos"
 	"github.com/emer/emergent/v2/weights"
@@ -35,15 +34,13 @@ var (
 // LayerBase struct, and this interface only has methods that must be
 // implemented specifically for a given algorithmic implementation.
 type Layer interface {
-	// StyleType, StyleClass, and StyleName methods for parameter styling.
-	params.StylerObject
 
 	// AsEmer returns the layer as an *emer.LayerBase,
 	// to access base functionality.
 	AsEmer() *LayerBase
 
 	// Label satisfies the core.Labeler interface for getting
-	// the name of objects generically.
+	// the name of objects generically. Use to access Name via interface.
 	Label() string
 
 	// TypeName is the type or category of layer, defined
@@ -109,21 +106,10 @@ type Layer interface {
 	// Returns error on invalid var name or lack of recv path (vals always set to nan on path err).
 	SendPathValues(vals *[]float32, varNm string, recvLay Layer, recvIndex1D int, pathType string) error
 
-	// UpdateParams() updates parameter values for all Layer
-	// and recv pathway parameters,
-	// based on any other params that might have changed.
-	UpdateParams()
-
-	// SetParam sets parameter at given path to given value.
-	// returns error if path not found or value cannot be set.
-	SetParam(path, val string) error
-
-	// NonDefaultParams returns a listing of all parameters in the Layer that
-	// are not at their default values -- useful for setting param styles etc.
-	NonDefaultParams() string
-
-	// AllParams returns a listing of all parameters in the Layer
-	AllParams() string
+	// ParamsString returns a listing of all parameters in the Layer and
+	// pathways within the layer. If nonDefault is true, only report those
+	// not at their default values.
+	ParamsString(nonDefault bool) string
 
 	// WriteWeightsJSON writes the weights from this layer from the
 	// receiver-side perspective in a JSON text format.
@@ -204,9 +190,6 @@ type LayerBase struct {
 	// units in the central pools of a 4D layer.
 	SampleShape tensor.Shape `table:"-"`
 
-	// provides a history of parameters applied to the layer
-	ParamsHistory params.HistoryImpl `table:"-"`
-
 	// optional metadata that is saved in network weights files,
 	// e.g., can indicate number of epochs that were trained,
 	// or any other information about this network that would be useful to save.
@@ -222,11 +205,7 @@ func InitLayer(l Layer, name string) {
 }
 
 func (ly *LayerBase) AsEmer() *LayerBase { return ly }
-
-// params.Styler:
-func (ly *LayerBase) StyleType() string  { return "Layer" }
-func (ly *LayerBase) StyleClass() string { return ly.EmerLayer.TypeName() + " " + ly.Class }
-func (ly *LayerBase) StyleName() string  { return ly.Name }
+func (ly *LayerBase) Label() string      { return ly.Name }
 
 // AddClass adds a CSS-style class name(s) for this layer,
 // ensuring that it is not a duplicate, and properly space separated.
@@ -235,8 +214,6 @@ func (ly *LayerBase) AddClass(cls ...string) *LayerBase {
 	ly.Class = params.AddClass(ly.Class, cls...)
 	return ly
 }
-
-func (ly *LayerBase) Label() string { return ly.Name }
 
 // Is2D() returns true if this is a 2D layer (no Pools)
 func (ly *LayerBase) Is2D() bool { return ly.Shape.NumDims() == 2 }
@@ -257,7 +234,7 @@ func (ly *LayerBase) Index4DFrom2D(x, y int) ([]int, bool) {
 	px := x / nux
 	py := y / nuy
 	idx := []int{py, px, uy, ux}
-	if !lshp.IndexIsValid(idx) {
+	if !lshp.IndexIsValid(idx...) {
 		return nil, false
 	}
 	return idx, true
@@ -303,30 +280,18 @@ func (ly *LayerBase) DisplaySize() math32.Vector2 {
 }
 
 // SetShape sets the layer shape and also uses default dim names.
-func (ly *LayerBase) SetShape(shape []int) {
-	var dnms []string
-	if len(shape) == 2 {
-		dnms = LayerDimNames2D
-	} else if len(shape) == 4 {
-		dnms = LayerDimNames4D
-	}
-	ly.Shape.SetShape(shape, dnms...)
+func (ly *LayerBase) SetShape(shape ...int) {
+	ly.Shape.SetShapeSizes(shape...)
 }
 
-// SetSampleIndexesShape sets the SampleIndexes,
+// SetSampleShape sets the SampleIndexes,
 // and SampleShape and as list of dimension sizes,
 // for a subset sample of units to represent the entire layer.
 // This is critical for large layers that are otherwise unwieldy
 // to visualize and for computationally-intensive statistics.
-func (ly *LayerBase) SetSampleIndexesShape(idxs, shape []int) {
+func (ly *LayerBase) SetSampleShape(idxs, shape []int) {
 	ly.SampleIndexes = idxs
-	var dnms []string
-	if len(shape) == 2 {
-		dnms = LayerDimNames2D
-	} else if len(shape) == 4 {
-		dnms = LayerDimNames4D
-	}
-	ly.SampleShape.SetShape(shape, dnms...)
+	ly.SampleShape.SetShapeSizes(shape...)
 }
 
 // GetSampleShape returns the shape to use for representative units.
@@ -336,7 +301,7 @@ func (ly *LayerBase) GetSampleShape() *tensor.Shape {
 		return &ly.Shape
 	}
 	if ly.SampleShape.Len() != sz {
-		ly.SampleShape.SetShape([]int{sz})
+		ly.SampleShape.SetShapeSizes(sz)
 	}
 	return &ly.SampleShape
 }
@@ -382,28 +347,28 @@ func (ly *LayerBase) UnitValues(vals *[]float32, varNm string, di int) error {
 // If tensor is not already big enough to hold the values, it is
 // set to the same shape as the layer.
 // Returns error on invalid var name.
-func (ly *LayerBase) UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) error {
+func (ly *LayerBase) UnitValuesTensor(tsr tensor.Values, varNm string, di int) error {
 	if tsr == nil {
 		err := fmt.Errorf("emer.UnitValuesTensor: Tensor is nil")
 		log.Println(err)
 		return err
 	}
 	nn := ly.NumUnits()
-	tsr.SetShape(ly.Shape.Sizes, ly.Shape.Names...)
+	tsr.SetShapeSizes(ly.Shape.Sizes...)
 	vidx, err := ly.EmerLayer.UnitVarIndex(varNm)
 	if err != nil {
 		nan := math.NaN()
 		for lni := 0; lni < nn; lni++ {
-			tsr.SetFloat1D(lni, nan)
+			tsr.SetFloat1D(nan, lni)
 		}
 		return err
 	}
 	for lni := 0; lni < nn; lni++ {
 		v := ly.EmerLayer.UnitValue1D(vidx, lni, di)
 		if math32.IsNaN(v) {
-			tsr.SetFloat1D(lni, math.NaN())
+			tsr.SetFloat1D(math.NaN(), lni)
 		} else {
-			tsr.SetFloat1D(lni, float64(v))
+			tsr.SetFloat1D(float64(v), lni)
 		}
 	}
 	return nil
@@ -422,7 +387,7 @@ func (ly *LayerBase) UnitValuesTensor(tsr tensor.Tensor, varNm string, di int) e
 // set to SampleShape to hold all the values if subset is defined,
 // otherwise it calls UnitValuesTensor and is identical to that.
 // Returns error on invalid var name.
-func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Tensor, varNm string, di int) error {
+func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Values, varNm string, di int) error {
 	nu := len(ly.SampleIndexes)
 	if nu == 0 {
 		return ly.UnitValuesTensor(tsr, varNm, di)
@@ -434,22 +399,22 @@ func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Tensor, varNm string, di 
 	}
 	if tsr.Len() != nu {
 		rs := ly.GetSampleShape()
-		tsr.SetShape(rs.Sizes, rs.Names...)
+		tsr.SetShapeSizes(rs.Sizes...)
 	}
 	vidx, err := ly.EmerLayer.UnitVarIndex(varNm)
 	if err != nil {
 		nan := math.NaN()
 		for i, _ := range ly.SampleIndexes {
-			tsr.SetFloat1D(i, nan)
+			tsr.SetFloat1D(nan, i)
 		}
 		return err
 	}
 	for i, ui := range ly.SampleIndexes {
 		v := ly.EmerLayer.UnitValue1D(vidx, ui, di)
 		if math32.IsNaN(v) {
-			tsr.SetFloat1D(i, math.NaN())
+			tsr.SetFloat1D(math.NaN(), i)
 		} else {
-			tsr.SetFloat1D(i, float64(v))
+			tsr.SetFloat1D(float64(v), i)
 		}
 	}
 	return nil
@@ -465,7 +430,7 @@ func (ly *LayerBase) UnitValue(varNm string, idx []int, di int) float32 {
 	if err != nil {
 		return math32.NaN()
 	}
-	fidx := ly.Shape.Offset(idx)
+	fidx := ly.Shape.IndexTo1D(idx...)
 	return ly.EmerLayer.UnitValue1D(vidx, fidx, di)
 }
 
@@ -503,7 +468,7 @@ func CenterPoolShape(ly Layer, n int) []int {
 
 // Layer2DSampleIndexes returns neuron indexes and corresponding 2D shape
 // for the representative neurons within a large 2D layer, for passing to
-// [SetSampleIndexesShape].  These neurons are used for the raster plot
+// [SetSampleShape].  These neurons are used for the raster plot
 // in the GUI and for computing PCA, among other cases where the full set
 // of neurons is problematic. The lower-left corner of neurons up to
 // given maxSize is selected.
@@ -517,7 +482,7 @@ func Layer2DSampleIndexes(ly Layer, maxSize int) (idxs, shape []int) {
 	i := 0
 	for y := 0; y < my; y++ {
 		for x := 0; x < mx; x++ {
-			idxs[i] = sh.Offset([]int{y, x})
+			idxs[i] = sh.IndexTo1D(y, x)
 			i++
 		}
 	}
@@ -530,7 +495,7 @@ func (ly *LayerBase) RecvPathBySendName(sender string) (Path, error) {
 	el := ly.EmerLayer
 	for pi := range el.NumRecvPaths() {
 		pt := el.RecvPath(pi)
-		if pt.SendLayer().StyleName() == sender {
+		if pt.SendLayer().Label() == sender {
 			return pt, nil
 		}
 	}
@@ -543,7 +508,7 @@ func (ly *LayerBase) SendPathByRecvName(recv string) (Path, error) {
 	el := ly.EmerLayer
 	for pi := range el.NumSendPaths() {
 		pt := el.SendPath(pi)
-		if pt.RecvLayer().StyleName() == recv {
+		if pt.RecvLayer().Label() == recv {
 			return pt, nil
 		}
 	}
@@ -557,7 +522,7 @@ func (ly *LayerBase) RecvPathBySendNameType(sender, typeName string) (Path, erro
 	el := ly.EmerLayer
 	for pi := range el.NumRecvPaths() {
 		pt := el.RecvPath(pi)
-		if pt.SendLayer().StyleName() == sender && pt.TypeName() == typeName {
+		if pt.SendLayer().Label() == sender && pt.TypeName() == typeName {
 			return pt, nil
 		}
 	}
@@ -571,78 +536,9 @@ func (ly *LayerBase) SendPathByRecvNameType(recv, typeName string) (Path, error)
 	el := ly.EmerLayer
 	for pi := range el.NumSendPaths() {
 		pt := el.SendPath(pi)
-		if pt.RecvLayer().StyleName() == recv && pt.TypeName() == typeName {
+		if pt.RecvLayer().Label() == recv && pt.TypeName() == typeName {
 			return pt, nil
 		}
 	}
 	return nil, fmt.Errorf("receiving layer named: %s, type: %s not found in list of sending pathways", recv, typeName)
-}
-
-////////////////////////////////////////////////////////////////////
-//		Params
-
-// ParamsHistoryReset resets parameter application history
-func (ly *LayerBase) ParamsHistoryReset() {
-	ly.ParamsHistory.ParamsHistoryReset()
-	el := ly.EmerLayer
-	for pi := range el.NumRecvPaths() {
-		pt := el.RecvPath(pi)
-		pt.AsEmer().ParamsHistoryReset()
-	}
-}
-
-// ParamsApplied is just to satisfy History interface so reset can be applied
-func (ly *LayerBase) ParamsApplied(sel *params.Sel) {
-	ly.ParamsHistory.ParamsApplied(sel)
-}
-
-// SetParam sets parameter at given path to given value.
-// returns error if path not found or value cannot be set.
-func (ly *LayerBase) SetParam(path, val string) error {
-	return params.SetParam(ly.EmerLayer.StyleObject(), path, val)
-}
-
-// ApplyParams applies given parameter style Sheet to this layer and its recv pathways.
-// Calls UpdateParams on anything set to ensure derived parameters are all updated.
-// If setMsg is true, then a message is printed to confirm each parameter that is set.
-// it always prints a message if a parameter fails to be set.
-// returns true if any params were set, and error if there were any errors.
-func (ly *LayerBase) ApplyParams(pars *params.Sheet, setMsg bool) (bool, error) {
-	applied := false
-	var errs []error
-	app, err := pars.Apply(ly.EmerLayer, setMsg) // essential to go through AxonLay
-	if app {
-		ly.EmerLayer.UpdateParams()
-		applied = true
-	}
-	if err != nil {
-		errs = append(errs, err)
-	}
-	el := ly.EmerLayer
-	for pi := range el.NumRecvPaths() {
-		pt := el.RecvPath(pi).AsEmer()
-		app, err = pt.ApplyParams(pars, setMsg)
-		if app {
-			applied = true
-		}
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return applied, errors.Join(errs...)
-}
-
-// NonDefaultParams returns a listing of all parameters in the Layer that
-// are not at their default values -- useful for setting param styles etc.
-func (ly *LayerBase) NonDefaultParams() string {
-	// nds := reflectx.NonDefaultFields(ly.Params) // todo:
-	nds := "non default field strings todo"
-	//Str(ly.AxonLay.AsAxon().Params, ly.Name)
-	el := ly.EmerLayer
-	for pi := range el.NumRecvPaths() {
-		pt := el.RecvPath(pi).AsEmer()
-		pnd := pt.NonDefaultParams()
-		nds += pnd
-	}
-	return nds
 }

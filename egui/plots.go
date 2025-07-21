@@ -4,22 +4,11 @@
 
 package egui
 
-import (
-	"fmt"
-	"log"
-
-	"cogentcore.org/core/base/errors"
-	"cogentcore.org/core/colors/gradient"
-	"cogentcore.org/core/plot/plotcore"
-	"cogentcore.org/core/tensor/tensorcore"
-	"github.com/emer/emergent/v2/elog"
-	"github.com/emer/emergent/v2/etime"
-)
-
+/*
 // AddPlots adds plots based on the unique tables we have,
 // currently assumes they should always be plotted
 func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
-	gui.Plots = make(map[etime.ScopeKey]*plotcore.PlotEditor)
+	gui.Plots = make(map[etime.ScopeKey]*plotcore.Editor)
 	// for key, table := range Log.Tables {
 	for _, key := range lg.TableOrder {
 		modes, times := key.ModesAndTimes()
@@ -39,17 +28,19 @@ func (gui *GUI) AddPlots(title string, lg *elog.Logs) {
 		ConfigPlotFromLog(title, plt, lg, key)
 	}
 }
+*/
 
-// AddMiscPlotTab adds a misc (non log-generated) plot with a new
-// tab and plot of given name.
-func (gui *GUI) AddMiscPlotTab(name string) *plotcore.PlotEditor {
-	tab, _ := gui.Tabs.NewTab(name)
-	plt := plotcore.NewSubPlot(tab)
-	gui.SetPlotByName(name, plt)
-	return plt
-}
+// // AddMiscPlotTab adds a misc (non log-generated) plot with a new
+// // tab and plot of given name.
+// func (gui *GUI) AddMiscPlotTab(name string) *plotcore.Editor {
+// 	tab, _ := gui.Tabs.NewTab(name)
+// 	plt := plotcore.NewSubPlot(tab)
+// 	gui.SetPlotByName(name, plt)
+// 	return plt
+// }
 
-func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, key etime.ScopeKey) {
+/*
+func ConfigPlotFromLog(title string, plt *plotcore.Editor, lg *elog.Logs, key etime.ScopeKey) {
 	_, times := key.ModesAndTimes()
 	time := times[0]
 	lt := lg.Tables[key] // LogTable struct
@@ -79,14 +70,16 @@ func ConfigPlotFromLog(title string, plt *plotcore.PlotEditor, lg *elog.Logs, ke
 	plt.ColumnsFromMetaMap(lt.Table.MetaData)
 	plt.ColumnsFromMetaMap(lt.Meta)
 }
+*/
 
+/*
 // Plot returns plot for mode, time scope
-func (gui *GUI) Plot(mode etime.Modes, time etime.Times) *plotcore.PlotEditor {
+func (gui *GUI) Plot(mode etime.Modes, time etime.Times) *plotcore.Editor {
 	return gui.PlotScope(etime.Scope(mode, time))
 }
 
 // PlotScope returns plot for given scope
-func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
+func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotcore.Editor {
 	if !gui.Active {
 		return nil
 	}
@@ -99,20 +92,20 @@ func (gui *GUI) PlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 }
 
 // PlotByName returns a misc plot by name (instead of scope key).
-func (gui *GUI) PlotByName(name string) *plotcore.PlotEditor {
+func (gui *GUI) PlotByName(name string) *plotcore.Editor {
 	return gui.PlotScope(etime.ScopeKey(name))
 }
 
 // SetPlot stores given plot in Plots map.
-func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotcore.PlotEditor) {
+func (gui *GUI) SetPlot(scope etime.ScopeKey, plt *plotcore.Editor) {
 	if gui.Plots == nil {
-		gui.Plots = make(map[etime.ScopeKey]*plotcore.PlotEditor)
+		gui.Plots = make(map[etime.ScopeKey]*plotcore.Editor)
 	}
 	gui.Plots[scope] = plt
 }
 
 // SetPlotByName stores given misc plot by name (instead of scope key) in Plots map.
-func (gui *GUI) SetPlotByName(name string, plt *plotcore.PlotEditor) {
+func (gui *GUI) SetPlotByName(name string, plt *plotcore.Editor) {
 	gui.SetPlot(etime.ScopeKey(name), plt)
 }
 
@@ -120,7 +113,7 @@ func (gui *GUI) SetPlotByName(name string, plt *plotcore.PlotEditor) {
 // This version should be called in the GUI event loop, e.g., for direct
 // updating in a toolbar action.  Use [GoUpdatePlot] if being called from
 // a separate goroutine, when the sim is running.
-func (gui *GUI) UpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEditor {
+func (gui *GUI) UpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.Editor {
 	plot := gui.Plot(mode, tm)
 	if plot != nil {
 		plot.UpdatePlot()
@@ -132,7 +125,7 @@ func (gui *GUI) UpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEdito
 // This version is for use in a running simulation, in a separate goroutine.
 // It will cause the GUI to hang if called from within the GUI event loop:
 // use [UpdatePlot] for that case.
-func (gui *GUI) GoUpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEditor {
+func (gui *GUI) GoUpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.Editor {
 	plot := gui.Plot(mode, tm)
 	if plot != nil {
 		plot.GoUpdatePlot()
@@ -144,7 +137,7 @@ func (gui *GUI) GoUpdatePlot(mode etime.Modes, tm etime.Times) *plotcore.PlotEdi
 // This version should be called in the GUI event loop, e.g., for direct
 // updating in a toolbar action.  Use [GoUpdatePlot] if being called from
 // a separate goroutine, when the sim is running.
-func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
+func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.Editor {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
 		plot.UpdatePlot()
@@ -156,7 +149,7 @@ func (gui *GUI) UpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 // This version is for use in a running simulation, in a separate goroutine.
 // It will cause the GUI to hang if called from within the GUI event loop:
 // use [UpdatePlotScope] for that case.
-func (gui *GUI) GoUpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
+func (gui *GUI) GoUpdatePlotScope(scope etime.ScopeKey) *plotcore.Editor {
 	plot := gui.PlotScope(scope)
 	if plot != nil {
 		plot.GoUpdatePlot()
@@ -169,7 +162,7 @@ func (gui *GUI) GoUpdatePlotScope(scope etime.ScopeKey) *plotcore.PlotEditor {
 // This version should be called in the GUI event loop, e.g., for direct
 // updating in a toolbar action.  Use [GoUpdateCyclePlot] if being called from
 // a separate goroutine, when the sim is running.
-func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEditor {
+func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.Editor {
 	plot := gui.Plot(mode, etime.Cycle)
 	if plot == nil {
 		return plot
@@ -185,7 +178,7 @@ func (gui *GUI) UpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEdito
 // This version is for use in a running simulation, in a separate goroutine.
 // It will cause the GUI to hang if called from within the GUI event loop:
 // use [UpdateCyclePlot] for that case.
-func (gui *GUI) GoUpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEditor {
+func (gui *GUI) GoUpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.Editor {
 	plot := gui.Plot(mode, etime.Cycle)
 	if plot == nil {
 		return plot
@@ -199,13 +192,15 @@ func (gui *GUI) GoUpdateCyclePlot(mode etime.Modes, cycle int) *plotcore.PlotEdi
 // NewPlotTab adds a new plot with given key for Plots lookup
 // and using given tab label.  For ad-hoc plots, you can
 // construct a ScopeKey from any two strings using etime.ScopeStr.
-func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotcore.PlotEditor {
+func (gui *GUI) NewPlotTab(key etime.ScopeKey, tabLabel string) *plotcore.Editor {
 	tab, _ := gui.Tabs.NewTab(tabLabel)
 	plt := plotcore.NewSubPlot(tab)
 	gui.Plots[key] = plt
 	return plt
 }
+*/
 
+/*
 // AddTableView adds a table view of given log,
 // typically particularly useful for Debug logs.
 func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) *tensorcore.Table {
@@ -227,7 +222,9 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 	tv.SetTable(lt.Table)
 	return tv
 }
+*/
 
+/*
 // TableView returns TableView for mode, time scope
 func (gui *GUI) TableView(mode etime.Modes, time etime.Times) *tensorcore.Table {
 	if !gui.Active {
@@ -250,3 +247,4 @@ func (gui *GUI) UpdateTableView(mode etime.Modes, time etime.Times) *tensorcore.
 	}
 	return tv
 }
+*/

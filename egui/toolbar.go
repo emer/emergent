@@ -30,9 +30,9 @@ func (gui *GUI) AddToolbarItem(p *tree.Plan, item ToolbarItem) {
 		})
 		switch item.Active {
 		case ActiveStopped:
-			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
+			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning()) })
 		case ActiveRunning:
-			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(gui.IsRunning) })
+			w.FirstStyler(func(s *styles.Style) { s.SetEnabled(gui.IsRunning()) })
 		}
 	})
 }

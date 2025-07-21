@@ -7,7 +7,7 @@ package paths
 //go:generate core generate -add-types
 
 import (
-	"cogentcore.org/core/tensor"
+	"cogentcore.org/lab/tensor"
 )
 
 // Pattern defines a pattern of connectivity between two layers.
@@ -25,15 +25,15 @@ type Pattern interface {
 	// recvn and send tensors, each the shape of send and recv respectively.
 	// The same flag should be set to true if the send and recv layers are the same (i.e., a self-connection)
 	// often there are some different options for such connections.
-	Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bits)
+	Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool)
 }
 
 // NewTensors returns the tensors used for Connect method, based on layer sizes
-func NewTensors(send, recv *tensor.Shape) (sendn, recvn *tensor.Int32, cons *tensor.Bits) {
-	sendn = tensor.New[int32](send.Sizes).(*tensor.Int32)
-	recvn = tensor.New[int32](recv.Sizes).(*tensor.Int32)
+func NewTensors(send, recv *tensor.Shape) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {
+	sendn = tensor.NewInt32(send.Sizes...)
+	recvn = tensor.NewInt32(recv.Sizes...)
 	csh := tensor.AddShapes(recv, send)
-	cons = tensor.NewBitsShape(csh)
+	cons = tensor.NewBoolShape(csh)
 	return
 }
 
@@ -41,7 +41,7 @@ func NewTensors(send, recv *tensor.Shape) (sendn, recvn *tensor.Int32, cons *ten
 // if perRecv is true then it displays the sending connections
 // per each recv unit -- otherwise it shows the entire matrix
 // as a 2D matrix
-func ConsStringFull(send, recv *tensor.Shape, cons *tensor.Bits) []byte {
+func ConsStringFull(send, recv *tensor.Shape, cons *tensor.Bool) []byte {
 	nsend := send.Len()
 	nrecv := recv.Len()
 
@@ -68,6 +68,6 @@ func ConsStringFull(send, recv *tensor.Shape, cons *tensor.Bits) []byte {
 
 // ConsStringPerRecv returns a []byte string showing the pattern of connectivity
 // organized by receiving unit, showing the sending connections per each
-func ConsStringPerRecv(send, recv *tensor.Shape, cons *tensor.Bits) []byte {
+func ConsStringPerRecv(send, recv *tensor.Shape, cons *tensor.Bool) []byte {
 	return nil
 }

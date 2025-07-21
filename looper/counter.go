@@ -5,7 +5,7 @@
 package looper
 
 // Counter combines an integer with a maximum value.
-// It supports time tracking within looper.
+// It supports iteration tracking within looper.
 type Counter struct {
 
 	// Cur is the current counter value.

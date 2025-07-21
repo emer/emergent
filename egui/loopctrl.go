@@ -16,7 +16,6 @@ import (
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/tree"
-	"github.com/emer/emergent/v2/etime"
 	"github.com/emer/emergent/v2/looper"
 )
 
@@ -101,9 +100,9 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		Tooltip: "Interrupts current running. Will pick back up where it left off.",
 		Active:  ActiveRunning,
 		Func: func() {
-			loops.Stop(etime.Cycle)
+			loops.Stop(gui.StopLevel)
 			// fmt.Println("Stop time!")
-			gui.StopNow = true
+			gui.SetStopNow()
 		},
 	})
 
@@ -111,14 +110,14 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		tb := gui.Toolbar
 		w.SetText("Run").SetIcon(icons.PlayArrow).
 			SetTooltip("Run the current mode, picking up from where it left off last time (Init to restart)")
-		w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning) })
+		w.FirstStyler(func(s *styles.Style) { s.SetEnabled(!gui.IsRunning()) })
 		w.OnClick(func(e events.Event) {
-			if !gui.IsRunning {
-				gui.IsRunning = true
+			if !gui.IsRunning() {
+				gui.StartRun()
 				tb.Restyle()
 				go func() {
-					loops.Run(curMode)
-					gui.Stopped()
+					stop := loops.Run(curMode)
+					gui.Stopped(curMode, stop)
 				}()
 			}
 		})
@@ -129,18 +128,18 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		w.SetText("Step").SetIcon(icons.SkipNext).
 			SetTooltip("Step the current mode, according to the following step level and N")
 		w.FirstStyler(func(s *styles.Style) {
-			s.SetEnabled(!gui.IsRunning)
+			s.SetEnabled(!gui.IsRunning())
 			s.SetAbilities(true, abilities.RepeatClickable)
 		})
 		w.OnClick(func(e events.Event) {
-			if !gui.IsRunning {
-				gui.IsRunning = true
+			if !gui.IsRunning() {
+				gui.StartRun()
 				tb.Restyle()
 				go func() {
 					st := loops.Stacks[curMode]
 					nst := int(stepNSpin.Value)
-					loops.Step(curMode, nst, st.StepLevel)
-					gui.Stopped()
+					stop := loops.Step(curMode, nst, st.StepLevel)
+					gui.Stopped(curMode, stop)
 				}()
 			}
 		})
