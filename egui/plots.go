@@ -215,7 +215,7 @@ func (gui *GUI) AddTableView(lg *elog.Logs, mode etime.Modes, time etime.Times) 
 		return nil
 	}
 
-	tt, _ := gui.Tabs.NewTab(mode.String() + " " + time.String() + " ")
+	tt, _ := gui.Tabs.NewTab(mode.String() + " " + time.String())
 	tv := tensorcore.NewTable(tt)
 	gui.TableViews[key] = tv
 	tv.SetReadOnly(true)

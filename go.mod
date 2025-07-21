@@ -21,10 +21,12 @@ require (
 	github.com/cogentcore/webgpu v0.23.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
+	github.com/ericchiang/css v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240506104042-037f3cc74f2a // indirect
 	github.com/go-text/typesetting v0.3.1-0.20250402122313-7a0f05577ff5 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect

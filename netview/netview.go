@@ -103,7 +103,7 @@ func (nv *NetView) Init() {
 	})
 
 	tree.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
-		w.FinalStyler(func(s *styles.Style) {
+		w.Styler(func(s *styles.Style) {
 			s.Wrap = true
 		})
 		w.Maker(nv.MakeToolbar)
@@ -139,6 +139,9 @@ func (nv *NetView) Init() {
 		})
 	})
 	tree.AddChildAt(nv, "vbar", func(w *core.Toolbar) {
+		w.Styler(func(s *styles.Style) {
+			s.Wrap = true
+		})
 		w.Maker(nv.MakeViewbar)
 	})
 }

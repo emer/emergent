@@ -7,13 +7,24 @@ package egui
 //go:generate core generate -add-types
 
 import (
+	"embed"
+	"fmt"
 	"io/fs"
+	"net/http"
+	"strings"
 	"sync"
 
+	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/fileinfo/mimedata"
+	"cogentcore.org/core/base/labels"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/enums"
 	"cogentcore.org/core/events"
+	"cogentcore.org/core/htmlcore"
 	"cogentcore.org/core/styles"
+	"cogentcore.org/core/styles/abilities"
+	"cogentcore.org/core/system"
+	"cogentcore.org/core/text/textcore"
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/lab/lab"
@@ -39,6 +50,9 @@ type GUI struct {
 
 	// Body is the entire content of the sim window.
 	Body *core.Body `display:"-"`
+
+	// Readme is the sim readme frame
+	Readme *core.Frame `display:"-"`
 
 	// OnStop is called when running is stopped through the GUI,
 	// via the Stopped method. It should update the network view for example.
@@ -136,8 +150,8 @@ func NewGUIBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string
 // a [core.Form] editor of the given sim object, and a filetree for the data filesystem
 // rooted at fsroot, and with given app name, title, and about information.
 // The first arg is an optional existing [core.Body] to make into: if nil then
-// a new body is made first.
-func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string) {
+// a new body is made first. It takes an optional fs with a README.md file.
+func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string, readme ...embed.FS) {
 	gui.StopLevel = etime.NoTime // corresponds to the first level typically
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 	if b == nil {
@@ -183,8 +197,121 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, abo
 	gui.CycleUpdateInterval = 10
 	gui.UpdateFiles()
 	gui.Files.Tabber = tabs
-	split.SetTiles(core.TileSplit, core.TileSpan)
-	split.SetSplits(.2, .5, .8)
+
+	if len(readme) > 0 {
+		gui.addReadme(readme[0], split)
+	} else {
+		split.SetTiles(core.TileSplit, core.TileSpan)
+		split.SetSplits(.2, .5, .8)
+	}
+}
+
+func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
+	gui.Readme = core.NewFrame(split)
+	gui.Readme.Name = "readme"
+
+	split.SetTiles(core.TileSplit, core.TileSpan, core.TileSpan)
+	split.SetSplits(.2, .5, .5, .3)
+
+	ctx := htmlcore.NewContext()
+
+	ctx.GetURL = func(rawURL string) (*http.Response, error) {
+		return htmlcore.GetURLFromFS(readmefs, rawURL)
+	}
+
+	ctx.AddWikilinkHandler(gui.readmeWikilink("sim"))
+
+	ctx.OpenURL = gui.readmeOpenURL
+
+	eds := []*textcore.Editor{}
+
+	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
+		ed := textcore.NewEditor(ctx.BlockParent)
+		ed.Lines.Settings.LineNumbers = false
+		eds = append(eds, ed)
+		id := htmlcore.GetAttr(ctx.Node, "id")
+		ed.SetName(id)
+		return true
+	}
+
+	core.NewButton(gui.Readme).SetText("Copy answers").OnClick(func(e events.Event) {
+		clipboard := gui.Readme.Clipboard()
+		var ab strings.Builder
+		for _, ed := range eds {
+			ab.WriteString("## Question " + ed.Name + "\n" + ed.Lines.String() + "\n")
+		}
+		answers := ab.String()
+		md := mimedata.NewText(answers)
+		clipboard.Write(md)
+		core.MessageSnackbar(gui.Body, "Answers copied to clipboard")
+	})
+
+	readme, err := readmefs.ReadFile("README.md")
+
+	if errors.Log(err) == nil {
+		htmlcore.ReadMDString(ctx, gui.Readme, string(readme))
+	}
+}
+
+func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
+	return func(text string) (url string, label string) {
+		if !strings.HasPrefix(text, prefix+":") {
+			return "", ""
+		}
+		text = strings.TrimPrefix(text, prefix+":")
+		url = prefix + "://" + text
+		if strings.Contains(text, "/") {
+			_, text, _ = strings.Cut(text, "/")
+		}
+		return url, text
+	}
+}
+
+// readmeOpenURL Parses URL, highlights linked button or opens URL
+func (gui *GUI) readmeOpenURL(url string) {
+	focusSet := false
+	if !strings.HasPrefix(url, "sim://") {
+		system.TheApp.OpenURL(url)
+		return
+	}
+
+	text := strings.TrimPrefix(url, "sim://")
+	var pathPrefix string = ""
+	hasPath := false
+	if strings.Contains(text, "/") {
+		pathPrefix, text, hasPath = strings.Cut(text, "/")
+	}
+
+	gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
+		if focusSet {
+			return tree.Break
+		}
+		if !hasPath && !cwb.IsDisplayable() {
+			return tree.Break
+		}
+		if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix) {
+			return tree.Continue
+		}
+		label := labels.ToLabel(cw)
+		if !strings.EqualFold(label, text) {
+			return tree.Continue
+		}
+		if cwb.AbilityIs(abilities.Focusable) {
+			cwb.SetFocus()
+			focusSet = true
+			return tree.Break
+		}
+		next := core.AsWidget(tree.Next(cwb))
+		if next.AbilityIs(abilities.Focusable) {
+			next.SetFocus()
+			focusSet = true
+			return tree.Break
+		}
+		return tree.Continue
+	})
+	if !focusSet {
+		core.ErrorSnackbar(gui.Body, fmt.Errorf("invalid sim url %q", url))
+	}
 }
 
 // AddNetView adds NetView in tab with given name
