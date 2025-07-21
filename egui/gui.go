@@ -51,9 +51,6 @@ type GUI struct {
 	// Body is the entire content of the sim window.
 	Body *core.Body `display:"-"`
 
-	// Toolbar is the overall sim toolbar
-	Toolbar *core.Toolbar `display:"-"`
-
 	// Readme is the sim readme frame
 	Readme *core.Frame `display:"-"`
 
@@ -290,7 +287,7 @@ func (gui *GUI) readmeOpenURL(url string) {
 		if focusSet {
 			return tree.Break
 		}
-		if !hasPath && !cwb.IsVisible() {
+		if !hasPath && !cwb.IsDisplayable() {
 			return tree.Break
 		}
 		if hasPath && !strings.Contains(cw.AsTree().Path(), pathPrefix) {
