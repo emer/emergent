@@ -22,7 +22,7 @@ type Sel[T Styler] struct {
 	// using standard css selector syntax:
 	//	- .Example applies to anything with a Class tag of 'Example'
 	//	- #Example applies to anything with a Name of 'Example'
-	//	- Example with no prefix or blank selector always applies.
+	//	- Example with no prefix or blank selector always applies as the presumed Type.
 	Sel string `width:"30"`
 
 	// Doc is documentation of these parameter values: what effect

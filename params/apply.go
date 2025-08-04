@@ -16,7 +16,7 @@ import (
 // using the Styler interface, and returns false if it does not. If it does apply,
 // then the Set function is called on the object.
 func (ps *Sel[T]) Apply(obj T) bool {
-	if !ps.SelMatch(obj) {
+	if !SelMatch(ps.Sel, obj) {
 		return false
 	}
 	ps.Set(obj)
@@ -24,15 +24,15 @@ func (ps *Sel[T]) Apply(obj T) bool {
 }
 
 // SelMatch returns true if Sel selector matches the target object properties.
-func (ps *Sel[T]) SelMatch(obj T) bool {
-	if ps.Sel == "" {
+func SelMatch[T Styler](sel string, obj T) bool {
+	if sel == "" {
 		return true
 	}
-	if ps.Sel[0] == '.' { // class
-		return ClassMatch(ps.Sel[1:], obj.StyleClass())
+	if sel[0] == '.' { // class
+		return ClassMatch(sel[1:], obj.StyleClass())
 	}
-	if ps.Sel[0] == '#' { // name
-		return obj.StyleName() == ps.Sel[1:]
+	if sel[0] == '#' { // name
+		return obj.StyleName() == sel[1:]
 	}
 	return true // type always matches
 }
@@ -72,9 +72,9 @@ func (ps *Sheet[T]) SelMatchReset() {
 
 // SelNoMatchWarn issues warning messages for any Sel selectors that had no
 // matches during the last Apply process -- see SelMatchReset.
-// The setName and objName provide info about the Set and obj being applied.
+// The sheetName and objName provide info about the Sheet and obj being applied.
 // Returns an error message with the non-matching sets if any, else nil.
-func (ps *Sheet[T]) SelNoMatchWarn(setName, objName string) error {
+func (ps *Sheet[T]) SelNoMatchWarn(sheetName, objName string) error {
 	msg := ""
 	for _, sl := range *ps {
 		if sl.NMatch == 0 {
@@ -82,7 +82,7 @@ func (ps *Sheet[T]) SelNoMatchWarn(setName, objName string) error {
 		}
 	}
 	if msg != "" {
-		msg = fmt.Sprintf("param.Sheet from Set: %s for object: %s had the following non-matching Selectors:\n%s", setName, objName, msg)
+		msg = fmt.Sprintf("param.Sheet from Sheet: %s for object: %s had the following non-matching Selectors:\n%s", sheetName, objName, msg)
 		log.Println(msg) // todo: slog?
 		return errors.New(msg)
 	}
