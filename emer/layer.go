@@ -7,9 +7,9 @@ package emer
 import (
 	"fmt"
 	"io"
-	"log"
 	"math"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/base/slicesx"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/lab/tensor"
@@ -350,8 +350,7 @@ func (ly *LayerBase) UnitValues(vals *[]float32, varNm string, di int) error {
 func (ly *LayerBase) UnitValuesTensor(tsr tensor.Values, varNm string, di int) error {
 	if tsr == nil {
 		err := fmt.Errorf("emer.UnitValuesTensor: Tensor is nil")
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	nn := ly.NumUnits()
 	tsr.SetShapeSizes(ly.Shape.Sizes...)
@@ -394,8 +393,7 @@ func (ly *LayerBase) UnitValuesSampleTensor(tsr tensor.Values, varNm string, di 
 	}
 	if tsr == nil {
 		err := fmt.Errorf("emer.UnitValuesSampleTensor: Tensor is nil")
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	if tsr.Len() != nu {
 		rs := ly.GetSampleShape()

@@ -7,7 +7,7 @@ package params
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"slices"
 	"strings"
 )
@@ -83,7 +83,7 @@ func (ps *Sheet[T]) SelNoMatchWarn(sheetName, objName string) error {
 	}
 	if msg != "" {
 		msg = fmt.Sprintf("param.Sheet from Sheet: %s for object: %s had the following non-matching Selectors:\n%s", sheetName, objName, msg)
-		log.Println(msg) // todo: slog?
+		slog.Warn(msg)
 		return errors.New(msg)
 	}
 	return nil

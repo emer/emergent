@@ -6,7 +6,7 @@ package env
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"math/rand"
 
 	"cogentcore.org/lab/base/randx"
@@ -150,7 +150,7 @@ func (ft *MPIFixedTable) Step() bool {
 func (ft *MPIFixedTable) State(element string) tensor.Values {
 	et := ft.Table.Column(element).RowTensor(ft.Row())
 	if et == nil {
-		log.Println("MPIFixedTable.State -- could not find element:", element)
+		slog.Error("MPIFixedTable.State: could not find:", "element", element)
 	}
 	return et
 }

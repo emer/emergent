@@ -6,9 +6,9 @@ package popcode
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/lab/tensor"
 )
@@ -81,8 +81,7 @@ func (pc *TwoD) SetRange(min, max, sigma float32) {
 func (pc *TwoD) Encode(pat tensor.Tensor, val math32.Vector2, add bool) error {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Encode: pattern must have 2 dimensions")
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	if pc.Clip {
 		val.Clamp(pc.Min, pc.Max)
@@ -165,8 +164,7 @@ func (pc *TwoD) EncodeImpl(pat tensor.Tensor, val math32.Vector2, add bool) erro
 func (pc *TwoD) Decode(pat tensor.Tensor) (math32.Vector2, error) {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD Decode: pattern must have 2 dimensions")
-		log.Println(err)
-		return math32.Vector2{}, err
+		return math32.Vector2{}, errors.Log(err)
 	}
 	if pc.WrapX || pc.WrapY {
 		ny := pat.DimSize(0)
@@ -315,8 +313,7 @@ func (pc *TwoD) Values(valsX, valsY *[]float32, nx, ny int) {
 func (pc *TwoD) DecodeNPeaks(pat tensor.Tensor, nvals, width int) ([]math32.Vector2, error) {
 	if pat.NumDims() != 2 {
 		err := fmt.Errorf("popcode.TwoD DecodeNPeaks: pattern must have 2 dimensions")
-		log.Println(err)
-		return nil, err
+		return nil, errors.Log(err)
 	}
 	rng := pc.Max.Sub(pc.Min)
 	ny := pat.DimSize(0)

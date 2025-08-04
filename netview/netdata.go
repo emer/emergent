@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"os"
 	"path/filepath"
@@ -544,16 +543,14 @@ func (nd *NetData) OpenJSON(filename core.Filename) error { //types:add
 	fp, err := os.Open(string(filename))
 	defer fp.Close()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	ext := filepath.Ext(string(filename))
 	if ext == ".gz" {
 		gzr, err := gzip.NewReader(fp)
 		defer gzr.Close()
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Log(err)
 		}
 		return nd.ReadJSON(gzr)
 	} else {
@@ -566,8 +563,7 @@ func (nd *NetData) SaveJSON(filename core.Filename) error { //types:add
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	ext := filepath.Ext(string(filename))
 	if ext == ".gz" {
@@ -597,8 +593,7 @@ func (nd *NetData) ReadJSON(r io.Reader) error {
 	if err == nil || err == io.EOF {
 		return nil
 	}
-	log.Println(err)
-	return err
+	return errors.Log(err)
 }
 
 // NaNSub is used to replace NaN values for saving -- JSON doesn't handle nan's
@@ -615,11 +610,7 @@ func (nd *NetData) WriteJSON(w io.Writer) error {
 	}
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", " ")
-	err := enc.Encode(nd)
-	if err != nil {
-		log.Println(err)
-	}
-	return err
+	return errors.Log(enc.Encode(nd))
 }
 
 // func (ld *LayData) MarshalJSON() ([]byte, error) {

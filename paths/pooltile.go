@@ -6,8 +6,8 @@ package paths
 
 import (
 	"fmt"
-	"log"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/math32/vecint"
@@ -246,8 +246,7 @@ func (pt *PoolTile) TopoWeights(send, recv *tensor.Shape, wts *tensor.Float32) e
 		}
 	}
 	err := fmt.Errorf("PoolTile:TopoWeights no Gauss or Sig params turned on")
-	log.Println(err)
-	return err
+	return errors.Log(err)
 }
 
 /////////////////////////////////////////////////////

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -28,8 +27,7 @@ func (nt *NetworkBase) SaveWeightsJSON(filename core.Filename) error { //types:a
 	fp, err := os.Create(string(filename))
 	defer fp.Close()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	ext := filepath.Ext(string(filename))
 	if ext == ".gz" {
@@ -50,16 +48,14 @@ func (nt *NetworkBase) OpenWeightsJSON(filename core.Filename) error { //types:a
 	fp, err := os.Open(string(filename))
 	defer fp.Close()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	ext := filepath.Ext(string(filename))
 	if ext == ".gz" {
 		gzr, err := gzip.NewReader(fp)
 		defer gzr.Close()
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Log(err)
 		}
 		return nt.EmerNetwork.ReadWeightsJSON(gzr)
 	} else {
@@ -74,16 +70,14 @@ func (nt *NetworkBase) OpenWeightsFS(fsys fs.FS, filename string) error {
 	fp, err := fsys.Open(filename)
 	defer fp.Close()
 	if err != nil {
-		log.Println(err)
-		return err
+		return errors.Log(err)
 	}
 	ext := filepath.Ext(filename)
 	if ext == ".gz" {
 		gzr, err := gzip.NewReader(fp)
 		defer gzr.Close()
 		if err != nil {
-			log.Println(err)
-			return err
+			return errors.Log(err)
 		}
 		return nt.EmerNetwork.ReadWeightsJSON(gzr)
 	} else {
@@ -147,7 +141,7 @@ func (nt *NetworkBase) ReadWeightsJSON(r io.Reader) error {
 	}
 	err = nt.SetWeights(nw)
 	if err != nil {
-		log.Println(err)
+		errors.Log(err)
 	}
 	return err
 }

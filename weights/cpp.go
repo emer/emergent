@@ -6,12 +6,12 @@ package weights
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 	"strings"
+
+	"cogentcore.org/core/base/errors"
 )
 
 // NetReadCpp reads weights for entire network from old emergent C++ format
@@ -26,7 +26,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 		skipnext bool
 		cidx     int
 		err      error
-		errlist  []error
+		errs     []error
 	)
 	scan := bufio.NewScanner(r) // line at a time
 	for scan.Scan() {
@@ -63,7 +63,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			uss := strings.Split(us, " ") // includes unit name
 			ri, err = strconv.Atoi(uss[0])
 			if err != nil {
-				errlist = append(errlist, err)
+				errs = append(errs, err)
 			}
 			continue
 		case strings.HasPrefix(bs, "<Cg "):
@@ -71,7 +71,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			css := strings.Split(cs, " ")
 			pi, err = strconv.Atoi(css[0])
 			if err != nil {
-				errlist = append(errlist, err)
+				errs = append(errs, err)
 			}
 			fm := strings.TrimPrefix(css[1], "From:")
 			if len(lw.Paths) < pi+1 {
@@ -83,7 +83,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			us := strings.TrimSuffix(strings.TrimPrefix(bs, "<Cn "), ">")
 			nc, err := strconv.Atoi(us)
 			if err != nil {
-				errlist = append(errlist, err)
+				errs = append(errs, err)
 			}
 			if len(pw.Rs) < ri+1 {
 				pw.Rs = append(pw.Rs, Recv{Ri: ri, N: nc})
@@ -100,8 +100,7 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			kvl := strings.Split(bs, " ")
 			if len(kvl) != 2 {
 				err = fmt.Errorf("NetReadCpp: unrecognized input: %v", bs)
-				errlist = append(errlist, err)
-				log.Println(err)
+				errs = append(errs, err)
 				continue
 			}
 			ky := strings.TrimPrefix(kvl[0], "<")
@@ -126,11 +125,11 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			case 2:
 				si, err := strconv.Atoi(siwts[0])
 				if err != nil {
-					errlist = append(errlist, err)
+					errs = append(errs, err)
 				}
 				wt, err := strconv.ParseFloat(siwts[1], 32)
 				if err != nil {
-					errlist = append(errlist, err)
+					errs = append(errs, err)
 				}
 				rw.Si[cidx] = si
 				rw.Wt[cidx] = float32(wt)
@@ -139,15 +138,15 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 			case 3:
 				si, err := strconv.Atoi(siwts[0])
 				if err != nil {
-					errlist = append(errlist, err)
+					errs = append(errs, err)
 				}
 				wt, err := strconv.ParseFloat(siwts[1], 32)
 				if err != nil {
-					errlist = append(errlist, err)
+					errs = append(errs, err)
 				}
 				scale, err := strconv.ParseFloat(siwts[2], 32)
 				if err != nil {
-					errlist = append(errlist, err)
+					errs = append(errs, err)
 				}
 				rw.Si[cidx] = si
 				rw.Wt[cidx] = float32(wt)
@@ -155,19 +154,10 @@ func NetReadCpp(r io.Reader) (*Network, error) {
 				cidx++
 			default:
 				err = fmt.Errorf("NetReadCpp: unrecognized input: %v", bs)
-				errlist = append(errlist, err)
-				log.Println(err)
+				errs = append(errs, err)
 				continue
 			}
 		}
 	}
-	var eall error
-	if len(errlist) > 0 {
-		es := ""
-		for _, er := range errlist {
-			es = es + er.Error() + "\n"
-		}
-		eall = errors.New(es)
-	}
-	return nw, eall
+	return nw, errors.Log(errors.Join(errs...))
 }

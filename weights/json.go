@@ -5,9 +5,10 @@
 package weights
 
 import (
-	"encoding/json"
 	"io"
-	"log"
+
+	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/iox/jsonx"
 )
 
 // Prec is the precision for weight output in text formats.
@@ -18,41 +19,20 @@ var Prec = 4
 // NetReadJSON reads weights for entire network in a JSON format into Network structure
 func NetReadJSON(r io.Reader) (*Network, error) {
 	nw := &Network{}
-	dec := json.NewDecoder(r)
-	err := dec.Decode(nw) // this is way to do it on reader instead of bytes
-	if err == io.EOF {
-		return nil, nil
-	}
-	if err != nil {
-		log.Println(err)
-	}
-	return nw, nil
+	err := errors.Log(jsonx.Read(nw, r))
+	return nw, err
 }
 
 // LayReadJSON reads weights for layer in a JSON format into Layer structure
 func LayReadJSON(r io.Reader) (*Layer, error) {
 	lw := &Layer{}
-	dec := json.NewDecoder(r)
-	err := dec.Decode(lw) // this is way to do it on reader instead of bytes
-	if err == io.EOF {
-		return nil, nil
-	}
-	if err != nil {
-		log.Println(err)
-	}
-	return lw, nil
+	err := errors.Log(jsonx.Read(lw, r))
+	return lw, err
 }
 
 // PathReadJSON reads weights for path in a JSON format into Path structure
 func PathReadJSON(r io.Reader) (*Path, error) {
 	pw := &Path{}
-	dec := json.NewDecoder(r)
-	err := dec.Decode(pw) // this is way to do it on reader instead of bytes
-	if err == io.EOF {
-		return nil, nil
-	}
-	if err != nil {
-		log.Println(err)
-	}
-	return pw, nil
+	err := errors.Log(jsonx.Read(pw, r))
+	return pw, err
 }

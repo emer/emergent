@@ -9,7 +9,6 @@ package emer
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
@@ -374,10 +373,7 @@ func (nt *NetworkBase) ParamsString(nonDefault bool) string {
 func (nt *NetworkBase) SaveParams(nonDefault bool, filename core.Filename) error {
 	str := nt.ParamsString(nonDefault)
 	err := os.WriteFile(string(filename), []byte(str), 0666)
-	if err != nil {
-		log.Println(err)
-	}
-	return err
+	return errors.Log(err)
 }
 
 // SetRandSeed sets random seed and calls ResetRandSeed

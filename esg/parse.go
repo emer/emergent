@@ -8,19 +8,19 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"cogentcore.org/core/base/errors"
 )
 
 // OpenRules reads in a text file with rules, line-by-line simple parser
 func (rls *Rules) OpenRules(fname string) []error {
 	fp, err := os.Open(fname)
 	defer fp.Close()
-	if err != nil {
-		log.Println(err)
-		return nil
+	if errors.Log(err) != nil {
+		return []error{err}
 	}
 	return rls.ReadRules(fp)
 }
