@@ -78,5 +78,5 @@ Conventional modifiers, used for defining sub-rules:
 * L = Location
 * R = Adverb
 
-See [testdata/testrules.txt](https://github.com/emer/emergent/blob/main/esg/testdata/testrules.txt) and [sg CCN sim](https://github.com/CompCogNeuro/sims/blob/main/ch9/sg) for example usage.
+See [testdata/testrules.txt](https://github.com/emer/emergent/blob/main/esg/testdata/testrules.txt) and [sg CCN sim](https://github.com/compcogneuro/sims/blob/main/ch9/sg) for example usage.
 

@@ -9,11 +9,11 @@
 
 * `main` is the latest version based on [Cogent Lab](https://github.com/cogentcore/lab), used by [axon](https://github.com/emer/axon), and is still undergoing significant development.
 
-* `leabra` is an awkward in-between version that works with the current [leabra](https://github.com/emer/leabra) and [Computational Cognitive Neuroscience](https://github.com/CompCogNeuro/sims) simulations, which had to be updated for teaching in Fall 2024, so the simulations could run on the web browser.
+* `leabra` is an awkward in-between version that works with the current [leabra](https://github.com/emer/leabra) and [Computational Cognitive Neuroscience](https://github.com/compcogneuro/sims) simulations, which had to be updated for teaching in Fall 2024, so the simulations could run on the web browser.
 
 * `v1` is the version that works with the old v1 versions of leabra, using the old [goki](https://github.com/goki/gi) GUI framework.
 
-The *emergent* neural network simulation framework provides a toolkit in the Go programming language (golang) for developing neural network models across multiple levels of complexity, from biologically-detailed spiking networks in the [axon](https://github.com/emer/axon) package, to PyTorch abstract deep networks in the [eTorch](https://github.com/emer/etorch) package.  It builds on the [Cogent Core](https://cogentcore.org/core) GUI framework and [Cogent Lab](https://github.com/cogentcore/lab) to provide dynamic graphical interfaces for visualizing and manipulating networks and data, making the models uniquely accessible for teaching (e.g., see the [Computational Cognitive Neuroscience](https://github.com/CompCogNeuro/sims) simulations) and supporting the development of complex dynamical models for research.
+The *emergent* neural network simulation framework provides a toolkit in the Go programming language (golang) for developing neural network models across multiple levels of complexity, from biologically-detailed spiking networks in the [axon](https://github.com/emer/axon) package, to PyTorch abstract deep networks in the [eTorch](https://github.com/emer/etorch) package.  It builds on the [Cogent Core](https://cogentcore.org/core) GUI framework and [Cogent Lab](https://github.com/cogentcore/lab) to provide dynamic graphical interfaces for visualizing and manipulating networks and data, making the models uniquely accessible for teaching (e.g., see the [Computational Cognitive Neuroscience](https://github.com/compcogneuro/sims) simulations) and supporting the development of complex dynamical models for research.
 
 See [cogent core install](https://www.cogentcore.org/core/setup/install) instructions for general installation instructions.  The [emergent wiki install](https://github.com/emer/emergent/wiki/Install) page has a tutorial for how to create your own simulation based on the leabra ra25 example.
 
@@ -23,19 +23,19 @@ The single clearest motivation for using Go vs. the ubiquitous Python, is that P
 
 Furthermore, the _Go shader language_ [gosl](https://github.com/cogentcore/lab/tree/main/gosl) in Cogent Lab enables Go to run efficiently on the GPU as well, enabling the same code base to be used for both CPU and GPU execution.  This enables even very complex, biologically-detailed models as in the [axon](https://github.com/emer/axon) framework to take full advantage of GPU acceleration, resulting in 10x or more speedup factors over CPU.
 
-See the [ra25 example](https://github.com/emer/axon/tree/main/ra25/README.md) in the [axon](https://github.com/emer/axon) package for a complete working example (intended to be a good starting point for creating your own models), and any of the 26 models in the [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) repository which also provide good starting points, using the [leabra](https://github.com/emer/leabra) framework. 
+See the [ra25 example](https://github.com/emer/axon/tree/main/ra25/README.md) in the [axon](https://github.com/emer/axon) package for a complete working example (intended to be a good starting point for creating your own models), and any of the 26 models in the [Comp Cog Neuro sims](https://github.com/compcogneuro/sims) repository which also provide good starting points, using the [leabra](https://github.com/emer/leabra) framework. 
 
 # Current Status / News
 
 * December 2024: Updated to [Cogent Lab](https://github.com/cogentcore/lab) and tracking ongoing development there. In general much of the prior functionality in emergent has / will migrate to Lab.
 
-* June 2024: Major changes ongoing in coordination with the [Cogent Core](https://cogentcore.org/core) framework development over the prior year, replacing the previous [GoKi](https://github.com/goki) GUI framework.  Many packages have migrated to Cogent Core, which is a much cleaner major rewrite, which should be stable and released in beta status soon.  [axon](https://github.com/emer/axon) is staying updated but everything else should use the [v1](https://github.com/emer/emergent/tree/v1) branch. [Leabra](https://github.com/emer/leabra) and [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) will be updated after the dust settles, hopefully in time for Fall 2024 classes.
+* June 2024: Major changes ongoing in coordination with the [Cogent Core](https://cogentcore.org/core) framework development over the prior year, replacing the previous [GoKi](https://github.com/goki) GUI framework.  Many packages have migrated to Cogent Core, which is a much cleaner major rewrite, which should be stable and released in beta status soon.  [axon](https://github.com/emer/axon) is staying updated but everything else should use the [v1](https://github.com/emer/emergent/tree/v1) branch. [Leabra](https://github.com/emer/leabra) and [Comp Cog Neuro sims](https://github.com/compcogneuro/sims) will be updated after the dust settles, hopefully in time for Fall 2024 classes.
 
 * Nov 2020: Full Python conversions of CCN sims complete, and [eTorch](https://github.com/emer/etorch) for viewing and interacting with PyTorch models.
 
 * April 2020: Version 1.0 of GoGi GUI is now released, and we have updated all module dependencies accordingly. *We now recommend using the go modules instead of GOPATH* -- the [Wiki Install](https://github.com/emer/emergent/wiki/Install) instructions have been updated accordingly.
 
-* 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/CompCogNeuro/sims) that accompany the [CCN Textbook](https://github.com/CompCogNeuro/book) are now complete and have driven extensive testing and bugfixing.
+* 12/30/2019: Version 1.0.0 released!  The [Comp Cog Neuro sims](https://github.com/compcogneuro/sims) that accompany the [CCN Textbook](https://github.com/compcogneuro/book) are now complete and have driven extensive testing and bugfixing.
 
 * 3/2019: Python interface is up and running!  See the `python` directory in `leabra` for the [README](https://github.com/emer/leabra/blob/main/python/README.md) status and how to give it a try.  You can run the full `leabra/examples/ra25` code using Python, including the GUI etc.
 
