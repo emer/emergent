@@ -21,6 +21,7 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
+	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/system"
 	"cogentcore.org/core/texteditor"
@@ -164,6 +165,10 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		eds = append(eds, ed)
 		id := htmlcore.GetAttr(ctx.Node, "id")
 		ed.SetName(id)
+
+		ed.Styler(func(s *styles.Style) {
+			s.Min.Y.Em(10)
+		})
 
 		saveFile := filepath.Join(core.TheApp.AppDataDir(), "q"+id+".md")
 		err := ed.Buffer.Open(saveFile)
