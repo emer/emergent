@@ -9,7 +9,10 @@ package egui
 import (
 	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"cogentcore.org/core/base/errors"
@@ -161,6 +164,25 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		eds = append(eds, ed)
 		id := htmlcore.GetAttr(ctx.Node, "id")
 		ed.SetName(id)
+
+		saveFile := filepath.Join(core.TheApp.AppDataDir(), "q"+id+".md")
+		err := ed.Buffer.Open(saveFile)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				err := os.WriteFile(saveFile, nil, 0666)
+				core.ErrorSnackbar(ed, err, "Error creating answer file")
+				if err == nil {
+					err := ed.Buffer.Open(saveFile)
+					core.ErrorSnackbar(ed, err, "Error loading answer")
+				}
+			} else {
+				core.ErrorSnackbar(ed, err, "Error loading answer")
+			}
+		}
+		ed.OnChange(func(e events.Event) {
+			core.ErrorSnackbar(ed, ed.SaveQuiet(), "Error saving answer")
+		})
+
 		return true
 	}
 
