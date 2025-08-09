@@ -234,6 +234,10 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits, appname string)
 		id := htmlcore.GetAttr(ctx.Node, "id")
 		ed.SetName(id)
 
+		ed.Styler(func(s *styles.Style) {
+			s.Min.Y.Em(10)
+		})
+
 		// used with Embed in shared context so need appname in filename to avoid conflicts
 		saveFile := filepath.Join(core.TheApp.AppDataDir(), appname+"-"+"q"+id+".md")
 		err := ed.Lines.Open(saveFile)
