@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -199,14 +201,14 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, abo
 	gui.Files.Tabber = tabs
 
 	if len(readme) > 0 {
-		gui.addReadme(readme[0], split)
+		gui.addReadme(readme[0], split, appname)
 	} else {
 		split.SetTiles(core.TileSplit, core.TileSpan)
 		split.SetSplits(.2, .5, .8)
 	}
 }
 
-func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
+func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits, appname string) {
 	gui.Readme = core.NewFrame(split)
 	gui.Readme.Name = "readme"
 
@@ -231,6 +233,26 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		eds = append(eds, ed)
 		id := htmlcore.GetAttr(ctx.Node, "id")
 		ed.SetName(id)
+
+		// used with Embed in shared context so need appname in filename to avoid conflicts
+		saveFile := filepath.Join(core.TheApp.AppDataDir(), appname+"-"+"q"+id+".md")
+		err := ed.Lines.Open(saveFile)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				err := os.WriteFile(saveFile, nil, 0666)
+				core.ErrorSnackbar(ed, err, "Error creating answer file")
+				if err == nil {
+					err := ed.Lines.Open(saveFile)
+					core.ErrorSnackbar(ed, err, "Error loading answer")
+				}
+			} else {
+				core.ErrorSnackbar(ed, err, "Error loading answer")
+			}
+		}
+		ed.OnChange(func(e events.Event) {
+			core.ErrorSnackbar(ed, ed.SaveQuiet(), "Error saving answer")
+		})
+
 		return true
 	}
 
