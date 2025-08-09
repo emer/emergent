@@ -171,13 +171,13 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		})
 
 		saveFile := filepath.Join(core.TheApp.AppDataDir(), "q"+id+".md")
-		err := ed.Buffer.Open(saveFile)
+		err := ed.Buffer.Open(core.Filename(saveFile))
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				err := os.WriteFile(saveFile, nil, 0666)
 				core.ErrorSnackbar(ed, err, "Error creating answer file")
 				if err == nil {
-					err := ed.Buffer.Open(saveFile)
+					err := ed.Buffer.Open(core.Filename(saveFile))
 					core.ErrorSnackbar(ed, err, "Error loading answer")
 				}
 			} else {
@@ -185,7 +185,7 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 			}
 		}
 		ed.OnChange(func(e events.Event) {
-			core.ErrorSnackbar(ed, ed.SaveQuiet(), "Error saving answer")
+			core.ErrorSnackbar(ed, ed.Buffer.Save(), "Error saving answer")
 		})
 
 		return true
