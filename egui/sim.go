@@ -46,6 +46,7 @@ func Run[S, C any]() {
 	opts := cli.DefaultOptions(bc.Name, bc.Title)
 	opts.DefaultFiles = append(opts.DefaultFiles, "config.toml")
 	opts.SearchUp = true // so that the sim can be run from the command subdirectory
+	opts.IncludePaths = append(opts.IncludePaths, "../configs")
 
 	cli.Run(opts, cfgC, RunSim[S, C])
 }
