@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.23.4
 
 require (
-	cogentcore.org/core v0.3.12
-	cogentcore.org/lab v0.1.2
+	cogentcore.org/core v0.3.13-0.20250915075930-2796561c59bb
+	cogentcore.org/lab v0.1.3-0.20250807190249-488f5902d68d
 	github.com/cogentcore/yaegi v0.0.0-20250622201820-b7838bdd95eb
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
@@ -35,20 +35,19 @@ require (
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/muesli/termenv v0.15.2 // indirect
+	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.2-0.20240227203013-2b69615b5d55 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tdewolff/parse/v2 v2.7.19 // indirect
 	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/mod v0.25.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
-	golang.org/x/tools v0.33.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/tools v0.34.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

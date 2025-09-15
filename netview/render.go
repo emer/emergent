@@ -108,7 +108,6 @@ func (nv *NetView) UpdateLayers() {
 		txt.Styles.Text.AlignV = text.Start
 	}
 	nv.UpdatePaths()
-	sw.XYZ.SetNeedsUpdate()
 	sw.NeedsRender()
 }
 
@@ -364,7 +363,9 @@ func (nv *NetView) UpdatePaths() {
 					pt := pd.path
 					pb := pt.AsEmer()
 					clr := colors.Spaced(pt.TypeNumber())
-					xyz.NewArrow(se, pathsGp, pb.Name, pd.sPos, pd.rPos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
+					arw := xyz.NewGroup(pathsGp)
+					arw.SetName(pb.Name)
+					xyz.InitArrow(se, pd.sPos, pd.rPos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)(arw)
 				}
 			}
 		}

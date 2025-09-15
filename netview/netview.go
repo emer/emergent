@@ -238,10 +238,8 @@ func (nv *NetView) GoUpdateView() {
 		return
 	}
 	sw := nv.SceneWidget()
-	se := sw.SceneXYZ()
 	sw.Scene.AsyncLock()
 	nv.UpdateImpl()
-	se.SetNeedsRender()
 	sw.NeedsRender()
 	sw.Scene.AsyncUnlock()
 	if core.TheApp.Platform() == system.Web {
@@ -256,7 +254,6 @@ func (nv *NetView) UpdateView() {
 	}
 	sw := nv.SceneWidget()
 	nv.UpdateImpl()
-	sw.XYZ.SetNeedsRender()
 	sw.NeedsRender()
 }
 
