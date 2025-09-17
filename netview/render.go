@@ -365,7 +365,7 @@ func (nv *NetView) UpdatePaths() {
 					clr := colors.Spaced(pt.TypeNumber())
 					arw := xyz.NewGroup(pathsGp)
 					arw.SetName(pb.Name)
-					xyz.InitArrow(se, pd.sPos, pd.rPos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)(arw)
+					xyz.InitArrow(arw, pd.sPos, pd.rPos, lineWidth, clr, xyz.NoStartArrow, xyz.EndArrow, 4, .5, 4)
 				}
 			}
 		}
