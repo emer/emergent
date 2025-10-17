@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.23.4
 
 require (
-	cogentcore.org/core v0.3.13-0.20250917164830-d88dd6998fdb
-	cogentcore.org/lab v0.1.3-0.20250917143805-07c473dcb032
+	cogentcore.org/core v0.3.13-0.20251014173120-c673b546ed44
+	cogentcore.org/lab v0.1.3-0.20251014144642-a12de9e660c7
 	github.com/cogentcore/yaegi v0.0.0-20250622201820-b7838bdd95eb
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
@@ -32,6 +32,7 @@ require (
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
 	github.com/hack-pad/hackpadfs v0.2.1 // indirect
 	github.com/hack-pad/safejs v0.1.1 // indirect
+	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
