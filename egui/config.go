@@ -66,9 +66,7 @@ func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
 // BaseDefaults sets default values not specified by struct tags.
 // It is called automatically by [NewConfig].
 func (bc *BaseConfig) BaseDefaults() {
-	if core.TheApp.Platform() == system.Web {
-		bc.GPU = false // GPU compute not fully working on web yet
-	}
+	bc.GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
 }
 
 // ScriptFieldWidget is a core FieldWidget function to use a text Editor
