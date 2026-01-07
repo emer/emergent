@@ -6,9 +6,12 @@ package egui
 
 import (
 	"cogentcore.org/core/base/errors"
+	"cogentcore.org/core/base/fileinfo"
 	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/core"
+	"cogentcore.org/core/styles"
 	"cogentcore.org/core/system"
+	"cogentcore.org/core/text/textcore"
 )
 
 // Config is an interface implemented by all [Sim] config types.
@@ -64,6 +67,20 @@ func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
 // It is called automatically by [NewConfig].
 func (bc *BaseConfig) BaseDefaults() {
 	bc.GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
+}
+
+// ScriptFieldWidget is a core FieldWidget function to use a text Editor
+// for the Params Script (or any other field named Script).
+func ScriptFieldWidget(field string) core.Value {
+	if field == "Script" {
+		tx := textcore.NewEditor()
+		tx.Styler(func(s *styles.Style) {
+			s.Min.X.Em(60)
+			tx.Lines.SetLanguage(fileinfo.Go)
+		})
+		return tx
+	}
+	return nil
 }
 
 // NewConfig makes a new [Config] of type *C with defaults set.

@@ -5,34 +5,37 @@
 /*
 Package ringidx provides circular indexing logic for writing a given
 length of data into a fixed-sized buffer and wrapping around this
-buffer, overwriting the oldest data.  No copying is required so
+buffer, overwriting the oldest data. No copying is required so
 it is highly efficient
 */
 package ringidx
 
 //go:generate core generate -add-types
 
-// Index is the ring index structure, maintaining starting index and length
-// into a ring-buffer with maximum length Max.  Max must be > 0 and Len <= Max.
+// Index is the ring index structure for a dynamically-sized ring buffer,
+// maintaining starting index and length into a ring-buffer with maximum
+// length Max. Max must be > 0 and Len <= Max.
 // When adding new items would overflow Max, starting index is shifted over
-// to overwrite the oldest items with the new ones.  No moving is ever
-// required -- just a fixed-length buffer of size Max.
+// to overwrite the oldest items with the new ones. No moving is ever
+// required: just a fixed-length buffer of size Max.
 type Index struct {
 
-	// the starting index where current data starts -- the oldest data is at this index, and continues for Len items, wrapping around at Max, coming back up at most to StIndex-1
-	StIndex int
+	// Start the starting index where current data starts.
+	// The oldest data is at this index, and continues for Len items,
+	// wrapping around at Max, coming back up at most to Start-1.
+	Start int
 
-	// the number of items stored starting at StIndex.  Capped at Max
+	// Len is the number of items stored starting at Start. Capped at Max.
 	Len int
 
-	// the maximum number of items that can be stored in this ring
+	// Max is the maximum number of items that can be stored in this ring.
 	Max int
 }
 
-// Index returns the index of the i'th item starting from StIndex.
+// Index returns the index of the i'th item starting from Start.
 // i must be < Len.
 func (ri *Index) Index(i int) int {
-	i += ri.StIndex
+	i += ri.Start
 	if i >= ri.Max {
 		i -= ri.Max
 	}
@@ -63,12 +66,12 @@ func (ri *Index) Add(n int) {
 // Shift moves the starting index up by n, and decrements the Len by n as well.
 // This is called prior to adding new items if doing so would exceed Max length.
 func (ri *Index) Shift(n int) {
-	ri.StIndex = ri.Index(n)
+	ri.Start = ri.Index(n)
 	ri.Len -= n
 }
 
 // Reset initializes start index and length to 0
 func (ri *Index) Reset() {
-	ri.StIndex = 0
+	ri.Start = 0
 	ri.Len = 0
 }
