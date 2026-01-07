@@ -33,7 +33,7 @@ func (nv *NetView) UpdateLayers() {
 	}
 	nb := nv.Net.AsEmer()
 	if nv.NeedsRebuild() {
-		se.Background = colors.Scheme.Background
+		se.Background = colors.Scheme.Surface
 	}
 	nlay := nv.Net.NumLayers()
 	laysGp := se.ChildByName("Layers", 0).(*xyz.Group)

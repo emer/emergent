@@ -591,7 +591,7 @@ func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	se.Camera.Near = 0.1
 	se.Camera.LookAt(math32.Vec3(0, 0, 0), math32.Vec3(0, 1, 0))
 	nv.Styler(func(s *styles.Style) {
-		se.Background = colors.Scheme.Background
+		se.Background = colors.Scheme.Surface
 	})
 	xyz.NewAmbient(se, "ambient", 0.1, xyz.DirectSun)
 	xyz.NewDirectional(se, "directional", 0.5, xyz.DirectSun).Pos.Set(0, 2, 5)
