@@ -155,9 +155,5 @@ func (ft *MPIFixedTable) State(element string) tensor.Values {
 	return et
 }
 
-func (ft *MPIFixedTable) Action(element string, input tensor.Values) {
-	// nop
-}
-
 // Compile-time check that implements Env interface
 var _ Env = (*MPIFixedTable)(nil)

@@ -153,9 +153,5 @@ func (ft *FixedTable) State(element string) tensor.Values {
 	return et
 }
 
-func (ft *FixedTable) Action(element string, input tensor.Values) {
-	// nop
-}
-
 // Compile-time check that implements Env interface
 var _ Env = (*FixedTable)(nil)

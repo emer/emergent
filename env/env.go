@@ -19,8 +19,7 @@ import (
 //
 // State is comprised of one or more Elements, each of which consists of an
 // tensor.Values chunk of values that can be obtained by the model.
-// Likewise, Actions can also have Elements. The Step method is the main
-// interface for advancing the Env state.
+// The Step method advances the Env state.
 //
 // The standard String() string fmt.Stringer method must be defined to return
 // a string description of the current environment state, e.g., as a TrialName.
@@ -35,11 +34,10 @@ type Env interface {
 	labels.Labeler
 
 	// Init initializes the environment for a given run of the model.
-	// The environment may not care about the run number, but may implement
-	// different parameterizations for different runs (e.g., between-subject
-	// manipulations). In general the Env can expect that the model will likely
-	// have established a different random seed per run, prior to calling this
-	// method, and that may be sufficient to enable different run-level behavior.
+	// It is best if the Env has its own random seed and random sequence
+	// generator (e.g., lab/randx), and sets a new random seed for each run.
+	// It may also implement different parameterizations for different runs
+	// (e.g., between-subject manipulations).
 	// See Step() for important info about state of env after Init
 	// but prior to first Step() call.
 	Init(run int)
@@ -51,13 +49,13 @@ type Env interface {
 	// If there are no further inputs available, it returns false (most envs
 	// typically only return true and just continue running as long as needed).
 	//
-	// The Env thus always reflects the *current* state of things, and this
+	// The Env thus always reflects the _current_ state of things, and this
 	// call increments that current state, such that subsequent calls to
 	// State() will return this current state.
 	//
 	// This implies that the state just after Init and prior to first Step
-	// call should be an *initialized* state that then allows the first Step
-	// call to establish the proper *first* state. Typically this means that
+	// call should be an _initialized_ state that then allows the first Step
+	// call to establish the proper _first_ state. Typically this means that
 	// one or more counters will be set to -1 during Init and then get incremented
 	// to 0 on the first Step call.
 	Step() bool
@@ -68,9 +66,7 @@ type Env interface {
 	// The returned tensor must be treated as read-only as it likely points to original
 	// source data: please make a copy before modifying (e.g., Clone() methdod).
 	State(element string) tensor.Values
-
-	// Action sends tensor data about e.g., responses from model back to act
-	// on the environment and influence its subsequent evolution.
-	// The nature and timing of this input is paradigm dependent.
-	Action(element string, input tensor.Values)
 }
+
+// note: Action is no longer defined in the interface so that
+// it can be more flexible in the types of arguments used.

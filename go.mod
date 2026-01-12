@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	cogentcore.org/core v0.3.13
-	cogentcore.org/lab v0.1.3-0.20260106153658-0557c97a5cea
+	cogentcore.org/lab v0.1.3-0.20260111225809-4f12ee287b54
 	github.com/cogentcore/yaegi v0.0.0-20250622201820-b7838bdd95eb
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948

@@ -181,9 +181,5 @@ func (ft *FreqTable) State(element string) tensor.Values {
 	return et
 }
 
-func (ft *FreqTable) Action(element string, input tensor.Values) {
-	// nop
-}
-
 // Compile-time check that implements Env interface
 var _ Env = (*FreqTable)(nil)
