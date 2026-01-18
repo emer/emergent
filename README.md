@@ -1,9 +1,12 @@
 # Emergent Neural Network Simulation Framework
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/emer/emergent)](https://goreportcard.com/report/github.com/emer/emergent)
-[![Go Reference](https://pkg.go.dev/badge/github.com/emer/emergent.svg)](https://pkg.go.dev/github.com/emer/emergent)
-[![CI](https://github.com/emer/emergent/actions/workflows/ci.yml/badge.svg)](https://github.com/emer/emergent/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/emer/emergent/branch/main/graph/badge.svg?token=Hw5cInAxY3)](https://codecov.io/gh/emer/emergent)
+<p align="center">
+    <a href="https://goreportcard.com/report/github.com/emer/emergent"><img src="https://goreportcard.com/badge/github.com/emer/emergent" alt="Go Report Card"></a>
+    <a href="https://pkg.go.dev/github.com/emer/emergent"><img src="https://img.shields.io/badge/dev-reference-007d9c?logo=go&logoColor=white&style=flat" alt="pkg.go.dev docs"></a>
+    <a href="https://github.com/emer/emergent/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/emer/emergent/go.yml"></a>
+    <a href="https://raw.githack.com/wiki/emer/emergent/coverage.html"><img alt="Test Coverage" src="https://github.com/emer/emergent/wiki/coverage.svg"></a>
+    <a href="https://github.com/emer/emergent/tags"><img alt="Version" src="https://img.shields.io/github/v/tag/emer/emergent?label=version&color=blue"></a>
+</p>
 
 **IMPORTANT** branch information:
 
