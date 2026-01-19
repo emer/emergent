@@ -1,9 +1,9 @@
 codeberg.org/go-pdf/fpdf v0.11.0 h1:n3I8WISQ1cr0S2rvx9DOlE/GypbcimMWqLpel3slHmY=
 codeberg.org/go-pdf/fpdf v0.11.0/go.mod h1:Y0DGRAdZ0OmnZPvjbMp/1bYxmIPxm0ws4tfoPOc4LjU=
-cogentcore.org/core v0.3.14-0.20260117204258-0df48929cf7e h1:HSN1yCxKnnARfdTjSlsIfJga4mrqkjNpdBEbRYLgVkY=
-cogentcore.org/core v0.3.14-0.20260117204258-0df48929cf7e/go.mod h1:IQBEleZr+h6O/UjnymY875ve9kY0yokLK8YJ/JUPPBg=
-cogentcore.org/lab v0.1.3-0.20260118025330-40dd4638d88a h1:drc7Fd18LsLQc09UNnHPeXW/sYTbgMMcXbJ39jYpRvs=
-cogentcore.org/lab v0.1.3-0.20260118025330-40dd4638d88a/go.mod h1:FZVIJ39ohZppf0o+/QCVZ4Q1OZR0IAA1rS36Y05iiUw=
+cogentcore.org/core v0.3.14 h1:dfkws5ET/68Q8UsF1P8+F5RtpA/CoZYK4gd8i+66t5A=
+cogentcore.org/core v0.3.14/go.mod h1:IQBEleZr+h6O/UjnymY875ve9kY0yokLK8YJ/JUPPBg=
+cogentcore.org/lab v0.1.3 h1:ww6sBC4ffXYAIosrNsD0o/kGKalPuGqQx6mew1lpRBo=
+cogentcore.org/lab v0.1.3/go.mod h1:G0TG6kYntb6W+lg+JLR8g17oRNzKY1HbSpjy3mf+5JU=
 github.com/Bios-Marcel/wastebasket/v2 v2.0.3 h1:TkoDPcSqluhLGE+EssHu7UGmLgUEkWg7kNyHyyJ3Q9g=
 github.com/Bios-Marcel/wastebasket/v2 v2.0.3/go.mod h1:769oPCv6eH7ugl90DYIsWwjZh4hgNmMS3Zuhe1bH6KU=
 github.com/Masterminds/vcs v1.13.3 h1:IIA2aBdXvfbIM+yl/eTnL4hb1XwdpvuQLglAix1gweE=

@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.25.6
 
 require (
-	cogentcore.org/core v0.3.14-0.20260117204258-0df48929cf7e
-	cogentcore.org/lab v0.1.3-0.20260118025330-40dd4638d88a
+	cogentcore.org/core v0.3.14
+	cogentcore.org/lab v0.1.3
 	github.com/cogentcore/yaegi v0.0.0-20260116172027-700fbf8949f3
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
