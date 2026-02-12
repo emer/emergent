@@ -294,7 +294,7 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 }
 
 // readmeOpenURL Parses URL, highlights linked button or opens URL
-func (gui *GUI) readmeOpenURL(url string) {
+func (gui *GUI) readmeOpenURL(url string, e events.Event) {
 	focusSet := false
 	if !strings.HasPrefix(url, "sim://") {
 		system.TheApp.OpenURL(url)

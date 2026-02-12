@@ -17,6 +17,7 @@ func init() {
 		"Embed":              reflect.ValueOf(interp.GenericFunc("func Embed[S, C any](parent tree.Node) *S { //yaegi:add\n\tcfgC, cfg := NewConfig[C]()\n\n\tcfg.AsBaseConfig().GUI = true // force GUI on\n\n\tsimS := new(S)\n\tsim := any(simS).(Sim[C])\n\n\tsim.SetConfig(cfgC)\n\tsim.ConfigSim()\n\tsim.Init()\n\tsim.ConfigGUI(parent)\n\treturn simS\n}")),
 		"NewConfig":          reflect.ValueOf(interp.GenericFunc("func NewConfig[C any]() (*C, Config) { //yaegi:add\n\tcfgC := new(C)\n\tcfg := any(cfgC).(Config)\n\n\terrors.Log(reflectx.SetFromDefaultTags(cfg))\n\tcfg.AsBaseConfig().BaseDefaults()\n\tcfg.Defaults()\n\treturn cfgC, cfg\n}")),
 		"NewGUIBody":         reflect.ValueOf(egui.NewGUIBody),
+		"ScriptFieldWidget":  reflect.ValueOf(egui.ScriptFieldWidget),
 		"ToolGhostingN":      reflect.ValueOf(egui.ToolGhostingN),
 		"ToolGhostingValues": reflect.ValueOf(egui.ToolGhostingValues),
 
