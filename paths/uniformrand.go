@@ -6,7 +6,6 @@ package paths
 
 import (
 	"math"
-	"math/rand"
 	"sort"
 
 	"cogentcore.org/lab/base/randx"
@@ -21,19 +20,24 @@ import (
 // and doesn't interfere with other random number streams.
 type UniformRand struct {
 
-	// probability of connection (0-1)
+	// PCon is the probability of connection (0-1).
 	PCon float32 `min:"0" max:"1"`
 
-	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
+	// SelfCon makes a self-connection from unit to itself if connecting layer
+	// to itself (self pathway).
 	SelfCon bool
 
-	// reciprocal connectivity: if true, switch the sending and receiving layers to create a symmetric top-down pathway -- ESSENTIAL to use same RandSeed between two paths to ensure symmetry
+	// Recip sets reciprocal connectivity: if true, switch the sending
+	// and receiving layers to create a symmetric top-down pathway.
+	// It is ESSENTIAL to use same RandSeed between two paths to ensure symmetry.
 	Recip bool
 
-	// random number source -- is created with its own separate source if nil
+	// Rand is the random number source. Created with its own separate source if nil.
 	Rand randx.Rand `display:"-"`
 
-	// the current random seed -- will be initialized to a new random number from the global random stream when Rand is created.
+	// RandSeed is the current random seed -- will be initialized to 4723
+	// if not otherwise set, for reproducible results.
+	// if using multiple of these paths, initialize each with different seeds.
 	RandSeed int64 `display:"-"`
 }
 
@@ -46,14 +50,14 @@ func (ur *UniformRand) Name() string {
 }
 
 func (ur *UniformRand) InitRand() {
-	if ur.Rand != nil {
-		ur.Rand.Seed(ur.RandSeed)
-		return
-	}
 	if ur.RandSeed == 0 {
-		ur.RandSeed = int64(rand.Uint64())
+		ur.RandSeed = 4723
 	}
-	ur.Rand = randx.NewSysRand(ur.RandSeed)
+	if ur.Rand == nil {
+		ur.Rand = randx.NewSysRand(ur.RandSeed)
+	} else {
+		ur.Rand.Init(ur.RandSeed)
+	}
 }
 
 func (ur *UniformRand) Connect(send, recv *tensor.Shape, same bool) (sendn, recvn *tensor.Int32, cons *tensor.Bool) {

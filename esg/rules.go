@@ -6,6 +6,8 @@ package esg
 
 import (
 	"fmt"
+
+	"cogentcore.org/lab/base/randx"
 )
 
 // Rules is a collection of rules
@@ -40,6 +42,14 @@ type Rules struct { //git:add
 
 	// current line number during parsing
 	ParseLn int
+
+	// Rand is the random number generator. It will be created automatically
+	// if nil, but can be set to an existing source.
+	Rand randx.Rand `display:"-"`
+
+	// RunRandSeed is the random seed multiplier for run counter:
+	// It is set to 173 if 0 at start for consistent results by default.
+	RunRandSeed int64 `edit:"-"`
 }
 
 // Gen generates one expression according to the rules.
@@ -93,10 +103,14 @@ func (rls *Rules) Validate() []error {
 }
 
 // Init initializes rule order state
-func (rls *Rules) Init() {
-	rls.Top.Init()
+func (rls *Rules) Init(run int) {
+	if rls.RunRandSeed == 0 {
+		rls.RunRandSeed = 173
+	}
+	randx.InitSysRand(&rls.Rand, rls.RunRandSeed*(int64(run)+1))
+	rls.Top.Init(rls)
 	for _, rl := range rls.Map {
-		rl.Init()
+		rl.Init(rls)
 	}
 }
 

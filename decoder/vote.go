@@ -5,15 +5,16 @@
 package decoder
 
 import (
-	"math/rand"
 	"sort"
+
+	"cogentcore.org/lab/base/randx"
 )
 
 // TopVoteInt returns the choice with the most votes among a list of votes
 // as integer-valued choices, and also returns the number of votes for that item.
 // In the case of ties, it chooses one at random (otherwise it would have a bias
 // toward the lowest numbered item).
-func TopVoteInt(votes []int) (int, int) {
+func TopVoteInt(votes []int, rnd randx.Rand) (int, int) {
 	sort.Ints(votes)
 	prv := votes[0]
 	cur := prv
@@ -46,7 +47,7 @@ func TopVoteInt(votes []int) (int, int) {
 		ties = append(ties, cur)
 	}
 	if len(ties) > 1 {
-		ti := rand.Intn(len(ties))
+		ti := rnd.Intn(len(ties))
 		top = ties[ti]
 	}
 	return top, topn
@@ -56,7 +57,7 @@ func TopVoteInt(votes []int) (int, int) {
 // as string-valued choices, and also returns the number of votes for that item.
 // In the case of ties, it chooses one at random (otherwise it would have a bias
 // toward the lowest numbered item).
-func TopVoteString(votes []string) (string, int) {
+func TopVoteString(votes []string, rnd randx.Rand) (string, int) {
 	sort.Strings(votes)
 	prv := votes[0]
 	cur := prv
@@ -89,7 +90,7 @@ func TopVoteString(votes []string) (string, int) {
 		ties = append(ties, cur)
 	}
 	if len(ties) > 1 {
-		ti := rand.Intn(len(ties))
+		ti := rnd.Intn(len(ties))
 		top = ties[ti]
 	}
 	return top, topn

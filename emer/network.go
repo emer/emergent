@@ -168,10 +168,10 @@ type NetworkBase struct {
 	// or any other information about this network that would be useful to save.
 	MetaData map[string]string
 
-	// random number generator for the network.
+	// Rand is the random number generator for the network.
 	// all random calls must use this.
 	// Set seed here for weight initialization values.
-	Rand randx.SysRand `display:"-"`
+	Rand randx.Rand `display:"-"`
 
 	// Random seed to be set at the start of configuring
 	// the network and initializing the weights.
@@ -185,6 +185,7 @@ func InitNetwork(nt Network, name string) {
 	nb := nt.AsEmer()
 	nb.EmerNetwork = nt
 	nb.Name = name
+	nb.SetRandSeed(7877) // ensure baseline randomenss
 }
 
 func (nt *NetworkBase) AsEmer() *NetworkBase { return nt }
@@ -385,9 +386,5 @@ func (nt *NetworkBase) SetRandSeed(seed int64) {
 // ResetRandSeed sets random seed to saved RandSeed, ensuring that the
 // network-specific random seed generator has been created.
 func (nt *NetworkBase) ResetRandSeed() {
-	if nt.Rand.Rand == nil {
-		nt.Rand.NewRand(nt.RandSeed)
-	} else {
-		nt.Rand.Seed(nt.RandSeed)
-	}
+	randx.InitSysRand(&nt.Rand, nt.RandSeed)
 }

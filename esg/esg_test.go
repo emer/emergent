@@ -6,7 +6,6 @@ package esg
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,7 +27,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestGen(t *testing.T) {
-	t.SkipNow()
+	// t.SkipNow()
 	rls := &Rules{Name: "test"}
 	errs := rls.OpenRules("testdata/testrules.txt")
 	if errs != nil {
@@ -38,8 +37,9 @@ func TestGen(t *testing.T) {
 	if errs != nil {
 		t.Error("validation errors occured as logged above")
 	}
+	rls.RunRandSeed = 10
+	rls.Init(0)
 	// rls.Trace = true
-	rand.Seed(10)
 	genstr := ""
 	for i := 0; i < 50; i++ {
 		str := rls.Gen()
@@ -47,46 +47,45 @@ func TestGen(t *testing.T) {
 		// fmt.Println(str)
 	}
 
-	ex := `[schoolgirl consumed food in park]
-[someone ate crackers with finger]
-[busdriver ate soup in kitchen]
-[busdriver consumed steak in kitchen]
-[busdriver ate steak with something]
-[pitcherpers ate something with pleasure]
-[someone consumed soup with gusto]
-[pitcherpers ate steak with gusto]
-[child ate food in kitchen]
-[child ate food in park]
-[pitcherpers ate crackers with finger]
-[pitcherpers ate soup with crackers]
+	ex := `[schoolgirl ate food with daintiness]
+[someone ate steak with utensil]
+[child consumed food with knife]
+[teacher ate icecream with spoon]
+[teacher consumed soup with daintiness]
+[pitcherpers consumed soup in kitchen]
+[child ate food with finger]
+[pitcherpers ate steak with knife]
 [pitcherpers ate icecream in park]
-[pitcherpers consumed food with jelly]
-[adult ate something with teacher]
-[busdriver ate steak in kitchen]
-[busdriver consumed steak in kitchen]
-[busdriver consumed food in kitchen]
-[adult ate food with gusto]
-[busdriver ate steak in kitchen]
-[busdriver ate steak with teacher]
-[adult ate icecream in park]
-[busdriver ate steak in kitchen]
-[busdriver ate steak with teacher]
-[adult consumed steak with utensil]
-[busdriver ate soup in kitchen]
-[busdriver ate icecream with spoon]
-[busdriver ate steak with gusto]
-[adult ate something in kitchen]
-[someone ate food with teacher]
-[busdriver ate icecream in park]
-[adult ate crackers in kitchen]
-[busdriver consumed food in kitchen]
-[adult ate food with gusto]
-[adult consumed soup with crackers]
-[teacher ate something in kitchen]
+[pitcherpers ate crackers with gusto]
+[pitcherpers ate icecream with pleasure]
+[someone ate soup with spoon]
+[someone ate soup in kitchen]
+[pitcherpers ate icecream with pleasure]
+[child ate something with finger]
 [teacher ate soup with crackers]
-[teacher consumed crackers with finger]
-[someone ate food with utensil]
-[teacher ate food in kitchen]
+[teacher ate something in park]
+[teacher ate soup with utensil]
+[pitcherpers ate food with finger]
+[pitcherpers ate steak in kitchen]
+[pitcherpers ate steak with gusto]
+[pitcherpers ate crackers with something]
+[pitcherpers ate steak with schoolgirl]
+[pitcherpers ate icecream in park]
+[someone consumed something with jelly]
+[teacher ate steak in kitchen]
+[teacher ate icecream with spoon]
+[teacher ate soup with daintiness]
+[adult ate something in kitchen]
+[someone ate food with crackers]
+[adult ate food with utensil]
+[teacher consumed something with adult]
+[teacher consumed soup with daintiness]
+[teacher consumed soup with daintiness]
+[schoolgirl ate food with pitcherpers]
+[someone consumed crackers with jelly]
+[schoolgirl ate icecream with someone]
+[schoolgirl consumed crackers with finger]
+[adult ate soup with crackers]
 [teacher ate food with daintiness]
 [someone ate food with crackers]
 [someone ate something with something]
@@ -97,6 +96,7 @@ func TestGen(t *testing.T) {
 [pitcherpers ate food in kitchen]
 [pitcherpers ate icecream in park]
 [pitcherpers ate soup with gusto]
+[teacher ate food with daintiness]
 `
 
 	assert.Equal(t, ex, genstr)

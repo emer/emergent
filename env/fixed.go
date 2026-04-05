@@ -7,7 +7,6 @@ package env
 import (
 	"fmt"
 	"log/slog"
-	"math/rand"
 
 	"cogentcore.org/lab/base/randx"
 	"cogentcore.org/lab/table"
@@ -51,38 +50,50 @@ type FixedTable struct {
 
 	// name of the Group column -- defaults to 'Group'.
 	GroupCol string
+
+	// Rand is the random number generator for the env.
+	// Created in Init if not already there.
+	Rand randx.Rand `display:"-"`
+
+	// RunRandSeed is the random seed multiplier for run counter.
+	// It is set to 173 if 0 at start for consistent results by default.
+	RunRandSeed int64 `edit:"-"`
 }
 
-func (ft *FixedTable) Validate() error {
-	if ft.Table == nil {
-		return fmt.Errorf("env.FixedTable: %v has no Table set", ft.Name)
+func (ev *FixedTable) Validate() error {
+	if ev.Table == nil {
+		return fmt.Errorf("env.FixedTable: %v has no Table set", ev.Name)
 	}
-	if ft.Table.NumColumns() == 0 {
-		return fmt.Errorf("env.FixedTable: %v Table has no columns -- Outputs will be invalid", ft.Name)
+	if ev.Table.NumColumns() == 0 {
+		return fmt.Errorf("env.FixedTable: %v Table has no columns -- Outputs will be invalid", ev.Name)
 	}
 	return nil
 }
 
-func (ft *FixedTable) Label() string { return ft.Name }
+func (ev *FixedTable) Label() string { return ev.Name }
 
-func (ft *FixedTable) String() string {
-	s := ft.TrialName.Cur
-	if ft.GroupName.Cur != "" {
-		s = ft.GroupName.Cur + "_" + s
+func (ev *FixedTable) String() string {
+	s := ev.TrialName.Cur
+	if ev.GroupName.Cur != "" {
+		s = ev.GroupName.Cur + "_" + s
 	}
 	return s
 }
 
-func (ft *FixedTable) Init(run int) {
-	if ft.NameCol == "" {
-		ft.NameCol = "Name"
+func (ev *FixedTable) Init(run int) {
+	if ev.RunRandSeed == 0 {
+		ev.RunRandSeed = 173
 	}
-	if ft.GroupCol == "" {
-		ft.GroupCol = "Group"
+	randx.InitSysRand(&ev.Rand, ev.RunRandSeed*(int64(run)+1))
+	if ev.NameCol == "" {
+		ev.NameCol = "Name"
 	}
-	ft.Trial.Init()
-	ft.NewOrder()
-	ft.Trial.Cur = -1 // init state -- key so that first Step() = 0
+	if ev.GroupCol == "" {
+		ev.GroupCol = "Group"
+	}
+	ev.Trial.Init()
+	ev.NewOrder()
+	ev.Trial.Cur = -1 // init state -- key so that first Step() = 0
 }
 
 // Config configures the environment to use given table IndexView and
@@ -90,63 +101,63 @@ func (ft *FixedTable) Init(run int) {
 // then a Run counter is added, otherwise just Epoch and Trial.
 // NameCol and GroupCol are initialized to "Name" and "Group"
 // so set these to something else after this if needed.
-func (ft *FixedTable) Config(tbl *table.Table) {
-	ft.Table = tbl
-	ft.Init(0)
+func (ev *FixedTable) Config(tbl *table.Table) {
+	ev.Table = tbl
+	ev.Init(0)
 }
 
 // NewOrder sets a new random Order based on number of rows in the table.
-func (ft *FixedTable) NewOrder() {
-	np := ft.Table.NumRows()
-	ft.Order = rand.Perm(np) // always start with new one so random order is identical
+func (ev *FixedTable) NewOrder() {
+	np := ev.Table.NumRows()
+	ev.Order = ev.Rand.Perm(np) // always start with new one so random order is identical
 	// and always maintain Order so random number usage is same regardless, and if
 	// user switches between Sequential and random at any point, it all works..
-	ft.Trial.Max = np
+	ev.Trial.Max = np
 }
 
 // PermuteOrder permutes the existing order table to get a new random sequence of inputs
 // just calls: randx.PermuteInts(ft.Order)
-func (ft *FixedTable) PermuteOrder() {
-	randx.PermuteInts(ft.Order)
+func (ev *FixedTable) PermuteOrder() {
+	randx.PermuteInts(ev.Order, ev.Rand)
 }
 
 // Row returns the current row number in table, based on Sequential / perumuted Order.
-func (ft *FixedTable) Row() int {
-	if ft.Sequential {
-		return ft.Trial.Cur
+func (ev *FixedTable) Row() int {
+	if ev.Sequential {
+		return ev.Trial.Cur
 	}
-	return ft.Order[ft.Trial.Cur]
+	return ev.Order[ev.Trial.Cur]
 }
 
-func (ft *FixedTable) SetTrialName() {
-	if nms := ft.Table.Column(ft.NameCol); nms != nil {
-		rw := ft.Row()
+func (ev *FixedTable) SetTrialName() {
+	if nms := ev.Table.Column(ev.NameCol); nms != nil {
+		rw := ev.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.TrialName.Set(nms.StringRow(rw, 0))
+			ev.TrialName.Set(nms.StringRow(rw, 0))
 		}
 	}
 }
 
-func (ft *FixedTable) SetGroupName() {
-	if nms := ft.Table.Column(ft.GroupCol); nms != nil {
-		rw := ft.Row()
+func (ev *FixedTable) SetGroupName() {
+	if nms := ev.Table.Column(ev.GroupCol); nms != nil {
+		rw := ev.Row()
 		if rw >= 0 && rw < nms.Len() {
-			ft.GroupName.Set(nms.StringRow(rw, 0))
+			ev.GroupName.Set(nms.StringRow(rw, 0))
 		}
 	}
 }
 
-func (ft *FixedTable) Step() bool {
-	if ft.Trial.Incr() { // if true, hit max, reset to 0
-		ft.PermuteOrder()
+func (ev *FixedTable) Step() bool {
+	if ev.Trial.Incr() { // if true, hit max, reset to 0
+		ev.PermuteOrder()
 	}
-	ft.SetTrialName()
-	ft.SetGroupName()
+	ev.SetTrialName()
+	ev.SetGroupName()
 	return true
 }
 
-func (ft *FixedTable) State(element string) tensor.Values {
-	et := ft.Table.Column(element).RowTensor(ft.Row())
+func (ev *FixedTable) State(element string) tensor.Values {
+	et := ev.Table.Column(element).RowTensor(ev.Row())
 	if et == nil {
 		slog.Error("FixedTable.State: could not find", "element", element)
 	}

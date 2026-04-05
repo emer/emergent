@@ -8,7 +8,6 @@ package esg
 
 import (
 	"fmt"
-	"math/rand"
 	"strings"
 
 	"cogentcore.org/lab/base/randx"
@@ -66,11 +65,11 @@ type Rule struct { //git:add
 }
 
 // Init initializes the rules -- only relevant for ordered rules (restarts at start)
-func (rl *Rule) Init() {
+func (rl *Rule) Init(rls *Rules) {
 	rl.CurIndex = 0
 	rl.PrevIndex = -1
 	if rl.Type == PermutedItems {
-		rl.Order = rand.Perm(len(rl.Items))
+		rl.Order = rls.Rand.Perm(len(rl.Items))
 	}
 }
 
@@ -83,7 +82,7 @@ func (rl *Rule) Gen(rls *Rules) {
 		fmt.Printf("Fired Rule: %v\n", rl.Name)
 	}
 	if rl.RepeatP > 0 && rl.PrevIndex >= 0 {
-		rpt := randx.BoolP32(rl.RepeatP)
+		rpt := randx.BoolP32(rl.RepeatP, rls.Rand)
 		if rpt {
 			if rls.Trace {
 				fmt.Printf("Selected item: %v due to RepeatP = %v\n", rl.PrevIndex, rl.RepeatP)
@@ -95,14 +94,14 @@ func (rl *Rule) Gen(rls *Rules) {
 	switch rl.Type {
 	case UniformItems:
 		no := len(rl.Items)
-		opt := rand.Intn(no)
+		opt := rls.Rand.Intn(no)
 		if rls.Trace {
 			fmt.Printf("Selected item: %v from: %v uniform random\n", opt, no)
 		}
 		rl.PrevIndex = opt
 		rl.Items[opt].Gen(rl, rls)
 	case ProbItems:
-		pv := rand.Float32()
+		pv := rls.Rand.Float32()
 		sum := float32(0)
 		for ii, it := range rl.Items {
 			sum += it.Prob
@@ -133,7 +132,7 @@ func (rl *Rule) Gen(rls *Rules) {
 			}
 			return
 		}
-		opt := rand.Intn(no)
+		opt := rls.Rand.Intn(no)
 		if rls.Trace {
 			fmt.Printf("Selected item: %v from: %v matching Conds\n", copts[opt], no)
 		}
@@ -160,11 +159,11 @@ func (rl *Rule) Gen(rls *Rules) {
 			return
 		}
 		if len(rl.Order) != no {
-			rl.Order = rand.Perm(no)
+			rl.Order = rls.Rand.Perm(no)
 			rl.CurIndex = 0
 		}
 		if rl.CurIndex >= no {
-			randx.PermuteInts(rl.Order)
+			randx.PermuteInts(rl.Order, rls.Rand)
 			rl.CurIndex = 0
 		}
 		opt := rl.Order[rl.CurIndex]
