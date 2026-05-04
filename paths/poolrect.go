@@ -17,31 +17,46 @@ import (
 // pool position with offset and multiplier factors (with wrap-around optionally).
 type PoolRect struct {
 
-	// size of rectangle (of pools) in sending layer that each receiving unit receives from
+	// Size of rectangle (of pools) in sending layer that each
+	// receiving unit receives from
 	Size vecint.Vector2i
 
-	// starting pool offset in sending layer, for computing the corresponding sending lower-left corner relative to given recv pool position
+	// Start pool offset in sending layer, for computing the
+	// corresponding sending lower-left corner relative to
+	// given recv pool position
 	Start vecint.Vector2i
 
-	// scaling to apply to receiving pool osition to compute corresponding position in sending layer of the lower-left corner of rectangle
+	// Scale to apply to receiving pool position to compute
+	// corresponding position in sending layer of the lower-left
+	// corner of rectangle
 	Scale math32.Vector2
 
-	// auto-set the Scale as function of the relative pool sizes of send and recv layers (e.g., if sending layer is 2x larger than receiving, Scale = 2)
+	// AutoScale the Scale as function of the relative pool sizes
+	// of send and recv layers (e.g., if sending layer is 2x larger
+	// than receiving, Scale = 2)
 	AutoScale bool
 
-	// if true, use Round when applying scaling factor -- otherwise uses Floor which makes Scale work like a grouping factor -- e.g., .25 will effectively group 4 recv pools with same send position
+	// RoundScale uses Round when applying scaling factor, otherwise
+	// uses Floor which makes Scale work like a grouping factor.
+	// e.g., .25 will effectively group 4 recv pools with same send position.
 	RoundScale bool
 
-	// if true, connectivity wraps around all edges if it would otherwise go off the edge -- if false, then edges are clipped
+	// Wrap connectivity around all edges if it would otherwise go
+	// off the edge. If false, then edges are clipped.
 	Wrap bool
 
-	// if true, and connecting layer to itself (self pathway), then make a self-connection from unit to itself
+	// SelfCon makes a self-connection from unit to itself for same-layer
+	// pathways.
 	SelfCon bool
 
-	// starting pool position in receiving layer -- if > 0 then pools below this starting point remain unconnected
+	// RecvStart is the starting pool position in receiving layer.
+	// If > 0 then pools below this starting point remain unconnected.
 	RecvStart vecint.Vector2i
 
-	// number of pools in receiving layer to connect -- if 0 then all (remaining after RecvStart) are connected -- otherwise if < remaining then those beyond this point remain unconnected
+	// RecvN is the number of pools in receiving layer to connect.
+	// If 0 then all (remaining after RecvStart) are connected.
+	// Otherwise if < remaining then those beyond this point
+	// remain unconnected.
 	RecvN vecint.Vector2i
 }
 

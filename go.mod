@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.25.6
 
 require (
-	cogentcore.org/core v0.3.22
-	cogentcore.org/lab v0.1.7
+	cogentcore.org/core v0.3.25
+	cogentcore.org/lab v0.1.9
 	github.com/cogentcore/yaegi v0.0.0-20260116172027-700fbf8949f3
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
@@ -18,13 +18,13 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/chewxy/math32 v1.11.1 // indirect
-	github.com/cogentcore/webgpu v0.23.0 // indirect
+	github.com/cogentcore/webgpu v0.23.1-0.20260410073005-a2ae7d757168 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/ericchiang/css v1.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20250301202403-da16c1255728 // indirect
-	github.com/go-text/typesetting v0.3.1-0.20250707124828-58cd3ef91251 // indirect
+	github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1 // indirect
+	github.com/go-text/typesetting v0.3.5-0.20260418130854-c41d02a44bec // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a // indirect
 	github.com/gorilla/css v1.0.1 // indirect
@@ -43,12 +43,12 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tdewolff/parse/v2 v2.8.5 // indirect
-	golang.org/x/image v0.35.0 // indirect
-	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/image v0.39.0 // indirect
+	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.35.0 // indirect
-	golang.org/x/tools v0.42.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/tools v0.43.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

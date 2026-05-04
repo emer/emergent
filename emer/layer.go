@@ -317,6 +317,32 @@ func (ly *LayerBase) NumPools() int {
 	return ly.Shape.DimSize(0) * ly.Shape.DimSize(1)
 }
 
+// DocPrepend inserts given doc string at start of any existing Doc,
+// adding a space as appropriate.
+func (ly *LayerBase) DocPrepend(doc string) {
+	if doc == "" {
+		return
+	}
+	if ly.Doc == "" {
+		ly.Doc = doc
+		return
+	}
+	ly.Doc = doc + " " + ly.Doc
+}
+
+// DocAppend inserts given doc string at end of any existing Doc,
+// adding a space as appropriate.
+func (ly *LayerBase) DocAppend(doc string) {
+	if doc == "" {
+		return
+	}
+	if ly.Doc == "" {
+		ly.Doc = doc
+		return
+	}
+	ly.Doc += " " + doc
+}
+
 // UnitValues fills in values of given variable name on unit,
 // for each unit in the layer, into given float32 slice
 // (only resized if not big enough).
