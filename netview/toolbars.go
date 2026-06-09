@@ -6,6 +6,7 @@ package netview
 
 import (
 	"fmt"
+	"image"
 
 	"cogentcore.org/core/colors/colormap"
 	"cogentcore.org/core/core"
@@ -38,7 +39,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 	})
 	tree.Add(p, func(w *core.Separator) {})
 	tree.Add(p, func(w *core.Button) {
-		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene) {
+		w.SetText("Weights").SetType(core.ButtonAction).SetMenu(func(m *core.Scene, pos image.Point) {
 			fb := core.NewFuncButton(m).SetFunc(nv.SaveWeights)
 			fb.SetIcon(icons.Save)
 			fb.Args[0].SetTag(`extension:".wts,.wts.gz"`)
@@ -48,7 +49,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene) {
+		w.SetText("Params").SetIcon(icons.Info).SetMenu(func(m *core.Scene, pos image.Point) {
 			core.NewFuncButton(m).SetFunc(nv.ShowNonDefaultParams).SetIcon(icons.Info)
 			core.NewFuncButton(m).SetFunc(nv.ShowAllParams).SetIcon(icons.Info)
 			core.NewFuncButton(m).SetFunc(nv.ShowKeyLayerParams).SetIcon(icons.Info)
@@ -56,7 +57,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		})
 	})
 	tree.Add(p, func(w *core.Button) {
-		w.SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene) {
+		w.SetText("Net Data").SetIcon(icons.Save).SetMenu(func(m *core.Scene, pos image.Point) {
 			core.NewFuncButton(m).SetFunc(nv.Data.SaveJSON).SetText("Save Net Data").SetIcon(icons.Save)
 			core.NewFuncButton(m).SetFunc(nv.Data.OpenJSON).SetText("Open Net Data").SetIcon(icons.Open)
 			core.NewSeparator(m)
