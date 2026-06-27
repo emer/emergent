@@ -81,7 +81,7 @@ type Settings struct { //types:add
 	LayerNameSize float32 `min:"0.01" max:".1" step:"0.01" default:"0.05"`
 
 	// name of color map to use
-	ColorMap core.ColorMapName
+	ColorMap core.ColorMapName `display:"-"` // only set in toolbar button
 
 	// opacity (0-1) of zero values -- greater magnitude values become increasingly opaque on either side of this minimum
 	ZeroAlpha float32 `min:"0" max:"1" step:"0.1" default:"0.5"`

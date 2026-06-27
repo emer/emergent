@@ -23,7 +23,7 @@ import (
 // UpdateLayers updates the layer display with any structural or
 // current data changes.  Very fast if no structural changes.
 func (nv *NetView) UpdateLayers() {
-	sw := nv.SceneWidget()
+	sw := nv.scene
 	se := sw.SceneXYZ()
 
 	if nv.Net == nil || nv.Net.NumLayers() == 0 {
@@ -114,7 +114,7 @@ func (nv *NetView) UpdateLayers() {
 // UpdatePaths updates the path display.
 // Only called when layers have structural changes.
 func (nv *NetView) UpdatePaths() {
-	sw := nv.SceneWidget()
+	sw := nv.scene
 	se := sw.SceneXYZ()
 
 	nb := nv.Net.AsEmer()

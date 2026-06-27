@@ -61,9 +61,6 @@ type NetView struct {
 	// parameters controlling how the view is rendered
 	Settings Settings
 
-	// color map for mapping values to colors -- set by name in Settings
-	ColorMap *colormap.Map
-
 	// record number to display -- use -1 to always track latest, otherwise in range
 	RecNo int
 
@@ -79,11 +76,21 @@ type NetView struct {
 	// current var params -- only valid during Update of display
 	curVarSettings *VarSettings
 
+	// color map for mapping values to colors -- set by name in Settings
+	colorMap *colormap.Map
+
 	// these are used to detect need to update
 	layerNameSizeShown float32
 	hasPaths           bool
 	pathTypeShown      string
 	pathWidthShown     float32
+
+	netFrame *core.Frame
+	scene    *Scene
+	counters *core.Text
+	varsTabs *core.Tabs
+	toolbar  *core.Toolbar
+	viewbar  *core.Toolbar
 
 	// mutex on data access
 	sync.RWMutex
@@ -92,7 +99,7 @@ type NetView struct {
 func (nv *NetView) Init() {
 	nv.Frame.Init()
 	nv.Settings.Defaults()
-	nv.ColorMap = colormap.AvailableMaps[string(nv.Settings.ColorMap)]
+	nv.colorMap = colormap.AvailableMaps[string(nv.Settings.ColorMap)]
 	nv.RecNo = -1
 	nv.Styler(func(s *styles.Style) {
 		s.Direction = styles.Column
@@ -100,18 +107,21 @@ func (nv *NetView) Init() {
 	})
 
 	tree.AddChildAt(nv, "tbar", func(w *core.Toolbar) {
+		nv.toolbar = w
 		w.Styler(func(s *styles.Style) {
 			s.Wrap = true
 		})
 		w.Maker(nv.MakeToolbar)
 	})
 	tree.AddChildAt(nv, "netframe", func(w *core.Frame) {
+		nv.netFrame = w
 		w.Styler(func(s *styles.Style) {
 			s.Direction = styles.Row
 			s.Grow.Set(1, 1)
 		})
 		nv.makeVars(w)
 		tree.AddChildAt(w, "scene", func(w *Scene) {
+			nv.scene = w
 			w.NetView = nv
 			se := w.SceneXYZ()
 			nv.ViewDefaults(se)
@@ -125,6 +135,7 @@ func (nv *NetView) Init() {
 		})
 	})
 	tree.AddChildAt(nv, "counters", func(w *core.Text) {
+		nv.counters = w
 		w.SetText("Counters: ").
 			Styler(func(s *styles.Style) {
 				s.Min.X.Pw(90)
@@ -136,6 +147,7 @@ func (nv *NetView) Init() {
 		})
 	})
 	tree.AddChildAt(nv, "vbar", func(w *core.Toolbar) {
+		nv.viewbar = w
 		w.Styler(func(s *styles.Style) {
 			s.Wrap = true
 		})
@@ -158,9 +170,9 @@ func (nv *NetView) SetNet(net emer.Network) {
 func (nv *NetView) SetVar(vr string) {
 	nv.Lock()
 	nv.Var = vr
-	nv.VarsFrame().Update()
+	nv.varsTabs.Update()
 	nv.Unlock()
-	nv.Toolbar().Update()
+	nv.toolbar.Update()
 	nv.UpdateView()
 }
 
@@ -234,7 +246,7 @@ func (nv *NetView) GoUpdateView() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	sw := nv.SceneWidget()
+	sw := nv.scene
 	sw.Scene.AsyncLock()
 	nv.UpdateImpl()
 	sw.NeedsRender()
@@ -249,7 +261,7 @@ func (nv *NetView) UpdateView() {
 	if !nv.IsVisible() || !nv.HasLayers() {
 		return
 	}
-	sw := nv.SceneWidget()
+	sw := nv.scene
 	nv.UpdateImpl()
 	sw.NeedsRender()
 }
@@ -306,7 +318,7 @@ func (nv *NetView) UpdateImpl() {
 				vp.Range.Min = -bmax
 			}
 			if needUpdate {
-				tb := nv.Toolbar()
+				tb := nv.toolbar
 				tb.UpdateTree()
 				tb.NeedsRender()
 			}
@@ -319,38 +331,12 @@ func (nv *NetView) UpdateImpl() {
 	nv.UpdateLayers()
 }
 
-// // ReconfigMeshes reconfigures the layer meshes
-// func (nv *NetView) ReconfigMeshes() {
-// 	se := nv.SceneXYZ()
-// 	se.ReconfigMeshes()
-// }
-
-func (nv *NetView) Toolbar() *core.Toolbar {
-	return nv.ChildByName("tbar", 0).(*core.Toolbar)
-}
-
-func (nv *NetView) NetFrame() *core.Frame {
-	return nv.ChildByName("netframe", 1).(*core.Frame)
-}
-
-func (nv *NetView) Counters() *core.Text {
-	return nv.ChildByName("counters", 2).(*core.Text)
-}
-
 func (nv *NetView) Viewbar() *core.Toolbar {
 	return nv.ChildByName("vbar", 3).(*core.Toolbar)
 }
 
-func (nv *NetView) SceneWidget() *Scene {
-	return nv.NetFrame().ChildByName("scene", 1).(*Scene)
-}
-
 func (nv *NetView) SceneXYZ() *xyz.Scene {
-	return nv.SceneWidget().SceneXYZ()
-}
-
-func (nv *NetView) VarsFrame() *core.Tabs {
-	return nv.NetFrame().ChildByName("vars", 0).(*core.Tabs)
+	return nv.scene.SceneXYZ()
 }
 
 // SetCounters sets the counters widget view display at bottom of netview
@@ -359,13 +345,13 @@ func (nv *NetView) SetCounters(ctrs string) {
 		return
 	}
 	nv.CurCtrs = ctrs
-	ct := nv.Counters()
+	ct := nv.counters
 	ct.UpdateWidget().NeedsRender()
 }
 
 // UpdateRecNo updates the record number viewing
 func (nv *NetView) UpdateRecNo() {
-	vbar := nv.Viewbar()
+	vbar := nv.viewbar
 	rlbl := vbar.ChildByName("rec", 10)
 	if rlbl != nil {
 		rlbl.(*core.Text).UpdateWidget().NeedsRender()
@@ -524,6 +510,7 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 		}
 	}
 	tree.AddChildAt(netframe, "vars", func(w *core.Tabs) {
+		nv.varsTabs = w
 		w.Styler(func(s *styles.Style) {
 			s.Grow.Set(0, 1)
 			s.Overflow.Y = styles.OverflowAuto
@@ -653,19 +640,19 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 		} else {
 			clr = NilColor
 		}
-	} else {
-		clp := nv.curVarSettings.Range.ClampValue(raw)
-		norm := nv.curVarSettings.Range.NormValue(clp)
-		var op float32
-		if nv.curVarSettings.ZeroCtr {
-			scaled = float32(2*norm - 1)
-			op = (nv.Settings.ZeroAlpha + (1-nv.Settings.ZeroAlpha)*math32.Abs(scaled))
-		} else {
-			scaled = float32(norm)
-			op = (nv.Settings.ZeroAlpha + (1-nv.Settings.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
-		}
-		clr = colors.WithAF32(nv.ColorMap.Map(norm), op)
+		return
 	}
+	clp := nv.curVarSettings.Range.ClampValue(raw)
+	norm := nv.curVarSettings.Range.NormValue(clp)
+	var op float32
+	if nv.curVarSettings.ZeroCtr {
+		scaled = float32(2*norm - 1)
+		op = (nv.Settings.ZeroAlpha + (1-nv.Settings.ZeroAlpha)*math32.Abs(scaled))
+	} else {
+		scaled = float32(norm)
+		op = (nv.Settings.ZeroAlpha + (1-nv.Settings.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
+	}
+	clr = colors.WithAF32(nv.colorMap.Map(norm), op)
 	return
 }
 

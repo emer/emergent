@@ -179,7 +179,7 @@ func (nv *NetView) MakeToolbar(p *tree.Plan) {
 		w.OnChange(func(e events.Event) {
 			cmap, ok := colormap.AvailableMaps[string(w.MapName)]
 			if ok {
-				nv.ColorMap = cmap
+				nv.colorMap = cmap
 			}
 			nv.UpdateView()
 		})
