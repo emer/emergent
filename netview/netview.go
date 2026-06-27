@@ -32,8 +32,8 @@ import (
 	"github.com/emer/emergent/v2/emer"
 )
 
-// NetView is a Cogent Core Widget that provides a 3D network view using the Cogent Core gi3d
-// 3D framework.
+// NetView is a Cogent Core Widget that provides a 3D network view using the
+// xyz 3D framework.
 type NetView struct {
 	core.Frame
 
@@ -56,19 +56,13 @@ type NetView struct {
 	SynVarsMap map[string]int
 
 	// parameters for the list of variables to view
-	VarOptions map[string]*VarOptions
-
-	// current var params -- only valid during Update of display
-	CurVarOptions *VarOptions `json:"-" xml:"-" display:"-"`
+	VarSettings map[string]*VarSettings
 
 	// parameters controlling how the view is rendered
-	Options Options
+	Settings Settings
 
-	// color map for mapping values to colors -- set by name in Options
+	// color map for mapping values to colors -- set by name in Settings
 	ColorMap *colormap.Map
-
-	// color map value representing ColorMap
-	ColorMapButton *core.ColorMapButton
 
 	// record number to display -- use -1 to always track latest, otherwise in range
 	RecNo int
@@ -82,20 +76,23 @@ type NetView struct {
 	// contains all the network data with history
 	Data NetData
 
-	// mutex on data access
-	DataMu sync.RWMutex `display:"-" copier:"-" json:"-" xml:"-"`
+	// current var params -- only valid during Update of display
+	curVarSettings *VarSettings
 
 	// these are used to detect need to update
 	layerNameSizeShown float32
 	hasPaths           bool
 	pathTypeShown      string
 	pathWidthShown     float32
+
+	// mutex on data access
+	sync.RWMutex
 }
 
 func (nv *NetView) Init() {
 	nv.Frame.Init()
-	nv.Options.Defaults()
-	nv.ColorMap = colormap.AvailableMaps[string(nv.Options.ColorMap)]
+	nv.Settings.Defaults()
+	nv.ColorMap = colormap.AvailableMaps[string(nv.Settings.ColorMap)]
 	nv.RecNo = -1
 	nv.Styler(func(s *styles.Style) {
 		s.Direction = styles.Column
@@ -149,9 +146,9 @@ func (nv *NetView) Init() {
 // SetNet sets the network to view and updates view
 func (nv *NetView) SetNet(net emer.Network) {
 	nv.Net = net
-	nv.DataMu.Lock()
-	nv.Data.Init(nv.Net, nv.Options.MaxRecs, nv.Options.NoSynData, nv.Net.MaxParallelData())
-	nv.DataMu.Unlock()
+	nv.Lock()
+	nv.Data.Init(nv.Net, nv.Settings.MaxRecs, nv.Settings.NoSynData, nv.Net.MaxParallelData())
+	nv.Unlock()
 	nv.UpdateTree() // need children
 	nv.UpdateLayers()
 	nv.Current()
@@ -159,10 +156,10 @@ func (nv *NetView) SetNet(net emer.Network) {
 
 // SetVar sets the variable to view and updates the display
 func (nv *NetView) SetVar(vr string) {
-	nv.DataMu.Lock()
+	nv.Lock()
 	nv.Var = vr
 	nv.VarsFrame().Update()
-	nv.DataMu.Unlock()
+	nv.Unlock()
 	nv.Toolbar().Update()
 	nv.UpdateView()
 }
@@ -170,8 +167,8 @@ func (nv *NetView) SetVar(vr string) {
 // SetMaxRecs sets the maximum number of records that are maintained (default 210)
 // resets the current data in the process
 func (nv *NetView) SetMaxRecs(max int) {
-	nv.Options.MaxRecs = max
-	nv.Data.Init(nv.Net, nv.Options.MaxRecs, nv.Options.NoSynData, nv.Net.MaxParallelData())
+	nv.Settings.MaxRecs = max
+	nv.Data.Init(nv.Net, nv.Settings.MaxRecs, nv.Settings.NoSynData, nv.Net.MaxParallelData())
 }
 
 // HasLayers returns true if network has any layers -- else no display
@@ -196,8 +193,8 @@ func (nv *NetView) IsViewingSynapse() bool {
 
 // RecordCounters saves the counters, so they are available for a Current update
 func (nv *NetView) RecordCounters(counters string) {
-	nv.DataMu.Lock()
-	defer nv.DataMu.Unlock()
+	nv.Lock()
+	defer nv.Unlock()
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
@@ -209,13 +206,13 @@ func (nv *NetView) RecordCounters(counters string) {
 // the raster plot mode -- use -1 for a default incrementing counter.
 // The NetView displays this recorded data when Update is next called.
 func (nv *NetView) Record(counters string, rastCtr int) {
-	nv.DataMu.Lock()
-	defer nv.DataMu.Unlock()
+	nv.Lock()
+	defer nv.Unlock()
 	if counters != "" {
 		nv.LastCtrs = counters
 	}
-	nv.Data.PathType = nv.Options.PathType
-	nv.Data.Record(nv.LastCtrs, rastCtr, nv.Options.Raster.Max)
+	nv.Data.PathType = nv.Settings.PathType
+	nv.Data.Record(nv.LastCtrs, rastCtr, nv.Settings.Raster.Max)
 	nv.RecTrackLatest() // if we make a new record, then user expectation is to track latest..
 }
 
@@ -225,8 +222,8 @@ func (nv *NetView) Record(counters string, rastCtr int) {
 // updating Wts and zeroing.
 // NetView displays this recorded data when Update is next called.
 func (nv *NetView) RecordSyns() {
-	nv.DataMu.Lock()
-	defer nv.DataMu.Unlock()
+	nv.Lock()
+	defer nv.Unlock()
 	nv.Data.RecordSyns()
 }
 
@@ -269,14 +266,14 @@ func (nv *NetView) Current() { //types:add
 
 // UpdateImpl does the guts of updating -- backend for Update or GoUpdate
 func (nv *NetView) UpdateImpl() {
-	nv.DataMu.Lock()
-	vp, ok := nv.VarOptions[nv.Var]
+	nv.Lock()
+	vp, ok := nv.VarSettings[nv.Var]
 	if !ok {
-		nv.DataMu.Unlock()
+		nv.Unlock()
 		log.Printf("NetView: %v variable: %v not found\n", nv.Name, nv.Var)
 		return
 	}
-	nv.CurVarOptions = vp
+	nv.curVarSettings = vp
 
 	if !vp.Range.FixMin || !vp.Range.FixMax {
 		needUpdate := false
@@ -318,7 +315,7 @@ func (nv *NetView) UpdateImpl() {
 
 	nv.SetCounters(nv.Data.CounterRec(nv.RecNo))
 	nv.UpdateRecNo()
-	nv.DataMu.Unlock()
+	nv.Unlock()
 	nv.UpdateLayers()
 }
 
@@ -390,9 +387,9 @@ func (nv *NetView) RecFastBkwd() bool {
 		return false
 	}
 	if nv.RecNo < 0 {
-		nv.RecNo = nv.Data.Ring.Len - nv.Options.NFastSteps
+		nv.RecNo = nv.Data.Ring.Len - nv.Settings.NFastSteps
 	} else {
-		nv.RecNo -= nv.Options.NFastSteps
+		nv.RecNo -= nv.Settings.NFastSteps
 	}
 	if nv.RecNo < 0 {
 		nv.RecNo = 0
@@ -441,7 +438,7 @@ func (nv *NetView) RecFastFwd() bool {
 	if nv.RecNo < 0 {
 		return false
 	}
-	nv.RecNo += nv.Options.NFastSteps
+	nv.RecNo += nv.Settings.NFastSteps
 	if nv.RecNo >= nv.Data.Ring.Len-1 {
 		nv.RecNo = nv.Data.Ring.Len - 1
 	}
@@ -485,7 +482,7 @@ func (nv *NetView) VarsListUpdate() {
 		return
 	}
 	nv.Vars = nvars
-	nv.VarOptions = make(map[string]*VarOptions, len(nv.Vars))
+	nv.VarSettings = make(map[string]*VarSettings, len(nv.Vars))
 
 	nv.SynVars = synvars
 	nv.SynVarsMap = make(map[string]int, len(synvars))
@@ -496,7 +493,7 @@ func (nv *NetView) VarsListUpdate() {
 	unprops := nv.Net.UnitVarProps()
 	pathprops := nv.Net.SynVarProps()
 	for _, nm := range nv.Vars {
-		vp := &VarOptions{Var: nm}
+		vp := &VarSettings{Var: nm}
 		vp.Defaults()
 		var vtag string
 		if strings.HasPrefix(nm, "r.") || strings.HasPrefix(nm, "s.") {
@@ -507,7 +504,7 @@ func (nv *NetView) VarsListUpdate() {
 		if vtag != "" {
 			vp.SetProps(vtag)
 		}
-		nv.VarOptions[nm] = vp
+		nv.VarSettings[nm] = vp
 	}
 }
 
@@ -538,7 +535,7 @@ func (nv *NetView) makeVars(netframe *core.Frame) {
 			tabs[ct.Cat] = tf
 			tf.Styler(func(s *styles.Style) {
 				s.Display = styles.Grid
-				s.Columns = nv.Options.NVarCols
+				s.Columns = nv.Settings.NVarCols
 				s.Grow.Set(1, 1)
 				s.Overflow.Y = styles.OverflowAuto
 				s.Background = colors.Scheme.SurfaceContainerLow
@@ -598,17 +595,6 @@ func (nv *NetView) ViewDefaults(se *xyz.Scene) {
 	xyz.NewPoint(se, "point", .2, xyz.DirectSun).Pos.Set(0, 2, -5)
 }
 
-// ReadLock locks data for reading -- call ReadUnlock when done.
-// Call this surrounding calls to UnitVal.
-func (nv *NetView) ReadLock() {
-	nv.DataMu.RLock()
-}
-
-// ReadUnlock unlocks data for reading.
-func (nv *NetView) ReadUnlock() {
-	nv.DataMu.RUnlock()
-}
-
 // UnitValue returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitValue(lay emer.Layer, idx []int) (raw, scaled float32, clr color.RGBA, hasval bool) {
@@ -653,9 +639,9 @@ var NilColor = color.RGBA{0x20, 0x20, 0x20, 0x40}
 // UnitValColor returns the raw value, scaled value, and color representation
 // for given unit of given layer. scaled is in range -1..1
 func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval bool) (scaled float32, clr color.RGBA) {
-	if nv.CurVarOptions == nil || nv.CurVarOptions.Var != nv.Var {
+	if nv.curVarSettings == nil || nv.curVarSettings.Var != nv.Var {
 		ok := false
-		nv.CurVarOptions, ok = nv.VarOptions[nv.Var]
+		nv.curVarSettings, ok = nv.VarSettings[nv.Var]
 		if !ok {
 			return
 		}
@@ -668,15 +654,15 @@ func (nv *NetView) UnitValColor(lay emer.Layer, idx1d int, raw float32, hasval b
 			clr = NilColor
 		}
 	} else {
-		clp := nv.CurVarOptions.Range.ClampValue(raw)
-		norm := nv.CurVarOptions.Range.NormValue(clp)
+		clp := nv.curVarSettings.Range.ClampValue(raw)
+		norm := nv.curVarSettings.Range.NormValue(clp)
 		var op float32
-		if nv.CurVarOptions.ZeroCtr {
+		if nv.curVarSettings.ZeroCtr {
 			scaled = float32(2*norm - 1)
-			op = (nv.Options.ZeroAlpha + (1-nv.Options.ZeroAlpha)*math32.Abs(scaled))
+			op = (nv.Settings.ZeroAlpha + (1-nv.Settings.ZeroAlpha)*math32.Abs(scaled))
 		} else {
 			scaled = float32(norm)
-			op = (nv.Options.ZeroAlpha + (1-nv.Options.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
+			op = (nv.Settings.ZeroAlpha + (1-nv.Settings.ZeroAlpha)*0.8) // no meaningful alpha -- just set at 80\%
 		}
 		clr = colors.WithAF32(nv.ColorMap.Map(norm), op)
 	}

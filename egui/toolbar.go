@@ -12,6 +12,18 @@ import (
 	"cogentcore.org/core/tree"
 )
 
+// ToolGhosting the mode enum
+type ToolGhosting int32 //enums:enum
+
+// The evaluation modes for when a tool bar can be clicked
+const (
+	ActiveStopped ToolGhosting = iota
+
+	ActiveRunning
+
+	ActiveAlways
+)
+
 // ToolbarItem holds the configuration values for a toolbar item
 type ToolbarItem struct {
 	Label   string

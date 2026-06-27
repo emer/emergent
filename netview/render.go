@@ -44,19 +44,19 @@ func (nv *NetView) UpdateLayers() {
 		layConfig.Add(types.For[xyz.Group](), ly.Label())
 	}
 
-	if !tree.Update(laysGp, layConfig) && nv.layerNameSizeShown == nv.Options.LayerNameSize {
+	if !tree.Update(laysGp, layConfig) && nv.layerNameSizeShown == nv.Settings.LayerNameSize {
 		for li := range laysGp.Children {
 			ly := nv.Net.EmerLayer(li)
 			lmesh := errors.Log1(se.MeshByName(ly.Label()))
 			se.SetMesh(lmesh) // does update
 		}
-		if nv.hasPaths != nv.Options.Paths || nv.pathTypeShown != nv.Options.PathType ||
-			nv.pathWidthShown != nv.Options.PathWidth {
+		if nv.hasPaths != nv.Settings.Paths || nv.pathTypeShown != nv.Settings.PathType ||
+			nv.pathWidthShown != nv.Settings.PathWidth {
 			nv.UpdatePaths()
 		}
 		return
 	}
-	nv.layerNameSizeShown = nv.Options.LayerNameSize
+	nv.layerNameSizeShown = nv.Settings.LayerNameSize
 
 	gpConfig := tree.TypePlan{}
 	gpConfig.Add(types.For[LayObj](), "layer")
@@ -102,7 +102,7 @@ func (nv *NetView) UpdateLayers() {
 		txt.Defaults()
 		txt.NetView = nv
 		txt.SetText(ly.Label())
-		txt.Pose.Scale = math32.Vector3Scalar(nv.Options.LayerNameSize).Div(lg.Pose.Scale)
+		txt.Pose.Scale = math32.Vector3Scalar(nv.Settings.LayerNameSize).Div(lg.Pose.Scale)
 		txt.Styles.Background = colors.Uniform(colors.Transparent)
 		txt.Styles.Text.Align = text.Start
 		txt.Styles.Text.AlignV = text.Start
@@ -122,7 +122,7 @@ func (nv *NetView) UpdatePaths() {
 	pathsGp := se.ChildByName("Paths", 0).(*xyz.Group)
 	pathsGp.DeleteChildren()
 
-	if !nv.Options.Paths {
+	if !nv.Settings.Paths {
 		nv.hasPaths = false
 		return
 	}
@@ -134,7 +134,7 @@ func (nv *NetView) UpdatePaths() {
 	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 
-	lineWidth := nv.Options.PathWidth
+	lineWidth := nv.Settings.PathWidth
 
 	// weight factors applied to distance for the different sides,
 	// to encourage / discourage choice of sides.
@@ -403,26 +403,26 @@ func (nv *NetView) UpdatePaths() {
 			sfp.Pose.Pos = laySidePos(lb, selfSide, 1, pi, npt, 0)
 		}
 	}
-	nv.pathTypeShown = nv.Options.PathType
-	nv.pathWidthShown = nv.Options.PathWidth
+	nv.pathTypeShown = nv.Settings.PathType
+	nv.pathWidthShown = nv.Settings.PathWidth
 }
 
 func (nv *NetView) pathTypeNameMatch(pt emer.Path) bool {
-	if len(nv.Options.PathType) == 0 {
+	if len(nv.Settings.PathType) == 0 {
 		return true
 	}
-	return pt.AsEmer().IsTypeOrClass(nv.Options.PathType)
+	return pt.AsEmer().IsTypeOrClass(nv.Settings.PathType)
 }
 
 // returns the self projection mesh, either left = 1 or right = 2
 func (nv *NetView) selfPrjn(se *xyz.Scene, side int) xyz.Mesh {
 	selfnm := fmt.Sprintf("selfPathSide%d", side)
 	sm, err := se.MeshByName(selfnm)
-	if err == nil && nv.pathWidthShown == nv.Options.PathWidth {
+	if err == nil && nv.pathWidthShown == nv.Settings.PathWidth {
 		return sm
 	}
-	szm := max(nv.Options.PathWidth/0.002, 1)
-	lineWidth := 1.5 * nv.Options.PathWidth
+	szm := max(nv.Settings.PathWidth/0.002, 1)
+	lineWidth := 1.5 * nv.Settings.PathWidth
 	size := float32(0.015) * szm
 	sideFact := float32(1.5)
 	if side == 1 {

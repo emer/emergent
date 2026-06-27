@@ -16,8 +16,8 @@ import (
 // NVarCols is the default number of variable columns in the NetView
 var NVarCols = 2
 
-// RasterOptions holds parameters controlling the raster plot view
-type RasterOptions struct { //types:add
+// RasterSettings holds parameters controlling the raster plot view
+type RasterSettings struct { //types:add
 
 	// if true, show a raster plot over time, otherwise units
 	On bool
@@ -35,20 +35,20 @@ type RasterOptions struct { //types:add
 	UnitHeight float32 `min:"0.1" max:"1" step:"0.1" default:"0.2"`
 }
 
-func (nv *RasterOptions) Defaults() {
-	if nv.Max == 0 {
-		nv.Max = 200
+func (rs *RasterSettings) Defaults() {
+	if rs.Max == 0 {
+		rs.Max = 200
 	}
-	if nv.UnitSize == 0 {
-		nv.UnitSize = 1
+	if rs.UnitSize == 0 {
+		rs.UnitSize = 1
 	}
-	if nv.UnitHeight == 0 {
-		nv.UnitHeight = .2
+	if rs.UnitHeight == 0 {
+		rs.UnitHeight = .2
 	}
 }
 
-// Options holds parameters controlling how the view is rendered
-type Options struct { //types:add
+// Settings holds parameters controlling how the view is rendered
+type Settings struct { //types:add
 
 	// whether to display the pathways between layers as arrows
 	Paths bool
@@ -63,7 +63,7 @@ type Options struct { //types:add
 	PathWidth float32 `min:"0.0001" max:".05" step:"0.001" default:"0.002"`
 
 	// raster plot parameters
-	Raster RasterOptions `display:"inline"`
+	Raster RasterSettings `display:"inline"`
 
 	// do not record synapse level data -- turn this on for very large networks where recording the entire synaptic state would be prohibitive
 	NoSynData bool
@@ -90,35 +90,35 @@ type Options struct { //types:add
 	NFastSteps int
 }
 
-func (nv *Options) Defaults() {
-	nv.Raster.Defaults()
-	if nv.NVarCols == 0 {
-		nv.NVarCols = NVarCols
-		nv.Paths = true
-		nv.PathWidth = 0.002
+func (ns *Settings) Defaults() {
+	ns.Raster.Defaults()
+	if ns.NVarCols == 0 {
+		ns.NVarCols = NVarCols
+		ns.Paths = true
+		ns.PathWidth = 0.002
 	}
-	if nv.MaxRecs == 0 {
-		nv.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
+	if ns.MaxRecs == 0 {
+		ns.MaxRecs = 210 // 200 cycles + 8 phase updates max + 2 extra..
 	}
-	if nv.UnitSize == 0 {
-		nv.UnitSize = .9
+	if ns.UnitSize == 0 {
+		ns.UnitSize = .9
 	}
-	if nv.LayerNameSize == 0 {
-		nv.LayerNameSize = .05
+	if ns.LayerNameSize == 0 {
+		ns.LayerNameSize = .05
 	}
-	if nv.ZeroAlpha == 0 {
-		nv.ZeroAlpha = 0.5
+	if ns.ZeroAlpha == 0 {
+		ns.ZeroAlpha = 0.5
 	}
-	if nv.ColorMap == "" {
-		nv.ColorMap = core.ColorMapName("ColdHot")
+	if ns.ColorMap == "" {
+		ns.ColorMap = core.ColorMapName("ColdHot")
 	}
-	if nv.NFastSteps == 0 {
-		nv.NFastSteps = 10
+	if ns.NFastSteps == 0 {
+		ns.NFastSteps = 10
 	}
 }
 
-// VarOptions holds parameters for display of each variable
-type VarOptions struct { //types:add
+// VarSettings holds parameters for display of each variable
+type VarSettings struct {
 
 	// name of the variable
 	Var string
@@ -134,60 +134,60 @@ type VarOptions struct { //types:add
 }
 
 // Defaults sets default values if otherwise not set
-func (vp *VarOptions) Defaults() {
-	if vp.Range.Max == 0 && vp.Range.Min == 0 {
-		vp.ZeroCtr = true
-		vp.Range.SetMin(-1)
-		vp.Range.SetMax(1)
+func (vs *VarSettings) Defaults() {
+	if vs.Range.Max == 0 && vs.Range.Min == 0 {
+		vs.ZeroCtr = true
+		vs.Range.SetMin(-1)
+		vs.Range.SetMax(1)
 	}
 }
 
 // SetProps parses Go struct-tag style properties for variable and sets values accordingly
 // for customized defaults
-func (vp *VarOptions) SetProps(pstr string) {
+func (vs *VarSettings) SetProps(pstr string) {
 	rstr := reflect.StructTag(pstr)
 	if tv, ok := rstr.Lookup("range"); ok {
 		rg, err := strconv.ParseFloat(tv, 32)
 		if err != nil {
-			log.Printf("NetView.VarOptions.SetProps for Var: %v 'range:' err: %v on val: %v\n", vp.Var, err, tv)
+			log.Printf("NetView.VarSettings.SetProps for Var: %v 'range:' err: %v on val: %v\n", vs.Var, err, tv)
 		} else {
-			vp.Range.Max = float32(rg)
-			vp.Range.Min = -float32(rg)
-			vp.ZeroCtr = true
+			vs.Range.Max = float32(rg)
+			vs.Range.Min = -float32(rg)
+			vs.ZeroCtr = true
 		}
 	}
 	if tv, ok := rstr.Lookup("min"); ok {
 		rg, err := strconv.ParseFloat(tv, 32)
 		if err != nil {
-			log.Printf("NetView.VarOptions.SetProps for Var: %v 'min:' err: %v on val: %v\n", vp.Var, err, tv)
+			log.Printf("NetView.VarSettings.SetProps for Var: %v 'min:' err: %v on val: %v\n", vs.Var, err, tv)
 		} else {
-			vp.Range.Min = float32(rg)
-			vp.ZeroCtr = false
+			vs.Range.Min = float32(rg)
+			vs.ZeroCtr = false
 		}
 	}
 	if tv, ok := rstr.Lookup("max"); ok {
 		rg, err := strconv.ParseFloat(tv, 32)
 		if err != nil {
-			log.Printf("NetView.VarOptions.SetProps for Var: %v 'max:' err: %v on val: %v\n", vp.Var, err, tv)
+			log.Printf("NetView.VarSettings.SetProps for Var: %v 'max:' err: %v on val: %v\n", vs.Var, err, tv)
 		} else {
-			vp.Range.Max = float32(rg)
-			vp.ZeroCtr = false
+			vs.Range.Max = float32(rg)
+			vs.ZeroCtr = false
 		}
 	}
 	if tv, ok := rstr.Lookup("auto-scale"); ok {
 		if tv == "+" {
-			vp.Range.FixMin = false
-			vp.Range.FixMax = false
+			vs.Range.FixMin = false
+			vs.Range.FixMax = false
 		} else {
-			vp.Range.FixMin = true
-			vp.Range.FixMax = true
+			vs.Range.FixMin = true
+			vs.Range.FixMax = true
 		}
 	}
 	if tv, ok := rstr.Lookup("zeroctr"); ok {
 		if tv == "+" {
-			vp.ZeroCtr = true
+			vs.ZeroCtr = true
 		} else {
-			vp.ZeroCtr = false
+			vs.ZeroCtr = false
 		}
 	}
 }

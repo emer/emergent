@@ -631,7 +631,7 @@ func (nv *NetView) PlotSelectedUnit() (*table.Table, *plotcore.Editor) { //types
 	selnm := nd.PathLay + fmt.Sprintf("[%d]", nd.PathUnIndex)
 	dt := nd.SelectedUnitTable(nv.Di)
 	for _, vnm := range nd.UnVars {
-		vp, ok := nv.VarOptions[vnm]
+		vp, ok := nv.VarSettings[vnm]
 		if !ok {
 			continue
 		}

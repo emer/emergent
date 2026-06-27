@@ -14,7 +14,7 @@ func (lm *LayMesh) RasterSize2D() (nVtx, nIndex int) {
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Options.Raster.Max + 1
+	nx := lm.View.Settings.Raster.Max + 1
 	segs := 1
 
 	vtxSz, idxSz := shape.PlaneN(segs, segs)
@@ -31,7 +31,7 @@ func (lm *LayMesh) RasterSize4D() (nVtx, nIndex int) {
 	nux := ss.DimSize(3)
 
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Options.Raster.Max + 1
+	nx := lm.View.Settings.Raster.Max + 1
 
 	segs := 1
 
@@ -46,8 +46,8 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Options.Raster.Max + 1
-	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
+	nx := lm.View.Settings.Raster.Max + 1
+	htsc := 0.5 * lm.View.Settings.Raster.UnitHeight
 
 	fnoz := float32(lm.Shape.DimSize(0))
 	fnox := float32(lm.Shape.DimSize(1))
@@ -56,7 +56,7 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	usz := lm.View.Options.Raster.UnitSize
+	usz := lm.View.Settings.Raster.UnitSize
 	uo := (1.0 - usz)
 
 	xsc := fnux / fnx
@@ -77,7 +77,7 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
-	lm.View.ReadLock()
+	lm.View.Lock()
 	for zi := nz - 1; zi >= 0; zi-- {
 		z0 := uo - zsc*float32(zi+1)
 		uy := zi / (nux + 1)
@@ -117,7 +117,7 @@ func (lm *LayMesh) RasterSet2DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 			pidx++
 		}
 	}
-	lm.View.ReadUnlock()
+	lm.View.Unlock()
 
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 }
@@ -127,8 +127,8 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nuz := ss.DimSize(0)
 	nux := ss.DimSize(1)
 	nx := nuz*nux + nuz - 1
-	nz := lm.View.Options.Raster.Max + 1
-	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
+	nz := lm.View.Settings.Raster.Max + 1
+	htsc := 0.5 * lm.View.Settings.Raster.UnitHeight
 
 	fnoz := float32(lm.Shape.DimSize(0))
 	fnox := float32(lm.Shape.DimSize(1))
@@ -137,7 +137,7 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	usz := lm.View.Options.Raster.UnitSize
+	usz := lm.View.Settings.Raster.UnitSize
 	uo := (1.0 - usz)
 
 	xsc := fnux / fnx
@@ -158,7 +158,7 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
-	lm.View.ReadLock()
+	lm.View.Lock()
 	zoff := 1
 	for zi := nz - 1; zi >= 0; zi-- {
 		z0 := uo - zsc*float32(zi+1)
@@ -198,7 +198,7 @@ func (lm *LayMesh) RasterSet2DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 			pidx++
 		}
 	}
-	lm.View.ReadUnlock()
+	lm.View.Unlock()
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 }
 
@@ -210,8 +210,8 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nux := ss.DimSize(3)
 
 	nz := nuz*nux + nuz - 1
-	nx := lm.View.Options.Raster.Max + 1
-	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
+	nx := lm.View.Settings.Raster.Max + 1
+	htsc := 0.5 * lm.View.Settings.Raster.UnitHeight
 
 	fnpoz := float32(lm.Shape.DimSize(0))
 	fnpox := float32(lm.Shape.DimSize(1))
@@ -222,7 +222,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnx := float32(nx)
 	fnz := float32(nz)
 
-	usz := lm.View.Options.UnitSize
+	usz := lm.View.Settings.UnitSize
 	uo := 2.0 * (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer
@@ -239,7 +239,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	xscr := xsc * (fnux / fnx)
 	zscr := zsc * (fnuz / fnz)
 
-	uszr := lm.View.Options.Raster.UnitSize
+	uszr := lm.View.Settings.Raster.UnitSize
 	uor := (1.0 - uszr) // offset = space
 
 	xuw := xscr * uszr
@@ -253,7 +253,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
-	lm.View.ReadLock()
+	lm.View.Lock()
 	for zpi := npz - 1; zpi >= 0; zpi-- {
 		zp0 := zsc * (-float32(zpi) * (uo + fnuz))
 		for xpi := 0; xpi < npx; xpi++ {
@@ -299,7 +299,7 @@ func (lm *LayMesh) RasterSet4DX(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 			}
 		}
 	}
-	lm.View.ReadUnlock()
+	lm.View.Unlock()
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpoz*fnuz), math32.Vec3(fnpox*fnux, 0.5, 0))
 }
 
@@ -311,8 +311,8 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	nux := ss.DimSize(3)
 
 	nx := nuz*nux + nuz - 1
-	nz := lm.View.Options.Raster.Max + 1
-	htsc := 0.5 * lm.View.Options.Raster.UnitHeight
+	nz := lm.View.Settings.Raster.Max + 1
+	htsc := 0.5 * lm.View.Settings.Raster.UnitHeight
 
 	fnpoz := float32(lm.Shape.DimSize(0))
 	fnpox := float32(lm.Shape.DimSize(1))
@@ -323,7 +323,7 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	fnx := float32(nx)
 	fnz := float32(nz)
 
-	usz := lm.View.Options.UnitSize
+	usz := lm.View.Settings.UnitSize
 	uo := 2.0 * (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer
@@ -340,7 +340,7 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 	xscr := xsc * (fnux / fnx)
 	zscr := zsc * (fnuz / fnz)
 
-	uszr := lm.View.Options.Raster.UnitSize
+	uszr := lm.View.Settings.Raster.UnitSize
 	uor := (1.0 - uszr) // offset = space
 
 	xuw := xscr * uszr
@@ -354,7 +354,7 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 
 	curRast, _ := lm.View.Data.RasterCtr(-1)
 
-	lm.View.ReadLock()
+	lm.View.Lock()
 	for zpi := npz - 1; zpi >= 0; zpi-- {
 		zp0 := zsc * (-float32(zpi) * (uo + fnuz))
 		for xpi := 0; xpi < npx; xpi++ {
@@ -400,6 +400,6 @@ func (lm *LayMesh) RasterSet4DZ(vtxAry, normAry, texAry, clrAry math32.ArrayF32,
 			}
 		}
 	}
-	lm.View.ReadUnlock()
+	lm.View.Unlock()
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpoz*fnuz), math32.Vec3(fnpox*fnux, 0.5, 0))
 }

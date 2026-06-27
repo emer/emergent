@@ -48,7 +48,7 @@ func (lm *LayMesh) MeshSize() (nVtx, nIndex int, hasColor bool) {
 	}
 	shp := &lm.Lay.AsEmer().Shape
 	lm.Shape.CopyFrom(shp)
-	if lm.View.Options.Raster.On {
+	if lm.View.Settings.Raster.On {
 		if shp.NumDims() == 4 {
 			lm.NumVertex, lm.NumIndex = lm.RasterSize4D()
 		} else {
@@ -93,8 +93,8 @@ func (lm *LayMesh) Set(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry m
 	if lm.Lay == nil || lm.Shape.NumDims() == 0 {
 		return // nothing
 	}
-	if lm.View.Options.Raster.On {
-		if lm.View.Options.Raster.XAxis {
+	if lm.View.Settings.Raster.On {
+		if lm.View.Settings.Raster.XAxis {
 			if lm.Shape.NumDims() == 4 {
 				lm.RasterSet4DX(vtxAry, normAry, texAry, clrAry, idxAry)
 			} else {
@@ -127,7 +127,7 @@ func (lm *LayMesh) Set2D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 	fnz := float32(nz)
 	fnx := float32(nx)
 
-	uw := lm.View.Options.UnitSize
+	uw := lm.View.Settings.UnitSize
 	uo := (1.0 - uw)
 	segs := 1
 
@@ -135,7 +135,7 @@ func (lm *LayMesh) Set2D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 	pidx := 0 // plane index
 	pos := math32.Vector3{}
 
-	lm.View.ReadLock()
+	lm.View.Lock()
 	for zi := nz - 1; zi >= 0; zi-- {
 		z0 := uo - float32(zi+1)
 		for xi := 0; xi < nx; xi++ {
@@ -165,7 +165,7 @@ func (lm *LayMesh) Set2D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 			pidx++
 		}
 	}
-	lm.View.ReadUnlock()
+	lm.View.Unlock()
 
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnz), math32.Vec3(fnx, 0.5, 0))
 }
@@ -181,7 +181,7 @@ func (lm *LayMesh) Set4D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 	fnuz := float32(nuz)
 	fnux := float32(nux)
 
-	usz := lm.View.Options.UnitSize
+	usz := lm.View.Settings.UnitSize
 	uo := (1.0 - usz) // offset = space
 
 	// for 4D, we build in spaces between groups without changing the overall size of layer
@@ -198,7 +198,7 @@ func (lm *LayMesh) Set4D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 	pidx := 0 // plane index
 	pos := math32.Vector3{}
 
-	lm.View.ReadLock()
+	lm.View.Lock()
 	for zpi := npz - 1; zpi >= 0; zpi-- {
 		zp0 := zsc * (-float32(zpi) * (uo + fnuz))
 		for xpi := 0; xpi < npx; xpi++ {
@@ -234,7 +234,7 @@ func (lm *LayMesh) Set4D(vtxAry, normAry, texAry, clrAry math32.ArrayF32, idxAry
 			}
 		}
 	}
-	lm.View.ReadUnlock()
+	lm.View.Unlock()
 
 	lm.BBox.SetBounds(math32.Vec3(0, -0.5, -fnpz*fnuz), math32.Vec3(fnpx*fnux, 0.5, 0))
 }
