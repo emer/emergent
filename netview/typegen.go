@@ -36,10 +36,11 @@ func (t *LayObj) SetLayName(v string) *LayObj { t.LayName = v; return t }
 // our netview
 func (t *LayObj) SetNetView(v *NetView) *LayObj { t.NetView = v; return t }
 
-var _ = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.LayName", IDName: "lay-name", Doc: "LayName is the Layer name as a Text2D within the NetView", Embeds: []types.Field{{Name: "Text2D"}}, Fields: []types.Field{{Name: "NetView", Doc: "our netview"}}})
+var _ = types.AddType(&types.Type{Name: "github.com/emer/emergent/v2/netview.LayName", IDName: "lay-name", Doc: "LayName is the Layer name as a Text2D within the NetView.\nused for click detection in events.go, LayerLabelAtPoint.", Embeds: []types.Field{{Name: "Text2D"}}, Fields: []types.Field{{Name: "NetView", Doc: "our netview"}}})
 
 // NewLayName returns a new [LayName] with the given optional parent:
-// LayName is the Layer name as a Text2D within the NetView
+// LayName is the Layer name as a Text2D within the NetView.
+// used for click detection in events.go, LayerLabelAtPoint.
 func NewLayName(parent ...tree.Node) *LayName { return tree.New[LayName](parent...) }
 
 // SetNetView sets the [LayName.NetView]:

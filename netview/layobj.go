@@ -19,7 +19,8 @@ type LayObj struct { //types:add
 	NetView *NetView `copier:"-" json:"-" xml:"-" display:"-"`
 }
 
-// LayName is the Layer name as a Text2D within the NetView
+// LayName is the Layer name as a Text2D within the NetView.
+// used for click detection in events.go, LayerLabelAtPoint.
 type LayName struct {
 	xyz.Text2D
 
