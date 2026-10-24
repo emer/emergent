@@ -1,9 +1,9 @@
 codeberg.org/go-pdf/fpdf v0.11.1 h1:U8+coOTDVLxHIXZgGvkfQEi/q0hYHYvEHFuGNX2GzGs=
 codeberg.org/go-pdf/fpdf v0.11.1/go.mod h1:Y0DGRAdZ0OmnZPvjbMp/1bYxmIPxm0ws4tfoPOc4LjU=
-cogentcore.org/core v0.5.0 h1:2hA7/Rl56yVis7kKje4aHzDWuWFjmCNI+ON3YKGiVng=
-cogentcore.org/core v0.5.0/go.mod h1:vwEBOxZbxXHmTQJQSN4Euaofn715HxgizFPqUBQSnYA=
-cogentcore.org/lab v0.2.0 h1:aNU2wuo90lyE1a6gHwjRXN8EhbWiTsR/q/G/xi5YZOM=
-cogentcore.org/lab v0.2.0/go.mod h1:jQNNbP6V/4xArGp6xpauinnRlEIb4L5E0ZMj1vygtTg=
+cogentcore.org/core v0.5.1 h1:ZHgVn0rWdfdJWUT5VWnkswOQUkjCq/8PzDcDUKsnJXM=
+cogentcore.org/core v0.5.1/go.mod h1:/h/ZEaUsWciEHrEBFwGfypHT29jLMf1al5mkPCZeSds=
+cogentcore.org/lab v0.2.1 h1:cCikWLnaCO5vH5fdJ3Ldyqj5+vnjHoVs8Jq5XjG0Khw=
+cogentcore.org/lab v0.2.1/go.mod h1:YnFuOaZ0w2s+KBDSe9RKaIWSo8YfbKRFUkV88RcA84I=
 git.sr.ht/~sbinet/overlayfs v0.1.1 h1:HvCHXT1cs8RMSjNLQXxPPosB2hgR3tRC8RniH0f3ESg=
 git.sr.ht/~sbinet/overlayfs v0.1.1/go.mod h1:TmrIWKlxyPJJ7vchTqk85DUcW6IDsIa7ONLvSGIw438=
 github.com/Bios-Marcel/wastebasket/v2 v2.0.3 h1:TkoDPcSqluhLGE+EssHu7UGmLgUEkWg7kNyHyyJ3Q9g=
@@ -30,8 +30,8 @@ github.com/cogentcore/star-tex v0.7.2-0.20260625151004-a16970c7d698 h1:GsehCn/Dw
 github.com/cogentcore/star-tex v0.7.2-0.20260625151004-a16970c7d698/go.mod h1:pdlQowLCSMiGfeOM6M7yz09OmR2fzlmFYcvR/u6QaRQ=
 github.com/cogentcore/typesetting v0.0.0-20261022123550-2cd93a91580e h1:seoKVtXIRWYZrY3vlwaos/PifRWJsKi48xroc9cGXis=
 github.com/cogentcore/typesetting v0.0.0-20261022123550-2cd93a91580e/go.mod h1:3WDWvccSCRXvDZ5T0kvk2OTofeUQWLlQDTWaVYUZwhI=
-github.com/cogentcore/yaegi v0.0.0-20260116172027-700fbf8949f3 h1:y3Djpt/g3QTjFdj8cpvy/r8FsZsEa7PqHGjgsKXbta0=
-github.com/cogentcore/yaegi v0.0.0-20260116172027-700fbf8949f3/go.mod h1:XkOm++pRmWlk85p+hw71ZItfTeRdzqG23+2xjP9eb+M=
+github.com/cogentcore/yaegi v0.0.0-20261024094450-b0c6fff779d9 h1:RW5YrQbwp2tAxEUbwBWHxEgNZZAJAlPJuzZbTZqM4qY=
+github.com/cogentcore/yaegi v0.0.0-20261024094450-b0c6fff779d9/go.mod h1:o1kG6o9hHlM/exRCSdIenr+5NTxDg6ve/DsOkYfbt6k=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2/v2 v2.7.1 h1:yqDtwI1ptXXvEUNpYTk2lad4jLtAcKqkzepn4savSk4=
