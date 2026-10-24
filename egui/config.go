@@ -67,6 +67,7 @@ func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
 // It is called automatically by [NewConfig].
 func (bc *BaseConfig) BaseDefaults() {
 	bc.GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
+	// bc.GPU = true
 }
 
 // ScriptFieldWidget is a core FieldWidget function to use a text Editor

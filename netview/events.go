@@ -167,7 +167,6 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 	nmin, nmax := nb.MinPos, nb.MaxPos
 	nsz := nmax.Sub(nmin).Sub(math32.Vec3(1, 1, 0)).Max(math32.Vec3(1, 1, 1))
 	nsc := math32.Vec3(1.0/nsz.X, 1.0/nsz.Y, 1.0/nsz.Z)
-	szc := math32.Max(nsc.X, nsc.Y)
 	poff := math32.Vector3Scalar(0.5)
 	poff.Y = -0.5
 	for li, lgi := range laysGp.Children {
@@ -177,8 +176,6 @@ func (sw *Scene) LayerUnitAtPoint(pos image.Point) (lay emer.Layer, lx, ly, unIn
 		lp := lb.Pos.Pos
 		lp.Y = -lp.Y // reverse direction
 		lp = lp.Sub(nmin).Mul(nsc).Sub(poff)
-		lg.Pose.Pos.Set(lp.X, lp.Z, lp.Y)
-		lg.Pose.Scale.Set(nsc.X*lb.Pos.Scale, szc, nsc.Y*lb.Pos.Scale)
 		lo := lg.Child(0).(*LayObj)
 		ray := lo.RayPick(pos)
 		// layer is in XZ plane with norm pointing up in Y axis
