@@ -10,7 +10,6 @@ import (
 	"cogentcore.org/core/base/reflectx"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/styles"
-	"cogentcore.org/core/system"
 	"cogentcore.org/core/text/textcore"
 )
 
@@ -66,8 +65,6 @@ func (bc *BaseConfig) IncludesPtr() *[]string { return &bc.Includes }
 // BaseDefaults sets default values not specified by struct tags.
 // It is called automatically by [NewConfig].
 func (bc *BaseConfig) BaseDefaults() {
-	bc.GPU = core.TheApp.Platform() != system.Web // GPU compute not fully working on web yet
-	// bc.GPU = true
 }
 
 // ScriptFieldWidget is a core FieldWidget function to use a text Editor

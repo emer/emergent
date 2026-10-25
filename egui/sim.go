@@ -77,10 +77,13 @@ func RunSim[S, C any](cfg *C) error {
 
 // Embed runs a sim with the default config, embedding it under the given parent node.
 // It returns the resulting sim. *S must implement [Sim][C] (interface [Sim]
-// parameterized by config type C).
+// parameterized by config type C). The configFun is an optional configuration function
+// run before calling ConfigSim with the new configuration, allowing the embedding to
+// set configuration and other parameters, which otherwise happen via config.toml in
+// the non-embed case.
 //
 // See also [Run] and [RunSim].
-func Embed[S, C any](parent tree.Node) *S { //yaegi:add
+func Embed[S, C any](parent tree.Node, configFun func(sim *S, cfg *C)) *S { //yaegi:add
 	cfgC, cfg := NewConfig[C]()
 
 	cfg.AsBaseConfig().GUI = true // force GUI on
@@ -89,6 +92,9 @@ func Embed[S, C any](parent tree.Node) *S { //yaegi:add
 	sim := any(simS).(Sim[C])
 
 	sim.SetConfig(cfgC)
+	if configFun != nil {
+		configFun(simS, cfgC)
+	}
 	sim.ConfigSim()
 	sim.Init()
 	sim.ConfigGUI(parent)
