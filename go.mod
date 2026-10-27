@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	cogentcore.org/core v0.5.8
-	cogentcore.org/lab v0.2.6
+	cogentcore.org/lab v0.2.7
 	github.com/cogentcore/mvm v0.0.0-20261026193832-5ebd19c3fa21
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
@@ -14,6 +14,7 @@ require (
 	github.com/Bios-Marcel/wastebasket/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Masterminds/vcs v1.13.3 // indirect
+	github.com/adrg/strutil v0.3.1 // indirect
 	github.com/alecthomas/chroma/v3 v3.0.0-alpha.5.0.20261015230651-e17ffc9bfce4 // indirect
 	github.com/anthonynsimon/bild v0.14.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
