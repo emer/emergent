@@ -82,7 +82,7 @@ func ScriptFieldWidget(field string) core.Value {
 }
 
 // NewConfig makes a new [Config] of type *C with defaults set.
-func NewConfig[C any]() (*C, Config) { //yaegi:add
+func NewConfig[C any]() (*C, Config) {
 	cfgC := new(C)
 	cfg := any(cfgC).(Config)
 

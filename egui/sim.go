@@ -83,7 +83,7 @@ func RunSim[S, C any](cfg *C) error {
 // the non-embed case.
 //
 // See also [Run] and [RunSim].
-func Embed[S, C any](parent tree.Node, configFun func(sim *S, cfg *C)) *S { //yaegi:add
+func Embed[S, C any](parent tree.Node, configFun func(sim *S, cfg *C)) *S {
 	cfgC, cfg := NewConfig[C]()
 
 	cfg.AsBaseConfig().GUI = true // force GUI on

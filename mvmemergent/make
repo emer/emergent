@@ -1,0 +1,11 @@
+#!/bin/sh
+# make generates the symbols of the emergent packages, one gen_*.go file per
+# package, with mvm extract -register.
+set -e
+cd "$(dirname "$0")"
+/bin/rm -f gen_*.go
+
+emergent="netview egui"
+pkgs=""
+for p in $emergent; do pkgs="$pkgs github.com/emer/emergent/v2/$p"; done
+go run github.com/cogentcore/mvm/cmd/extract -register -pkg mvmemergent $pkgs
