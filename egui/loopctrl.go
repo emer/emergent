@@ -23,6 +23,7 @@ import (
 // with selector for which stack is being controlled.
 // A prefix can optionally be provided if multiple loops are used.
 func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...string) {
+	gui.addLooper(loops)
 	pfx := ""
 	lblpfx := ""
 	if len(prefix) == 1 {

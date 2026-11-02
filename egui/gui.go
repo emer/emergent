@@ -31,6 +31,7 @@ import (
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"cogentcore.org/lab/lab"
 	"github.com/emer/emergent/v2/etime"
+	"github.com/emer/emergent/v2/looper"
 	"github.com/emer/emergent/v2/netview"
 )
 
@@ -74,6 +75,10 @@ type GUI struct {
 	stopNow bool
 
 	runMu sync.Mutex
+
+	// loopers are the loops of the looper controls, which are stopped
+	// when the GUI is destroyed (see [Embed]).
+	loopers []*looper.Stacks
 }
 
 // UpdateWindow triggers an update on window body,
@@ -174,6 +179,9 @@ func (gui *GUI) MakeBody(b tree.Node, sim any, fsroot fs.FS, appname, title, abo
 		b = gui.Body
 		core.AppAbout = about
 	} else {
+		if sf, ok := b.(*simFrame); ok {
+			sf.gui = gui
+		}
 		gui.Toolbar = core.NewToolbar(b)
 	}
 	split := core.NewSplits(b)

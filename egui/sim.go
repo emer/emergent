@@ -5,10 +5,17 @@
 package egui
 
 import (
+	_ "embed"
+
 	"cogentcore.org/core/cli"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tree"
 )
+
+// appIcon is the default emergent app icon, installed by default.
+//
+//go:embed icon.svg
+var appIcon string
 
 // Sim is an interface implemented by all sim types.
 // It is parameterized by the config type C. *C must implement [Config].
@@ -40,6 +47,7 @@ type Sim[C any] interface {
 // Run uses the config type C to make a new [Config] object and set its default values
 // with [Config.Defaults].
 func Run[S, C any]() {
+	core.AppIcon = appIcon
 	cfgC, cfg := NewConfig[C]()
 
 	bc := cfg.AsBaseConfig()
@@ -82,21 +90,45 @@ func RunSim[S, C any](cfg *C) error {
 // set configuration and other parameters, which otherwise happen via config.toml in
 // the non-embed case.
 //
+// The GUI is made in a frame that, when it is destroyed (as when the page of
+// a content app that shows it is left), stops the sim and calls its Destroy
+// method once it has stopped running, if it is a [Destroyer], to release
+// resources such as those of the GPU. The sim is made once all of the sims
+// that are being released are, in another goroutine if any are.
+//
 // See also [Run] and [RunSim].
 func Embed[S, C any](parent tree.Node, configFun func(sim *S, cfg *C)) *S {
-	cfgC, cfg := NewConfig[C]()
-
-	cfg.AsBaseConfig().GUI = true // force GUI on
-
 	simS := new(S)
-	sim := any(simS).(Sim[C])
-
-	sim.SetConfig(cfgC)
-	if configFun != nil {
-		configFun(simS, cfgC)
+	sf := tree.New[simFrame](parent)
+	sf.sim = simS
+	sf.released = make(chan struct{})
+	newSim := func() {
+		cfgC, cfg := NewConfig[C]()
+		cfg.AsBaseConfig().GUI = true // force GUI on
+		sim := any(simS).(Sim[C])
+		sim.SetConfig(cfgC)
+		if configFun != nil {
+			configFun(simS, cfgC)
+		}
+		sim.ConfigSim()
+		sim.Init()
+		sim.ConfigGUI(sf)
 	}
-	sim.ConfigSim()
-	sim.Init()
-	sim.ConfigGUI(parent)
+
+	// The sim is made after the sims that are being released are.
+	pending := pendingReleases()
+	if len(pending) == 0 {
+		newSim()
+		return simS
+	}
+	go func() {
+		for _, c := range pending {
+			<-c
+		}
+		sf.AsyncLock()
+		newSim()
+		sf.Update()
+		sf.AsyncUnlock()
+	}()
 	return simS
 }
