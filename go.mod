@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.27.0
 
 require (
-	cogentcore.org/core v0.5.22
-	cogentcore.org/lab v0.2.15
+	cogentcore.org/core v0.5.23
+	cogentcore.org/lab v0.2.16
 	github.com/cogentcore/mvm v0.0.0-20261026193832-5ebd19c3fa21
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96

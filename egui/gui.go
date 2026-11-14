@@ -159,6 +159,17 @@ func (gui *GUI) GoUpdateToolbar() {
 	gui.Toolbar.Restyle()
 }
 
+// LockGUI locks the GUI window, to prevent GUI updates from happening
+// while key data is being updated, such as when computing stats that
+// go in a plot. Returns the unlock function (no-op for no GUI).
+// Never call from the GUI event loop (e.g., Init), which would deadlock.
+func (gui *GUI) LockGUI() func() {
+	if gui.Body == nil || !gui.Body.AsyncLockIfShown() {
+		return func() {}
+	}
+	return gui.Body.AsyncUnlock
+ }
+
 // NewGUIBody returns a new GUI, with an initialized Body by calling [gui.MakeBody].
 func NewGUIBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string) *GUI {
 	gu := &GUI{}
