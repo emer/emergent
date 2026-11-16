@@ -167,6 +167,45 @@ func (pc *OneD) Values(vals *[]float32, n int) {
 	}
 }
 
+// DecodePeak decodes the peak value from a pattern of activation
+// as the greatest summed value across -/+ width around central point.
+// width is typically 1 for 3 total points, or 0 for just localist peak.
+// must have 2 or more values in pattern pat.
+func (pc *OneD) DecodePeak(pat []float32, width int) float32 {
+	n := len(pat)
+	if n < 2 {
+		return 0
+	}
+	rng := pc.Max - pc.Min
+	incr := rng / float32(n-1)
+	mx := float32(0)
+	mxi := 0
+	for i := range pat {
+		sum := float32(0)
+		ns := 0
+		for j := -width; j < width; j++ {
+			if i+j < 0 || i+j >= n {
+				continue
+			}
+			act := pat[i]
+			if act < pc.Thr {
+				act = 0
+			}
+			sum += act
+			ns++
+		}
+		if ns > 0 {
+			sum /= float32(ns)
+		}
+		if sum > mx {
+			mx = sum
+			mxi = i
+		}
+	}
+	trg := pc.Min + incr*float32(mxi)
+	return trg
+}
+
 // DecodeNPeaks decodes N values from a pattern of activation
 // using a neighborhood of specified width around local maxima,
 // which is the amount on either side of the central point to
