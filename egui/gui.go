@@ -168,7 +168,7 @@ func (gui *GUI) LockGUI() func() {
 		return func() {}
 	}
 	return gui.Body.AsyncUnlock
- }
+}
 
 // NewGUIBody returns a new GUI, with an initialized Body by calling [gui.MakeBody].
 func NewGUIBody(b tree.Node, sim any, fsroot fs.FS, appname, title, about string) *GUI {
@@ -249,21 +249,21 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits, appname string)
 
 	ctx := htmlcore.NewContext()
 
-	ctx.GetURL = func(rawURL string) (*http.Response, error) {
+	ctx.SetGetURL(func(rawURL string) (*http.Response, error) {
 		return htmlcore.GetURLFromFS(readmefs, rawURL)
-	}
+	})
 
 	ctx.AddWikilinkHandler(gui.readmeWikilink("sim"))
 
-	ctx.OpenURL = gui.readmeOpenURL
+	ctx.SetOpenURL(gui.readmeOpenURL)
 
 	eds := []*textcore.Editor{}
 
-	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
-		ed := textcore.NewEditor(ctx.BlockParent)
+	ctx.AddElementHandler("sim-question", func(ctx *htmlcore.Context) bool {
+		ed := textcore.NewEditor(ctx.BlockParent())
 		ed.Lines.Settings.LineNumbers = false
 		eds = append(eds, ed)
-		id := htmlcore.GetAttr(ctx.Node, "id")
+		id := htmlcore.GetAttr(ctx.Node(), "id")
 		ed.SetName(id)
 
 		ed.Styler(func(s *styles.Style) {
@@ -290,7 +290,7 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits, appname string)
 		})
 
 		return true
-	}
+	})
 
 	core.NewButton(gui.Readme).SetText("Copy answers").OnClick(func(e events.Event) {
 		clipboard := gui.Readme.Clipboard()
