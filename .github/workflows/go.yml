@@ -19,7 +19,7 @@ jobs:
         go-version: '1.27.2'
 
     - name: Set up Core
-      run: go install cogentcore.org/core@main && core setup
+      uses: cogentcore/core/.github/actions/setup-core@main
 
     - name: Build
       run: go build -v ./...

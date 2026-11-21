@@ -22,6 +22,9 @@ import (
 // AddLooperCtrl adds toolbar control for looper.Stacks with Init, Run, Step controls,
 // with selector for which stack is being controlled.
 // A prefix can optionally be provided if multiple loops are used.
+// The controls show the step level and count of the loops, so if the
+// loops are configured again (in place, keeping the same pointer), call
+// Update on the Toolbar to show their new settings.
 func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...string) {
 	gui.addLooper(loops)
 	pfx := ""
@@ -65,6 +68,11 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 			w.Mutex = true
 			w.SetEnums(modes...)
 			w.SelectValue(curMode)
+			w.Updater(func() {
+				if _, ok := loops.Stacks[curMode]; ok {
+					w.SelectValue(curMode)
+				}
+			})
 			w.FinalStyler(func(s *styles.Style) {
 				s.Grow.Set(0, 0)
 			})
@@ -150,6 +158,12 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		stepChoose = w
 		updateSteps()
 		w.SetCurrentValue(curStep.String())
+		w.Updater(func() { // the loops may have been configured again
+			if st := loops.Stacks[curMode]; st != nil {
+				curStep = st.StepLevel
+				updateSteps()
+			}
+		})
 		w.OnChange(func(e events.Event) {
 			st := loops.Stacks[curMode]
 			if w.CurrentItem.Value == nil {
@@ -171,6 +185,13 @@ func (gui *GUI) AddLooperCtrl(p *tree.Plan, loops *looper.Stacks, prefix ...stri
 		stepNSpin = w
 		w.SetStep(1).SetMin(1).SetValue(1)
 		w.SetTooltip("number of iterations per step")
+		w.Updater(func() {
+			if st := loops.Stacks[curMode]; st != nil {
+				if lp := st.Loops[st.StepLevel]; lp != nil {
+					w.SetValue(float32(lp.StepCount))
+				}
+			}
+		})
 		w.OnChange(func(e events.Event) {
 			st := loops.Stacks[curMode]
 			if st != nil {

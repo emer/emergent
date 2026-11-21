@@ -232,3 +232,58 @@ func TestStepIncr(t *testing.T) {
 		}
 	}
 }
+
+func TestCopyStepSettings(t *testing.T) {
+	newStacks := func(run bool) *Stacks {
+		ls := NewStacks()
+		st := ls.AddStack(levels.Train, levels.Trial)
+		if run {
+			st.AddLevel(levels.Run, 2)
+		}
+		st.AddLevel(levels.Epoch, 3).AddLevel(levels.Trial, 2)
+		ls.AddStack(levels.Test, levels.Trial).AddLevel(levels.Epoch, 1).AddLevel(levels.Trial, 2)
+		return ls
+	}
+	old := newStacks(true)
+	old.Step(levels.Train, 2, levels.Run) // as in the GUI
+	old.Stacks[levels.Test].StepLevel = levels.Epoch
+	old.Loop(levels.Train, levels.Epoch).StepCount = 5
+
+	ls := newStacks(true)
+	ls.CopyStepSettings(old)
+	st := ls.Stacks[levels.Train]
+	if st.StepLevel != levels.Run || st.StepCount != 2 || st.Loops[levels.Run].StepCount != 2 || st.Loops[levels.Epoch].StepCount != 5 {
+		t.Errorf("Train step settings not copied: level %v count %d", st.StepLevel, st.StepCount)
+	}
+	if ls.Stacks[levels.Test].StepLevel != levels.Epoch {
+		t.Errorf("Test step level not copied: %v", ls.Stacks[levels.Test].StepLevel)
+	}
+
+	// a step level that is not in the new stack is not copied
+	ls = newStacks(false)
+	ls.CopyStepSettings(old)
+	st = ls.Stacks[levels.Train]
+	if st.StepLevel != levels.Trial || st.Loops[levels.Epoch].StepCount != 5 {
+		t.Errorf("Train step level without Run: %v, Epoch count %d", st.StepLevel, st.Loops[levels.Epoch].StepCount)
+	}
+}
+
+func TestRecycleStacks(t *testing.T) {
+	ls, prev := RecycleStacks(nil)
+	if ls == nil || prev != nil {
+		t.Fatalf("RecycleStacks(nil) = %v, %v", ls, prev)
+	}
+	ls.AddStack(levels.Train, levels.Trial).AddLevel(levels.Epoch, 3).AddLevel(levels.Trial, 2)
+	ls.Step(levels.Train, 2, levels.Epoch)
+
+	cur, prev := RecycleStacks(ls)
+	if cur != ls {
+		t.Error("RecycleStacks did not keep the same pointer")
+	}
+	if len(cur.Stacks) != 0 {
+		t.Errorf("recycled stacks not reset: %d stacks", len(cur.Stacks))
+	}
+	if st := prev.Stacks[levels.Train]; st == nil || st.StepLevel != levels.Epoch {
+		t.Errorf("previous stacks not kept: %v", prev.Stacks)
+	}
+}

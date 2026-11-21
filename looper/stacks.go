@@ -46,6 +46,28 @@ func NewStacks() *Stacks {
 	return ls
 }
 
+// RecycleStacks returns stacks to configure, recycling the given existing
+// stacks if not nil: it resets them in place to a new state, keeping the
+// same pointer, because the GUI looper controls and other closures (e.g.,
+// for stats) keep a pointer to them. It also returns a copy of the
+// previous stacks (nil if there were none), to pass to
+// [Stacks.CopyStepSettings] after configuring the new ones, to keep the
+// step settings of the GUI. If ls is nil, it returns [NewStacks].
+// This is for configuring the loops of a sim again, e.g., with a new config:
+//
+//	ls, prev := looper.RecycleStacks(ss.Loops)
+//	ss.Loops = ls
+//	... configure ls ...
+//	ls.CopyStepSettings(prev)
+func RecycleStacks(ls *Stacks) (cur, prev *Stacks) {
+	if ls == nil {
+		return NewStacks(), nil
+	}
+	pls := *ls
+	*ls = *NewStacks()
+	return ls, &pls
+}
+
 // newInit initializes the state of the stacks, to be called on a newly created object.
 func (ls *Stacks) newInit() {
 	ls.Stacks = map[enums.Enum]*Stack{}
@@ -119,6 +141,33 @@ func (ls *Stacks) AddStack(mode, stepLevel enums.Enum) *Stack {
 	st := NewStack(mode, stepLevel)
 	ls.Stacks[mode] = st
 	return st
+}
+
+// CopyStepSettings copies the step settings (as set in the GUI looper
+// controls) from the given stacks: the step level and count of each
+// stack of the same mode, and the step counts of its loops, for the
+// levels that are present in both. It is for keeping these settings
+// when the stacks are configured again, e.g., when a sim is configured
+// again with a new config: call it after configuring the new stacks.
+func (ls *Stacks) CopyStepSettings(from *Stacks) {
+	if from == nil {
+		return
+	}
+	for mode, st := range ls.Stacks {
+		fst, ok := from.Stacks[mode]
+		if !ok {
+			continue
+		}
+		for level, lp := range st.Loops {
+			if flp, ok := fst.Loops[level]; ok {
+				lp.StepCount = flp.StepCount
+			}
+		}
+		if _, ok := st.Loops[fst.StepLevel]; ok {
+			st.StepLevel = fst.StepLevel
+			st.StepCount = fst.StepCount
+		}
+	}
 }
 
 // Loop returns the Loop associated with given mode and loop level.
