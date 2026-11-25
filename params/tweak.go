@@ -5,6 +5,8 @@
 package params
 
 import (
+	"strconv"
+
 	"cogentcore.org/core/math32"
 )
 
@@ -84,4 +86,28 @@ func Tweak(v float32, typ TweakTypes) []float32 {
 func TweakPct(v, pct float32) []float32 {
 	trunc := 6
 	return []float32{math32.Truncate(v*(1-pct), trunc), math32.Truncate(v*(1+pct), trunc)}
+}
+
+// Range returns parameter [Search] values from start to end (inclusive)
+// in steps of inc, e.g., Range(0.05, 0.3, 0.05) is .05, .1, .15, .2, .25, .3.
+// The values are rounded to 6 significant digits, so that they are the
+// same discrete values as typed (without float32 rounding error).
+func Range(start, end, inc float32) []float32 {
+	if inc <= 0 || end < start {
+		return []float32{start}
+	}
+	n := int(math32.Round((end-start)/inc)) + 1
+	vals := make([]float32, n)
+	for i := range n {
+		vals[i] = math32.Truncate(start+float32(i)*inc, 6)
+	}
+	return vals
+}
+
+// Float64 returns the float64 value of the given float32 search value,
+// as it is written (e.g., 0.15, not 0.15000000596), for setting float64
+// fields (e.g., in a sim Config).
+func Float64(v float32) float64 {
+	f, _ := strconv.ParseFloat(strconv.FormatFloat(float64(v), 'g', -1, 32), 64)
+	return f
 }

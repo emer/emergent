@@ -3,8 +3,8 @@ module github.com/emer/emergent/v2
 go 1.27.0
 
 require (
-	cogentcore.org/core v0.5.50
-	cogentcore.org/lab v0.2.25
+	cogentcore.org/core v0.5.53
+	cogentcore.org/lab v0.2.28
 	github.com/cogentcore/mvm v0.0.0-20261120030535-e3f31e8a9ab5
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
@@ -29,12 +29,12 @@ require (
 	github.com/chewxy/math32 v1.11.2 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/cogentcore/glfw4/v3.4/glfw v0.1.0-pre.2.0.20261121165724-248ae4b326b2 // indirect
 	github.com/cogentcore/typesetting v0.0.0-20261022123550-2cd93a91580e // indirect
 	github.com/creack/pty v1.1.24 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2/v2 v2.7.1 // indirect
 	github.com/faiface/beep v1.1.0 // indirect
-	github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.1.0.20260628091122-0bd588dc30cf // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
